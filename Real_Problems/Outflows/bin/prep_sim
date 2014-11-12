@@ -1,0 +1,41 @@
+#!/bin/bash
+
+## This script makes a directory of argument and copies 
+## files needed to run a PLUTO simulation into that
+## directory.
+
+## --- Set these ---
+
+## Files to be included in transfer
+FILES="pluto pluto.ini sysconf.out *.dat"
+
+## -----------------
+
+
+usage()
+{
+  echo "Usage: prep_sim <simulation directory>"
+}
+
+
+if [[ $# -gt 1 ]]; then
+  echo "Error, too many arguments. Only one allowed."
+  usage
+  exit 1
+
+elif [[ ! "$1" ]]; then
+  echo "Error, no simulation directory provided."
+  usage
+  exit 1
+
+elif [[ -e "$1" && !(-d "$1") ]]; then
+  echo "File $1 exists alredy as a non-directory file."
+  echo "Please choose different name."
+  exit 1
+
+elif [[ !(-e "$1") ]]; then
+  mkdir $1
+fi
+
+cp $FILES $1
+

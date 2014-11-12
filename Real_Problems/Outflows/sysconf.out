@@ -1,0 +1,12 @@
+USER           = ayw
+WORKING_DIR    = /Users/ayw/research/PLUTO/Real_Problems/AGN_Feedback
+SYSTEM_NAME    = Darwin
+NODE_NAME      = myung
+RELEASE        = 10.8.0
+ARCH           = i386
+BYTE_ORDER     = little
+VERSION        = Darwin Kernel Version 10.8.0: Tue Jun  7 16:33:36 PDT 2011; root:xnu-1504.15.3~1/RELEASE_I386
+PLUTO_DIR      = /Users/ayw/research/PLUTO
+PLUTO_VERSION  = "4.0"
+C_COMPILER     = gcc
+MPI_C_COMPILER = mpicc

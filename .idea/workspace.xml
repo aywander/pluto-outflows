@@ -1,0 +1,1765 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true">
+    <generated>
+      <config projectName="PLUTO" targetName="PLUTO" />
+    </generated>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="ecdbcd6a-58ba-4849-a7b5-f7eef8be1d32" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/1D-hd-exp.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/3D-cart-0.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/CHANGES" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/ChomboPatches/Chombo3.1ClangPatch.tar" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/bc_s.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/bdwn.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/close.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/closed.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dmr_prs.gif" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dmr_rho.gif" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/doxygen.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/fig1.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/bin/flt2dbl" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_0.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_1.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_10.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_100.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_101.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_102.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_103.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_104.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_105.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_106.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_107.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_108.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_109.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_11.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_110.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_111.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_112.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_113.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_114.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_115.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_116.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_117.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_118.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_119.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_12.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_120.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_121.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_122.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_123.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_124.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_125.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_126.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_127.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_128.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_129.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_13.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_130.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_131.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_132.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_133.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_134.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_135.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_136.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_137.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_138.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_139.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_14.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_140.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_141.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_142.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_143.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_144.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_145.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_146.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_147.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_148.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_149.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_15.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_150.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_151.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_152.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_153.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_154.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_155.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_156.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_157.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_158.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_159.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_16.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_160.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_161.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_162.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_163.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_164.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_165.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_166.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_167.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_168.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_169.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_17.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_170.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_171.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_172.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_173.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_174.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_175.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_176.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_177.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_178.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_179.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_18.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_180.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_181.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_182.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_183.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_184.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_185.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_186.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_187.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_188.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_189.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_19.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_190.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_191.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_192.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_193.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_194.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_195.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_196.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_197.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_198.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_199.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_2.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_20.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_200.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_201.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_202.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_203.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_204.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_205.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_206.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_207.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_208.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_209.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_21.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_210.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_211.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_212.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_213.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_214.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_215.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_216.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_22.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_23.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_24.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_25.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_26.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_27.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_28.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_29.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_3.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_30.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_31.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_32.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_33.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_34.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_35.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_36.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_37.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_38.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_39.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_4.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_40.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_41.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_42.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_43.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_44.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_45.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_46.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_47.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_48.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_49.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_5.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_50.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_51.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_52.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_53.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_54.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_55.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_56.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_57.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_58.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_59.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_6.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_60.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_61.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_62.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_63.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_64.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_65.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_66.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_67.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_68.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_69.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_7.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_70.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_71.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_72.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_73.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_74.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_75.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_76.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_77.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_78.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_79.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_8.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_80.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_81.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_82.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_83.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_84.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_85.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_86.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_87.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_88.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_89.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_9.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_90.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_91.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_92.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_93.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_94.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_95.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_96.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_97.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_98.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/form_99.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2blank.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2cl.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2doc.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2folderclosed.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2folderopen.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2lastnode.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2link.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2mlastnode.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2mnode.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2mo.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2node.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2ns.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2plastnode.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2pnode.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2splitbar.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/ftv2vertline.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/hd_disk_planet.08.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/hd_flow_past_cylinder.01.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/hd_flow_past_cylinder.04.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/hd_isentropic_vortex.13.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/hd_jet.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/hd_riemann2D.05.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/hd_sedov.02.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/hd_sod.04.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/hd_stellar_wind.08.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/mag_sel.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/mhd_blast-pm.11.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/mhd_blast-prs.11.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/mhd_blast-rho.11.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/mhd_jet.01.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/mhd_ot.02.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/mhd_rotor.01.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/mhd_rotor.08.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/mhd_rt.01.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/mhd_shock_cloud.02.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/mhd_spherical_disk.02.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/nav_f.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/nav_g.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/nav_h.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/neqstd2009.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/open.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/rhd_jet.03.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/rhd_riemann2D.01.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/rmhd_blast.02.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/rmhd_kh.03.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/rmhd_sod.11.jpg" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/search_l.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/search_m.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/search_r.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/solx1-gamma.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/solx1-mu.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/solx1.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/solx1.txt.zip" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/sync_off.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/sync_on.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/tab_a.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/tab_b.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/tab_h.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/tab_s.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/vs_cooling.vim" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/vs_outflow.vim" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/vx_rho_plot__137.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/AMRLevelPluto.H" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/AMRLevelPluto.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/AMRLevelPluto.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/AMRLevelPlutoFactory.H" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/AMRLevelPlutoFactory.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/CHANGELOG.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/COPYING" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Config/Darwin.gcc.defs" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Config/Darwin.mpicc.defs" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Config/FERMI.mpixlc.defs" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/bin/GUI_pyPLUTO.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/IndexTMI.H" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/LevelPluto.H" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/LevelPluto.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Config/Linux.gcc.defs" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/MANIFEST.in" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/PKG-INFO" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/PLUTOAMR.H" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/PLUTOAMR.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/PLUTOAMR3.1.1.H" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/PLUTOAMR3.1.1.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/PatchCTU.1D.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/PatchCTU.3D.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/PatchEuler.3D.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/PatchGrid.H" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/PatchPluto.H" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/PatchPluto.H" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/PatchPluto.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/PatchStartup.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/PatchTools.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/README.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/README" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/examples/Sph_disk.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/TagCells.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/TagCells.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/TagCells.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Vortex/TagCells.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/TagCells.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/TagCells.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Jet/TagCells.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/KH/TagCells.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/TagCells.v00.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/TagCells3.1.1.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Config/Template.defs" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Blast/Turbulence.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Blast/Turbulence.v00.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/pyPLUTO/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_current___sheet_2res__eta_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_flow___past___cylinder_2visc__nu_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_h_d_2_disk___planet_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_h_d_2_isentropic___vortex_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_h_d_2_jet_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_h_d_2_mach___reflection_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_h_d_2_riemann__2_d_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_h_d_2_sedov_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_h_d_2_sod_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_h_d_2_stellar___wind_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_h_d_2_stratified___atmosphere_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_h_d_2_underexpanded___jet_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_h_d_2_viscosity_2_flow___past___cylinder_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_h_d_2_viscosity_2_taylor___couette_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_blast_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_c_p___alfven_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_f_a_r_g_o_2_spherical___disk_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_jet_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_orszag___tang_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_rayleigh___taylor_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_resistive___m_h_d_2_current___sheet_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_resistive___m_h_d_2_field___diffusion_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_resistive___m_h_d_2_linear___force___free_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_rotor_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_shearing___box_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_shock___cloud_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_thermal___conduction_2_blast_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_thermal___conduction_2_t_c_front_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_m_h_d_2_torus_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_r_h_d_2_jet_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_r_h_d_2_riemann__2_d_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_r_m_h_d_2_blast_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_r_m_h_d_2_jet_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_r_m_h_d_2_k_h_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/_r_m_h_d_2_sod_2init_8c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/abundances.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/abundances.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/abundances.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/abundances.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/adv_flux.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_alloc.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_boundary.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_codes.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_decomp_.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_decompose.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_defs.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_exchange.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_exchange_dim.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_finalize.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_hidden.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_io.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_proto.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_sort_.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_subarray_.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_sz_free.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_sz_get.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_sz_init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_sz_set.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_szptr_.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/al_write_array_async.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_62.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_62.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_67.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_67.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_69.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_69.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_70.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_70.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_72.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_72.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_75.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_75.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_76.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/all_76.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/amrPluto.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Chombo/amrPluto.cpp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/GLM/analysis.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/arg2str.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/arrays.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/ausm.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/ausm_up.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/bckgrnd_field.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/bin/be2le.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/bin_io.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/boundary.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/ccl/bst.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/ccl/bst.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/byteswap.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/cartcoord.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/ccl/ccl.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/ccl/ccl_get.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/ccl/ccl_iterate.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/ccl/ccl_parse.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/ccl/ccl_release.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/ccl/ccl_reset.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Cart_Vortex/char_tracing.1.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Cart_Vortex/char_tracing.2.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Cart_Vortex/char_tracing.3.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/char_tracing.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Cart_Vortex/char_tracing.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/check_states.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/checkfile.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/bin/clean_run" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cmd_line_opt.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/cmd_line_opt.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/colorbar2.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/colortable.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/H2_COOL/comp_equil.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/MINEq/comp_equil.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/ccl/config.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/Python/configure.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/Gnuplot/contour_setting.gp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/coolfit1.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/coolfit2.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/cooling.bak.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/cooling.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/Power_Law/cooling.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/H2_COOL/cooling.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/MINEq/cooling.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/Power_Law/cooling.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/SNEq/cooling.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/Tab/cooling.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/MINEq/cooling_defs.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/cooling_ode_solver.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/cooling_source.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/Tab/cooltab_z03z3.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/cooltable-neqstd2009.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/cooltable-solx1.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/cooltable.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/cooltable.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/Tab/cooltable.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/bin/create_PLUTO_gridfile.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/CT/ct.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/CT/ct.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/CT/ct_emf.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/CT/ct_emf_average.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/CT/ct_field_average.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/CT/ct_fill_mag_field.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/CT/ct_stag_slopes.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Time_Stepping/ctu_update.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Config/debug.defs" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/Python/define_problem.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/definitions.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/definitions.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Blast/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Vortex/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Isentropic_Vortex/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Jet/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Mach_Reflection/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Riemann_2D/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sedov/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stratified_Atmosphere/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Underexpanded_Jet/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Flow_Past_Cylinder/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Taylor_Couette/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Wind_Tunnel/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Cart_Vortex/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Spherical_Disk/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Field_Loop/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotated_Sod/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Torus/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Blast/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Jet/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Riemann_2D/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Sedov2D/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Shock_Tubes/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Blast/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/CP_Alfven/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/KH/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Rotor/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Toroidal_Jet/definitions_01.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Blast/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Vortex/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Isentropic_Vortex/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Jet/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Mach_Reflection/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Riemann_2D/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sedov/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stratified_Atmosphere/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Underexpanded_Jet/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Flow_Past_Cylinder/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Taylor_Couette/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Cart_Vortex/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Spherical_Disk/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Field_Loop/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotated_Sod/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Torus/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Blast/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Jet/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Riemann_2D/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Sedov2D/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Shock_Tubes/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Blast/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/CP_Alfven/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/KH/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Rotor/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_02.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Blast/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Vortex/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Isentropic_Vortex/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Jet/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Mach_Reflection/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Riemann_2D/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sedov/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stratified_Atmosphere/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Flow_Past_Cylinder/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Taylor_Couette/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Torus/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Jet/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Riemann_2D/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Sedov2D/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Shock_Tubes/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Blast/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/KH/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Rotor/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_03.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Blast/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Vortex/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Riemann_2D/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sedov/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stratified_Atmosphere/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Flow_Past_Cylinder/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Taylor_Couette/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Torus/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Jet/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Shock_Tubes/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Blast/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Rotor/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_04.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Blast/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Riemann_2D/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sedov/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stratified_Atmosphere/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Torus/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Blast/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Rotor/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_05.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Blast/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Rotor/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_06.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_07.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_08.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/definitions_09.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/definitions_09.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/definitions_09.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/definitions_09.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/definitions_09.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/definitions_09.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_09.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_09.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/definitions_09.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/definitions_09.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/definitions_09.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/definitions_09.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_09.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/definitions_10.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/definitions_10.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/definitions_10.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_10.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/definitions_10.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/definitions_10.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/definitions_10.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_10.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/definitions_11.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_11.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/definitions_11.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/definitions_11.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/definitions_11.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_11.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_12.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/definitions_12.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_12.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_13.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/definitions_13.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_13.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/definitions_14.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/definitions_17.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/definitions_18.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/definitions_tor.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/definitions_usr.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/definitions_usr.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_028c2ef22cd8c855a92134997cecd899.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_0c45943f5acca8016050e3c89fc61dea.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_112b3702754c4ca4aaf7a541a1fd9abd.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_1c37b2ffda25da58f007c51636b99a19.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_255f3322cda43dd925ee3bd21605b754.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_27e8aeddb871e6d194b3d5c5e8b60b4c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_31c888b347af5524f6ce720f2ccce7ea.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_3344f8d7468a248c39aa7d9d5fbcec85.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_33f445824725c33c6b2885fdc561463f.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_35e814650a6973df1af5f009c7b12b0a.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_37de83ee29dd4642dc9235c5ff406f5d.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_3ff721dbaaa8aedeb2bd5dd94cacd367.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_444e7e6fa1b854b3357bc2e5634de267.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_448877cc17a2c6a7b848bb68c27e63cc.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_490ceb3b7f1c01280c4090c4f64f1cec.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_5d6b5d9d5cdec3d794667a6c8701295e.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_63d330174894f27b08015ddbac2541c1.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_69f6cfb7775beafb296f7b58e907ef42.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_6afbe9ed77dc77cd2f9e6bd7ff4c3ce0.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_6b16d0cf7d09291dbca8f2f68da07b61.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_89473e1fa8743b35deb250dd2aea4b23.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_909adcf7e15a9388edc2690ec20ecd98.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_955de676c5962b16f2bf5b03992288d8.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_a3eeefc454d9ced562a5332f77ee0e69.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_a494cd7489a08a14d4490a82c37c2240.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_a7d633705ae0c57ff6ad42de051d2b97.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_a9bf029e8facab698e5e604ecb0bd3eb.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_aec06e308d9caee868e7d65e00e03139.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_b06d90e4a770526d221c70a6f504c50a.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_bb683e4e109f51ad5f6011df0ecccd4c.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_bfa1fed9436debbc24e643a0619570d9.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_cb86b4ee56384fc720846084c29dde79.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_dbdd96e523e322c9b5912e4377904731.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_dcf93a81be76a260ad656e22b403f56b.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_e3b0a8b991edb841b32cc0d4788e7436.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_e4a3c745a899a1baa3dac20c93d78c4e.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_e50edbd9356d3e94a4a2a93c98982a76.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_eb5f667aa3589468bb352ae1e215f98a.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_ee24ef6d16eefcd0c309883faf0f8c01.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_f8c0b97df71ab7eaa20f0568314766f3.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_fdb2dddaa81a2d57c9a1811dc6330ca5.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_fe4e321a2bda7626821ce921fd71411a.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dir_ffd739b7ee1aeb8d3541089f5f1cca56.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/display.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/doxy-comment.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/doxygen.css" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/dynsections.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/eigenv.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/eigenv.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/eigenv.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/eigenv.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/CT/emf_boundary.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/CT/emf_userdef.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/energy_solve.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/energy_solve.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/entropy_solve.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/entropy_solve.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/entropy_switch.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/Ideal/eos.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/Isothermal/eos.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/Taub/eos.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/eos.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/Ideal/eos.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/Isothermal/eos.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/PVTE/eos.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/Taub/eos.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/Tab/extract.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/extrema.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/failsafe.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Fargo/fargo.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Fargo/fargo.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Fargo/fargo_source.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Fargo/fargo_velocity.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/fd_flux.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/fd_reconstruct.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/field_line.2D.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/field_line.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/Python/file.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/files.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/files_69.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/files_69.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/files_72.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/files_72.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/files_76.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/files_76.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/findshock.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/bin/fixmake" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/flag.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/flag_shock.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/flatten.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/examples/flow_past_cyc.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/bin/flt2dbl.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/fluxes.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/fluxes.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/fluxes.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/fluxes.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/formula.repository" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/fourier.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/functions_62.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/functions_62.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/functions_67.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/functions_67.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/functions_72.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/functions_72.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/functions_75.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/functions_75.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/functions_76.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/functions_76.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/get_frame.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/get_nghost.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/GLM/glm.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/GLM/glm.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/globals.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/globals.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/globals_func.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/gravity/hqnfw/gphitable_dpp.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/gravity/gravtable.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/gravity/gravtable.hdr" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/gravity/hqnfw/gravtable_dpp.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/Gnuplot/grid.gp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/bin/gridsplit.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/bin/gridxyz.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/h5load.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/hancock.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/hdf5_1Dload.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/hdf5_io.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/hdf5_io.vChombo3.1.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/hdf5cut.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/hdf5load.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/hll.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/hll.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/hll.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/hll.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/hll_speed.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/hll_speed.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/hll_speed.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/hll_speed.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/hllc.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/hllc.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/hllc.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/hllc.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/hlld.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/hlld.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/gravity/hottable.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/gravity/hqnfw/hottable_dpp.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/idl_tools.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/index.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/indx_coord.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Templates/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Blast/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Vortex/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Isentropic_Vortex/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Jet/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Mach_Reflection/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Riemann_2D/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sedov/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stratified_Atmosphere/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Underexpanded_Jet/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Flow_Past_Cylinder/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Taylor_Couette/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Wind_Tunnel/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Cart_Vortex/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Spherical_Disk/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Field_Loop/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotated_Sod/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Torus/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Blast/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Jet/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Riemann_2D/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Sedov2D/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Shock_Tubes/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Blast/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/CP_Alfven/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/KH/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Rotor/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Toroidal_Jet/init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/init.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Taylor_Couette/init.v00.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/init.v00.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/init.v00.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/init.v00.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/init.v01.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/init.v02.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/init.v03.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/init_tools.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/init_tools.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/init_tools.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/init_tools.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/initialize.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/input_data.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/input_data.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/int_bound_reset.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/PVTE/internal_energy.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/tools/interpolation.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/tools/interpolation.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/tools/interpolation.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/tools/interpolation.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/MINEq/ion_init.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/H2_COOL/jacobian.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/MINEq/jacobian.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/SNEq/jacobian.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/Tab/jacobian.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/examples/jet.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/jet_domain.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/jet_domain.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/jquery.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/legend.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/lim_coeff.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/local_make" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/local_make" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/bin/log2lin_table.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/Gnuplot/macros.gp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/macros.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/main.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/main.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/make_doc.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/make_frame.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/Python/make_problem.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/MINEq/make_tables.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Templates/makefile.chombo.v00" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Templates/makefile.chombo" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/H2_COOL/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/MINEq/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/Power_Law/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/SNEq/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/Tab/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/Ideal/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/Isothermal/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/PVTE/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/Taub/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Fargo/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/CT/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/GLM/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/Resistive/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/ShearingBox/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Math_Tools/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Parallel/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Particles/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Templates/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Thermal_Conduction/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Viscosity/makefile" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/mappers.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/mappers.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/mappers.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/mappers.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/mappers3D.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Math_Tools/math_lu_decomp.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Math_Tools/math_misc.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Math_Tools/math_ode.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Math_Tools/math_qr_decomp.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Math_Tools/math_quadrature.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Math_Tools/math_root_finders.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Math_Tools/math_table2D.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Math_Tools/math_tools.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/H2_COOL/maxrate.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/MINEq/maxrate.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/SNEq/maxrate.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/Tab/maxrate.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/Python/menu.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/mirror.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/mod_defs.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/mod_defs.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/mod_defs.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/mod_defs.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/mutable.dat" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/neqstd2009.T4" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/neqstd2009_log2lin.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/nomatches.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/nrEOS.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/oplotbox.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/examples/orszag_tang.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/pages_70.html" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/pages_70.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/parabolic_flux.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/parabolic_rhs.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/parse_file.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Particles/particles.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/plm_coeffs.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/plm_coeffs.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/plm_states.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/Mathematica/pload.m" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/pload.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/plot_ascii.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/plotbox.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/Gnuplot/pluto.gp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/pluto.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/pluto.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/pluto.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/pluto.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/H2_COOL/pluto.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Templates/pluto.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Blast/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Vortex/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Isentropic_Vortex/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Jet/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Mach_Reflection/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Riemann_2D/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sedov/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stratified_Atmosphere/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Underexpanded_Jet/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Flow_Past_Cylinder/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Taylor_Couette/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Wind_Tunnel/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Cart_Vortex/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Spherical_Disk/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Field_Loop/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotated_Sod/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Torus/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Blast/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Jet/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Riemann_2D/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Sedov2D/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Shock_Tubes/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Blast/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/CP_Alfven/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/KH/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Rotor/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Toroidal_Jet/pluto_01.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Blast/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Vortex/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Isentropic_Vortex/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Jet/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Mach_Reflection/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Riemann_2D/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sedov/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stratified_Atmosphere/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Underexpanded_Jet/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Flow_Past_Cylinder/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Taylor_Couette/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Cart_Vortex/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/FARGO/Spherical_Disk/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Field_Loop/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotated_Sod/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Torus/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Blast/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Jet/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Riemann_2D/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Sedov2D/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Shock_Tubes/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Blast/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/CP_Alfven/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/KH/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Rotor/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_02.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Blast/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Vortex/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Isentropic_Vortex/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Jet/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Mach_Reflection/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Riemann_2D/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sedov/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stratified_Atmosphere/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Flow_Past_Cylinder/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Taylor_Couette/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Torus/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Jet/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Riemann_2D/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Sedov2D/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Shock_Tubes/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Blast/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/KH/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Rotor/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_03.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Blast/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Vortex/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Riemann_2D/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sedov/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stratified_Atmosphere/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Flow_Past_Cylinder/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Taylor_Couette/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Torus/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Jet/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RHD/Shock_Tubes/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Blast/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Rotor/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_04.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Blast/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Riemann_2D/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sedov/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stratified_Atmosphere/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Torus/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Blast/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Rotor/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_05.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Blast/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Rotor/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_06.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Sod/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_07.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Disk_Planet/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Stellar_Wind/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_08.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Sod/pluto_09.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/pluto_09.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/CP_Alfven/pluto_09.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/pluto_09.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/pluto_09.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/pluto_09.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_09.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_09.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/pluto_09.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/pluto_09.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shock_Cloud/pluto_09.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/pluto_09.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_09.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/pluto_10.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Orszag_Tang/pluto_10.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rayleigh_Taylor/pluto_10.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_10.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/pluto_10.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/pluto_10.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/pluto_10.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_10.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Blast/pluto_11.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_11.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Rotor/pluto_11.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Shearing_Box/pluto_11.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/pluto_11.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_11.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_12.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/pluto_12.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_12.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_13.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/pluto_13.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_13.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Sod/pluto_14.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/pluto_17.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/pluto_18.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/pluto_3d.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Underexpanded_Jet/pluto_big.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/pluto_cart.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/Python/pluto_files_IO.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/pluto_jet.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/RMHD/Jet/pluto_tor.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/pluto_ufo.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/pluto_usr.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/pluto_usr.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/Gnuplot/pm3d_setting.gp" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/polar.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/ppm_coeffs.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/ppm_coeffs.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/ppm_states.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/bin/prep_sim" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/pressure_fix.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/pressure_fix.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/prim_eqn.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/prim_eqn.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/prim_eqn.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/prim_eqn.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Config/profile.defs" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/prototypes.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/ptools.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/put_eps.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/PVTE/pvte_law.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/PVTE/pvte_law_H+.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/PVTE/pvte_law_dAngelo.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/PVTE/pvte_law_template.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/pyPLUTO/pyPLUTO.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/quartic.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/gravity/rGravHeader.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/gravity/rGravTable.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/gravity/rGravTable.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/rHotTable.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/rHotTable.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/rMuTable.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/rMuTable.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/radiat.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/RadiativeShock/radiat.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/H2_COOL/radiat.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/MINEq/radiat.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/SNEq/radiat.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/Tab/radiat.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/SNEq/radiat.modified_by_Bhargav.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/H2_COOL/radiat.new.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/examples/rayleigh_taylor.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/regrid.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/Resistive/res.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/Resistive/res_eta.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Current_Sheet/res_eta.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Field_Diffusion/res_eta.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/res_eta.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/Resistive/res_flux.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/Resistive/res_functions.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/restart.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/bin/restart_rename" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/reverse_colormap.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/rhs.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/rhs.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/rhs.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/rhs.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/riemann.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/riemann.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/riemann_full.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Time_Stepping/rk_update.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/rkc.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/rkf45/rkf45.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/rkf45/rkf45.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/rkf45/rkf45.sh" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/rkf45/rkf45_notes.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/rkf45/rkf45_prb.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/rkf45/rkf45_prb2.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/rkf45/rkf45_prb2.sh" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/rkf45/rkf45_prb2_output.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/rkf45/rkf45_prb_output.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/rkf45/rkf_mytest.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/roe.bckfld.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/roe.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/roe.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/rusanov-dw.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/rusanov-dw.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/ShearingBox/sb_boundary.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/ShearingBox/sb_flux.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/ShearingBox/sb_tools.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/PVTE/scvh.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/search.css" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/search/search.js" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/set_geometry.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/set_grid.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/set_image.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/set_indexes.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/set_multi_plot_pos.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/set_output.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/set_solver.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/set_solver.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/set_solver.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/set_solver.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Particles/setparticles.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/setup.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/setup.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/Python/setup.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/setup.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/ShearingBox/shearingbox.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/shiftcoord.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/shockfind.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/show_config.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/examples/sod.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/solx1.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/cooling/solx1_log2lin.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/source.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/source.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/split_source.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/startup.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/states_fd.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/states_flat.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/states_limo3.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/States/states_weno3.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/pyPLUTO/examples/stellar_wind.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/structs.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/sts.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/sysconf.out" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/Doxygen/html/tabs.css" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Thermal_Conduction/tc.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Thermal_Conduction/tc_flux.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Thermal_Conduction/tc_functions.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Thermal_Conduction/tc_kappa.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/Blast/tc_kappa.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Thermal_conduction/TCfront/tc_kappa.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/tempEOS.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/tempEOS.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/temperature.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Cooling/MINEq/test.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/PVTE/thermal_eos.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/tools.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/HD/tvdlf.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/MHD/tvdlf.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/tvdlf.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/tvdlf.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Time_Stepping/update_stage.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Time_Stepping/update_stage.vChombo3.1.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Real_Problems/Outflows/userdef_output.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/userdef_output.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Jet/userdef_output.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Underexpanded_Jet/userdef_output.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Flow_Past_Cylinder/userdef_output.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/MHD/Jet/userdef_output.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/userdef_output.dt.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/userdef_output.shock_tracking.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/var_names.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/vec_pot_diff.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/vec_pot_update.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/vecfield.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RHD/vel_limiter.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/RMHD/vel_limiter.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/visc_flux.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Viscosity/visc_nu.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Flow_Past_Cylinder/visc_nu.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Test_Problems/HD/Viscosity/Taylor_Couette/visc_nu.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Viscosity/viscosity.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/Viscosity/viscous_flux.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/vtk_load.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/write_data.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/write_img.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/write_tab.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/write_vtk.c" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Tools/IDL/write_vtk.pro" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Src/EOS/PVTE/zeta_tables.c" />
+    </list>
+    <ignored path="PLUTO.iws" />
+    <ignored path=".idea/workspace.xml" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="DaemonCodeAnalyzer">
+    <disable_hints />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
+  <component name="FavoritesManager">
+    <favorites_list name="PLUTO" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file leaf-file-name="init.c" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Real_Problems/Outflows/init.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="510" max-vertical-offset="7995">
+              <caret line="66" column="0" selection-start-line="66" selection-start-column="0" selection-end-line="66" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="init_tools.c" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Real_Problems/Outflows/init_tools.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.08141112" vertical-offset="375" max-vertical-offset="24780">
+              <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindManager">
+    <FindUsagesManager>
+      <setting name="OPEN_NEW_TAB" value="true" />
+    </FindUsagesManager>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="10" />
+    <option name="y" value="24" />
+    <option name="width" value="1400" />
+    <option name="height" value="834" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="false">
+    <OptionsSetting value="true" id="Add" />
+    <OptionsSetting value="true" id="Remove" />
+    <OptionsSetting value="true" id="Checkout" />
+    <OptionsSetting value="true" id="Update" />
+    <OptionsSetting value="true" id="Status" />
+    <OptionsSetting value="true" id="Edit" />
+    <ConfirmationsSetting value="0" id="Add" />
+    <ConfirmationsSetting value="0" id="Remove" />
+  </component>
+  <component name="ProjectReloadState">
+    <option name="STATE" value="0" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="Cidr.FilesView" proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+    </navigator>
+    <panes>
+      <pane id="Cidr.FilesView">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="PLUTO" />
+              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$1$1" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="PLUTO" />
+              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$1$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="PLUTO" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="PLUTO" />
+              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$1$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="PLUTO" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Real_Problems" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="PLUTO" />
+              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$1$1" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="PLUTO" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Real_Problems" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Outflows" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="recentsLimit" value="5" />
+    <property name="FullScreen" value="false" />
+  </component>
+  <component name="RunManager" selected="Application.PLUTO">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS="FALSE" PROJECT_NAME="PLUTO" TARGET_NAME="PLUTO" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="PLUTO" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS="FALSE" PROJECT_NAME="PLUTO" TARGET_NAME="PLUTO" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <list size="1">
+      <item index="0" class="java.lang.String" itemvalue="Application.PLUTO" />
+    </list>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false" />
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ecdbcd6a-58ba-4849-a7b5-f7eef8be1d32" name="Default" comment="" />
+      <created>1415717611689</created>
+      <option name="number" value="Default" />
+      <updated>1415717611689</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="10" y="24" width="1400" height="834" extended-state="0" />
+    <editor active="false" />
+    <layout>
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23214285" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+    </layout>
+  </component>
+  <component name="Vcs.Log.UiProperties">
+    <option name="RECENTLY_FILTERED_USER_GROUPS">
+      <collection />
+    </option>
+    <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+      <collection />
+    </option>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="myTodoPanelSettings">
+      <TodoPanelSettings />
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager />
+    <watches-manager />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="465" max-vertical-offset="28035">
+          <caret line="44" column="26" selection-start-line="44" selection-start-column="26" selection-end-line="44" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Real_Problems/Outflows/init.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="510" max-vertical-offset="7995">
+          <caret line="66" column="0" selection-start-line="66" selection-start-column="0" selection-end-line="66" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Real_Problems/Outflows/init_tools.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.08141112" vertical-offset="375" max-vertical-offset="24780">
+          <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
+

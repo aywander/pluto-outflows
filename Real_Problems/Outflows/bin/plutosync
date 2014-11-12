@@ -1,0 +1,131 @@
+#!/bin/bash
+
+##_________________________________________________
+## Some user settings
+
+RSYNC_OPTS='-Pavuzi --exclude=.git --exclude=*.vim --exclude=.*sw* --exclude=make* --exclude=sysconf.out --exclude=*.dbl'
+
+RAIJIN_UNAME="ayw100"
+RAIJIN_PLUTO_DIR="~/PLUTO"
+
+MOSURA_UNAME="ayw"
+MOSURA_PLUTO_DIR="/priv/myriad3/ayw/research/PLUTO"
+
+
+##_________________________________________________
+## Functions
+
+## Usage message 
+usage()
+{
+  sed -e 's/^/    /' << UseMsg
+
+Usage:
+------
+
+  plutosync [-bdhmnr] sim_dir
+
+UseMsg
+
+}
+
+## Description message
+descr()
+{
+  sed -e 's/^/    /' << DescrMsg
+Description:
+------------
+This script syncs files in $PLUTO_DIR/Real_Problems/sim_dir
+onto the current directory or directories on other machines.
+Assumes problems in current and target machines are in 
+<dollar>PLUTO_DIR/Real_Problems/.
+
+Options:
+--------
+Stand-alone at command line:
+  -b    Do a backup of files
+  -d    Adds --delete flag to rsync
+  -h    Print this help message
+  -m    Target is mosura
+  -n    Dry run
+  -r    Target is raijin
+
+Todo:
+-----
+
+Author:
+-------
+Alex Y. Wagner 
+ayw@ccs.tsukuba.ac.jp
+alexander.y.wagner@gmail.com
+
+DescrMsg
+
+}
+
+
+##_________________________________________________
+## Main bit
+
+
+## Default settings
+DRY=1
+ropt=$RSYNC_OPTS
+TARGET="local"
+
+while getopts ":bdhmnr" OPT; do
+  case $OPT in 
+    b)
+    BAK=0
+    ropt="$ropt -$OPT"
+    ;;
+    d)
+    ropt="$ropt --delete"
+    ;;
+    h)
+    usage
+    descr
+    exit 0
+    ;;
+    m)
+    TARGET="mosura"
+    ;;
+    n)
+    DRY=0
+    ropt="$ropt -$OPT"
+    ;;
+    r)
+    TARGET="raijin"
+    ;;
+  esac
+done
+
+echo $ropt
+
+## Number of non option arguments
+sargs=$(($# - $OPTIND + 1))
+shift $(($OPTIND - 1))
+
+## Error checking
+if [[ ($sargs -ne 1) ]]; then
+  echo Wrong number of arguments. Need exactly one
+  exit 1
+fi
+
+## PLUTO_DIR defined?
+if [[ ! $PLUTO_DIR ]]; then
+  echo PLUTO_DIR not defined
+  exit 1
+fi
+
+if [[ "$TARGET" == "local" ]]; then
+rsync $ropt $PLUTO_DIR/Real_Problems/$1/ .
+
+elif [[ "$TARGET" == "mosura" ]]; then
+rsync $ropt $PLUTO_DIR/Real_Problems/$1/ $MOSURA_UNAME@mosura.anu.edu.au:$MOSURA_PLUTO_DIR/Real_Problems/$1
+
+elif [[ "$TARGET" == "raijin" ]]; then
+rsync $ropt $PLUTO_DIR/Real_Problems/$1/ $RAIJIN_UNAME@raijin.nci.org.au:$RAIJIN_PLUTO_DIR/Real_Problems/$1
+
+fi
+

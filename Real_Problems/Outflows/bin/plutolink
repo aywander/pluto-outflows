@@ -1,0 +1,168 @@
+#!/bin/bash
+
+##_________________________________________________
+## Some user settings
+
+LINK_OPTS="-s"
+SIM_DIR=$PLUTO_DIR/Real_Problems/Outflows
+SUB_DIRS="ccl gravity tools"
+FILTER=".c$ .cpp$ .h$ .H$ local_make$ .dat$ .hdr$ .dbl$"
+RMLINK="definitions*.h"
+CPFILES="pluto.ini definitions.h definitions_usr.h"
+
+##_________________________________________________
+## Functions
+
+## Usage message 
+usage()
+{
+  sed -e 's/^/    /' << UseMsg
+
+Usage:
+------
+
+  plutolink [-nh] [-d sim_dir] [link opts] [subdirs]
+
+UseMsg
+
+}
+
+## Description message
+descr()
+{
+  sed -e 's/^/    /' << DescrMsg
+Description:
+------------
+This script creates symbolic links to all files in $PLUTO_DIR/Real_Problems/sim_dir
+and selected subdirs in the current directory. If further subdirs are given then 
+symbolic links for all files in subdir are also created.
+
+Options:
+--------
+Stand-alone at command line:
+  -h           Print this help message
+  -n           Dry run
+  -d sim_dir   Simulation directory (if not default)
+
+Variables:
+----------
+LINK_OPTS      The default link option
+SIM_DIR        The default simulation directory, files in which 
+               are to be linked
+SUB_DIRS       The default list of sub directories in SIM_DIR
+               files in which are to be linked too.
+FILTER         Set of filters for file selection. Each element is 
+               an extended grep regex match is an 
+CPFILES        Files that need to be copied rather than linked
+
+Caveat:
+-------
+It is not possible to do a file by file selection of links
+
+Author:
+-------
+Alex Y. Wagner 
+ayw@ccs.tsukuba.ac.jp
+alexander.y.wagner@gmail.com
+
+DescrMsg
+
+}
+
+
+##_________________________________________________
+## Main bit
+
+
+## PLUTO_DIR defined?
+if [[ ! $PLUTO_DIR ]]; then
+  echo PLUTO_DIR not defined
+  exit 1
+fi
+
+## Default settings
+DRY=1
+lopt=$LINK_OPTS
+
+## Get options
+while getopts "hnd:" OPT; do
+  case $OPT in 
+    n)
+    DRY=0
+    lopt="$lopt -$OPT"
+    ;;
+    h)
+    usage
+    descr
+    exit 0
+    ;;
+    d)
+    if [[ "$OPT" == ":" ]]; then
+      echo -d option requires directory path argument 
+      exit 1;
+    fi
+    SIM_DIR=$PLUTO_DIR/Real_Problems/$OPTARG
+    echo Simulation directory is $SIM_DIR
+    ;;
+  esac
+done
+
+
+## Number of non option arguments
+sargs=$(($# - $OPTIND + 1))
+shift $(($OPTIND - 1))
+
+
+## Minimum set of link files
+LNDIRS="$SIM_DIR"
+for i in $SUB_DIRS; do
+  LNDIRS="$LNDIRS $SIM_DIR/$i "
+done
+
+## Rest of arguments are additional subdirs 
+## to be linked in
+if [[ ($sargs -gt 0) ]]; then
+
+  if [[ "Darwin" =~ "$(uname)" ]]; then
+    seqcmd="jot $(($sargs-1)) 2"
+  else
+    seqcmd="seq 2 $(($sargs-1))"
+  fi
+  for i in $($seqcmd); do
+    LNDIRS="$LNDIRS $SIM_DIR/${$i} "
+  done
+
+fi
+
+## Do the link command
+for j in $LNDIRS; do
+  for f in $FILTER; do
+    for i in $(find $j -maxdepth 1 -type f -print | grep -E $f); do
+      if [[ $DRY -eq 0 ]]; then
+        echo ln $lopt $i
+      else
+        ln $lopt $i
+      fi
+    done
+  done
+done
+
+## Delete links that shouldn't be there
+for f in $CPFILES" "$RMLINK; do
+  if [[ $DRY -eq 0 ]]; then
+    echo rm $f
+  else
+    rm -f $f
+  fi
+done
+
+## Do the copy command
+for f in $CPFILES; do
+  CPFILE=$SIM_DIR/$f
+  if [[ $DRY -eq 0 ]]; then
+    echo cp $CPFILE .
+  else
+    cp $CPFILE .
+  fi
+done
+

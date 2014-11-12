@@ -1,0 +1,2 @@
+OBJ       += init_tools.o abundances.o interpolation.o
+HEADERS   += init_tools.h abundances.h interpolation.h

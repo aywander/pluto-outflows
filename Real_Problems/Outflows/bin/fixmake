@@ -1,0 +1,24 @@
+#!/bin/bash
+## This script customizes some things in the makefile and other files e.g. definitions.h
+
+# Add mpi.h include path into makefile
+if [[ -z $(grep 'INCLUDE_DIRS' makefile | grep 'openmpi') ]]; then
+  sed -e '/-I$(SRC)\/Chombo/ a\
+INCLUDE_DIRS += -I/usr/local/openmpi/include' < makefile > makefile2
+  mv makefile2 makefile
+  echo Added OpenMPI include dir in makefile.
+else
+  echo OpenMPI include dir already present.
+fi
+
+## Add definitions_usr.h into definitions.h
+#if [[ -z $(grep 'definitions_usr.h' definitions.h) ]]; then
+#  sed -e '$ a\
+#\
+##include "definitions_usr.h"' < definitions.h > definitions2.h
+#  mv definitions2.h definitions.h
+#  echo Included definitions_usr.h in definitions.h.
+#else
+#  echo definitions_usr.h already included in definitions.h.
+#fi
+

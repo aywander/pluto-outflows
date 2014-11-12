@@ -1,0 +1,6 @@
+a_hq     = 2.0
+rho0_hq  = 200.0
+a_nfw    = 20.0
+rho0_nfw = 3.0
+nhot     = 1.0
+thot     = 10000000.0

@@ -1,0 +1,5 @@
+#!/bin/sh 
+
+rm *pbs *.[eo][0-9]* pluto.log grid.out png.out vtk.out tmp_file.out *vtk *png mailbody 
+
+
