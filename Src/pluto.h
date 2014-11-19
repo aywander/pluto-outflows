@@ -601,7 +601,13 @@ extern double g_maxMach;
 extern double g_domBeg[3], g_domEnd[3];
 
 extern double g_inputParam[32];
-#if EOS == IDEAL
+/* AYW 2014-11-19 16:47 JST 
+ * Need g_gamma also if EOS == TAUB.
+ * Currently this doesn not seem to cause conflicts.
+ * See also pluto.h. */
+//#if EOS == IDEAL
+#if (EOS == IDEAL) || (EOS == TAUB)
+/* -- AYW */
  extern double g_gamma;
 #elif EOS == ISOTHERMAL
  extern double g_isoSoundSpeed;

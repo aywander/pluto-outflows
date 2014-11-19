@@ -73,7 +73,7 @@ double GaussQuadrature(double (*func)(double), double, double, int, int);
 
 int Brent(double (*func)(double, void *), void *, double, double, 
           double, double, double *);
-          
+
 int Ridder(double (*func)(double, void *), void *, 
            double, double, double, double, double *);
 

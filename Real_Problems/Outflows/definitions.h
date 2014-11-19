@@ -9,6 +9,7 @@
 #define  DIMENSIONAL_SPLITTING   YES
 #define  NTRACER                 2
 #define  USER_DEF_PARAMETERS     17
+#define  USER_DEF_CONSTANTS      4
 
 /* -- physics dependent declarations -- */
 
@@ -18,7 +19,7 @@
 #define    VISCOSITY               NO
 #define    ROTATING_FRAME          NO
 
-/* -- pointers to user-def parameters -- */
+/* -- user-defined parameters (labels) -- */
 
 #define  PAR_OPOW               0
 #define  PAR_OANG               1
@@ -38,8 +39,14 @@
 #define  PAR_WSMF               15
 #define  PAR_LEV1               16
 
-/* -- supplementary constants (user editable) -- */ 
+/* -- user-defined symbolic constants -- */
 
+#define MU_NORM 0.6165
+#define UNIT_DENSITY      (CONST_amu)*(MU_NORM)
+#define UNIT_LENGTH       1.e3*(CONST_pc)
+#define UNIT_VELOCITY     (UNIT_LENGTH)/(1.e3*(CONST_ly)/(CONST_c))
+
+/* -- supplementary constants (user editable) -- */ 
 #define  INITIAL_SMOOTHING     NO
 #define  WARNING_MESSAGES      NO
 #define  PRINT_TO_FILE         YES
@@ -48,3 +55,4 @@
 #define  ARTIFICIAL_VISCOSITY  NO
 #define  CHAR_LIMITING         YES
 #define  LIMITER               DEFAULT
+

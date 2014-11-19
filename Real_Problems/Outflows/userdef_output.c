@@ -18,7 +18,7 @@ void ComputeUserVar (const Data *d, Grid *grid)
   int i, j, k, nv;  
   double ***te, ***spd;
   double ***prs, ***rho, ***vx1, ***vx2, ***vx3, dummy[NVAR];
-  double mu, sp1, sp2, sp3, spc1, spc2, spc3, lorentz;
+  double mu, sp1, sp2, sp3;
   double *x1, *x2, *x3;
 #if USE_FOUR_VELOCITY == YES
   double ***v1, ***v2, ***v3;

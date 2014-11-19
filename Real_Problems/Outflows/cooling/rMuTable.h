@@ -1,6 +1,6 @@
 #ifndef rMuTable_h
 #define rMuTable_h
-#ifdef MU_TABLE
+#if MU_CALC == MU_TABLE
 /* Make sure if included elsewhere it is 
  * preceded by #include pluto.h */
 

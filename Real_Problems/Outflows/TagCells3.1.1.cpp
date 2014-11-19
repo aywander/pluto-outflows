@@ -112,7 +112,7 @@ void PatchPluto::GETRELGRAD(FArrayBox& gFab, FArrayBox& UFab, const Box& b, int 
 
     alpha = 1.0/us[DN];
     for (nv = NFLX; nv < NVAR; nv++) vs[nv] = us[nv]*alpha;
-    #if INCLUDE_COOLING == NO
+    #if COOLING == NO
      mu = 1.237190; 
     #else
      mu = MEAN_MOLECULAR_WEIGHT(vs);
@@ -162,7 +162,7 @@ void PatchPluto::GETRELGRAD(FArrayBox& gFab, FArrayBox& UFab, const Box& b, int 
   qj  = UU[TR];
 
   /* Clouds tracer */
-  #if CLOUDS != NONE
+  #if CLOUDS
   qc  = UU[TR+1];
   #endif
   /* -- AYW */
@@ -202,8 +202,7 @@ void PatchPluto::GETRELGRAD(FArrayBox& gFab, FArrayBox& UFab, const Box& b, int 
      * other regions are refined up to aux[LEV1] */
     else if (level < aux[LEV1]){
 
-      #if CLOUDS == SINGLE_CUBE
-
+      #if CLOUDS
       pc = qc[k][j][i]/max(qn[k][j][i], tr_small);
 
       if ( pc > 0.95 ) {

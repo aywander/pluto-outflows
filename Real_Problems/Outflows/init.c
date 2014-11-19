@@ -50,7 +50,7 @@ void Init (double *v, double x1, double x2, double x3)
 
   int nv;
   double halo_primitives[NVAR], out_primitives[NVAR], orad;
-#if CLOUDS == SINGLE_CUBE
+#if CLOUDS
   double cloud_primitives[NVAR];
 #endif
   static int once01 = 0;
@@ -95,7 +95,7 @@ void Init (double *v, double x1, double x2, double x3)
     /* First get primitives array for hot halo */
     HotHaloPrimitives(halo_primitives, x1, x2, x3);
 
-#if CLOUDS == SINGLE_CUBE
+#if CLOUDS
 
     /* If we're in the domain of the clouds cube */
     if (CloudPrimitives(cloud_primitives, x1, x2, x3)){
@@ -106,10 +106,7 @@ void Init (double *v, double x1, double x2, double x3)
       for (nv = 0; nv < NVAR; ++nv) v[nv] = halo_primitives[nv];
     }
 
-#elif CLOUDS == MULTI_CUBE
-    fputs("Error: MULTI_CUBE support not available yet.\n", stderr); QUIT_PLUTO(1);
-
-#elif CLOUDS == NONE
+#else
 
     /* Hot halo */
     for (nv = 0; nv < NVAR; ++nv) v[nv] = halo_primitives[nv];
@@ -117,7 +114,7 @@ void Init (double *v, double x1, double x2, double x3)
 
   }
 
-#if INCLUDE_COOLING
+#if COOLING
   g_minCoolingTemp = 1.e4;
   g_maxCoolingRate = 0.9;
 #endif

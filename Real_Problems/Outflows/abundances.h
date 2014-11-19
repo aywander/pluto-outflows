@@ -1,6 +1,6 @@
 #ifndef abundances_h
 #define abundances_h
 #if COOLING == NO
-real MeanMolecularWeight (real *);
+double MeanMolecularWeight (real *);
 #endif
 #endif

@@ -52,8 +52,8 @@
 #define SHOW_TIME_STEPS  NO   /* -- show time steps due to advection,
                                      diffusion and cooling */
 
-static double GetNextTimeStep (Time_Step *, struct INPUT *, Grid *);
-static char *TOTAL_TIME (double dt);
+static double NextTimeStep (Time_Step *, struct INPUT *, Grid *);
+static char *TotalExecutionTime (double);
 static int Integrate (Data *, Riemann_Solver *, Time_Step *, Grid *);
 /* AYW -- 2013-01-08 17:59 JST 
  * Added last_step argument of type char
@@ -82,40 +82,52 @@ int main (int argc, char *argv[])
   /* AYW -- 2012-06-19 10:18 JST
    * Time difference using difftime */
   double t_elapsed;
-#if PARALLEL
+#ifdef PARALLEL
   double tbeg_mpi, tend_mpi;
 #endif
   //struct tm * ptm;
   /* -- AYW */
-
   Riemann_Solver *Solver;
   Grid      grd[3];
   Time_Step Dts;
   Cmd_Line cmd_line;
   Input  ini;
   Output *output;
-/*
-  print1 ("sizeof (CMD_LINE)   = %d\n", sizeof(Cmd_Line));
-  print1 ("sizeof (DATA)       = %d\n", sizeof(Data));
-  print1 ("sizeof (STATE_1D)   = %d\n", sizeof(State_1D));
-  print1 ("sizeof (GRID)       = %d\n", sizeof(Grid));
-  print1 ("sizeof (TIME_STEP)  = %d\n", sizeof(Time_Step));
-  print1 ("sizeof (OUTPUT)     = %d\n", sizeof(Output));
-  print1 ("sizeof (INPUT)      = %d\n", sizeof(Input));
-  print1 ("sizeof (RUNTIME)    = %d\n", sizeof(Runtime));
-  print1 ("sizeof (RGB)        = %d\n", sizeof(RGB));
-  print1 ("sizeof (IMAGE)      = %d\n", sizeof(Image));
-  print1 ("sizeof (FLOAT_VECT) = %d\n", sizeof(Float_Vect));
-  print1 ("sizeof (INDEX)      = %d\n", sizeof(Index));
-  print1 ("sizeof (RBOX)       = %d\n", sizeof(RBox));
-  QUIT_PLUTO(1);
-*/
+
   #ifdef PARALLEL
    AL_Init (&argc, &argv);
    MPI_Comm_rank (MPI_COMM_WORLD, &prank);
   #endif
 
   Initialize (argc, argv, &data, &ini, grd, &cmd_line);
+
+  double *dbl_pnt;
+  int    *int_pnt;
+  print1 ("> Basic data type:\n");
+  print1 ("  sizeof (char)     = %d\n", sizeof(char));
+  print1 ("  sizeof (uchar)    = %d\n", sizeof(unsigned char));
+  print1 ("  sizeof (int)      = %d\n", sizeof(int));
+  print1 ("  sizeof (*int)     = %d\n", sizeof(int_pnt));
+  print1 ("  sizeof (float)    = %d\n", sizeof(float));
+  print1 ("  sizeof (double)   = %d\n", sizeof(double));
+  print1 ("  sizeof (*double)  = %d\n", sizeof(dbl_pnt));
+  
+/*
+  print1 ("\n> Structure data type:\n");
+  print1 ("  sizeof (CMD_LINE)   = %d\n", sizeof(Cmd_Line));
+  print1 ("  sizeof (DATA)       = %d\n", sizeof(Data));
+  print1 ("  sizeof (STATE_1D)   = %d\n", sizeof(State_1D));
+  print1 ("  sizeof (GRID)       = %d\n", sizeof(Grid));
+  print1 ("  sizeof (TIME_STEP)  = %d\n", sizeof(Time_Step));
+  print1 ("  sizeof (OUTPUT)     = %d\n", sizeof(Output));
+  print1 ("  sizeof (INPUT)      = %d\n", sizeof(Input));
+  print1 ("  sizeof (RUNTIME)    = %d\n", sizeof(Runtime));
+  print1 ("  sizeof (RGB)        = %d\n", sizeof(RGB));
+  print1 ("  sizeof (IMAGE)      = %d\n", sizeof(Image));
+  print1 ("  sizeof (FLOAT_VECT) = %d\n", sizeof(Float_Vect));
+  print1 ("  sizeof (INDEX)      = %d\n", sizeof(Index));
+  print1 ("  sizeof (RBOX)       = %d\n", sizeof(RBox));
+*/
 
 /* -- initialize members of Time_Step structure -- */
 
@@ -129,14 +141,13 @@ int main (int argc, char *argv[])
   Dts.Nsts     = Dts.Nrkc = 0;
   
   Solver = SetSolver (ini.solv_type);
-  
 
   /* AYW -- 2012-06-26 11:43 JST */
 #ifdef PARALLEL  
     if (prank == 0) tbeg_mpi = MPI_Wtime();
     MPI_Bcast(&tbeg_mpi, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 #else
-    time(&tbeg);
+  time (&tbeg);
 #endif
   /* -- AYW */
 
@@ -144,6 +155,7 @@ int main (int argc, char *argv[])
   //ptm = gmtime ( &tbeg );
   //print1("\n> First Timestamp: %2d:%02d:%02d.\n", (ptm->tm_hour)%24, ptm->tm_min, ptm->tm_sec);
   /* -- AYW */
+
   g_stepNumber = 0;
 
 /* --------------------------------------------------------
@@ -193,7 +205,6 @@ int main (int argc, char *argv[])
       last_step = 1;
     }
 
-
   /* ------------------------------------------------------
                 Dump log information
      ------------------------------------------------------ */
@@ -202,6 +213,7 @@ int main (int argc, char *argv[])
       print1 ("step:%d ; t = %10.4e ; dt = %10.4e ; %d %% ; [%f, %d",
                g_stepNumber, g_time, g_dt, (int)(100.0*g_time/ini.tstop), 
                g_maxMach, g_maxRiemannIter);
+/*      if (g_maxRootIter > 0) print1 (", root it. # = %d",g_maxRootIter);  */
       #if (PARABOLIC_FLUX & SUPER_TIME_STEPPING)
        print1 (", Nsts = %d",Dts.Nsts);
       #endif
@@ -274,13 +286,16 @@ int main (int argc, char *argv[])
         MPI_Allreduce (&dtc, &cg, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
         dtc = cg;
        #endif
-       print1 ("[dt/dt(adv) = %10.4e, dt/dt(par) = %10.4e, dt/dt(cool) = %10.4e]\n",
+       /*
+   print1 ("[dt/dt(adv) = %10.4e, dt/dt(par) = %10.4e, dt/dt(cool) = %10.4e]\n",
                 g_dt/dta, g_dt/dtp, g_dt/dtc);
+                */
+       print1 ("  dt(adv)  = cfl x %10.4e;\n",dta);
+       print1 ("  dt(par)  = cfl x %10.4e;\n",dtp);
+       print1 ("  dt(cool) =       %10.4e;\n",dtc);
      }
     #endif
 
-
-  
   /* ------------------------------------------------------
    * AYW -- 2013-01-08 15:05 JST
    * Check if wallclock time has been reached. Measure 
@@ -312,10 +327,16 @@ int main (int argc, char *argv[])
 
 
   /* ------------------------------------------------------
-                Get next time step dt(n+1)
+      Get next time step dt(n+1).
+      Do it every two steps if cooling or dimensional
+      splitting are used.
      ------------------------------------------------------ */
 
-    g_dt = GetNextTimeStep(&Dts, &ini, grd);
+    #if (COOLING == NO) && ((DIMENSIONS == 1) || (DIMENSIONAL_SPLITTING == NO))
+      g_dt = NextTimeStep(&Dts, &ini, grd);
+    #else
+     if (g_stepNumber%2 == 1) g_dt = NextTimeStep(&Dts, &ini, grd);
+    #endif
 
   /* ------------------------------------------------------
           Global MPI reduction operations
@@ -358,7 +379,6 @@ int main (int argc, char *argv[])
      ------------------------------------------------------ */
 
     if (!first_step && !last_step && cmd_line.write) {
-
       /* AYW -- 2013-01-08 18:05 JST 
        * Arguments modified in CheckFor functions to include last_step*/
       CheckForOutput (&data, &ini, grd, last_step);
@@ -366,6 +386,9 @@ int main (int argc, char *argv[])
       //CheckForOutput  (&data, &ini, grd);
       //CheckForAnalysis(&data, &ini, grd);
       /* -- AYW */
+
+      CheckForOutput  (&data, &ini, grd);
+      CheckForAnalysis(&data, &ini, grd);
     }
 
   /* ------------------------------------------------------
@@ -437,7 +460,7 @@ int main (int argc, char *argv[])
       g_dt = dt(n)
      ------------------------------------------------------ */
 
-    if (cmd_line.jet != -1) SetJetDomain (&data, cmd_line.jet, grd); 
+    if (cmd_line.jet != -1) SetJetDomain (&data, cmd_line.jet, ini.log_freq, grd); 
     err = Integrate (&data, Solver, &Dts, grd);
     if (cmd_line.jet != -1) UnsetJetDomain (&data, cmd_line.jet, grd); 
 
@@ -453,13 +476,11 @@ int main (int argc, char *argv[])
       GET_SOL(&data);
     }
 */
-
   /* ------------------------------------------------------
       Increment time, t(n+1) = t(n) + dt(n)
      ------------------------------------------------------ */
 
     g_time += g_dt;
-
 
   
   /* ------------------------------------------------------
@@ -496,10 +517,8 @@ int main (int argc, char *argv[])
                 Get next time step dt(n+1)
      ------------------------------------------------------ */
 
-    g_dt = GetNextTimeStep(&Dts, &ini, grd);
-
+    g_dt = NextTimeStep(&Dts, &ini, grd);
     g_stepNumber++;
-    
     first_step = 0;
   }
 #endif /* USE_ASYNC_IO */
@@ -526,15 +545,15 @@ int main (int argc, char *argv[])
   #ifdef PARALLEL
    MPI_Barrier (MPI_COMM_WORLD);
    print1  ("\n> Total allocated memory  %6.2f Mb (proc #%d)\n",
-             (float)g_usedMem/1.e6,prank);
+             (float)g_usedMemory/1.e6,prank);
    MPI_Barrier (MPI_COMM_WORLD);
   #else
-   print1  ("\n> Total allocated memory  %6.2f Mb\n",(float)g_usedMem/1.e6);
+   print1  ("\n> Total allocated memory  %6.2f Mb\n",(float)g_usedMemory/1.e6);
   #endif
 
   time(&tend);
   g_dt = difftime(tend, tbeg);
-  print1("> Elapsed time             %s\n", TOTAL_TIME (g_dt));
+  print1("> Elapsed time             %s\n", TotalExecutionTime(g_dt));
   print1("> Average time/step       %10.2e  (sec)  \n", 
           difftime(tend,tbeg)/(double)g_stepNumber);
   print1("> Local time                %s",asctime(localtime(&tend)));
@@ -567,6 +586,7 @@ int Integrate (Data *d, Riemann_Solver *Solver, Time_Step *Dts, Grid *grid)
 
   g_maxMach = 0.0;
   g_maxRiemannIter = 0;
+  g_maxRootIter    = 0;
 
 /* -------------------------------------------------------
     Initialize max propagation speed in Dedner's approach
@@ -578,44 +598,38 @@ int Integrate (Data *d, Riemann_Solver *Solver, Time_Step *Dts, Grid *grid)
   #endif
 
   /* ---------------------------------------------
-        perform Strang Splitting on direction 
+        perform Strang Splitting on directions 
         (if necessary) and sources 
      --------------------------------------------- */
 
   FlagReset (d);
 
-#ifdef ADD_CYLSOURCE
- CONS_CYLSOLVE(d->Vc, 0.5*g_dt, grid);
-#endif
-
   #ifdef FARGO
    FARGO_ComputeVelocity(d, grid);
   #endif
   if ((g_stepNumber%2) == 0){
-
+    g_operatorStep = HYPERBOLIC_STEP;
     #if DIMENSIONAL_SPLITTING == YES
      for (g_dir = 0; g_dir < DIMENSIONS; g_dir++){
-       if (Sweep (d, Solver, Dts, grid) != 0) return (1);
+       if (UpdateSolution (d, Solver, Dts, grid) != 0) return (1);
      }
     #else
-     if (Unsplit (d, Solver, Dts, grid) != 0) return(1);
+     if (UpdateSolution (d, Solver, Dts, grid) != 0) return(1);
     #endif
+    g_operatorStep = PARABOLIC_STEP;
     SplitSource (d, g_dt, Dts, grid);
   }else{
+    g_operatorStep = PARABOLIC_STEP;
     SplitSource (d, g_dt, Dts, grid);
+    g_operatorStep = HYPERBOLIC_STEP;
     #if DIMENSIONAL_SPLITTING == YES
      for (g_dir = DIMENSIONS - 1; g_dir >= 0; g_dir--){
-       if (Sweep (d, Solver, Dts, grid) != 0) return (1);
+       if (UpdateSolution(d, Solver, Dts, grid) != 0) return (1);
      }
     #else
-     if (Unsplit (d, Solver, Dts, grid) != 0) return(1);
+     if (UpdateSolution (d, Solver, Dts, grid) != 0) return(1);
     #endif
   }       
-
-
-#ifdef ADD_CYLSOURCE
- CONS_CYLSOLVE(d->Vc, 0.5*g_dt, grid);
-#endif
 
   #ifdef GLM_MHD  /* -- GLM source for dt/2 -- */
    GLM_Source (d->Vc, 0.5*g_dt, grid);
@@ -624,16 +638,14 @@ int Integrate (Data *d, Riemann_Solver *Solver, Time_Step *Dts, Grid *grid)
   return (0); /* -- ok, step achieved -- */
 }
 
-/* ******************************************************************** */
-char *TOTAL_TIME (double dt)
-/*
- * 
- * PURPOSE
+/* ********************************************************************* */
+char *TotalExecutionTime (double dt)
+/*!
  *
  *   convert a floating-point variable (dt, in seconds) to a string 
  *   displaying days:hours:minutes:seconds
  *   
- ********************************************************************** */
+ *********************************************************************** */
 {
   static char c[128];
   int days, hours, mins, secs;
@@ -648,7 +660,7 @@ char *TOTAL_TIME (double dt)
 }
 
 /* ********************************************************************* */
-double GetNextTimeStep (Time_Step *Dts, struct INPUT *ini, Grid *grid)
+double NextTimeStep (Time_Step *Dts, struct INPUT *ini, Grid *grid)
 /*!
  * Compute and return the time step for the next time level
  * using the information from the previous integration
@@ -659,31 +671,35 @@ double GetNextTimeStep (Time_Step *Dts, struct INPUT *ini, Grid *grid)
  * \param [in] grid pointer to array of Grid structures
  *
  * \return The time step for next time level
- *
  *********************************************************************** */
 {
   int idim;
-  double dt_adv, dt_cool;
-  double dtnext, dtnext_glob;
-  double dxmin, dtp_dta;
-  double dt_par;
+  double dt_adv, dt_par, dtnext;
+  double dxmin;
+  double xloc, xglob;
 
-  #if    (DIMENSIONS == 1 && INCLUDE_SPLIT_SOURCE == NO) \
-      || (DIMENSIONAL_SPLITTING == NO && INCLUDE_SPLIT_SOURCE == NO) 
+/* ---------------------------------------------------
+   1. Take the maximum of inv_dt across all processors
+   --------------------------------------------------- */
 
-  #else
-
-  /*  ------------------------------------------------
-       For Strang splitting to be 2nd order accurate,  
-       change dt only every 2 time steps                 
-      ------------------------------------------------ */
- 
-   if (g_stepNumber%2 == 0) return (g_dt);
-
+  #ifdef PARALLEL
+   xloc = Dts->inv_dta;
+   MPI_Allreduce (&xloc, &xglob, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+   Dts->inv_dta = xglob;
+   #if (PARABOLIC_FLUX != NO)
+    xloc = Dts->inv_dtp;
+    MPI_Allreduce (&xloc, &xglob, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+    Dts->inv_dtp = xglob;
+   #endif
+   #if COOLING != NO
+    xloc = Dts->dt_cool;
+    MPI_Allreduce (&xloc, &xglob, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+    Dts->dt_cool = xglob;
+   #endif
   #endif
 
 /* ----------------------------------
-        Compute time step
+   2. Compute time step
    ---------------------------------- */
 
   #if (PARABOLIC_FLUX & EXPLICIT)
@@ -694,68 +710,45 @@ double GetNextTimeStep (Time_Step *Dts, struct INPUT *ini, Grid *grid)
   dt_adv *= ini->cfl;
   dtnext  = dt_adv;
 
-/* --------------------------------------
-        Min cell length
-   -------------------------------------- */
-
-  dxmin = grid[IDIR].dl_min;
-  for (idim = 1; idim < DIMENSIONS; idim++){
-    dxmin = MIN(dxmin, grid[idim].dl_min);
-  }
-
-/* -------------------------------------------
-    Maximum propagation speed for the local
-    processor. Global glm_ch will be computed
-    later in GLM_Init.
-   ------------------------------------------- */
+/* -------------------------------------------------------
+   3. Maximum propagation speed for the local processor.
+      Global glm_ch will be computed later in GLM_Init.
+   ------------------------------------------------------- */
 
   #ifdef GLM_MHD
+   dxmin = grid[IDIR].dl_min;
+   for (idim = 1; idim < DIMENSIONS; idim++){ /*  Min cell length   */
+     dxmin = MIN(dxmin, grid[idim].dl_min);
+   }
    glm_ch = ini->cfl*dxmin/dtnext;
   #endif
 
-/* ------------------------------------------------
-    with STS, the ratio between advection (full) 
-    and parabolic time steps should not exceed a
-    given threshold (200).
-   ------------------------------------------------ */
+/* ---------------------------------------------------------
+   4. With STS, the ratio between advection (full) and 
+      parabolic time steps should not exceed ini->rmax_par.
+   --------------------------------------------------------- */
       
-  #if (PARABOLIC_FLUX & SUPER_TIME_STEPPING)
-   dt_par  = ini->cfl_par/(2.0*Dts->inv_dtp);
-   dtnext *= MIN(1.0, ini->rmax_par/(dt_adv/dt_par));
-  #endif
-
-  #if (PARABOLIC_FLUX & RK_CHEBYSHEV)
+  #if (PARABOLIC_FLUX & SUPER_TIME_STEPPING) || (PARABOLIC_FLUX & RK_CHEBYSHEV)
    dt_par  = ini->cfl_par/(2.0*Dts->inv_dtp);
    dtnext *= MIN(1.0, ini->rmax_par/(dt_adv/dt_par));
   #endif
 
 /* ----------------------------------
-      Compute Cooling time step
+   5. Compute Cooling time step
    ---------------------------------- */
 
   #if COOLING != NO
    dtnext = MIN(dtnext, Dts->dt_cool);
   #endif
-
    
 /* --------------------------------------------------------------
-    allow time step to vary at most by a factor ini->cfl_max_var
+    6. Allow time step to vary at most by a factor 
+       ini->cfl_max_var.
+       Quit if dt gets too small, issue a warning if first_dt has
+       been overestimated.
    -------------------------------------------------------------- */
 
   dtnext = MIN(dtnext, ini->cfl_max_var*g_dt);
-
-/* -----------------------------------------------------
-      Get min time step among ALL processors
-   ----------------------------------------------------- */
-
-  #ifdef PARALLEL
-   MPI_Allreduce (&dtnext, &dtnext_glob, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
-   dtnext = dtnext_glob;
-  #endif
-
-/* -----------------------------------------------------
-          quit if dt gets too small 
-   ----------------------------------------------------- */
 
   if (dtnext < ini->first_dt*1.e-9){
     print1 ("! dt is too small (%12.6e)!\n", dtnext);
@@ -763,32 +756,28 @@ double GetNextTimeStep (Time_Step *Dts, struct INPUT *ini, Grid *grid)
     QUIT_PLUTO(1);
   }
 
-/* -----------------------------------------------------
-          Reset time step coefficients
-   ----------------------------------------------------- */
+  if (g_stepNumber <= 1 && (ini->first_dt > dtnext/ini->cfl)){
+    print1 ("! NextTimeStep: initial dt exceeds stability limit\n");
+  }
+
+/* --------------------------------------------
+   7. Reset time step coefficients
+   -------------------------------------------- */
 
   DIM_LOOP(idim) Dts->cmax[idim] = 0.0;
   Dts->inv_dta = 0.0;
   Dts->inv_dtp = 0.0;
   Dts->dt_cool = 1.e38;
 
-/* ------------------------------------------------------
-     Issue a warning if first_dt has been overestimaed
-   ------------------------------------------------------ */
-
-  if (g_stepNumber <= 1 && (ini->first_dt > dtnext/ini->cfl)){
-    print1 ("! initial dt exceeds stability limit\n");
-  }
-
   return(dtnext);
 }
 
 /* ********************************************************************* */
 /* AYW - 2013-01-08 16:56 JST
- * Add last_step as argument
- * */
+ * Add last_step as argument */
 // void CheckForOutput (Data *d, Input *ini, Grid *grid)
 void CheckForOutput (Data *d, Input *ini, Grid *grid, char laststep)
+/* -- AYW */
 /*!
  *  Check if file output has to be performed.
  *  
@@ -811,7 +800,7 @@ void CheckForOutput (Data *d, Input *ini, Grid *grid, char laststep)
   /* AYW -- 2013-01-08 18:02 JST 
    * Last step condition from main loop */
   last_step = last_step || laststep;
-  /* */
+  /* -- AYW */
 
 /* -- on first execution initialize
       current beginning time for all output types -- */
@@ -922,6 +911,7 @@ void CheckForOutput (Data *d, Input *ini, Grid *grid, char laststep)
  * Include laststep in argument */
 void CheckForAnalysis (Data *d, Input *ini, Grid *grid, char last_step)
 //void CheckForAnalysis (Data *d, Input *ini, Grid *grid)
+/* -- AYW */
 /*
  *
  * PURPOSE 
@@ -945,5 +935,7 @@ void CheckForAnalysis (Data *d, Input *ini, Grid *grid, char last_step)
   /* AYW -- 2013-01-08 18:04 JST 
    * Last step condition from main loop */
   if (check_dt || check_dn || last_step) Analysis (d, grid);
+  //if (check_dt || check_dn) Analysis (d, grid);
+  /* -- AYW */
 }
 

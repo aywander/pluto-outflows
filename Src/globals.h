@@ -104,7 +104,13 @@ double g_minCoolingTemp = 50.0; /**< The minimum temperature (in K) below which
                                     
 double g_smallDensity  = 1.e-12; /**< Small value for density fix. */
 double g_smallPressure = 1.e-12; /**< Small value for pressure fix. */
-#if EOS == IDEAL 
+/* AYW 2014-11-19 16:47 JST
+ * Need g_gamma also if EOS == TAUB.
+ * Currently this doesn not seem to cause conflicts.
+ * See also pluto.h. */
+//#if EOS == IDEAL 
+#if (EOS == IDEAL) || (EOS == TAUB)
+/* -- AYW */
  double g_gamma = 5./3.;
 #elif EOS == ISOTHERMAL
  double g_isoSoundSpeed = 1.0; /* g_isoSoundSpeed */

@@ -4,6 +4,13 @@ project(PLUTO)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(SOURCE_FILES
+    Config/Darwin.gcc.defs
+    Config/Darwin.mpicc.defs
+    Config/debug.defs
+    Config/FERMI.mpixlc.defs
+    Config/Linux.gcc.defs
+    Config/profile.defs
+    Config/Template.defs
     Lib/Chombo-3.2/lib/mk/compiler/Make.defs.CC
     Lib/Chombo-3.2/lib/mk/compiler/Make.defs.cxx
     Lib/Chombo-3.2/lib/src/AMRElliptic/AMRMultiGrid.H
@@ -1517,6 +1524,11 @@ set(SOURCE_FILES
     Test_Problems/HD/Blast/definitions_04.h
     Test_Problems/HD/Blast/definitions_05.h
     Test_Problems/HD/Blast/init.c
+    Test_Problems/HD/Blast/pluto_01.ini
+    Test_Problems/HD/Blast/pluto_02.ini
+    Test_Problems/HD/Blast/pluto_03.ini
+    Test_Problems/HD/Blast/pluto_04.ini
+    Test_Problems/HD/Blast/pluto_05.ini
     Test_Problems/HD/Blast/Turbulence.c
     Test_Problems/HD/Blast/Turbulence.v00.c
     Test_Problems/HD/Disk_Planet/definitions_01.h
@@ -1529,38 +1541,69 @@ set(SOURCE_FILES
     Test_Problems/HD/Disk_Planet/definitions_08.h
     Test_Problems/HD/Disk_Planet/eos.c
     Test_Problems/HD/Disk_Planet/init.c
+    Test_Problems/HD/Disk_Planet/pluto_01.ini
+    Test_Problems/HD/Disk_Planet/pluto_02.ini
+    Test_Problems/HD/Disk_Planet/pluto_03.ini
+    Test_Problems/HD/Disk_Planet/pluto_04.ini
+    Test_Problems/HD/Disk_Planet/pluto_05.ini
+    Test_Problems/HD/Disk_Planet/pluto_06.ini
+    Test_Problems/HD/Disk_Planet/pluto_07.ini
+    Test_Problems/HD/Disk_Planet/pluto_08.ini
     Test_Problems/HD/Disk_Planet/TagCells.cpp
     Test_Problems/HD/Disk_Vortex/definitions_01.h
     Test_Problems/HD/Disk_Vortex/definitions_02.h
     Test_Problems/HD/Disk_Vortex/definitions_03.h
     Test_Problems/HD/Disk_Vortex/definitions_04.h
     Test_Problems/HD/Disk_Vortex/init.c
+    Test_Problems/HD/Disk_Vortex/pluto_01.ini
+    Test_Problems/HD/Disk_Vortex/pluto_02.ini
+    Test_Problems/HD/Disk_Vortex/pluto_03.ini
+    Test_Problems/HD/Disk_Vortex/pluto_04.ini
     Test_Problems/HD/Disk_Vortex/TagCells.cpp
     Test_Problems/HD/Isentropic_Vortex/definitions_01.h
     Test_Problems/HD/Isentropic_Vortex/definitions_02.h
     Test_Problems/HD/Isentropic_Vortex/definitions_03.h
     Test_Problems/HD/Isentropic_Vortex/init.c
+    Test_Problems/HD/Isentropic_Vortex/pluto_01.ini
+    Test_Problems/HD/Isentropic_Vortex/pluto_02.ini
+    Test_Problems/HD/Isentropic_Vortex/pluto_03.ini
     Test_Problems/HD/Jet/definitions_01.h
     Test_Problems/HD/Jet/definitions_02.h
     Test_Problems/HD/Jet/definitions_03.h
     Test_Problems/HD/Jet/init.c
+    Test_Problems/HD/Jet/pluto_01.ini
+    Test_Problems/HD/Jet/pluto_02.ini
+    Test_Problems/HD/Jet/pluto_03.ini
     Test_Problems/HD/Jet/userdef_output.c
     Test_Problems/HD/Mach_Reflection/definitions_01.h
     Test_Problems/HD/Mach_Reflection/definitions_02.h
     Test_Problems/HD/Mach_Reflection/definitions_03.h
     Test_Problems/HD/Mach_Reflection/init.c
+    Test_Problems/HD/Mach_Reflection/pluto_01.ini
+    Test_Problems/HD/Mach_Reflection/pluto_02.ini
+    Test_Problems/HD/Mach_Reflection/pluto_03.ini
     Test_Problems/HD/Riemann_2D/definitions_01.h
     Test_Problems/HD/Riemann_2D/definitions_02.h
     Test_Problems/HD/Riemann_2D/definitions_03.h
     Test_Problems/HD/Riemann_2D/definitions_04.h
     Test_Problems/HD/Riemann_2D/definitions_05.h
     Test_Problems/HD/Riemann_2D/init.c
+    Test_Problems/HD/Riemann_2D/pluto_01.ini
+    Test_Problems/HD/Riemann_2D/pluto_02.ini
+    Test_Problems/HD/Riemann_2D/pluto_03.ini
+    Test_Problems/HD/Riemann_2D/pluto_04.ini
+    Test_Problems/HD/Riemann_2D/pluto_05.ini
     Test_Problems/HD/Sedov/definitions_01.h
     Test_Problems/HD/Sedov/definitions_02.h
     Test_Problems/HD/Sedov/definitions_03.h
     Test_Problems/HD/Sedov/definitions_04.h
     Test_Problems/HD/Sedov/definitions_05.h
     Test_Problems/HD/Sedov/init.c
+    Test_Problems/HD/Sedov/pluto_01.ini
+    Test_Problems/HD/Sedov/pluto_02.ini
+    Test_Problems/HD/Sedov/pluto_03.ini
+    Test_Problems/HD/Sedov/pluto_04.ini
+    Test_Problems/HD/Sedov/pluto_05.ini
     Test_Problems/HD/Sod/definitions_01.h
     Test_Problems/HD/Sod/definitions_02.h
     Test_Problems/HD/Sod/definitions_03.h
@@ -1571,6 +1614,15 @@ set(SOURCE_FILES
     Test_Problems/HD/Sod/definitions_08.h
     Test_Problems/HD/Sod/definitions_09.h
     Test_Problems/HD/Sod/init.c
+    Test_Problems/HD/Sod/pluto_01.ini
+    Test_Problems/HD/Sod/pluto_02.ini
+    Test_Problems/HD/Sod/pluto_03.ini
+    Test_Problems/HD/Sod/pluto_04.ini
+    Test_Problems/HD/Sod/pluto_05.ini
+    Test_Problems/HD/Sod/pluto_06.ini
+    Test_Problems/HD/Sod/pluto_07.ini
+    Test_Problems/HD/Sod/pluto_08.ini
+    Test_Problems/HD/Sod/pluto_09.ini
     Test_Problems/HD/Stellar_Wind/definitions_01.h
     Test_Problems/HD/Stellar_Wind/definitions_02.h
     Test_Problems/HD/Stellar_Wind/definitions_03.h
@@ -1580,6 +1632,14 @@ set(SOURCE_FILES
     Test_Problems/HD/Stellar_Wind/definitions_07.h
     Test_Problems/HD/Stellar_Wind/definitions_08.h
     Test_Problems/HD/Stellar_Wind/init.c
+    Test_Problems/HD/Stellar_Wind/pluto_01.ini
+    Test_Problems/HD/Stellar_Wind/pluto_02.ini
+    Test_Problems/HD/Stellar_Wind/pluto_03.ini
+    Test_Problems/HD/Stellar_Wind/pluto_04.ini
+    Test_Problems/HD/Stellar_Wind/pluto_05.ini
+    Test_Problems/HD/Stellar_Wind/pluto_06.ini
+    Test_Problems/HD/Stellar_Wind/pluto_07.ini
+    Test_Problems/HD/Stellar_Wind/pluto_08.ini
     Test_Problems/HD/Stellar_Wind/TagCells.cpp
     Test_Problems/HD/Stratified_Atmosphere/definitions_01.h
     Test_Problems/HD/Stratified_Atmosphere/definitions_02.h
@@ -1587,15 +1647,27 @@ set(SOURCE_FILES
     Test_Problems/HD/Stratified_Atmosphere/definitions_04.h
     Test_Problems/HD/Stratified_Atmosphere/definitions_05.h
     Test_Problems/HD/Stratified_Atmosphere/init.c
+    Test_Problems/HD/Stratified_Atmosphere/pluto_01.ini
+    Test_Problems/HD/Stratified_Atmosphere/pluto_02.ini
+    Test_Problems/HD/Stratified_Atmosphere/pluto_03.ini
+    Test_Problems/HD/Stratified_Atmosphere/pluto_04.ini
+    Test_Problems/HD/Stratified_Atmosphere/pluto_05.ini
     Test_Problems/HD/Underexpanded_Jet/definitions_01.h
     Test_Problems/HD/Underexpanded_Jet/definitions_02.h
     Test_Problems/HD/Underexpanded_Jet/init.c
+    Test_Problems/HD/Underexpanded_Jet/pluto_01.ini
+    Test_Problems/HD/Underexpanded_Jet/pluto_02.ini
+    Test_Problems/HD/Underexpanded_Jet/pluto_big.ini
     Test_Problems/HD/Underexpanded_Jet/userdef_output.c
     Test_Problems/HD/Viscosity/Flow_Past_Cylinder/definitions_01.h
     Test_Problems/HD/Viscosity/Flow_Past_Cylinder/definitions_02.h
     Test_Problems/HD/Viscosity/Flow_Past_Cylinder/definitions_03.h
     Test_Problems/HD/Viscosity/Flow_Past_Cylinder/definitions_04.h
     Test_Problems/HD/Viscosity/Flow_Past_Cylinder/init.c
+    Test_Problems/HD/Viscosity/Flow_Past_Cylinder/pluto_01.ini
+    Test_Problems/HD/Viscosity/Flow_Past_Cylinder/pluto_02.ini
+    Test_Problems/HD/Viscosity/Flow_Past_Cylinder/pluto_03.ini
+    Test_Problems/HD/Viscosity/Flow_Past_Cylinder/pluto_04.ini
     Test_Problems/HD/Viscosity/Flow_Past_Cylinder/userdef_output.c
     Test_Problems/HD/Viscosity/Flow_Past_Cylinder/visc_nu.c
     Test_Problems/HD/Viscosity/Taylor_Couette/definitions_01.h
@@ -1604,9 +1676,14 @@ set(SOURCE_FILES
     Test_Problems/HD/Viscosity/Taylor_Couette/definitions_04.h
     Test_Problems/HD/Viscosity/Taylor_Couette/init.c
     Test_Problems/HD/Viscosity/Taylor_Couette/init.v00.c
+    Test_Problems/HD/Viscosity/Taylor_Couette/pluto_01.ini
+    Test_Problems/HD/Viscosity/Taylor_Couette/pluto_02.ini
+    Test_Problems/HD/Viscosity/Taylor_Couette/pluto_03.ini
+    Test_Problems/HD/Viscosity/Taylor_Couette/pluto_04.ini
     Test_Problems/HD/Viscosity/Taylor_Couette/visc_nu.c
     Test_Problems/HD/Wind_Tunnel/definitions_01.h
     Test_Problems/HD/Wind_Tunnel/init.c
+    Test_Problems/HD/Wind_Tunnel/pluto_01.ini
     Test_Problems/MHD/Blast/definitions_01.h
     Test_Problems/MHD/Blast/definitions_02.h
     Test_Problems/MHD/Blast/definitions_03.h
@@ -1619,6 +1696,17 @@ set(SOURCE_FILES
     Test_Problems/MHD/Blast/definitions_10.h
     Test_Problems/MHD/Blast/definitions_11.h
     Test_Problems/MHD/Blast/init.c
+    Test_Problems/MHD/Blast/pluto_01.ini
+    Test_Problems/MHD/Blast/pluto_02.ini
+    Test_Problems/MHD/Blast/pluto_03.ini
+    Test_Problems/MHD/Blast/pluto_04.ini
+    Test_Problems/MHD/Blast/pluto_05.ini
+    Test_Problems/MHD/Blast/pluto_06.ini
+    Test_Problems/MHD/Blast/pluto_07.ini
+    Test_Problems/MHD/Blast/pluto_08.ini
+    Test_Problems/MHD/Blast/pluto_09.ini
+    Test_Problems/MHD/Blast/pluto_10.ini
+    Test_Problems/MHD/Blast/pluto_11.ini
     Test_Problems/MHD/CP_Alfven/definitions_01.h
     Test_Problems/MHD/CP_Alfven/definitions_02.h
     Test_Problems/MHD/CP_Alfven/definitions_03.h
@@ -1629,6 +1717,15 @@ set(SOURCE_FILES
     Test_Problems/MHD/CP_Alfven/definitions_08.h
     Test_Problems/MHD/CP_Alfven/definitions_09.h
     Test_Problems/MHD/CP_Alfven/init.c
+    Test_Problems/MHD/CP_Alfven/pluto_01.ini
+    Test_Problems/MHD/CP_Alfven/pluto_02.ini
+    Test_Problems/MHD/CP_Alfven/pluto_03.ini
+    Test_Problems/MHD/CP_Alfven/pluto_04.ini
+    Test_Problems/MHD/CP_Alfven/pluto_05.ini
+    Test_Problems/MHD/CP_Alfven/pluto_06.ini
+    Test_Problems/MHD/CP_Alfven/pluto_07.ini
+    Test_Problems/MHD/CP_Alfven/pluto_08.ini
+    Test_Problems/MHD/CP_Alfven/pluto_09.ini
     Test_Problems/MHD/FARGO/Cart_Vortex/char_tracing.1.c
     Test_Problems/MHD/FARGO/Cart_Vortex/char_tracing.2.c
     Test_Problems/MHD/FARGO/Cart_Vortex/char_tracing.3.c
@@ -1636,12 +1733,18 @@ set(SOURCE_FILES
     Test_Problems/MHD/FARGO/Cart_Vortex/definitions_01.h
     Test_Problems/MHD/FARGO/Cart_Vortex/definitions_02.h
     Test_Problems/MHD/FARGO/Cart_Vortex/init.c
+    Test_Problems/MHD/FARGO/Cart_Vortex/pluto_01.ini
+    Test_Problems/MHD/FARGO/Cart_Vortex/pluto_02.ini
     Test_Problems/MHD/FARGO/Spherical_Disk/definitions_01.h
     Test_Problems/MHD/FARGO/Spherical_Disk/definitions_02.h
     Test_Problems/MHD/FARGO/Spherical_Disk/init.c
+    Test_Problems/MHD/FARGO/Spherical_Disk/pluto_01.ini
+    Test_Problems/MHD/FARGO/Spherical_Disk/pluto_02.ini
     Test_Problems/MHD/Field_Loop/definitions_01.h
     Test_Problems/MHD/Field_Loop/definitions_02.h
     Test_Problems/MHD/Field_Loop/init.c
+    Test_Problems/MHD/Field_Loop/pluto_01.ini
+    Test_Problems/MHD/Field_Loop/pluto_02.ini
     Test_Problems/MHD/Jet/definitions_01.h
     Test_Problems/MHD/Jet/definitions_02.h
     Test_Problems/MHD/Jet/definitions_03.h
@@ -1655,6 +1758,17 @@ set(SOURCE_FILES
     Test_Problems/MHD/Jet/definitions_18.h
     Test_Problems/MHD/Jet/init.c
     Test_Problems/MHD/Jet/init.v00.c
+    Test_Problems/MHD/Jet/pluto_01.ini
+    Test_Problems/MHD/Jet/pluto_02.ini
+    Test_Problems/MHD/Jet/pluto_03.ini
+    Test_Problems/MHD/Jet/pluto_04.ini
+    Test_Problems/MHD/Jet/pluto_05.ini
+    Test_Problems/MHD/Jet/pluto_06.ini
+    Test_Problems/MHD/Jet/pluto_07.ini
+    Test_Problems/MHD/Jet/pluto_08.ini
+    Test_Problems/MHD/Jet/pluto_09.ini
+    Test_Problems/MHD/Jet/pluto_17.ini
+    Test_Problems/MHD/Jet/pluto_18.ini
     Test_Problems/MHD/Jet/userdef_output.c
     Test_Problems/MHD/Orszag_Tang/definitions_01.h
     Test_Problems/MHD/Orszag_Tang/definitions_02.h
@@ -1667,6 +1781,16 @@ set(SOURCE_FILES
     Test_Problems/MHD/Orszag_Tang/definitions_09.h
     Test_Problems/MHD/Orszag_Tang/definitions_10.h
     Test_Problems/MHD/Orszag_Tang/init.c
+    Test_Problems/MHD/Orszag_Tang/pluto_01.ini
+    Test_Problems/MHD/Orszag_Tang/pluto_02.ini
+    Test_Problems/MHD/Orszag_Tang/pluto_03.ini
+    Test_Problems/MHD/Orszag_Tang/pluto_04.ini
+    Test_Problems/MHD/Orszag_Tang/pluto_05.ini
+    Test_Problems/MHD/Orszag_Tang/pluto_06.ini
+    Test_Problems/MHD/Orszag_Tang/pluto_07.ini
+    Test_Problems/MHD/Orszag_Tang/pluto_08.ini
+    Test_Problems/MHD/Orszag_Tang/pluto_09.ini
+    Test_Problems/MHD/Orszag_Tang/pluto_10.ini
     Test_Problems/MHD/Rayleigh_Taylor/definitions_01.h
     Test_Problems/MHD/Rayleigh_Taylor/definitions_02.h
     Test_Problems/MHD/Rayleigh_Taylor/definitions_03.h
@@ -1679,6 +1803,16 @@ set(SOURCE_FILES
     Test_Problems/MHD/Rayleigh_Taylor/definitions_10.h
     Test_Problems/MHD/Rayleigh_Taylor/init.c
     Test_Problems/MHD/Rayleigh_Taylor/init.v00.c
+    Test_Problems/MHD/Rayleigh_Taylor/pluto_01.ini
+    Test_Problems/MHD/Rayleigh_Taylor/pluto_02.ini
+    Test_Problems/MHD/Rayleigh_Taylor/pluto_03.ini
+    Test_Problems/MHD/Rayleigh_Taylor/pluto_04.ini
+    Test_Problems/MHD/Rayleigh_Taylor/pluto_05.ini
+    Test_Problems/MHD/Rayleigh_Taylor/pluto_06.ini
+    Test_Problems/MHD/Rayleigh_Taylor/pluto_07.ini
+    Test_Problems/MHD/Rayleigh_Taylor/pluto_08.ini
+    Test_Problems/MHD/Rayleigh_Taylor/pluto_09.ini
+    Test_Problems/MHD/Rayleigh_Taylor/pluto_10.ini
     Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_01.h
     Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_02.h
     Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_03.h
@@ -1689,6 +1823,15 @@ set(SOURCE_FILES
     Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_08.h
     Test_Problems/MHD/Resistive_MHD/Current_Sheet/definitions_09.h
     Test_Problems/MHD/Resistive_MHD/Current_Sheet/init.c
+    Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_01.ini
+    Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_02.ini
+    Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_03.ini
+    Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_04.ini
+    Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_05.ini
+    Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_06.ini
+    Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_07.ini
+    Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_08.ini
+    Test_Problems/MHD/Resistive_MHD/Current_Sheet/pluto_09.ini
     Test_Problems/MHD/Resistive_MHD/Current_Sheet/res_eta.c
     Test_Problems/MHD/Resistive_MHD/Current_Sheet/TagCells.cpp
     Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_01.h
@@ -1705,6 +1848,19 @@ set(SOURCE_FILES
     Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_12.h
     Test_Problems/MHD/Resistive_MHD/Field_Diffusion/definitions_13.h
     Test_Problems/MHD/Resistive_MHD/Field_Diffusion/init.c
+    Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_01.ini
+    Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_02.ini
+    Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_03.ini
+    Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_04.ini
+    Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_05.ini
+    Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_06.ini
+    Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_07.ini
+    Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_08.ini
+    Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_09.ini
+    Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_10.ini
+    Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_11.ini
+    Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_12.ini
+    Test_Problems/MHD/Resistive_MHD/Field_Diffusion/pluto_13.ini
     Test_Problems/MHD/Resistive_MHD/Field_Diffusion/res_eta.c
     Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/definitions_01.h
     Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/definitions_02.h
@@ -1714,10 +1870,19 @@ set(SOURCE_FILES
     Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/definitions_06.h
     Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/definitions_07.h
     Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/init.c
+    Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_01.ini
+    Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_02.ini
+    Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_03.ini
+    Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_04.ini
+    Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_05.ini
+    Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_06.ini
+    Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/pluto_07.ini
     Test_Problems/MHD/Resistive_MHD/Linear_Force_Free/res_eta.c
     Test_Problems/MHD/Rotated_Sod/definitions_01.h
     Test_Problems/MHD/Rotated_Sod/definitions_02.h
     Test_Problems/MHD/Rotated_Sod/init.c
+    Test_Problems/MHD/Rotated_Sod/pluto_01.ini
+    Test_Problems/MHD/Rotated_Sod/pluto_02.ini
     Test_Problems/MHD/Rotor/definitions_01.h
     Test_Problems/MHD/Rotor/definitions_02.h
     Test_Problems/MHD/Rotor/definitions_03.h
@@ -1730,6 +1895,17 @@ set(SOURCE_FILES
     Test_Problems/MHD/Rotor/definitions_10.h
     Test_Problems/MHD/Rotor/definitions_11.h
     Test_Problems/MHD/Rotor/init.c
+    Test_Problems/MHD/Rotor/pluto_01.ini
+    Test_Problems/MHD/Rotor/pluto_02.ini
+    Test_Problems/MHD/Rotor/pluto_03.ini
+    Test_Problems/MHD/Rotor/pluto_04.ini
+    Test_Problems/MHD/Rotor/pluto_05.ini
+    Test_Problems/MHD/Rotor/pluto_06.ini
+    Test_Problems/MHD/Rotor/pluto_07.ini
+    Test_Problems/MHD/Rotor/pluto_08.ini
+    Test_Problems/MHD/Rotor/pluto_09.ini
+    Test_Problems/MHD/Rotor/pluto_10.ini
+    Test_Problems/MHD/Rotor/pluto_11.ini
     Test_Problems/MHD/Rotor/TagCells.v00.cpp
     Test_Problems/MHD/Shearing_Box/definitions_01.h
     Test_Problems/MHD/Shearing_Box/definitions_02.h
@@ -1743,6 +1919,17 @@ set(SOURCE_FILES
     Test_Problems/MHD/Shearing_Box/definitions_10.h
     Test_Problems/MHD/Shearing_Box/definitions_11.h
     Test_Problems/MHD/Shearing_Box/init.c
+    Test_Problems/MHD/Shearing_Box/pluto_01.ini
+    Test_Problems/MHD/Shearing_Box/pluto_02.ini
+    Test_Problems/MHD/Shearing_Box/pluto_03.ini
+    Test_Problems/MHD/Shearing_Box/pluto_04.ini
+    Test_Problems/MHD/Shearing_Box/pluto_05.ini
+    Test_Problems/MHD/Shearing_Box/pluto_06.ini
+    Test_Problems/MHD/Shearing_Box/pluto_07.ini
+    Test_Problems/MHD/Shearing_Box/pluto_08.ini
+    Test_Problems/MHD/Shearing_Box/pluto_09.ini
+    Test_Problems/MHD/Shearing_Box/pluto_10.ini
+    Test_Problems/MHD/Shearing_Box/pluto_11.ini
     Test_Problems/MHD/Shock_Cloud/definitions_01.h
     Test_Problems/MHD/Shock_Cloud/definitions_02.h
     Test_Problems/MHD/Shock_Cloud/definitions_03.h
@@ -1753,6 +1940,15 @@ set(SOURCE_FILES
     Test_Problems/MHD/Shock_Cloud/definitions_08.h
     Test_Problems/MHD/Shock_Cloud/definitions_09.h
     Test_Problems/MHD/Shock_Cloud/init.c
+    Test_Problems/MHD/Shock_Cloud/pluto_01.ini
+    Test_Problems/MHD/Shock_Cloud/pluto_02.ini
+    Test_Problems/MHD/Shock_Cloud/pluto_03.ini
+    Test_Problems/MHD/Shock_Cloud/pluto_04.ini
+    Test_Problems/MHD/Shock_Cloud/pluto_05.ini
+    Test_Problems/MHD/Shock_Cloud/pluto_06.ini
+    Test_Problems/MHD/Shock_Cloud/pluto_07.ini
+    Test_Problems/MHD/Shock_Cloud/pluto_08.ini
+    Test_Problems/MHD/Shock_Cloud/pluto_09.ini
     Test_Problems/MHD/Sod/definitions_01.h
     Test_Problems/MHD/Sod/definitions_02.h
     Test_Problems/MHD/Sod/definitions_03.h
@@ -1761,6 +1957,13 @@ set(SOURCE_FILES
     Test_Problems/MHD/Sod/definitions_06.h
     Test_Problems/MHD/Sod/definitions_07.h
     Test_Problems/MHD/Sod/init.c
+    Test_Problems/MHD/Sod/pluto_01.ini
+    Test_Problems/MHD/Sod/pluto_02.ini
+    Test_Problems/MHD/Sod/pluto_03.ini
+    Test_Problems/MHD/Sod/pluto_04.ini
+    Test_Problems/MHD/Sod/pluto_05.ini
+    Test_Problems/MHD/Sod/pluto_06.ini
+    Test_Problems/MHD/Sod/pluto_07.ini
     Test_Problems/MHD/Thermal_conduction/Blast/definitions_01.h
     Test_Problems/MHD/Thermal_conduction/Blast/definitions_02.h
     Test_Problems/MHD/Thermal_conduction/Blast/definitions_03.h
@@ -1768,6 +1971,12 @@ set(SOURCE_FILES
     Test_Problems/MHD/Thermal_conduction/Blast/definitions_05.h
     Test_Problems/MHD/Thermal_conduction/Blast/definitions_06.h
     Test_Problems/MHD/Thermal_conduction/Blast/init.c
+    Test_Problems/MHD/Thermal_conduction/Blast/pluto_01.ini
+    Test_Problems/MHD/Thermal_conduction/Blast/pluto_02.ini
+    Test_Problems/MHD/Thermal_conduction/Blast/pluto_03.ini
+    Test_Problems/MHD/Thermal_conduction/Blast/pluto_04.ini
+    Test_Problems/MHD/Thermal_conduction/Blast/pluto_05.ini
+    Test_Problems/MHD/Thermal_conduction/Blast/pluto_06.ini
     Test_Problems/MHD/Thermal_conduction/Blast/tc_kappa.c
     Test_Problems/MHD/Thermal_conduction/TCfront/definitions_01.h
     Test_Problems/MHD/Thermal_conduction/TCfront/definitions_02.h
@@ -1783,6 +1992,19 @@ set(SOURCE_FILES
     Test_Problems/MHD/Thermal_conduction/TCfront/definitions_12.h
     Test_Problems/MHD/Thermal_conduction/TCfront/definitions_13.h
     Test_Problems/MHD/Thermal_conduction/TCfront/init.c
+    Test_Problems/MHD/Thermal_conduction/TCfront/pluto_01.ini
+    Test_Problems/MHD/Thermal_conduction/TCfront/pluto_02.ini
+    Test_Problems/MHD/Thermal_conduction/TCfront/pluto_03.ini
+    Test_Problems/MHD/Thermal_conduction/TCfront/pluto_04.ini
+    Test_Problems/MHD/Thermal_conduction/TCfront/pluto_05.ini
+    Test_Problems/MHD/Thermal_conduction/TCfront/pluto_06.ini
+    Test_Problems/MHD/Thermal_conduction/TCfront/pluto_07.ini
+    Test_Problems/MHD/Thermal_conduction/TCfront/pluto_08.ini
+    Test_Problems/MHD/Thermal_conduction/TCfront/pluto_09.ini
+    Test_Problems/MHD/Thermal_conduction/TCfront/pluto_10.ini
+    Test_Problems/MHD/Thermal_conduction/TCfront/pluto_11.ini
+    Test_Problems/MHD/Thermal_conduction/TCfront/pluto_12.ini
+    Test_Problems/MHD/Thermal_conduction/TCfront/pluto_13.ini
     Test_Problems/MHD/Thermal_conduction/TCfront/tc_kappa.c
     Test_Problems/MHD/Torus/definitions_01.h
     Test_Problems/MHD/Torus/definitions_02.h
@@ -1790,28 +2012,49 @@ set(SOURCE_FILES
     Test_Problems/MHD/Torus/definitions_04.h
     Test_Problems/MHD/Torus/definitions_05.h
     Test_Problems/MHD/Torus/init.c
+    Test_Problems/MHD/Torus/pluto_01.ini
+    Test_Problems/MHD/Torus/pluto_02.ini
+    Test_Problems/MHD/Torus/pluto_03.ini
+    Test_Problems/MHD/Torus/pluto_04.ini
+    Test_Problems/MHD/Torus/pluto_05.ini
     Test_Problems/RHD/Blast/definitions_01.h
     Test_Problems/RHD/Blast/definitions_02.h
     Test_Problems/RHD/Blast/init.c
+    Test_Problems/RHD/Blast/pluto_01.ini
+    Test_Problems/RHD/Blast/pluto_02.ini
     Test_Problems/RHD/Jet/definitions_01.h
     Test_Problems/RHD/Jet/definitions_02.h
     Test_Problems/RHD/Jet/definitions_03.h
     Test_Problems/RHD/Jet/definitions_04.h
     Test_Problems/RHD/Jet/init.c
+    Test_Problems/RHD/Jet/pluto_01.ini
+    Test_Problems/RHD/Jet/pluto_02.ini
+    Test_Problems/RHD/Jet/pluto_03.ini
+    Test_Problems/RHD/Jet/pluto_04.ini
     Test_Problems/RHD/Jet/TagCells.cpp
     Test_Problems/RHD/Riemann_2D/definitions_01.h
     Test_Problems/RHD/Riemann_2D/definitions_02.h
     Test_Problems/RHD/Riemann_2D/definitions_03.h
     Test_Problems/RHD/Riemann_2D/init.c
+    Test_Problems/RHD/Riemann_2D/pluto_01.ini
+    Test_Problems/RHD/Riemann_2D/pluto_02.ini
+    Test_Problems/RHD/Riemann_2D/pluto_03.ini
     Test_Problems/RHD/Sedov2D/definitions_01.h
     Test_Problems/RHD/Sedov2D/definitions_02.h
     Test_Problems/RHD/Sedov2D/definitions_03.h
     Test_Problems/RHD/Sedov2D/init.c
+    Test_Problems/RHD/Sedov2D/pluto_01.ini
+    Test_Problems/RHD/Sedov2D/pluto_02.ini
+    Test_Problems/RHD/Sedov2D/pluto_03.ini
     Test_Problems/RHD/Shock_Tubes/definitions_01.h
     Test_Problems/RHD/Shock_Tubes/definitions_02.h
     Test_Problems/RHD/Shock_Tubes/definitions_03.h
     Test_Problems/RHD/Shock_Tubes/definitions_04.h
     Test_Problems/RHD/Shock_Tubes/init.c
+    Test_Problems/RHD/Shock_Tubes/pluto_01.ini
+    Test_Problems/RHD/Shock_Tubes/pluto_02.ini
+    Test_Problems/RHD/Shock_Tubes/pluto_03.ini
+    Test_Problems/RHD/Shock_Tubes/pluto_04.ini
     Test_Problems/RMHD/Blast/definitions_01.h
     Test_Problems/RMHD/Blast/definitions_02.h
     Test_Problems/RMHD/Blast/definitions_03.h
@@ -1819,9 +2062,17 @@ set(SOURCE_FILES
     Test_Problems/RMHD/Blast/definitions_05.h
     Test_Problems/RMHD/Blast/definitions_06.h
     Test_Problems/RMHD/Blast/init.c
+    Test_Problems/RMHD/Blast/pluto_01.ini
+    Test_Problems/RMHD/Blast/pluto_02.ini
+    Test_Problems/RMHD/Blast/pluto_03.ini
+    Test_Problems/RMHD/Blast/pluto_04.ini
+    Test_Problems/RMHD/Blast/pluto_05.ini
+    Test_Problems/RMHD/Blast/pluto_06.ini
     Test_Problems/RMHD/CP_Alfven/definitions_01.h
     Test_Problems/RMHD/CP_Alfven/definitions_02.h
     Test_Problems/RMHD/CP_Alfven/init.c
+    Test_Problems/RMHD/CP_Alfven/pluto_01.ini
+    Test_Problems/RMHD/CP_Alfven/pluto_02.ini
     Test_Problems/RMHD/Jet/definitions_01.h
     Test_Problems/RMHD/Jet/definitions_02.h
     Test_Problems/RMHD/Jet/definitions_03.h
@@ -1831,10 +2082,19 @@ set(SOURCE_FILES
     Test_Problems/RMHD/Jet/init.v01.c
     Test_Problems/RMHD/Jet/init.v02.c
     Test_Problems/RMHD/Jet/init.v03.c
+    Test_Problems/RMHD/Jet/pluto_01.ini
+    Test_Problems/RMHD/Jet/pluto_02.ini
+    Test_Problems/RMHD/Jet/pluto_03.ini
+    Test_Problems/RMHD/Jet/pluto_3d.ini
+    Test_Problems/RMHD/Jet/pluto_cart.ini
+    Test_Problems/RMHD/Jet/pluto_tor.ini
     Test_Problems/RMHD/KH/definitions_01.h
     Test_Problems/RMHD/KH/definitions_02.h
     Test_Problems/RMHD/KH/definitions_03.h
     Test_Problems/RMHD/KH/init.c
+    Test_Problems/RMHD/KH/pluto_01.ini
+    Test_Problems/RMHD/KH/pluto_02.ini
+    Test_Problems/RMHD/KH/pluto_03.ini
     Test_Problems/RMHD/KH/TagCells.cpp
     Test_Problems/RMHD/Rotor/definitions_01.h
     Test_Problems/RMHD/Rotor/definitions_02.h
@@ -1843,6 +2103,12 @@ set(SOURCE_FILES
     Test_Problems/RMHD/Rotor/definitions_05.h
     Test_Problems/RMHD/Rotor/definitions_06.h
     Test_Problems/RMHD/Rotor/init.c
+    Test_Problems/RMHD/Rotor/pluto_01.ini
+    Test_Problems/RMHD/Rotor/pluto_02.ini
+    Test_Problems/RMHD/Rotor/pluto_03.ini
+    Test_Problems/RMHD/Rotor/pluto_04.ini
+    Test_Problems/RMHD/Rotor/pluto_05.ini
+    Test_Problems/RMHD/Rotor/pluto_06.ini
     Test_Problems/RMHD/Sod/definitions_01.h
     Test_Problems/RMHD/Sod/definitions_02.h
     Test_Problems/RMHD/Sod/definitions_03.h
@@ -1858,7 +2124,152 @@ set(SOURCE_FILES
     Test_Problems/RMHD/Sod/definitions_13.h
     Test_Problems/RMHD/Sod/definitions_14.h
     Test_Problems/RMHD/Sod/init.c
+    Test_Problems/RMHD/Sod/pluto_01.ini
+    Test_Problems/RMHD/Sod/pluto_02.ini
+    Test_Problems/RMHD/Sod/pluto_03.ini
+    Test_Problems/RMHD/Sod/pluto_04.ini
+    Test_Problems/RMHD/Sod/pluto_05.ini
+    Test_Problems/RMHD/Sod/pluto_06.ini
+    Test_Problems/RMHD/Sod/pluto_07.ini
+    Test_Problems/RMHD/Sod/pluto_08.ini
+    Test_Problems/RMHD/Sod/pluto_09.ini
+    Test_Problems/RMHD/Sod/pluto_10.ini
+    Test_Problems/RMHD/Sod/pluto_11.ini
+    Test_Problems/RMHD/Sod/pluto_12.ini
+    Test_Problems/RMHD/Sod/pluto_13.ini
+    Test_Problems/RMHD/Sod/pluto_14.ini
     Test_Problems/RMHD/Toroidal_Jet/definitions_01.h
-    Test_Problems/RMHD/Toroidal_Jet/init.c)
+    Test_Problems/RMHD/Toroidal_Jet/init.c
+    Test_Problems/RMHD/Toroidal_Jet/pluto_01.ini
+    Tools/Gnuplot/Doc/files/dmr_contour.PNG
+    Tools/Gnuplot/Doc/files/dmr_pm3d.PNG
+    Tools/Gnuplot/Doc/files/rmhd_jet_pm3d_prs_yslice.PNG
+    Tools/Gnuplot/Doc/files/rmhd_jet_pm3d_rho.PNG
+    Tools/Gnuplot/Doc/files/rmhd_jet_pm3d_vz.PNG
+    Tools/Gnuplot/Doc/files/sod_plot.PNG
+    Tools/Gnuplot/Doc/images/dmr_contour.PNG
+    Tools/Gnuplot/Doc/images/dmr_pm3d.PNG
+    Tools/Gnuplot/Doc/images/riga2.jpg
+    Tools/Gnuplot/Doc/images/rmhd_jet_pm3d_prs_yslice.PNG
+    Tools/Gnuplot/Doc/images/rmhd_jet_pm3d_rho.PNG
+    Tools/Gnuplot/Doc/images/rmhd_jet_pm3d_vz.PNG
+    Tools/Gnuplot/Doc/images/sod_plot.PNG
+    Tools/Gnuplot/Doc/index.html
+    Tools/Gnuplot/contour_setting.gp
+    Tools/Gnuplot/grid.gp
+    Tools/Gnuplot/macros.gp
+    Tools/Gnuplot/pluto.gp
+    Tools/Gnuplot/pm3d_setting.gp
+    Tools/IDL/arg2str.pro
+    Tools/IDL/checkfile.pro
+    Tools/IDL/colorbar2.pro
+    Tools/IDL/display.pro
+    Tools/IDL/extrema.pro
+    Tools/IDL/field_line.2D.pro
+    Tools/IDL/field_line.pro
+    Tools/IDL/fourier.pro
+    Tools/IDL/get_frame.pro
+    Tools/IDL/h5load.pro
+    Tools/IDL/hdf5_1Dload.pro
+    Tools/IDL/hdf5cut.pro
+    Tools/IDL/hdf5load.pro
+    Tools/IDL/idl_tools.html
+    Tools/IDL/indx_coord.pro
+    Tools/IDL/legend.pro
+    Tools/IDL/make_doc.pro
+    Tools/IDL/make_frame.pro
+    Tools/IDL/mirror.pro
+    Tools/IDL/oplotbox.pro
+    Tools/IDL/pload.pro
+    Tools/IDL/plot_ascii.pro
+    Tools/IDL/plotbox.pro
+    Tools/IDL/polar.pro
+    Tools/IDL/ptools.pro
+    Tools/IDL/put_eps.pro
+    Tools/IDL/regrid.pro
+    Tools/IDL/reverse_colormap.pro
+    Tools/IDL/set_multi_plot_pos.pro
+    Tools/IDL/shiftcoord.pro
+    Tools/IDL/shockfind.pro
+    Tools/IDL/temperature.pro
+    Tools/IDL/vecfield.pro
+    Tools/IDL/vtk_load.pro
+    Tools/IDL/write_vtk.pro
+    Tools/Mathematica/pload.m
+    Tools/pyPLUTO/bin/GUI_pyPLUTO.py
+    Tools/pyPLUTO/doc/_images/amr_flowcyc.png
+    Tools/pyPLUTO/doc/_images/GetStarted.png
+    Tools/pyPLUTO/doc/_images/jet_final.png
+    Tools/pyPLUTO/doc/_images/orszag_tang_1.png
+    Tools/pyPLUTO/doc/_images/RayleighTaylor_multi.png
+    Tools/pyPLUTO/doc/_images/sod_1.png
+    Tools/pyPLUTO/doc/_images/SphDisk_1.png
+    Tools/pyPLUTO/doc/_images/stellar_wind.png
+    Tools/pyPLUTO/doc/_sources/example.txt
+    Tools/pyPLUTO/doc/_sources/gui.txt
+    Tools/pyPLUTO/doc/_sources/image.txt
+    Tools/pyPLUTO/doc/_sources/index.txt
+    Tools/pyPLUTO/doc/_sources/install.txt
+    Tools/pyPLUTO/doc/_sources/pload.txt
+    Tools/pyPLUTO/doc/_sources/tools.txt
+    Tools/pyPLUTO/doc/_static/ajax-loader.gif
+    Tools/pyPLUTO/doc/_static/basic.css
+    Tools/pyPLUTO/doc/_static/comment-bright.png
+    Tools/pyPLUTO/doc/_static/comment-close.png
+    Tools/pyPLUTO/doc/_static/comment.png
+    Tools/pyPLUTO/doc/_static/doctools.js
+    Tools/pyPLUTO/doc/_static/down-pressed.png
+    Tools/pyPLUTO/doc/_static/down.png
+    Tools/pyPLUTO/doc/_static/file.png
+    Tools/pyPLUTO/doc/_static/jquery.js
+    Tools/pyPLUTO/doc/_static/minus.png
+    Tools/pyPLUTO/doc/_static/nature.css
+    Tools/pyPLUTO/doc/_static/plus.png
+    Tools/pyPLUTO/doc/_static/pygments.css
+    Tools/pyPLUTO/doc/_static/searchtools.js
+    Tools/pyPLUTO/doc/_static/underscore.js
+    Tools/pyPLUTO/doc/_static/up-pressed.png
+    Tools/pyPLUTO/doc/_static/up.png
+    Tools/pyPLUTO/doc/_static/websupport.js
+    Tools/pyPLUTO/doc/example.html
+    Tools/pyPLUTO/doc/genindex.html
+    Tools/pyPLUTO/doc/gui.html
+    Tools/pyPLUTO/doc/image.html
+    Tools/pyPLUTO/doc/index.html
+    Tools/pyPLUTO/doc/install.html
+    Tools/pyPLUTO/doc/pload.html
+    Tools/pyPLUTO/doc/py-modindex.html
+    Tools/pyPLUTO/doc/search.html
+    Tools/pyPLUTO/doc/tools.html
+    Tools/pyPLUTO/examples/flow_past_cyc.py
+    Tools/pyPLUTO/examples/jet.py
+    Tools/pyPLUTO/examples/orszag_tang.py
+    Tools/pyPLUTO/examples/rayleigh_taylor.py
+    Tools/pyPLUTO/examples/sod.py
+    Tools/pyPLUTO/examples/Sph_disk.py
+    Tools/pyPLUTO/examples/stellar_wind.py
+    Tools/pyPLUTO/pyPLUTO/__init__.py
+    Tools/pyPLUTO/pyPLUTO/pyPLUTO.py
+    Tools/pyPLUTO/MANIFEST.in
+    Tools/pyPLUTO/PKG-INFO
+    Tools/pyPLUTO/README.txt
+    Tools/pyPLUTO/setup.py
+    Tools/Python/configure.py
+    Tools/Python/configure.pyc
+    Tools/Python/define_problem.py
+    Tools/Python/define_problem.pyc
+    Tools/Python/file.py
+    Tools/Python/make_problem.py
+    Tools/Python/make_problem.pyc
+    Tools/Python/menu.py
+    Tools/Python/menu.pyc
+    Tools/Python/pluto_files_IO.py
+    Tools/Python/pluto_files_IO.pyc
+    Tools/Python/setup.py
+    CHANGES
+    CMakeLists.txt
+    COPYING
+    README
+    setup.py)
 
 add_executable(PLUTO ${SOURCE_FILES})

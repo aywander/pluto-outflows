@@ -5,7 +5,7 @@
 
 #ifdef GRAV_TABLE
 
-double potential[NPOT];
+double potential[NPOTVAR];
 
 int rGravHeader(){
   /*

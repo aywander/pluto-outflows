@@ -18,7 +18,7 @@
               the latter, respectively.
      
     Note that not all of the variables should be present and the input
-    array ::get_var specifies which one are to be searched for.
+    array ::get_var specifies which ones are to be searched for.
 
   The InputDataSet() initialize the module and by assigning values to 
   global variables such as size, geometry and dimensions of the input grid.
@@ -33,6 +33,15 @@
 */
 /* ///////////////////////////////////////////////////////////////////// */
 #include"pluto.h"
+/* AYW -- 2012-11-15 15:35 JST
+ * Reduce to reduce memory requirements. Need one extra for the -1 
+ * after the last variable ID in get_var.
+ * 2,   if   only rho
+ * 3-5, if   rho, vx1{, vx2, vx3}
+ */
+//#define ID_MAX_NVAR 256 
+#define ID_MAX_NVAR (1 + (CLOUD_VELOCITY ? COMPONENTS : 0) + 1)
+/* -- AYW */
 
 /* AYW -- 2012-11-29 12:20 JST
  * To use my geometry macros */
@@ -45,22 +54,9 @@
 double g_idBoxBeg[3];  /**< Lower limits of the input data domain. */
 double g_idBoxEnd[3];  /**< Upper limits of the input data domain. */
 double g_idnx1, g_idnx2, g_idnx3;
-/* -- AYW*/
-
-/* AYW -- 2012-11-15 15:35 JST
- * Reduce to reduce memory requirements. Need one extra for the -1 
- * after the last variable ID in get_var.
- * 2,   if   only rho
- * 3-5, if   rho, vx1{, vx2, vx3}
- */
-//#define ID_MAX_NVAR 256 
-#define ID_MAX_NVAR (1 + (CLOUD_VELOCITY == YES ? COMPONENTS : 0) + 1)
+int g_idnvar, *g_idvarindx; /**< Number of variables */
 /* -- AYW */
 
-/* AYW -- 2014-06-03 20:07 JST
- * To store number of variables */
-int g_idnvar, g_idvarindx[ID_MAX_NVAR];
-/* -- AYW */
 
 static int id_nvar; /**< Number of variables to be read on input. */
 static int id_var_indx[ID_MAX_NVAR]; /**< The variable index. */
@@ -181,14 +177,12 @@ void InputDataSet (char *grid_fname, int *get_var)
   }
   fclose(fp);
 
-
 /* -- reset grid with 1 point -- */
 
   if (id_nx1 == 1) id_x1[0] = 0.0;
   if (id_nx2 == 1) id_x2[0] = 0.0;
   if (id_nx3 == 1) id_x3[0] = 0.0;
-
-
+ 
    /* AYW -- 2013-04-19 12:08 JST 
    * Store read data extents in global arrays */
   g_idBoxBeg[IDIR] = id_x1[0]; g_idBoxEnd[IDIR] = id_x1[id_nx1-1];
@@ -227,12 +221,14 @@ void InputDataSet (char *grid_fname, int *get_var)
   /* AYW -- 2014-06-03 20:08 JST
    * Store number of variables and indices in global variables */
   g_idnvar = id_nvar;
+  g_idvarindx = ARRAY_1D(ID_MAX_NVAR, int);
   for (nv = 0; nv < id_nvar; nv++) g_idvarindx[nv] = id_var_indx[nv];
   /* -- AYW */
+
 }
 
 /* ********************************************************************* */
-void InputDataRead (char *data_fname)
+void InputDataRead (char *data_fname, char *endianity)
 /*!
  * Read input data file and store the contents into the local storage
  * array ::Vin. Memory allocation is also done here.  
@@ -240,18 +236,33 @@ void InputDataRead (char *data_fname)
  * previously set by calling InputDataSet().
  * 
  * \param [in] data_fname the data file name
+ * \param [in] endianity  an input string ("little" or "big") giving 
+ *                        the byte-order of how the input data file 
+ *                        was originally written.
+ *                        If an empty string is supplied, no change is 
+ *                        made.
  * \return This function has no return value.
  *********************************************************************** */
 {
-  int   i, j, k, nv;
+  int   i, j, k, nv, swap_endian=NO;
   size_t dsize, dcount;
   double udbl;
   float  uflt;
   char   ext[] = "   ";
   FILE *fp;
 
-  print1 ("  Input data file:       %s\n", data_fname);
-
+/* ----------------------------------------------------
+             Check endianity 
+   ---------------------------------------------------- */
+  
+  if ( (!strcmp(endianity,"big")    &&  IsLittleEndian()) ||
+       (!strcmp(endianity,"little") && !IsLittleEndian())) {
+    swap_endian = YES;
+  }
+  
+  print1 ("  Input data file:       %s (endianity: %s) \n", 
+           data_fname, endianity);
+  
 /* ------------------------------------------------------
     Get data type from file extensions (dbl or flt).
    ------------------------------------------------------ */
@@ -260,7 +271,7 @@ void InputDataRead (char *data_fname)
   for (i = 0; i < 3; i++) ext[i] = data_fname[dcount-3+i];
 
   if (!strcmp(ext,"dbl")){
-    print1 ("  Precision:\t\t  (double)\n");
+    print1 ("  Precision:             (double)\n");
     dsize = sizeof(double);
   } else if (!strcmp(ext,"flt")) {
     print1 ("  Precision:\t\t  (single)\n");
@@ -291,8 +302,9 @@ void InputDataRead (char *data_fname)
         if (fread (&udbl, dsize, dcount, fp) != dcount){
           print1 ("! InputDataRead: error reading data %d.\n",nv);
           break;
-       }
-         Vin[nv][k][j][i] = udbl;
+        }
+        if (swap_endian) SWAP_VAR(udbl);
+        Vin[nv][k][j][i] = udbl;
       }}}
     }else{
       for (k = 0; k < id_nx3; k++){ 
@@ -301,8 +313,9 @@ void InputDataRead (char *data_fname)
         if (fread (&uflt, dsize, dcount, fp) != dcount){
           print1 ("! InputDataRead: error reading data %d.\n",nv);
           break;
-       }
-         Vin[nv][k][j][i] = uflt;
+        }
+        if (swap_endian) SWAP_VAR(uflt);
+        Vin[nv][k][j][i] = uflt;
       }}}
     }
   }
@@ -336,6 +349,8 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
   double vel, lorentz;
   int do_vel = 0;
   /* -- AYW */
+
+
 
 /* --------------------------------------------------------------------- */
 /*! - Convert PLUTO coordinates to input grid geometry if necessary.     */
@@ -456,6 +471,7 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
    if (id_geom == GEOMETRY) {  
 
      /* same coordinate system: nothing to do */
+     
 
    }else if (id_geom == CARTESIAN) {  
      double x, y, z;
@@ -483,7 +499,6 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
            
            if      (x3 < id_x3[0])         x3 = id_x3[0];
            else if (x3 > id_x3[id_nx3-1]) x3 = id_x3[id_nx3-1]; )
-  
 
 /* --------------------------------------------------------------------- */
 /*! - Use table lookup by binary search to  find the indices 
@@ -538,10 +553,12 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
 
   for (nv = 0; nv < id_nvar; nv++) { 
     inv = id_var_indx[nv];
+
     /* AYW -- 2012-11-29 11:53 JST 
      * Check if velocity geometric conversion needs to be done. */
     if ((inv >= VX1) && (inv <= VX3)) do_vel = 1;
     /* --AYW */
+
     V = Vin[nv];
     vs[inv] =   V[kl][jl][il]*(1.0 - xx)*(1.0 - yy)*(1.0 - zz)
               + V[kl][jl][il+1]*xx*(1.0 - yy)*(1.0 - zz);
@@ -556,6 +573,7 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
                 + V[kl+1][jl+1][il+1]*xx*yy*zz;
     }
   }
+
 /* AYW -- 2012-11-29 11:53 JST 
  * Do geometric velocity conversions here. Convert from
  * data geometry back to PLUTO geometry 
@@ -614,6 +632,8 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
 #endif
   }
   /* -- AYW */
+
+
 }
 
 /* ********************************************************************* */

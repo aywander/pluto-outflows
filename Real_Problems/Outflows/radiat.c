@@ -9,34 +9,22 @@
 #include "rMuTable.h"
 #endif
 /* -- AYW */
-#define frac_Z   1.e-3   /*   = N(Z) / N(H), fractional number density of metals (Z)
-                                with respect to hydrogen (H) */ 
-#define frac_He  0.082   /*   = N(Z) / N(H), fractional number density of helium (He)
-                                with respect to hydrogen (H) */ 
-#define A_Z      30.0    /*   mean atomic weight of heavy elements  */
-#define A_He     4.004   /*   atomic weight of Helium  */
-#define A_H      1.008   /*   atomic weight of Hydrogen  */
 
+#define frac_Z   1.e-3   /* = N(Z) / N(H), fractional number density of 
+                              metals (Z) with respect to hydrogen (H) */ 
+#define frac_He  0.082   /* = N(Z) / N(H), fractional number density of 
+                              helium (He) with respect to hydrogen (H) */ 
 /* ***************************************************************** */
-void Radiat (real *v, real *rhs)
-/*
- *
- * NAME
- *
- *   Radiat
- *
- *
- * PURPOSE
- *
+void Radiat (double *v, double *rhs)
+/*!
  *   Provide r.h.s. for tabulated cooling.
  * 
- *
  ******************************************************************* */
 {
   int    klo, khi, kmid;
-  real   mu, T, Tmid, scrh, dT;
   static int ntab;
-  static real *L_tab, *T_tab, E_cost;
+  double  mu, T, Tmid, scrh, dT, prs;
+  static double *L_tab, *T_tab, E_cost;
   
   FILE *fcool;
 
@@ -48,7 +36,7 @@ void Radiat (real *v, real *rhs)
     print1 (" > Reading table from disk...\n");
     fcool = fopen("cooltable.dat","r");
     if (fcool == NULL){
-      print1 ("! cooltable.dat does not exists\n");
+      print1 ("! Radiat: cooltable.dat could not be found.\n");
       QUIT_PLUTO(1);
     }
     L_tab = ARRAY_1D(20000, double);
@@ -59,25 +47,30 @@ void Radiat (real *v, real *rhs)
                                        L_tab + ntab)!=EOF) {
       ntab++;
     }
-    E_cost    = g_unitLength/g_unitDensity/pow(g_unitVelocity, 3.0);
+    E_cost = UNIT_LENGTH/UNIT_DENSITY/pow(UNIT_VELOCITY, 3.0);
   }
 
 /* ---------------------------------------------
-            Get temperature 
+            Get pressure and temperature 
    --------------------------------------------- */
 
-  if (v[PRS] < 0.0) v[PRS] = g_smallPressure;
+  prs = v[RHOE]*(g_gamma-1.0);
+  if (prs < 0.0) {
+    prs     = g_smallPressure;
+    v[RHOE] = prs/(g_gamma - 1.0);
+  }
+
   mu  = MeanMolecularWeight(v);
-  T   = v[PRS]/v[RHO]*KELVIN*mu;
+  T   = prs/v[RHO]*KELVIN*mu;
 
   if (T != T){
-    printf (" ! Nan found in radiat \n");
-    printf (" ! rho = %12.6e, pr = %12.6e\n",v[RHO], v[PRS]);
+    print1 (" ! Nan found in radiat \n");
+    print1 (" ! rho = %12.6e, prs = %12.6e\n",v[RHO], prs);
     QUIT_PLUTO(1);
   }
 
   if (T < g_minCoolingTemp) { 
-    rhs[PRS] = 0.0;
+    rhs[RHOE] = 0.0;
     return;
   }
 
@@ -103,16 +96,14 @@ void Radiat (real *v, real *rhs)
     }
   }
 
-  dT      = T_tab[khi] - T_tab[klo];
-  scrh    = L_tab[klo]*(T_tab[khi] - T)/dT + L_tab[khi]*(T - T_tab[klo])/dT;
-  rhs[PRS] = -(g_gamma - 1.0)*scrh*v[RHO]*v[RHO];
-  rhs[PRS] *= E_cost*g_unitDensity*g_unitDensity/(CONST_mp*CONST_mp);
-  
+  dT       = T_tab[khi] - T_tab[klo];
+  scrh     = L_tab[klo]*(T_tab[khi] - T)/dT + L_tab[khi]*(T - T_tab[klo])/dT;
+  rhs[RHOE] = -scrh*v[RHO]*v[RHO];
+  rhs[RHOE] *= E_cost*UNIT_DENSITY*UNIT_DENSITY/(CONST_mp*CONST_mp);
 }
 #undef T_MIN
-
 /* ******************************************************************* */
-double MeanMolecularWeight (real *V)
+double MeanMolecularWeight (double *V)
 /*
  *
  *
@@ -164,8 +155,7 @@ double MeanMolecularWeight (real *V)
 
 #endif
 
-  /* --AYW */
-
 }
+
 
 

@@ -87,7 +87,7 @@ void PatchPluto::computeRefGradient(FArrayBox& gFab, FArrayBox& UFab, const Box&
   double gr12, gr22;
   double ***q2;
 #endif
-#if defined(REF_TRC2) && CLOUDS != NONE 
+#if defined(REF_TRC2) && CLOUDS
   double ***qtrc2, ***rho;
   double small_time = 1.e-15;
 #endif
@@ -154,7 +154,7 @@ void PatchPluto::computeRefGradient(FArrayBox& gFab, FArrayBox& UFab, const Box&
 #endif
 #endif
 
-#if defined(REF_TRC2) && CLOUDS != NONE 
+#if defined(REF_TRC2) && CLOUDS
   #if REF_VAR == RHO 
   rho = q;
   #elif defined(REF_VAR2) && REF_VAR2 == RHO 
@@ -314,7 +314,7 @@ void PatchPluto::computeRefGradient(FArrayBox& gFab, FArrayBox& UFab, const Box&
      gr12  = D_EXPAND(dq2x*dq2x, + dq2y*dq2y, + dq2z*dq2z);
      gr12 /= D_EXPAND(den2_x*den2_x, + den2_y*den2_y, + den2_z*den2_z);
 #endif
-#if defined(REF_TRC2) && CLOUDS != NONE
+#if defined(REF_TRC2) && CLOUDS
      bool cl_init_region = false;
      if (g_time < small_time &&
          D_EXPAND(x > g_idBoxBeg[IDIR] && x < g_idBoxEnd[IDIR], && 
@@ -331,7 +331,7 @@ void PatchPluto::computeRefGradient(FArrayBox& gFab, FArrayBox& UFab, const Box&
 #ifdef REF_VAR2
          + gr12
 #endif
-#if defined(REF_TRC2) && CLOUDS != NONE 
+#if defined(REF_TRC2) && CLOUDS
          + pow(qtrc2[k][j][i]/rho[k][j][i], 2)
          + cl_init_region*cl_init_region
 #endif
@@ -386,7 +386,7 @@ void PatchPluto::computeRefGradient(FArrayBox& gFab, FArrayBox& UFab, const Box&
      gr22  = D_EXPAND(d2q2x*d2q2x, + d2q2y*d2q2y, + d2q2z*d2q2z);
      gr22 /= D_EXPAND(den2_x*den2_x, + den2_y*den2_y, + den2_z*den2_z);
 #endif
-#if defined(REF_TRC2) && CLOUDS != NONE
+#if defined(REF_TRC2) && CLOUDS
      bool cl_init_region = false;
      if (g_time < small_time &&
          D_EXPAND(x > g_idBoxBeg[IDIR] && x < g_idBoxEnd[IDIR], &&
@@ -403,7 +403,7 @@ void PatchPluto::computeRefGradient(FArrayBox& gFab, FArrayBox& UFab, const Box&
 #ifdef REF_VAR2
          + gr22
 #endif
-#if defined(REF_TRC2) && CLOUDS != NONE 
+#if defined(REF_TRC2) && CLOUDS
          + pow(qtrc2[k][j][i]/rho[k][j][i], 2)
          + cl_init_region*cl_init_region
 #endif

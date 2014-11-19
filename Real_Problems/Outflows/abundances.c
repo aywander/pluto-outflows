@@ -15,7 +15,7 @@
 #define A_H      1.008   /*   atomic weight of Hydrogen  */
 
 /* ******************************************************************* */
-real MeanMolecularWeight (real *V)
+double MeanMolecularWeight (real *V)
 /* This function is reproduced here because without the cooling function
  * the mean molecular weight function is not compiled in. 
  *   Changing the abundances every time a new problem is set up is 

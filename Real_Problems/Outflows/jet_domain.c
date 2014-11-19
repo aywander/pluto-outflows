@@ -50,10 +50,10 @@ void SetJetDomain (const Data *d, int dir, int log_freq, Grid *grid)
   int i, j, k, ngh;
   int n, n_glob;
   static int first_call = 1;
-  real ***pr, ***dn, dp;
+  double ***pr, ***dn, dp;
 
   dn = d->Vc[RHO];
-  #if EOS != ISOTHERMAL && EOS != BAROTROPIC
+  #if HAVE_ENERGY
    pr = d->Vc[PRS];
   #else
    pr = d->Vc[RHO];
@@ -99,9 +99,9 @@ void SetJetDomain (const Data *d, int dir, int log_freq, Grid *grid)
    n = n_glob;
   #endif
 
-  if (g_stepNumber%log_freq==0){
+  /*if (g_stepNumber%log_freq==0){
     print1 ("- SetJetDomain: index %d / %d\n",n,NEND);
-  }
+  }*/
 
 /* ------------------------------------------------------------------
     Change global integer variables giving the rightmost integration 

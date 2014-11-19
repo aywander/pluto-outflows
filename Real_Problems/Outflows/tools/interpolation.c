@@ -3,6 +3,7 @@
 #include <math.h>
 #include "interpolation.h"
 
+//TODO: Use PLUTO interpolation routines
 
 int hunter(const double arr[], const int narr, const double val){
 
@@ -23,15 +24,15 @@ int hunter(const double arr[], const int narr, const double val){
 
   /* Bounds check */
   if (val < arrb){
-    printf("Error: interpolation.c: hunter: interpolation out of (lower) bounds.\n");
-    printf("val :  %e\n", val);
-    printf("arrb:  %e\n", arrb);
+    print1("Error: interpolation.c: hunter: interpolation out of (lower) bounds.\n");
+    print1("val :  %e\n", val);
+    print1("arrb:  %e\n", arrb);
     exit(1);
   }
   else if (val > arre){
-    printf("Error: interpolation.c: hunter: interpolation out of (upper) bounds.\n");
-    printf("val  %e\n", val);
-    printf("arre %e\n", arre);
+    print1("Error: interpolation.c: hunter: interpolation out of (upper) bounds.\n");
+    print1("val  %e\n", val);
+    print1("arre %e\n", arre);
     exit(1);
   }
 

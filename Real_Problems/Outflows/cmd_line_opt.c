@@ -1,24 +1,39 @@
+/* ///////////////////////////////////////////////////////////////////// */
+/*! 
+  \file  
+  \brief Parse command line options.
+
+  Parse command line options at runtime and set values in
+  the Cmd_Line structure.
+
+  \authors A. Mignone (mignone@ph.unito.it)
+  \date    July 17, 2013
+*/
+/* ///////////////////////////////////////////////////////////////////// */
 #include "pluto.h"
 
 static void PrintUsage();
 
-/* ********************************************************** */
+/* ********************************************************************* */
 void ParseCmdLineArgs (int argc, char *argv[], char *ini_file, 
                        Cmd_Line *cmd)
-/*
+/*!
  *
- * PURPOSE
+ * Parse command line options. Error messages will be output to
+ * stdout.
  *
- *   Parse command line options for PLUTO.
- *   Available command lines are:
+ * \param[in]  argc       argument count
+ * \param[in]  argv       argument vector
+ * \param[in]  ini_file   a pointer to a string containing the name of
+ *                        the initialization file (default: "pluto.ini")
+ * \param[out] cmd        the command-line structure.
  *
- *
- ************************************************************ */
+ *********************************************************************** */
 {
   int i,j;
 
 /* -----------------------------------------------
-     set defaults here
+           Set default values first
    ----------------------------------------------- */
 
   cmd->restart   = NO;
@@ -39,8 +54,18 @@ void ParseCmdLineArgs (int argc, char *argv[], char *ini_file,
   cmd->nproc[JDIR] = -1;
   cmd->nproc[KDIR] = -1;
 
+  #ifdef PARALLEL
+   cmd->parallel_dim[IDIR] = YES;  /* by default, we parallelize */
+   cmd->parallel_dim[JDIR] = YES;  /* all directions             */
+   cmd->parallel_dim[KDIR] = YES;
+  #endif
+
 /* --------------------------------------------------------------------
-                 Parse Command Line Options
+             Parse Command Line Options.
+
+    Note: Since at this time the output directory is now known and
+          "pluto.log" has not been opened yet, we use printf to issue
+          error messages.
    -------------------------------------------------------------------- */
 
   for (i = 1; i < argc ; i++){
@@ -52,14 +77,18 @@ void ParseCmdLineArgs (int argc, char *argv[], char *ini_file,
       for (g_dir = 0; g_dir < DIMENSIONS; g_dir++){
 
         if ((++i) >= argc){
-          D_SELECT(print1 ("! You must specify -dec n1\n");  ,
-                   print1 ("! You must specify -dec n1  n2\n");  ,
-                   print1 ("! You must specify -dec n1  n2  n3\n");)
+          if (prank == 0){
+            D_SELECT(printf ("! You must specify -dec n1\n");  ,
+                     printf ("! You must specify -dec n1  n2\n");  ,
+                     printf ("! You must specify -dec n1  n2  n3\n");)
+          }
           QUIT_PLUTO(1);
         }
         cmd->nproc[g_dir] = atoi(argv[i]);
         if (cmd->nproc[g_dir] == 0){
-            print1 ("! Incorrect number of processor for g_dir = %d \n", g_dir);
+            if (prank == 0) {
+              printf ("! Incorrect number of processor for g_dir = %d \n", g_dir);
+            }
             QUIT_PLUTO(0);
         }
       }
@@ -75,12 +104,13 @@ void ParseCmdLineArgs (int argc, char *argv[], char *ini_file,
     }else if (!strcmp(argv[i],"-maxsteps")){
 
       if ((++i) >= argc){
-        print1 ("! You must specify -maxsteps nn\n");
+        if (prank == 0) printf ("! You must specify -maxsteps nn\n");
         QUIT_PLUTO(1);
       }else{
         cmd->maxsteps = atoi(argv[i]);
         if (cmd->maxsteps == 0) {
-          print1 ("! You must specify -maxsteps nn, with nn > 0 \n");
+          if (prank == 0)
+            printf ("! You must specify -maxsteps nn, with nn > 0 \n");
           QUIT_PLUTO(0);
         }
       }
@@ -137,12 +167,12 @@ void ParseCmdLineArgs (int argc, char *argv[], char *ini_file,
     }else if (!strcmp(argv[i],"-xres")){
 
       if ((++i) >= argc){
-        print1 ("! You must specify -xres nn\n");
+        if (prank == 0) printf ("! You must specify -xres nn\n");
         QUIT_PLUTO(1);
       }else{
         cmd->xres = atoi(argv[i]);
         if (cmd->xres <= 1) {
-          print1 ("! You must specify -xres nn, with nn > 1 \n");
+          if (prank == 0) printf ("! You must specify -xres nn, with nn > 1 \n");
           QUIT_PLUTO(0)
         }
       }
@@ -179,7 +209,7 @@ void ParseCmdLineArgs (int argc, char *argv[], char *ini_file,
       QUIT_PLUTO(1);
 
     }else{
-      print ("! Unknown option '%s'\n",argv[i]);
+      if (prank == 0) printf ("! Unknown option '%s'\n",argv[i]);
       QUIT_PLUTO(1);
     }
   }
@@ -191,24 +221,6 @@ void ParseCmdLineArgs (int argc, char *argv[], char *ini_file,
   else if (cmd->jet == JDIR) cmd->parallel_dim[JDIR] = NO;
   else if (cmd->jet == KDIR) cmd->parallel_dim[KDIR] = NO;
 
-#if PRINT_TO_FILE == YES
-#ifdef PARALLEL 
-  if (prank == 0){
-#endif
-  if (cmd->restart == NO){
-    pluto_log_file = fopen("pluto.log","w");
-    fprintf(pluto_log_file,"\n");
-    fclose(pluto_log_file);
-  }else{
-    pluto_log_file = fopen("pluto.log","aw");
-    fprintf(pluto_log_file,"\n");
-    fclose(pluto_log_file);
-  } 
-#ifdef PARALLEL 
-  }
-#endif
-   
-#endif
 }
 /* ******************************************************************* */
 void PrintUsage()

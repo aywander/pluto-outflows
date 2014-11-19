@@ -1,5 +1,5 @@
 #include "pluto.h"
-#include "definitions_usr.h"
+#include "pluto_usr.h"
 #include "rGravTable.h"
 
 #ifdef GRAV_TABLE

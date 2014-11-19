@@ -2,7 +2,7 @@
 #include "pluto_usr.h"
 #include "rMuTable.h"
 
-#ifdef MU_TABLE
+#if MU_CALC == MU_TABLE
 
 double *mu_por, *mu_mu;
 int mu_ndata;

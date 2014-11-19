@@ -67,15 +67,9 @@ void SetBaseNormalization() {
    * time: kyr
    * */
 
-  mu = MU_NORM
-  g_unitDensity    = CONST_amu*mu;
-  g_unitLength     = 1.e3*CONST_pc;
-  year            = CONST_ly/CONST_c;
-  g_unitVelocity   = g_unitLength/(1.e3*year);
-
-  vn.l_norm       = g_unitLength;
-  vn.dens_norm    = g_unitDensity;
-  vn.v_norm       = g_unitVelocity;
+  vn.l_norm       = UNIT_LENGTH;
+  vn.dens_norm    = UNIT_DENSITY;
+  vn.v_norm       = UNIT_VELOCITY;
   vn.temp_norm    = KELVIN;
 
   /* Derived normalizations */
@@ -125,8 +119,6 @@ void SetIniNormalization() {
   ini_cgs[PAR_LEV1] = 1;                                   ini_code[PAR_LEV1] = ini_cgs[PAR_LEV1];
 
   print1("> Ini parameter normalization array initialized.\n\n");
-
-  }
 
   return;
 }
@@ -264,7 +256,7 @@ void JetPrimitives(double * jet_primitives,
   vel = Lorentz2Vel(lorentz);
   area = CONST_PI*radius*radius;
 
-  /* gmm is global in pluto.h */
+  /* m_gamma is global in pluto.h */
   gmm1 = g_gamma/(g_gamma - 1.);
   pres = power/(gmm1*lorentz*lorentz*vel*area*
       (1. + (lorentz - 1.)/lorentz*chi));
@@ -275,7 +267,7 @@ void JetPrimitives(double * jet_primitives,
   jet_primitives[RHO] = dens;
   jet_primitives[PRS] = pres;
   jet_primitives[TRC] = 1.0;
-#if CLOUDS != NONE
+#if CLOUDS
   jet_primitives[TRC+1] = 0.0;
 #endif
   OutflowVelocity(jet_primitives, vel, x1, x2, x3, 0.0);
@@ -317,7 +309,7 @@ void UfoPrimitives(double * ufo_primitives,
   ufo_primitives[RHO] = dens;
   ufo_primitives[PRS] = pres;
   ufo_primitives[TRC] = 1.0;
-#if CLOUDS != NONE
+#if CLOUDS
   ufo_primitives[TRC+1] = 0.0;
 #endif
 
@@ -441,9 +433,7 @@ void HotHaloPrimitives(double * halo,
 
    /* A message for having initialized halo with potential*/
   if (!once01){
-#ifdef HOT_DISTR
     print1("> Initializing hot halo distribution of type: %d\n\n", HOT_DISTR);
-#endif
     once01 = 1;
   }
 
@@ -455,14 +445,14 @@ void HotHaloPrimitives(double * halo,
   EXPAND(halo[VX1] = 0;,halo[VX2] = 0;,
          halo[VX3] = g_inputParam[PAR_HVBG]*ini_code[PAR_HVBG];);
 #if USE_FOUR_VELOCITY == YES
-  vel = VMAG(x1, x2, x3, halo[VX1], halo[VX2], halo[VX3])
+  vel = VMAG(x1, x2, x3, halo[VX1], halo[VX2], halo[VX3]);
   scrh = Vel2Lorentz(vel);
   EXPAND(halo[VX1] *= scrh;, halo[VX2] *= scrh;, halo[VX3] *= scrh;);
 #endif
 
   /* Tracer */
   halo[TRC] = 0.0;
-#if CLOUDS != NONE
+#if CLOUDS
   halo[TRC+1] = 0.0;
 #endif
 
@@ -499,8 +489,6 @@ int CloudCubePixel(int * el, const double x1,
   double xfrac, yfrac, zfrac;
   double csz1, csz2, csz3;
 
-#if CLOUDS == SINGLE_CUBE
-
   /* Convert to cartesian geometry, because clouds cube
    * is always assumed to be in cartesian. */
   D_EXPAND(x = CART1(x1, x2, x3);,
@@ -532,13 +520,9 @@ int CloudCubePixel(int * el, const double x1,
     return 0;
   }
 
-#else
-  fputs("Any other mode other than SINGLE_CUBE not supported yet", stderr); QUIT_PLUTO(1);
-#endif // CLOUDS == SINGLE_CUBE
-
+}
 #endif
 
-}
 
 #if CLOUDS
 /* ************************************************************** */
@@ -548,8 +532,6 @@ void ReadFractalData()
  *
  **************************************************************** */
 {
-
-#if CLOUDS == SINGLE_CUBE
 
   int get_var[] = {RHO, -1};
 #if CLOUD_VELOCITY
@@ -567,14 +549,9 @@ void ReadFractalData()
   /* Read cloud data from external file */
   if (!once01) {
     InputDataSet("./grid_in.out", get_var);
-    InputDataRead("./clouds.dbl");
+    InputDataRead("./clouds.dbl", CUBE_ENDIANNESS);
     once01 = 1;
   }
-#else
-  fputs("Any other mode other than SINGLE_CUBE not supported yet", stderr); 
-  QUIT_PLUTO(1);
-
-#endif
 
 }
 #endif
@@ -591,7 +568,6 @@ void GetFractalData(double* cloud, const double x1, const double x2, const doubl
  **************************************************************** */
 {
 
-#if CLOUDS == SINGLE_CUBE
   double x, y, z;
   int nv, inv;
 
@@ -601,22 +577,6 @@ void GetFractalData(double* cloud, const double x1, const double x2, const doubl
   y = CART2(x1, x2, x3);
   z = CART3(x1, x2, x3);
   InputDataInterpolate(cloud, x, y, z);
-
-  /* Byteswap, if necessary */
-#if CUBE_BYTESWAP
-  double fd;
-  for (nv = 0; nv < g_idnvar; nv++){
-    inv = g_idvarindx[nv];
-    fd = cloud[inv];
-    SWAP_VAR(fd);
-    cloud[inv] = fd;
-  }
-#endif
-
-#else
-  fputs("Any other mode other than SINGLE_CUBE not supported yet", stderr); 
-  QUIT_PLUTO(1);
-#endif // CLOUDS == SINGLE_CUBE
 
 }
 #endif
@@ -1040,7 +1000,6 @@ int CloudExtract(double* cloud,
 
 
 #if CLOUDS
-
 /* ************************************************************** */
 void CloudVelocity(double* cloud,
                    const double x1, const double x2, const double x3)
@@ -1058,18 +1017,21 @@ void CloudVelocity(double* cloud,
  * 
  **************************************************************** */
 {
-#if CLOUD_VELOCITY == NO
+
+  double vel, scrh;
+
+#if !CLOUD_VELOCITY
   EXPAND(cloud[VX1] = 0;,
          cloud[VX2] = 0;,
          cloud[VX3] = 0;);
 #endif
 
-#if CV_VEL_DISTR == CV_UNIFORM 
+#if CLOUD_VEL_DISTR == CV_UNIFORM 
   EXPAND(cloud[VX1] += CV_VALUE;,
          cloud[VX2] += CV_VALUE;,
          cloud[VX3] += CV_VALUE;);
 
-#elif CV_VEL_DISTR == CV_RADIAL 
+#elif CLOUD_VEL_DISTR == CV_RADIAL 
   double v1, v2, v3;
   double vsph1, vsph2, vsph3;
   double xsph1, xsph2, xsph3;
@@ -1096,7 +1058,7 @@ void CloudVelocity(double* cloud,
 
   cloud[VX1] = v1; cloud[VX2] = v2; cloud[VX3] = v3;
 
-#elif CV_VEL_DISTR == CV_KEPLERIAN_FRAC 
+#elif CLOUD_VEL_DISTR == CV_KEPLERIAN_FRAC 
 
   double v1, v2, v3;
   double vpol1, vpol2, vpol3;
@@ -1125,7 +1087,7 @@ void CloudVelocity(double* cloud,
   cloud[VX1] = v1; cloud[VX2] = v2; cloud[VX3] = v3;
 
 
-#elif CV_VEL_DISTR == CV_VIRIAL_FRAC
+#elif CLOUD_VEL_DISTR == CV_VIRIAL_FRAC
   /* Not yet programmed */
 #endif
 
@@ -1136,10 +1098,10 @@ void CloudVelocity(double* cloud,
       EXPAND(cloud[VX1] *= scrh;, cloud[VX2] *= scrh;, cloud[VX3] *= scrh;);
 #endif
 }
+#endif
 
 
 #if CLOUDS
-
 /* ************************************************************** */
 int CloudPrimitives(double* cloud, 
                     const double x1, const double x2, const double x3)
@@ -1195,7 +1157,7 @@ int CloudPrimitives(double* cloud,
       /* Calculate cloud primitives so that we can get temperature */
 
       /* Cloud velocity */
-      CloudVelocity(cloud, x1, x2, x3)
+      CloudVelocity(cloud, x1, x2, x3);
 
       /* Cloud pressure
        * Underpressure the clouds slightly, so that they 
@@ -1223,7 +1185,6 @@ int CloudPrimitives(double* cloud,
 
   return is_cloud;
 }
-
 #endif
 
 
@@ -1246,11 +1207,11 @@ int WarmTcrit(double * const warm)
 
   /* Only a cloud pixel if wtemp is below critical temperature
    * of thermal instability */
-#ifndef TCRIT
-  fputs("Error: TCRIT not defined.\n", stderr); QUIT_PLUTO(1);
+#ifndef CLOUD_TCRIT
+  fputs("Error: CLOUD_TCRIT not defined.\n", stderr); QUIT_PLUTO(1);
 #endif
 
-  if (wtemp > TCRIT){ 
+  if (wtemp > CLOUD_TCRIT){ 
     return 0;
   }
   else{
@@ -1259,8 +1220,6 @@ int WarmTcrit(double * const warm)
 
 }
 #endif
-
-
 
 
 /* ************************************************ */
@@ -1560,7 +1519,7 @@ double Vel2Lorentz(const double vel)
 {
   double vsqr = 0, clight2;
 
-  clight2 = pow(CONST_c/g_unitVelocity, 2);
+  clight2 = pow(CONST_c/UNIT_VELOCITY, 2);
 
   vsqr = vel*vel;
   return 1.0/sqrt(1.0 - vsqr/clight2);
@@ -1575,7 +1534,7 @@ double Lorentz2Vel(const double lorentz)
  ************************************************** */
 {
   double clight;
-  clight = CONST_c/g_unitVelocity;
+  clight = CONST_c/UNIT_VELOCITY;
   return sqrt(1. - 1./(lorentz*lorentz))*clight;
 }
 
