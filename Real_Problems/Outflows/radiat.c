@@ -1,10 +1,11 @@
 #include "pluto.h"
 /* AYW -- 2013-01-08 23:05 JST 
- * To get MeanMolecularWeight function */
+ * Custom headers.
+ * abundances.h: to get 
+ * MeanMolecularWeight function
+ * rMuTable.h :To use tabular MU */
+#include "pluto_usr.h"
 #include "abundances.h"
-/* -- AYW */
-/* AYW -- 2014-05-24 10:36 JST
- * To use tabular MU */
 #if MU_CALC == MU_TABLE
 #include "rMuTable.h"
 #endif
