@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "pluto.h"
+#include "pluto_usr.h"
 #include "interpolation.h"
 
 //TODO: Use PLUTO interpolation routines

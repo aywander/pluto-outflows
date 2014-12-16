@@ -20,10 +20,17 @@
 #include "abundances.h"
 #include "interpolation.h"
 
-/* Base normalization struct */
+/* Global struct and arrays for normalization */
 VarNorm vn;
 double ini_cgs[32];
 double ini_code[32];
+
+/* Global struct for nozzle */
+Nozzle nz;
+
+
+/* Functions */
+
 
 void PrintInitData01(const double * out_primitives, 
                      const double * halo_primitives){
@@ -48,7 +55,7 @@ void PrintInitData01(const double * out_primitives,
 /* ************************************************************** */
 void SetBaseNormalization() {
 /*
- * Sets g_unit*  and initializes VarNorm struct with derived normalizations
+ * Sets initializes VarNorm struct with derived normalizations
  * eint_norm is the (mass) specific internal energy [erg/g]
  *
  **************************************************************** */
@@ -96,19 +103,21 @@ void SetIniNormalization() {
  *
  **************************************************************** */
 
-  double year;
-
+  double year, degrad;
   year = CONST_ly/CONST_c;
+  degrad = CONST_PI/180.;
 
   ini_cgs[PAR_OPOW] = 1.;                                  ini_code[PAR_OPOW] = ini_cgs[PAR_OPOW]/vn.power_norm;
-  ini_cgs[PAR_OANG] = CONST_PI/180.;                       ini_code[PAR_OANG] = ini_cgs[PAR_OANG];
-  ini_cgs[PAR_OSPD] = NOZZLE_SELECT(1.,CONST_c);           ini_code[PAR_OSPD] = ini_cgs[PAR_OSPD]/vn.v_norm;
-  ini_cgs[PAR_OMDT] = NOZZLE_SELECT(1.,CONST_Msun/year);   ini_code[PAR_OMDT] = ini_cgs[PAR_OMDT]/vn.mdot_norm;
+  ini_cgs[PAR_OSPD] = NOZZLE_SELECT(1.,CONST_c);           ini_code[PAR_OSPD] = ini_cgs[PAR_OSPD]/NOZZLE_SELECT(1.,vn.v_norm);
+  ini_cgs[PAR_OMDT] = NOZZLE_SELECT(1.,CONST_Msun/year);   ini_code[PAR_OMDT] = ini_cgs[PAR_OMDT]/NOZZLE_SELECT(1.,vn.mdot_norm);
+  ini_cgs[PAR_OANG] = degrad;                              ini_code[PAR_OANG] = ini_cgs[PAR_OANG];
   ini_cgs[PAR_ORAD] = vn.l_norm;                           ini_code[PAR_ORAD] = ini_cgs[PAR_ORAD]/vn.l_norm;
-  ini_cgs[PAR_OTHK] = vn.l_norm;                           ini_code[PAR_OTHK] = ini_cgs[PAR_OTHK]/vn.l_norm;
-  ini_cgs[PAR_ODIR] = 1;                                   ini_code[PAR_ODIR] = ini_cgs[PAR_ODIR];
+  ini_cgs[PAR_ODBH] = vn.l_norm;                           ini_code[PAR_ODBH] = ini_cgs[PAR_ODBH]/vn.l_norm;
+  ini_cgs[PAR_ODIR] = degrad;                              ini_code[PAR_ODIR] = ini_cgs[PAR_ODIR];
+  ini_cgs[PAR_OOMG] = degrad/(1.e6*year);                  ini_code[PAR_OOMG] = ini_cgs[PAR_OOMG]*vn.t_norm;
+  ini_cgs[PAR_OPHI] = degrad;                              ini_code[PAR_OPHI] = ini_cgs[PAR_OPHI];
   ini_cgs[PAR_HRHO] = vn.dens_norm;                        ini_code[PAR_HRHO] = ini_cgs[PAR_HRHO]/vn.dens_norm;
-  ini_cgs[PAR_HTE ] = 1;                                   ini_code[PAR_HTE ] = ini_cgs[PAR_HTE ]/vn.temp_norm;
+  ini_cgs[PAR_HTMP] = 1;                                   ini_code[PAR_HTMP] = ini_cgs[PAR_HTMP]/vn.temp_norm;
   ini_cgs[PAR_HVBG] = DIMDIM3(1,1.e5);                     ini_code[PAR_HVBG] = ini_cgs[PAR_HVBG]/DIMDIM3(1,vn.v_norm);
   ini_cgs[PAR_HRAD] = vn.l_norm;                           ini_code[PAR_HRAD] = ini_cgs[PAR_HRAD]/vn.l_norm;
   ini_cgs[PAR_WRHO] = vn.dens_norm;                        ini_code[PAR_WRHO] = ini_cgs[PAR_WRHO]/vn.dens_norm;
@@ -125,6 +134,44 @@ void SetIniNormalization() {
 
 
 /* ************************************************ */
+void SetNozzleConeGeometry(){
+/*
+ * Set outflow geometry struct with parameters of cone 
+ *
+ * NOTE:
+ *  - JetPrimitives and UfoPrimities only differ in their
+ *    normalizations and how the paramters are set.
+ *
+ ************************************************** */
+
+  double small_angle = 1.e-12;
+  double large = 1.e30;
+
+  nz.aph = g_inputParam[PAR_OANG]*ini_code[PAR_OANG];
+  nz.rad = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
+  nz.dir = g_inputParam[PAR_ODIR]*ini_code[PAR_ODIR];
+  nz.dbh = g_inputParam[PAR_ODBH]*ini_code[PAR_ODBH];
+  nz.omg = g_inputParam[PAR_OOMG]*ini_code[PAR_OOMG];
+  nz.phi = g_inputParam[PAR_OPHI]*ini_code[PAR_OPHI];
+  nz.orig = g_domBeg[FLOWAXIS(IDIR,JDIR,KDIR)]; 
+  nz.cbh = (nz.orig - nz.dbh)/cos(nz.dir) + nz.rad*tan(nz.dir);
+  if (nz.aph > small_angle) { 
+    nz.isfan = 1;
+    nz.area = 2.*CONST_PI*(1. - cos(nz.aph))*pow(nz.rad/sin(nz.aph),2);
+    nz.cone_height = nz.rad/tan(nz.aph);
+    nz.cone_apex = - (nz.cone_height - nz.orig);
+  }
+  else { 
+    nz.isfan = 0; 
+    nz.area = CONST_PI*nz.rad*nz.rad;
+    nz.cone_height = large;
+    nz.cone_apex = -large;
+  }
+
+}
+
+
+/* ************************************************ */
 void OutflowPrimitives(double* out_primitives, 
     const double x1, const double x2, const double x3) {
 /*
@@ -136,6 +183,7 @@ void OutflowPrimitives(double* out_primitives,
  *
  ************************************************** */
 
+  /* Get primitives array depending on outflow type */
   NOZZLE_SELECT(JetPrimitives(out_primitives, x1, x2, x3),
                 UfoPrimitives(out_primitives, x1, x2, x3));
 
@@ -144,83 +192,80 @@ void OutflowPrimitives(double* out_primitives,
 
 /* ************************************************ */
 void OutflowVelocity(double * out_primitives, double speed,
-    const double x1, const double x2, const double x3, const double th){
+    const double x1, const double x2, const double x3){
 /*
  * Calculate outflow velocity vector inside out_primitives given 
- *
- * - a cell location x1, x2, x3
- * - angle of cell velocity vector theta (not necessarily = OANG parameter)
+ * a cell location x1, x2, x3, and velocity magnitude speed.
  *
  * This function is used by UfoPrimitives and JetPrimitives
  * and should be generic for any outflow nozzle.
  *
  ************************************************** */
 
-  double xs1, xs2, xs3;
-  double vs1, vs2, vs3;
-#if USE_FOUR_VELOCITY == YES
-  double lorentz, vel;
-  int iv;
-#endif
+  /* Work in spherical. The velocity vectors are radial along the cone.
+   * The cone apex is not necessarily the precession axis or the coordinate origin. */
 
 
-#if USE_FOUR_VELOCITY == YES
-  lorentz = Vel2Lorentz(speed);
-#endif
+  /* Grid point in cartesian coordinates */
+  double cx1, cx2, cx3;
+  cx1 = CART1(x1, x2, x3);
+  cx2 = CART2(x1, x2, x3);
+  cx3 = CART3(x1, x2, x3);
 
+  /* Rotate grid to align to flow axis */
+  double cx1p, cx2p, cx3p;
+  RotateGrid2Nozzle(cx1, cx2, cx3, &cx1p, &cx2p, &cx3p);
 
-  /* This is for both NOZZLE_SHAPE = ANN and FAN 
-   * Work in spherical. Assume the coordinate system describing the
-   * velocity is shifted downward by w/tan(th). The azimuthal angle 
-   * doesn't change. Special treatment is necessary for geometries
-   * that don't have vector components that are invariatne under 
-   * translation along z axis, e.g. spherical. */
-  xs3 = SPH3(x1, x2, x3);
+  double vx1, vx2, vx3;
+  double cvx1, cvx2, cvx3;
 
-  /* Convert to current geomtetry */
-#if GEOMETRY == SPHERICAL
+  if (nz.isfan) {
 
- 
+    FLOWAXIS(cx1p, cx2p, cx3p) -= nz.cone_apex;
 
-  double vca1, vca2, vca3;
-  double xca1, xca2, xca3;
+    double sx1, sx2, sx3;
+    sx1 = SPH1(cx1p, cx2p, cx3p);
+    sx2 = SPH2(cx1p, cx2p, cx3p);
+    sx3 = SPH3(cx1p, cx2p, cx3p);
 
-  /*
-  EXPAND(vca1 = VSPH2CART1(0, th, xs3, speed, 0, 0);,
-         vca2 = VSPH2CART2(0, th, xs3, speed, 0, 0);,
-         vca3 = VSPH2CART3(0, th, xs3, speed, 0, 0););
+    double cur_vx1, cur_vx2, cur_vx3;
+    EXPAND(cur_vx1 = VSPH_1(sx1, sx2, sx3, speed, 0, 0);,
+           cur_vx2 = VSPH_2(sx1, sx2, sx3, speed, 0, 0);,
+           cur_vx3 = VSPH_3(sx1, sx2, sx3, speed, 0, 0););
 
-  xca1 = CART1(x1, x2, x3);
-  xca2 = CART2(x1, x2, x3);
-  xca3 = CART3(x1, x2, x3);
+    EXPAND(cvx1 = VCART1(cx1p, cx2p, cx3p, cur_vx1, cur_vx2, cur_vx3);,
+           cvx2 = VCART2(cx1p, cx2p, cx3p, cur_vx1, cur_vx2, cur_vx3);,
+           cvx3 = VCART3(cx1p, cx2p, cx3p, cur_vx1, cur_vx2, cur_vx3););
 
-  EXPAND(out_primitives[VX1] = VCART2SPH1(xca1, xca2, xca3, vca1, vca2, vca3);,
-         out_primitives[VX2] = VCART2SPH2(xca1, xca2, xca3, vca1, vca2, vca3);,
-         out_primitives[VX3] = VCART2SPH3(xca1, xca2, xca3, vca1, vca2, vca3);)
- 
-   */
-    
+    FLOWAXIS(cx1p, cx2p, cx3p) += nz.cone_apex;
 
-  EXPAND(out_primitives[VX1] =  speed*cos(x2 - th);,
-         out_primitives[VX2] =  speed*sin(x2 - th);,
-         out_primitives[VX3] = 0;)
+  }
+  else {
 
+    EXPAND(cvx1 = 0;,
+           cvx2 = 0;,
+           cvx3 = speed;);
+  }
 
-#else
-    /* OK in all geometries except spherical and 2D polar */
-  EXPAND(out_primitives[VX1] = VSPH_1(1, th, xs3, speed, 0, 0);,
-         out_primitives[VX2] = VSPH_2(1, th, xs3, speed, 0, 0);,
-         out_primitives[VX3] = VSPH_3(1, th, xs3, speed, 0, 0););
-#endif
+  double cvx1p, cvx2p, cvx3p; 
+  RotateNozzle2Grid(cvx1, cvx2, cvx3, &cvx1p, &cvx2p, &cvx3p);
 
+  EXPAND(vx1 = VCART_1(cx1, cx2, cx3, cvx1p, cvx2p, cvx3p);,
+         vx2 = VCART_2(cx1, cx2, cx3, cvx1p, cvx2p, cvx3p);,
+         vx3 = VCART_3(cx1, cx2, cx3, cvx1p, cvx2p, cvx3p););
+
+  EXPAND(out_primitives[VX1] = vx1;,
+         out_primitives[VX2] = vx2;,
+         out_primitives[VX3] = vx3;);
 
 #if USE_FOUR_VELOCITY == YES
   /* This is the same for all geometries */
+  double lorentz;
+  lorentz = Vel2Lorentz(speed);
   EXPAND(out_primitives[VX1] *= lorentz;,
          out_primitives[VX2] *= lorentz;,
          out_primitives[VX3] *= lorentz;);
 #endif
-
 
   return;
 }
@@ -242,26 +287,20 @@ void JetPrimitives(double * jet_primitives,
  *    anymore.
  ************************************************** */
 
-  double power, chi, lorentz, radius; 
-  double dens, pres, vel;
-  double area, gmm1;
+  double power, chi, lorentz; 
 
   /* The parameters from ini, and normalize them */
   power   = g_inputParam[PAR_OPOW]*ini_code[PAR_OPOW];
   chi     = g_inputParam[PAR_OMDT]*ini_code[PAR_OMDT];
   lorentz = g_inputParam[PAR_OSPD]*ini_code[PAR_OSPD];
-  radius  = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
 
-  /* Some needed quantities */
+  /* Some derived quantities */
+  double vel, dens, pres, gmm1;
   vel = Lorentz2Vel(lorentz);
-  area = CONST_PI*radius*radius;
-
-  /* m_gamma is global in pluto.h */
   gmm1 = g_gamma/(g_gamma - 1.);
-  pres = power/(gmm1*lorentz*lorentz*vel*area*
+  pres = power/(gmm1*lorentz*lorentz*vel*nz.area*
       (1. + (lorentz - 1.)/lorentz*chi));
   dens = chi*gmm1*pres;
-
 
   /* Set primitives array */
   jet_primitives[RHO] = dens;
@@ -270,7 +309,7 @@ void JetPrimitives(double * jet_primitives,
 #if CLOUDS
   jet_primitives[TRC+1] = 0.0;
 #endif
-  OutflowVelocity(jet_primitives, vel, x1, x2, x3, 0.0);
+  OutflowVelocity(jet_primitives, vel, x1, x2, x3);
 
   return;
 }
@@ -287,22 +326,17 @@ void UfoPrimitives(double * ufo_primitives,
  *
  ************************************************** */
 
-  double power, speed, mdot, r0, w, th; 
-  double dens, pres;
-  double area;
+  double power, speed, mdot;
 
-  /* Input parameters, normalized */
-  r0    = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
-  w     = g_inputParam[PAR_OTHK]*ini_code[PAR_OTHK];
-  th    = g_inputParam[PAR_OANG]*ini_code[PAR_OANG];
+  /* Input parameters, normalized in code units*/
   power = g_inputParam[PAR_OPOW]*ini_code[PAR_OPOW];
   speed = g_inputParam[PAR_OSPD]*ini_code[PAR_OSPD];
   mdot  = g_inputParam[PAR_OMDT]*ini_code[PAR_OMDT];
 
   /* Derived quantities */
-  area = 2*CONST_PI*r0*w;
-  pres = (power - 0.5*mdot*speed*speed)*(g_gamma-1)/(g_gamma*area*speed);
-  dens = mdot/(area*speed);
+  double dens, pres;
+  pres = (power - 0.5*mdot*speed*speed)*(g_gamma-1)/(g_gamma*nz.area*speed);
+  dens = mdot/(nz.area*speed);
 
 
   /* Set primitives array */
@@ -313,17 +347,7 @@ void UfoPrimitives(double * ufo_primitives,
   ufo_primitives[TRC+1] = 0.0;
 #endif
 
-#if NOZZLE_SHAPE == FAN
-  /* w is assumed not to be angled */
-  double theta, c1, c2, k;
-  c1 = CYL1(x1, x2, x3);
-  c2 = CYL1(x1, x2, x3);
-  k = w/(2*tan(th));
-  theta = atan(c1/(c2 + k));
-  OutflowVelocity(ufo_primitives, speed, x1, x2, x3, theta);
-#elif NOZZLE_SHAPE == ANN
-  OutflowVelocity(ufo_primitives, speed, x1, x2, x3, th);
-#endif
+  OutflowVelocity(ufo_primitives, speed, x1, x2, x3);
 
   return;
 }
@@ -348,16 +372,12 @@ void HotHaloPrimitives(double * halo,
   double y0, y1, y2, y3, r1, r2; 
   int iv, il, ic;
   static int once01 = 0;
-  //static int once02 = 0;
-  //static int once03 = 0;
 
 
   /* Initialize gravity arrays - as good as any other place to do it */
 #ifdef GRAV_TABLE
-  //if (!once03){
   if (gr_rad == NULL){
     readGravTable();
-    //once03 = 1;
   }
 #endif
 
@@ -381,9 +401,7 @@ void HotHaloPrimitives(double * halo,
 #elif HOT_DISTR == HOT_EXT_DATA
   
   if (hot_rad == NULL){
-  //if (!once02){
     readHotTable();
-    //once02 = 1;
   }
 
   /* Radius of current cell */
@@ -420,14 +438,14 @@ void HotHaloPrimitives(double * halo,
    * without gravity (else clause).*/
 
   halo[RHO] = g_inputParam[PAR_HRHO]*ini_code[PAR_HRHO];
-  halo[PRS] = PresNrEOS(halo[RHO], g_inputParam[PAR_HTE]*ini_code[PAR_HTE], MU_NORM);
+  halo[PRS] = PresNrEOS(halo[RHO], g_inputParam[PAR_HTMP]*ini_code[PAR_HTMP], MU_NORM);
 
 
   /* Default is flat */
 #else
 
   halo[RHO] = g_inputParam[PAR_HRHO]*ini_code[PAR_HRHO];
-  halo[PRS] = PresNrEOS(halo[RHO], g_inputParam[PAR_HTE]*ini_code[PAR_HTE], MU_NORM);
+  halo[PRS] = PresNrEOS(halo[RHO], g_inputParam[PAR_HTMP]*ini_code[PAR_HTMP], MU_NORM);
 
 #endif
 
@@ -474,9 +492,9 @@ int CloudCubePixel(int * el, const double x1,
  * \param [in] x2   current zone x2 coordinates (any geometry)
  * \param [in] x3   current zone x3 coordinates (any geometry)
  *
- * Calculate pixel coordinates in fractal cube for given zone.
- * The origin of the pixel coordinates (here el[]) is at the 
- * corner with the smallest values of x1, x2, and x3 
+ * Calculate pixel coordinates (here el[]) in fractal cube 
+ * for given zone. The origin of the pixel coordinates is at 
+ * the corner with the smallest values of x1, x2, and x3 
  * (the lower corner).
  *
  * Returns 1 if we are in a zone that is covered by the 
@@ -797,8 +815,7 @@ int CloudExtract(double* cloud,
    * with the smallest values of x1, x2, and x3.
    */
 
-  /* We are working in cartesian. Clouds cube is always
-   * assumed to be a data file in cartesian */
+  /* Clouds cube is always assumed to be a data file in cartesian */
   D_EXPAND(rcx = pixel[0] - 0.5*g_idnx1;,
            rcy = pixel[1] - 0.5*g_idnx2;,
            rcz = pixel[2] - 0.5*g_idnx3;);
@@ -814,7 +831,7 @@ int CloudExtract(double* cloud,
 
   /* Inner hemisphere to keep free */
   urad = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
-  uthk = g_inputParam[PAR_OTHK]*ini_code[PAR_OTHK];
+  //uthk = g_inputParam[PAR_OTHK]*ini_code[PAR_OTHK];
   inner_circ = rrad/(hemf*(urad + uthk));
 
   /* Exclude zone outside interior sphere */
@@ -864,12 +881,8 @@ int CloudExtract(double* cloud,
 
   /* Inner hemisphere to keep free */
   urad = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
-  uthk = g_inputParam[PAR_OTHK]*ini_code[PAR_OTHK];
-#if NOZZLE_SHAPE == FAN
+  //uthk = g_inputParam[PAR_OTHK]*ini_code[PAR_OTHK];
   inner_circ = rrad/(hemf*(urad + 0.5*uthk));
-#else
-  inner_circ = rrad/(hemf*(urad + uthk));
-#endif
 
   /* Exclude zone outside interior sphere */
   wrad = g_inputParam[PAR_WRAD]*ini_code[PAR_WRAD];
@@ -930,12 +943,8 @@ int CloudExtract(double* cloud,
 
   /* Inner hemisphere to keep free */
   urad = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
-  uthk = g_inputParam[PAR_OTHK]*ini_code[PAR_OTHK];
-#if NOZZLE_SHAPE == FAN
+  //uthk = g_inputParam[PAR_OTHK]*ini_code[PAR_OTHK];
   inner_circ = rrad/(hemf*(urad + 0.5*uthk));
-#else
-  inner_circ = rrad/(hemf*(urad + uthk));
-#endif
 
   /* The inner ellipse equation, lhs, beyond which smoothing region begins */
   wsmf = g_inputParam[PAR_WSMF]*ini_code[PAR_WSMF];
@@ -1223,228 +1232,91 @@ int WarmTcrit(double * const warm)
 
 
 /* ************************************************ */
-int RotateGrid2Nozzle(double const r , double const x,
-                             double*      rp, double*      xp){
+int RotateGrid2Nozzle(
+    double const cx1, double const cx2, double const cx3,
+    double* cx1p, double* cx2p, double* cx3p){
 /*
- * This function assumes 2D (cartesian) coor-
- * dinates for a cylindrically symmetric nozzle.
- * First translates a point by -k = r/sin(theta). 
- * Rotates a point from coordinates defined by grid to 
- * coordinates parallel and perpendicular to the theta
- * (OANG parameter) direction. 
- * Then translates point back by k again.
- * The rotation is a 2D rotation by an angle
- * -theta about . Thus, the rotation matrix is defined as
+ * This function assumes 3D (cartesian) coor-
+ * dinates. First rotates according to any precession 
+ * through phi + omg*t. Then translates a point by dbh.
+ * Then rotates grid around y-axis by angle dir so that
+ * it is parallel to the nozzle cone.
+ * Then instead of translating point back by dbh again,
+ * a translation along the flow-axis by cbh is done to 
+ * make the cap base flush with the computational domain.
  * 
- *  / rp \       / r \
- * |      | = R |     |
- *  \ xp /       \ y /
+ *
+ * Thus, the transformation matrix is defined as
+ * 
+ *  / cx1p \              / cx1 \
+ * |  cx2p  | = iT R T P |  cx2  |
+ * |  cx3p  |            |  cx3  |
+ *  \  1   /              \  1  /
  *
  *  where 
  *
- *       / cos(th)   sin(th) \
- *  R = |                     |
- *       \ -sin(th)  cos(th) /
+ *  Inverse rotation about Z axis
+ *
+ *       / cos(pre)   sin(pre)  0  0 \
+ *  P = |  -sin(pre)  cos(pre)  0  0  |
+ *      |   0            0      1  0  |
+ *       \  0            0      0  1 /
+ *
+ *       where pre = phi + omg*g_time
+ *
+ *  Inverse rotation about Y axis
+ *
+ *       /  cos(dir)   0  -sin(dir)  0 \
+ *  R = |      0       1      0      0  |
+ *      |   sin(dir)   0   cos(dir)  0  |
+ *       \     0       0      0      1 /
+ *
+ *  Translation along z
+ *
+ *       / 1   0  0   0 \
+ *  T = |  0   1  0   0  |
+ *      |  0   0  1 -dbh |
+ *       \ 0   0  0   1 /
+ *
+ *       / 1   0  0   0 \
+ * iT = |  0   1  0   0  |
+ *      |  0   0  1  dbh |
+ *       \ 0   0  0   1 /
  *
  ************************************************** */
 
-  double th;
+  /* Precession angle */
+  double pre;
+  pre = nz.phi + nz.omg*g_time;
 
-  th = g_inputParam[PAR_OANG]*ini_code[PAR_OANG];
-
-  *rp =  cos(th)*r - sin(th)*x;
-  *xp =  sin(th)*r + cos(th)*x;
+  /* The transformations */
+  // Signs for nz.dbh and nz.cbh translations may be the wrong way around.
+  *cx1p =  (cx1*cos(pre) - cx2*sin(pre))*cos(nz.dir) - sin(nz.dir)*(cx3 - nz.dbh);
+  *cx2p =   cx2*cos(pre) + cx1*sin(pre);
+  *cx3p =  (cx1*cos(pre) - cx2*sin(pre))*sin(nz.dir) + nz.dbh + cos(nz.dir)*(cx3 - nz.dbh);
 
   return 0;
 }
 
-
 /* ************************************************ */
-int RotateNozzle2Grid(double const r , double const x,
-                             double* rp, double*  xp){
+int RotateNozzle2Grid(
+    double const cx1, double const cx2, double const cx3,
+    double* cx1p, double* cx2p, double* cx3p){
 /*
- * This function assumes 2D (cartesian) coor-
- * dinates for a cylindrically symmetric nozzle.
- * Rotates a point from coordinates defined by
- * coordinates parallel and perpendicular to the theta
- * (OANG parameter) direction, to coordinates aligned with grid.
- * The rotation is a 2D rotation by an angle
- * theta around (0,0,0).
- * Thus, the rotation matrix is defined as
- * 
- *  / r \       / rp \
- * |     | = R |      |
- *  \ x /       \ yp /
- *
- *  where 
- *       / cos(th)   sin(th) \
- *  R = |                     |
- *       \ -sin(th)  cos(th) /
+ * This Function does the inverse transformation of
+ * RotateGrid2Nozzle
  *
  ************************************************** */
 
-  double th;
+  /* Precession angle */
+  double pre;
+  pre = nz.phi + nz.omg*g_time;
 
-  th = g_inputParam[PAR_OANG]*ini_code[PAR_OANG];
-
-  *rp =  cos(th)*r + sin(th)*x;
-  *xp = -sin(th)*r + cos(th)*x;
+  *cx1p =  cx2*sin(pre) + cos(pre)*(cx1*cos(nz.dir) + sin(nz.dir)*(cx3 + nz.dbh));
+  *cx2p =  cx2*cos(pre) - sin(pre)*(cx1*cos(nz.dir) + sin(nz.dir)*(cx3 + nz.dbh));
+  *cx3p = -(cx1*sin(nz.dir)) - nz.dbh + cos(nz.dir)*(cx3 + nz.dbh);
 
   return 0;
-}
-
-
-
-
-/* ************************************************ */
-int TranslateRotateGrid2Nozzle(double const r , double const x,
-                               double*      rp, double*      xp){
-/*
- * This function assumes 2D (cartesian) coor-
- * dinates for a cylindrically symmetric nozzle.
- * First translates a point by -k = r/sin(theta). 
- * Rotates a point from coordinates defined by grid to 
- * coordinates parallel and perpendicular to the theta
- * (OANG parameter) direction. 
- * Then translates point back by k again.
- * The rotation is a 2D rotation by an angle
- * -theta about . Thus, the transformation is 
- * 
- *  / rp \       / r     \     / 0 \
- * |      | = R |         | - |    |
- *  \ xp /       \ x + k /     \ k /
- *
- *  where 
- *       / cos(th)   sin(th) \
- *  R = |                     |
- *       \ -sin(th)  cos(th) /
- *
- ************************************************** */
-
-  double th, w, k;
-
-  th = g_inputParam[PAR_OANG]*ini_code[PAR_OANG];
-#if NOZZLE_SHAPE == ANN
-  w  = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
-#elif NOZZLE_SHAPE == FAN
-  w  = g_inputParam[PAR_OTHK]*ini_code[PAR_OTHK];
-#endif
-  k = w*sin(th);
-
-  /* Offset: from (0, 0) to center of rotation*/
-
-  *rp =  cos(th)*r - sin(th)*(x + k);
-  *xp =  sin(th)*r + cos(th)*(x + k) - k;
-
-  return 0;
-}
-
-
-/* ************************************************ */
-int TranslateRotateNozzle2Grid(double const r , double const x,
-                             double*      rp, double*      xp){
-/*
- * This function assumes 2D (cartesian) coor-
- * dinates for a cylindrically symmetric nozzle.
- * First translates a point by -k = r/sin(theta).
- * Then rotates a point from coordinates defined by
- * coordinates parallel and perpendicular to the theta
- * (OANG parameter) direction, to coordinates aligned with grid.
- * Then translates point back by k again.
- * The rotation is a 2D rotation by an angle
- * theta around a point -k = r/sin(theta).
- * Thus, the rotation matrix is defined as
- * 
- *  / r \       / rp     \     / 0 \
- * |     | = R |          | - |    |
- *  \ x /       \ xp + k /     \ k /
- *
- *  where 
- *
- *       / cos(th)   sin(th) \
- *  R = |                     |
- *       \ -sin(th)  cos(th) /
- *
- ************************************************** */
-
-  double th, w, k;
-  th = g_inputParam[PAR_OANG]*ini_code[PAR_OANG];
-#if NOZZLE_SHAPE == ANN
-  w  = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
-#elif NOZZLE_SHAPE == FAN
-  w  = 0.5*g_inputParam[PAR_OTHK]*ini_code[PAR_OTHK];
-#endif
-  k = w/tan(th);
-
-
-  *rp =  cos(th)*r + sin(th)*(x + k);
-  *xp = -sin(th)*r + cos(th)*(x + k) - k;
-
-  return 0;
-}
-
-
-
-
-
-
-/* ************************************************ */
-int InNozzleBase(double const x1, double const x2, double const x3){
-/*
- * Returns 1 if r is in wind base on x=0 plane, 0 if not. The wind
- * region is the hemisphere defined by r2.
- *
- * A FAIRE:
- * Add special condition for when th < small_value.
- *
- ************************************************** */
-
-  double w, w_c, r0, th, r2, r1, r, z;
-  const double small = 1.e-10;
-
-  th = g_inputParam[PAR_OANG]*ini_code[PAR_OANG];
-  w = g_inputParam[PAR_OTHK]*ini_code[PAR_OTHK];
-
-  r = CYL1(x1, x2, x3);
-  z = CYL2(x1, x2, x3);
-
-#if NOZZLE_SHAPE == FAN
-   
-#if GEOMETRY == SPHERICAL
-  /* Assumes g_domBeg[IDIR] > w/2, and that w = w_c */
-  double k, theta, rsph;
-  k = w/(2*tan(th));
-  theta = atan(r/(z + k));
-  rsph = SPH1(x1, x2, x3);
-  return ((fabs(rsph - g_domBeg[IDIR]) < small) && (theta <= th));
-#else
-  return ((fabs(z) < small) && (r < 0.5*w));
-#endif
-
-#elif NOZZLE_SHAPE == ANN
-  w_c = w/cos(th);
-  r0 = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
-  r2 = r0 + 0.5*w_c;
-  r1 = r0 - 0.5*w_c;
-
-#if GEOMETRY == SPHERICAL
-  double k, theta, rsph, thsph, r1p, z1p;
-  k = r0/(2*tan(th));
-  theta = atan(r/(z + k));
-
-  rsph = SPH1(x1, x2, x3);
-  thsph = SPH2(x1, x2, x3);
-
-  RotateGrid2Nozzle(r1, 0, &r1p, &z1p);
-
-  return ((fabs(rsph - g_domBeg[IDIR]) < small) && 
-      (thsph >= th + asin(r1p/g_domBeg[IDIR])) && 
-      (theta <= th));
-#else
-  return ((fabs(z) < small) && (r < r2 ) && (r > r1));
-#endif
-
-#endif
 }
 
 
@@ -1452,61 +1324,53 @@ int InNozzleBase(double const x1, double const x2, double const x3){
 /* ************************************************ */
 int InNozzleRegion(double const x1, double const x2, double const x3){
 /*
- * Returns 1 if r is in outflow region, 0 if not. The outflow
- * region is the wedge and cap of radius w/2 in the 
- * direction of the outflow. k is the distance from (0,0,0)
- * to the point where the hypothenuse of teh wedge meets the 
- * outflow axis.
- *
- * A FAIRE:
- * Add special condition for when th < small_value.
+ * Returns 1 if r is in outflow region, 0 if not.
+ * Nozzle is always a fan shaped region defined by
+ * the intersection of a cone with the boundary volume.
+ * A cap is included at the top of the cone, making it
+ * an ice-cream.
+ *   The outer rim of the maximum cone radius is at the 
+ * surface of the computational domain. The cone apex is 
+ * not necessarily at (0,0,0), neither is the tilt rotation
+ * axis. The apex and tilt rotation axis are also not 
+ * necessarily at the same point. 
+ *    If the half opening angle
+ * aph == 0, the ice-cream becomes a bullet.
  *
  ************************************************** */
 
-  double r, r0, r1, r2, th, w, bullet, z;
-  double rp, r0p, r1p, r2p, zp, z0p, z1p, z2p;
+  /* Grid point in cartesian coordinates */
+  double cx1, cx2, cx3;
+  cx1 = CART1(x1, x2, x3);
+  cx2 = CART2(x1, x2, x3);
+  cx3 = CART3(x1, x2, x3);
 
-  th = g_inputParam[PAR_OANG]*ini_code[PAR_OANG];
-  w  = g_inputParam[PAR_OTHK]*ini_code[PAR_OTHK];
-  
-  r = CYL1(x1, x2, x3);
-  z = CYL2(x1, x2, x3);
+  /* Rotate and shift cartesian coords so that base of cone is at (0,0,0) */
+  double cx1p, cx2p, cx3p;
+  RotateGrid2Nozzle(cx1, cx2, cx3, &cx1p, &cx2p, &cx3p);
+  FLOWAXIS(cx1p, cx2p, cx3p) -= nz.dbh + nz.cbh;
 
+  /* Turn into cylindrical coords */
+  double cr, cz;
+  cr = CYL1(cx1p, cx2p, cx3p);
+  cz = CYL2(cx1p, cx2p, cx3p);
 
-#if NOZZLE_SHAPE == FAN
-  double k, rr, d;
-  k = w/(2*tan(th));
-  rr = sqrt((z + k)*(z + k) + r*r);
-  d = 0.5*w/sin(th);
-   
-#if GEOMETRY == SPHERICAL
-  /* Assumes g_domBeg[IDIR] > w/2 */
-    return (rr <= g_domBeg[IDIR] + d);
-#else
-    return (rr <= d);
-#endif
+  /* Hemispherical cap height */
+  double cap_hgt;
+  cap_hgt = sqrt(nz.rad*nz.rad - cr*cr);
 
+  int incone;
 
-#elif NOZZLE_SHAPE == ANN
+  /* Condition for Bullet */
+  incone = cz < cap_hgt;
 
-  r0 = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
-  r1 = r0 - 0.5*w/cos(th);
-  r2 = r0 + 0.5*w/cos(th);
+  /* Condition for ice-cream cone */
+  if (nz.isfan) { 
+    incone = incone && (cr < (cz + nz.cone_height)*tan(nz.aph));
+  }
 
-  RotateGrid2Nozzle(r , z, &rp , &zp);
-  RotateGrid2Nozzle(r0, 0, &r0p, &z0p);
-  RotateGrid2Nozzle(r1, 0, &r1p, &z1p);
-  RotateGrid2Nozzle(r2, 0, &r2p, &z2p);
+  return incone;
 
-#if GEOMETRY == SPHERICAL
-  bullet = sqrt(r1p*r1p + g_domBeg[IDIR]*g_domBeg[IDIR]) + 
-    sqrt(w*w/4. - pow((rp - r0p), 2));
-#else
-  bullet = z2p + sqrt(w*w/4. - pow((rp - r0p), 2));
-#endif
-
-  return (zp <= bullet);
-#endif
 }
 
 
@@ -1542,64 +1406,26 @@ double Lorentz2Vel(const double lorentz)
 /* ************************************************ */
 double Profile(const double x1, const double x2, const double x3)
 /*! 
- * Cylindrically symmetric wind
- * As a function of three coordinates.
- * 
+  * 1/cosh smoothing function
+  *
  ************************************************** */
 {
+  /* Steepness of cosh profile */
   int n = 14;
-  double r, z, rp, zp, r0, r0p, z0p, w;
 
-  /* Assumes nozzle axis is along first directional component */
-  r = CYL1(x1, x2, x3);
-  z = CYL2(x1, x2, x3);
+  /* Grid point in cartesian coordinates */
+  double cx1, cx2, cx3, cx1p, cx2p, cx3p;
+  cx1 = CART1(x1, x2, x3);
+  cx2 = CART2(x1, x2, x3);
+  cx3 = CART3(x1, x2, x3);
 
-  w  = g_inputParam[PAR_OTHK]*ini_code[PAR_OTHK];
-#if NOZZLE_SHAPE == ANN
-  r0 = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
-  RotateGrid2Nozzle(r , z, &rp , &zp);
-  RotateGrid2Nozzle(r0, 0, &r0p, &z0p);
-#elif NOZZLE_SHAPE == FAN
-  rp = r;
-  r0p = 0;
-#endif
+  /* Rotate cartesian coords and turn into cylindrical coords */
+  double cr, cz;
+  RotateGrid2Nozzle(cx1, cx2, cx3, &cx1p, &cx2p, &cx3p);
+  cr = CYL1(cx1p, cx2p, cx3p);
+  cz = CYL2(cx1p, cx2p, cx3p);
 
-
-  return 1.0/cosh(pow((rp - r0p)/(w/2.), n));
+  /* Return smoothing factor */
+  return 1.0/cosh(pow(cr/nz.rad, n));
 }
-
-
-
-/* ************************************************ */
-double Profile_sharp(const double x1, const double x2, const double x3)
-/* 
- * Cylindrically symmetric wind
- * r      radial coordinate 
- * x      coordinate perpendicular to disc
- *
- ************************************************** */
-{
-  double r, z, rp, zp, r0, r0p, z0p, w;
-
-  /* Assumes nozzle axis is along first directional component */
-  r = CYL1(x1, x2, x3);
-  z = CYL2(x1, x2, x3);
-
-  w  = g_inputParam[PAR_OTHK]*ini_code[PAR_OTHK];
-#if NOZZLE_SHAPE == ANN
-  r0 = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
-  RotateGrid2Nozzle(r , z, &rp , &zp);
-  RotateGrid2Nozzle(r0, 0, &r0p, &z0p);
-#elif NOZZLE_SHAPE == FAN
-  rp = r;
-  r0p = 0;
-#endif
-
-
-  return (fabs(rp - r0p) <= w/2.);
-
-}
-
-
-
 

@@ -108,19 +108,19 @@ void ChangeDumpVar ()
 #if NTRACER > 1
   SetDumpVar("tr2",  VTK_OUTPUT, YES);
 #endif
-  SetDumpVar("spd",  VTK_OUTPUT, YES);
-#if USE_FOUR_VELOCITY == YES
-  SetDumpVar("v1",  FLT_OUTPUT, YES);
-  SetDumpVar("v2",  FLT_OUTPUT, YES);
-  SetDumpVar("v3",  FLT_OUTPUT, YES);
-#endif
+//  SetDumpVar("spd",  VTK_OUTPUT, YES);
+//#if USE_FOUR_VELOCITY
+//  SetDumpVar("v1",  VTK_OUTPUT, YES);
+//  SetDumpVar("v2",  VTK_OUTPUT, YES);
+//  SetDumpVar("v3",  VTK_OUTPUT, YES);
+//#endif
 
   /* FLT output */
   SetDumpVar("rho",  FLT_OUTPUT, YES);
-  SetDumpVar("vx1",  FLT_OUTPUT, YES);
-  SetDumpVar("vx2",  FLT_OUTPUT, YES);
+  SetDumpVar("vx1",  FLT_OUTPUT, NO);
+  SetDumpVar("vx2",  FLT_OUTPUT, NO);
 #if COMPONENTS > 2
-  SetDumpVar("vx3",  FLT_OUTPUT, YES);
+  SetDumpVar("vx3",  FLT_OUTPUT, NO);
 #endif
   SetDumpVar("prs",  FLT_OUTPUT, YES);
 #if NTRACER > 0
@@ -129,12 +129,12 @@ void ChangeDumpVar ()
 #if NTRACER > 1
   SetDumpVar("tr2",  FLT_OUTPUT, YES);
 #endif
-  SetDumpVar("spd",  FLT_OUTPUT, NO);
-#if USE_FOUR_VELOCITY
-  SetDumpVar("v1",  FLT_OUTPUT, NO);
-  SetDumpVar("v2",  FLT_OUTPUT, NO);
-  SetDumpVar("v3",  FLT_OUTPUT, NO);
-#endif
+//  SetDumpVar("spd",  FLT_OUTPUT, YES);
+//#if USE_FOUR_VELOCITY
+//  SetDumpVar("v1",  FLT_OUTPUT, YES);
+//  SetDumpVar("v2",  FLT_OUTPUT, YES);
+//  SetDumpVar("v3",  FLT_OUTPUT, YES);
+//#endif
 
 
   /* PNG output */
@@ -151,12 +151,12 @@ void ChangeDumpVar ()
 #if NTRACER > 1
   SetDumpVar("tr2", PNG_OUTPUT, YES);
 #endif
-  SetDumpVar("spd",  PNG_OUTPUT, YES);
-#if USE_FOUR_VELOCITY
-  SetDumpVar("v1",  FLT_OUTPUT, YES);
-  SetDumpVar("v2",  FLT_OUTPUT, YES);
-  SetDumpVar("v3",  FLT_OUTPUT, YES);
-#endif
+//SetDumpVar("spd",  PNG_OUTPUT, YES);
+//#if USE_FOUR_VELOCITY
+//  SetDumpVar("v1",  PNG_OUTPUT, YES);
+//  SetDumpVar("v2",  PNG_OUTPUT, YES);
+//  SetDumpVar("v3",  PNG_OUTPUT, YES);
+//#endif
 
   /* density slice */
   image = GetImage("rho");
@@ -201,13 +201,13 @@ void ChangeDumpVar ()
 #endif
 
   /* speed slice */
-  image = GetImage("spd");
-#if COMPONENTS > 2
-  image->slice_plane = X13_PLANE;
-  image->slice_coord = 0.0;
-#endif
-  image->max = image->min = 0.;
-  image->logscale = 1;
+//  image = GetImage("spd");
+//#if COMPONENTS > 2
+//  image->slice_plane = X13_PLANE;
+//  image->slice_coord = 0.0;
+//#endif
+//  image->max = image->min = 0.;
+//  image->logscale = 1;
 
 }
 

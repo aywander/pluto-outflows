@@ -49,7 +49,7 @@ void Init (double *v, double x1, double x2, double x3)
 {
 
   int nv;
-  double halo_primitives[NVAR], out_primitives[NVAR], orad;
+  double halo_primitives[NVAR], out_primitives[NVAR];
 #if CLOUDS
   double cloud_primitives[NVAR];
 #endif
@@ -65,10 +65,12 @@ void Init (double *v, double x1, double x2, double x3)
     /* Set normalization factors for input parameters */
     SetIniNormalization();
 
+    /* Set outflow geometry struct with parameters of cone */
+    SetNozzleConeGeometry();
+
     /* Print some data */
-    orad = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
-    OutflowPrimitives(out_primitives, ARGCART_(0, orad, 0));
-    HotHaloPrimitives(halo_primitives, ARGCART_(NOZZLE_SELECT(orad, 0), 0, 0));
+    OutflowPrimitives(out_primitives, 0, 0, 0);
+    HotHaloPrimitives(halo_primitives, 0, 0, 0);
     PrintInitData01(out_primitives, halo_primitives);
 
     /* Done once now */

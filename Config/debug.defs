@@ -5,7 +5,10 @@
 ########################################################################
 
 CC       = gcc
-CFLAGS   = -c -g -O0 -Wall -Wno-unused-variable
+# AYW -- 2013-01-10 15:39 JST
+#CFLAGS   = -c -g -O0 -Wall -Wno-unused-variable
+CFLAGS   = -c -g 
+# -- AYW
 LDFLAGS  = -lm 
 
 PARALLEL = FALSE

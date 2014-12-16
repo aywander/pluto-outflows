@@ -19,22 +19,11 @@
 
 /* NOZZLE values. 
  * Type of inlet nozzle 
- * This determines among other things, 
- * - which set of input parameters are used. 
- * - whether UfoPrimitives, JetPrimitives, etc are called.
- * - what kind of inlet geomtry and boundary conditions are implemented.
+ * This determines e.g. whether UfoPrimitives, 
+ * JetPrimitives, etc are called.
  *   */
 #define NOZZLE_JET      1
 #define NOZZLE_UFO      2
-
-/* UFO */
-/* NOZZLE_SHAPE values.
- * Define wind source shape 
- * ANN - annulus; FAN - fan; _PRO - protrude into grid */
-// TODO: Get rid of _PRO option.
-#define ANN 0
-#define FAN 1
-
 
 /* Clouds */
 /* Use a grid_in.out file to specify dimensions of cube 
@@ -115,7 +104,6 @@
 
 /* CCL_OK {YES|NO}
  * Does CCL library work? E.g., on vayu with Intel compilers, it doesn't. */
-/* Deprecated - lets not use this anymore */
 
 
 
@@ -149,10 +137,6 @@
 
 #ifndef NOZZLE
 #define NOZZLE NOZZLE_JET
-#endif
-
-#ifndef NOZZLE_SHAPE
-#define NOZZLE_SHAPE FAN
 #endif
 
 /* Clouds */
@@ -255,7 +239,7 @@
 #endif
 
 
-/* Deprecated - remove soon */
+/* CAn use CCL library? */
 #ifndef CCL_OK
 #define CCL_OK FALSE
 #endif

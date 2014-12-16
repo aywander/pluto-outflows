@@ -1,7 +1,6 @@
 #include "pluto.h"
 #include "definitions_usr.h"
 #include "rGravTable.h"
-#include "ccl.h"
 
 #ifdef GRAV_TABLE
 
@@ -11,12 +10,6 @@ int rGravHeader(){
   /*
    * This routine reads the header file to the gravity file.
    * The name of the file is GRAVHNAME and is set in definitions_usr.h
-   *
-   * The structure of the header file is that of a configuration file. 
-   * We use the ccl library to parse it. 
-   *
-   * Note that the ccl library sometimes has trouble compiling. Set
-   * CCL_OK in definitions_usr.h accordingly to skip reading the header.
    *
    * The values should be in cgs units.
    */

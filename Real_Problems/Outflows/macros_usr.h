@@ -332,9 +332,9 @@
 //      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2)*(x1) - sin(x2)*(v3)*(SPH2POL1(x1, x2, x3)\
 //      ) ), assumes theta is measured from x2 in 2D
 #define VSPH2CART1(x1, x2, x3, v1, v2, v3) ( SELECT(\
-      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x2)*(v3), \
+      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3), \
       SGN(SPH2CART1(x1, x2, x3))*(sin(x2)*(v1) + cos(x2)*(v2)),\
-      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x2)*(v3) \
+      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3) \
       ) ) // without *r, assumes theta is measured from x2 in 2D
 
 //#define VSPH2CART2(x1, x2, x3, v1, v2, v3) ( SELECT(\
@@ -624,8 +624,7 @@
  * Note that for jets/outflows, CYL 1D and 3D, and POL 1D, 2D  are not really applicable. 
  * But for other problems may exist where this makes sense.
  * - The Macro FLOWAXIS{123} outputs a if this is the flow axis, or b if it's not the flow axis.
- * - The macro FLOWAXIS outputs the flowaxis'th element. This is currently only used in 
- *   USERDEF_BOUNDARY and has limited use and is complicated.
+ * - The macro FLOWAXIS outputs the flowaxis'th element. 
  * - Currently the flow axis is the axis along which the outflow is directed. One is not necessarily
  *   restricted to this definition, though. */
 #if   GEOMETRY == CARTESIAN

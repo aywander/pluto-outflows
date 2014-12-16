@@ -68,11 +68,9 @@ void readGravTable(){
   /* This routine first reads the header of a file, then the data. 
    * */
 
-  /* Read gravity header 
-   * This does not work on vayu with Intel compilers */
-#if CCL_OK == YES
-  rGravHeader();
-#endif
+  /* Read gravity header */
+  // TODO: Reimplement
+  //rGravHeader();
 
   /* Read gravity table */
   if (rGravData() != 0){

@@ -24,6 +24,7 @@ typedef struct CMD_LINE {
   float maxtime;
   int fill[15]; /* useless, it makes the struct a power of 2 */ 
   //int fill; /* useless, it makes the struct a power of 2 */ 
+  /* -- AYW */
 } Cmd_Line;
    
 /* ********************************************************************* */
