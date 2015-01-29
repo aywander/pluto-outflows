@@ -35,7 +35,8 @@ typedef struct {
   double area_norm;
   double temp_norm;
   double mdot_norm;
-  double fill[5];
+  double newton_norm;
+  double fill[4];
 } VarNorm;
 
 typedef struct {

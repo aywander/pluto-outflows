@@ -393,15 +393,8 @@ void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
   int il;
 
 #if GRAV_POTENTIAL == HERNQUIST
+
   gr = -2.*CONST_PI*CONST_G*inv_unit_G*rho0*a/pow((1. + r/a),2);
-
-  //grc1 = gr*x1/r;
-  //grc2 = gr*x2/r;
-  //grc3 = gr*x3/r;
-
-  g[IDIR] = VSPH_1(SPH(x1, x2, x3), gr, 0, 0)
-  g[JDIR] = VSPH_2(SPH(x1, x2, x3), gr, 0, 0)
-  g[KDIR] = VSPH_3(SPH(x1, x2, x3), gr, 0, 0)
 
 #elif defined GRAV_TABLE
   r = SPH1(x1, x2, x3);
@@ -421,10 +414,6 @@ void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
   y3 = gr_vec[il+2];
   gr = -CubicCatmullRomInterpolate(y0, y1, y2, y3, fc);
 
-  g[IDIR] = VSPH_1(SPH(x1, x2, x3), gr, 0, 0)
-  g[JDIR] = VSPH_2(SPH(x1, x2, x3), gr, 0, 0)
-  g[KDIR] = VSPH_3(SPH(x1, x2, x3), gr, 0, 0)
-
 
   /* Flat thermodynamic profile but gravity is on.
    * The potential, thus, is a parabola */
@@ -438,18 +427,24 @@ void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
   gr = -4*CONST_PI*CONST_G*inv_unit_G*g_inputParam[PAR_HRHO]*r;
 
 
-  g[IDIR] = VSPH_1(SPH(x1, x2, x3), gr, 0, 0)
-  g[JDIR] = VSPH_2(SPH(x1, x2, x3), gr, 0, 0)
-  g[KDIR] = VSPH_3(SPH(x1, x2, x3), gr, 0, 0)
-
   /* No gravity */
 #else
 
-  g[IDIR] = 0.0;
-  g[JDIR] = 0.0;
-  g[KDIR] = 0.0;
+  gr = 0.0;
 
 #endif
+
+
+  double sx1, sx2, sx3;
+  sx1 = SPH1(x1, x2, x3);
+  sx2 = SPH2(x1, x2, x3);
+  sx3 = SPH3(x1, x2, x3);
+
+  /* Gravity pointing to (0,0,0) - possibly reconsider */
+  g[IDIR] = VSPH_1(sx1, sx2, sx3, gr, 0, 0);
+  g[JDIR] = VSPH_2(sx1, sx2, sx3, gr, 0, 0);
+  g[KDIR] = VSPH_3(sx1, sx2, sx3, gr, 0, 0);
+
 
 }
 

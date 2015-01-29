@@ -68,7 +68,7 @@ void ComputeUserVar (const Data *d, Grid *grid)
 
 #if USE_FOUR_VELOCITY == YES
     /* spd at this point is gamma * v. Solve for v. Then get gamma. 
-     * c=1 if USE_FOUR_VELOCITY = 0. 
+     * c=1 if USE_FOUR_VELOCITY = YES. 
      * speed = Gamma * vel */
     speed = spd[k][j][i];
     vel = 1./(1./(speed*speed) + 1.);
@@ -95,68 +95,64 @@ void ChangeDumpVar ()
   /* HDF5 output cannot be controlled yet. Everything is output.*/
 
   /* VTK output */
-  SetDumpVar("rho",  VTK_OUTPUT, YES);
-  SetDumpVar("vx1",  VTK_OUTPUT, NO);
-  SetDumpVar("vx2",  VTK_OUTPUT, NO);
-#if COMPONENTS > 2
-  SetDumpVar("vx3",  VTK_OUTPUT, NO);
+#if USE_FOUR_VELOCITY
+  EXPAND(SetDumpVar("v1",  VTK_OUTPUT, YES);,
+         SetDumpVar("v2",  VTK_OUTPUT, YES);,
+         SetDumpVar("v3",  VTK_OUTPUT, YES););
+  EXPAND(SetDumpVar("vx1",  VTK_OUTPUT, YES);,
+         SetDumpVar("vx2",  VTK_OUTPUT, YES);,
+         SetDumpVar("vx3",  VTK_OUTPUT, YES););
+#else
+  EXPAND(SetDumpVar("v1",  VTK_OUTPUT, NO);,
+         SetDumpVar("v2",  VTK_OUTPUT, NO);,
+         SetDumpVar("v3",  VTK_OUTPUT, NO););
+  EXPAND(SetDumpVar("vx1",  VTK_OUTPUT, YES);,
+         SetDumpVar("vx2",  VTK_OUTPUT, YES);,
+         SetDumpVar("vx3",  VTK_OUTPUT, YES););
 #endif
-  SetDumpVar("prs",  VTK_OUTPUT, YES);
-#if NTRACER > 0
-  SetDumpVar("tr1",  VTK_OUTPUT, YES);
-#endif
-#if NTRACER > 1
-  SetDumpVar("tr2",  VTK_OUTPUT, YES);
-#endif
-//  SetDumpVar("spd",  VTK_OUTPUT, YES);
-//#if USE_FOUR_VELOCITY
-//  SetDumpVar("v1",  VTK_OUTPUT, YES);
-//  SetDumpVar("v2",  VTK_OUTPUT, YES);
-//  SetDumpVar("v3",  VTK_OUTPUT, YES);
-//#endif
+  SetDumpVar("te",  VTK_OUTPUT, YES);
+  SetDumpVar("spd",  VTK_OUTPUT, YES);
+
 
   /* FLT output */
-  SetDumpVar("rho",  FLT_OUTPUT, YES);
-  SetDumpVar("vx1",  FLT_OUTPUT, NO);
-  SetDumpVar("vx2",  FLT_OUTPUT, NO);
-#if COMPONENTS > 2
-  SetDumpVar("vx3",  FLT_OUTPUT, NO);
+#if USE_FOUR_VELOCITY
+  EXPAND(SetDumpVar("v1",  FLT_OUTPUT, YES);,
+         SetDumpVar("v2",  FLT_OUTPUT, YES);,
+         SetDumpVar("v3",  FLT_OUTPUT, YES););
+  EXPAND(SetDumpVar("vx1",  FLT_OUTPUT, YES);,
+         SetDumpVar("vx2",  FLT_OUTPUT, YES);,
+         SetDumpVar("vx3",  FLT_OUTPUT, YES););
+#else
+  EXPAND(SetDumpVar("v1",  FLT_OUTPUT, NO);,
+         SetDumpVar("v2",  FLT_OUTPUT, NO);,
+         SetDumpVar("v3",  FLT_OUTPUT, NO););
+  EXPAND(SetDumpVar("vx1",  FLT_OUTPUT, YES);,
+         SetDumpVar("vx2",  FLT_OUTPUT, YES);,
+         SetDumpVar("vx3",  FLT_OUTPUT, YES););
 #endif
-  SetDumpVar("prs",  FLT_OUTPUT, YES);
-#if NTRACER > 0
-  SetDumpVar("tr1",  FLT_OUTPUT, YES);
-#endif
-#if NTRACER > 1
-  SetDumpVar("tr2",  FLT_OUTPUT, YES);
-#endif
-//  SetDumpVar("spd",  FLT_OUTPUT, YES);
-//#if USE_FOUR_VELOCITY
-//  SetDumpVar("v1",  FLT_OUTPUT, YES);
-//  SetDumpVar("v2",  FLT_OUTPUT, YES);
-//  SetDumpVar("v3",  FLT_OUTPUT, YES);
-//#endif
-
+  SetDumpVar("te",  FLT_OUTPUT, YES);
+  SetDumpVar("spd",  FLT_OUTPUT, YES);
 
   /* PNG output */
-  SetDumpVar("rho",  PNG_OUTPUT, YES);
-  SetDumpVar("vx1",  PNG_OUTPUT, NO);
-  SetDumpVar("vx2",  PNG_OUTPUT, NO);
-#if COMPONENTS > 2
-  SetDumpVar("vx3",  PNG_OUTPUT, NO);
+#if USE_FOUR_VELOCITY
+  EXPAND(SetDumpVar("v1",  PNG_OUTPUT, YES);,
+         SetDumpVar("v2",  PNG_OUTPUT, YES);,
+         SetDumpVar("v3",  PNG_OUTPUT, YES););
+  EXPAND(SetDumpVar("vx1",  PNG_OUTPUT, YES);,
+         SetDumpVar("vx2",  PNG_OUTPUT, YES);,
+         SetDumpVar("vx3",  PNG_OUTPUT, YES););
+#else
+  EXPAND(SetDumpVar("v1",  PNG_OUTPUT, NO);,
+         SetDumpVar("v2",  PNG_OUTPUT, NO);,
+         SetDumpVar("v3",  PNG_OUTPUT, NO););
+  EXPAND(SetDumpVar("vx1",  PNG_OUTPUT, YES);,
+         SetDumpVar("vx2",  PNG_OUTPUT, YES);,
+         SetDumpVar("vx3",  PNG_OUTPUT, YES););
 #endif
-  SetDumpVar("prs",  PNG_OUTPUT, YES);
-#if NTRACER > 0
-  SetDumpVar("tr1",  PNG_OUTPUT, YES);
-#endif
-#if NTRACER > 1
-  SetDumpVar("tr2", PNG_OUTPUT, YES);
-#endif
-//SetDumpVar("spd",  PNG_OUTPUT, YES);
-//#if USE_FOUR_VELOCITY
-//  SetDumpVar("v1",  PNG_OUTPUT, YES);
-//  SetDumpVar("v2",  PNG_OUTPUT, YES);
-//  SetDumpVar("v3",  PNG_OUTPUT, YES);
-//#endif
+  SetDumpVar("te",  PNG_OUTPUT, YES);
+  SetDumpVar("spd",  PNG_OUTPUT, YES);
+
+
 
   /* density slice */
   image = GetImage("rho");
@@ -199,15 +195,6 @@ void ChangeDumpVar ()
   image->min = 0.;
   image->logscale = 1;
 #endif
-
-  /* speed slice */
-//  image = GetImage("spd");
-//#if COMPONENTS > 2
-//  image->slice_plane = X13_PLANE;
-//  image->slice_coord = 0.0;
-//#endif
-//  image->max = image->min = 0.;
-//  image->logscale = 1;
 
 }
 

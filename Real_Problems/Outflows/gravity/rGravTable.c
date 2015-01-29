@@ -38,11 +38,11 @@ int rGravData(){
   }
 
   /* Allocate memory for potential profile arrays */
-  gr_rad = Array_1D(gr_ndata, double);
+  gr_rad = ARRAY_1D(gr_ndata, double);
 #if BODY_FORCE == POTENTIAL
-  gr_phi = Array_1D(gr_ndata, double);
+  gr_phi = ARRAY_1D(gr_ndata, double);
 #else
-  gr_vec = Array_1D(gr_ndata, double);
+  gr_vec = ARRAY_1D(gr_ndata, double);
 #endif
 
   /* Read data */

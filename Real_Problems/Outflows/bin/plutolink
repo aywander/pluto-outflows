@@ -5,7 +5,7 @@
 
 LINK_OPTS="-s"
 SIM_DIR=$PLUTO_DIR/Real_Problems/Outflows
-SUB_DIRS="gravity tools"
+SUB_DIRS="gravity tools cooling ccl"
 FILTER=".c$ .cpp$ .h$ .H$ local_make$ .dat$ .hdr$ .dbl$"
 RMLINK="definitions*.h"
 CPFILES="pluto.ini definitions.h definitions_usr.h"

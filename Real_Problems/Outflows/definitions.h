@@ -48,7 +48,7 @@
 
 /* -- supplementary constants (user editable) -- */ 
 #define  INITIAL_SMOOTHING     NO
-#define  WARNING_MESSAGES      NO
+#define  WARNING_MESSAGES      YES
 #define  PRINT_TO_FILE         YES
 #define  INTERNAL_BOUNDARY     NO
 #define  SHOCK_FLATTENING      MULTID

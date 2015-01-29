@@ -82,11 +82,12 @@ void SetBaseNormalization() {
   /* Derived normalizations */
   vn.t_norm       =   vn.l_norm/vn.v_norm;
   vn.area_norm    =   vn.l_norm*vn.l_norm;
-  vn.pres_norm    =   vn.dens_norm* vn.v_norm*vn.v_norm;
+  vn.pres_norm    =   vn.dens_norm*vn.v_norm*vn.v_norm;
   vn.power_norm   =   vn.pres_norm*vn.v_norm*vn.area_norm;
   vn.eflux_norm   =   vn.pres_norm*vn.v_norm;
   vn.eint_norm    =   vn.pres_norm/vn.dens_norm;
   vn.mdot_norm    =   vn.dens_norm*pow(vn.l_norm,3)/vn.t_norm;
+  vn.newton_norm  =   vn.t_norm*vn.t_norm*vn.dens_norm;
 
   print1("> Base normalization struct initialized.\n\n");
 
@@ -366,7 +367,7 @@ void HotHaloPrimitives(double * halo,
  **************************************************************** */
 
   double vel, scrh;
-  double unit_time, inv_unit_G;
+  double inv_unit_G;
   double r, a, rs, rho0;
   double frac;
   double y0, y1, y2, y3, r1, r2; 
@@ -389,10 +390,8 @@ void HotHaloPrimitives(double * halo,
   r = SPH1(x1, x2, x3);
   a = g_inputParam[PAR_HRAD]*ini_code[PAR_HRAD];
   rs = r/a;
-  unit_time = UNIT_LENGTH/UNIT_VELOCITY;
-  inv_unit_G = unit_time*unit_time*UNIT_DENSITY;
   halo[RHO] = rho0/(rs*pow((1 + rs), 3));
-  halo[PRS] = -2*CONST_PI*CONST_G*inv_unit_G*rho0*rho0*a*a*
+  halo[PRS] = -2*CONST_PI*CONST_G/vn.newton_norm*rho0*rho0*a*a*
     (pow(1.+rs, -4)/12.*(25. + 52.*rs + 42.*rs*rs + 12.*rs*rs*rs) -
     log(1. + rs) + log(rs));
 
@@ -449,30 +448,34 @@ void HotHaloPrimitives(double * halo,
 
 #endif
 
-   /* A message for having initialized halo with potential*/
-  if (!once01){
-    print1("> Initializing hot halo distribution of type: %d\n\n", HOT_DISTR);
-    once01 = 1;
-  }
 
-  /* Velocities. 
-   * NOTE: At some point we may want to generalize the 
-   * background velocity assignment. This is mainly motivated by 
-   * single cloud acceleration setups, but could be used in 
-   * simulations of cluster radio galaxies. */
-  EXPAND(halo[VX1] = 0;,halo[VX2] = 0;,
-         halo[VX3] = g_inputParam[PAR_HVBG]*ini_code[PAR_HVBG];);
+  /* Velocities. */
+
+  /* TODO: At some point we may want to generalize the 
+   * background velocity assignment to three components.
+   * This is mainly for simulations of cluster radio galaxies. 
+   * */
+  EXPAND(halo[VX1] = 0;,halo[VX2] = 0;, halo[VX3] = 0;);
+  FLOWAXIS(halo[VX3], halo[VX1], halo[VX2]) = g_inputParam[PAR_HVBG]*ini_code[PAR_HVBG];
 #if USE_FOUR_VELOCITY == YES
   vel = VMAG(x1, x2, x3, halo[VX1], halo[VX2], halo[VX3]);
   scrh = Vel2Lorentz(vel);
   EXPAND(halo[VX1] *= scrh;, halo[VX2] *= scrh;, halo[VX3] *= scrh;);
 #endif
 
-  /* Tracer */
+
+  /* Tracers */
   halo[TRC] = 0.0;
 #if CLOUDS
   halo[TRC+1] = 0.0;
 #endif
+
+
+   /* A message for having initialized halo with potential*/
+  if (!once01){
+    print1("> Initializing hot halo distribution of type: %d\n\n", HOT_DISTR);
+    once01 = 1;
+  }
 
   return;
 
@@ -627,9 +630,10 @@ void CloudApodize(double* cloud, const double x1, const double x2, const double 
   double z, r, r_cyl, a, rs; 
   int il;
   double r1, r2, y0, y1, y2, y3, frac, phi, phi_cyl;
-  double sigma_g2, sigma_turb2;
   double mu, dens;
-  double wte, wrad, wrho, wtrb, wrot;
+  double sigma_g2, csound2;
+  double wtemp_av, wrad, wrad_cgs, wrho, wrho_cgs;
+  double wtrb, wtrb_cgs, wrot;
 
   /* The following are only some 
    * profiles for the warm phase that produce
@@ -651,10 +655,46 @@ void CloudApodize(double* cloud, const double x1, const double x2, const double 
   QUIT_PLUTO(1);
 #endif
 
-  /* The total dense gas velocity dispersion */
+  /* The dense gas mean density input parameter */
+  wrho_cgs = g_inputParam[PAR_WRHO]*ini_cgs[PAR_WRHO];
   wrho = g_inputParam[PAR_WRHO]*ini_code[PAR_WRHO];
-  wrad = g_inputParam[PAR_WRAD]*ini_cgs[PAR_WRAD];
-  sigma_g2 = 4*CONST_PI*CONST_G*wrho*pow(wrad, 2)/9.;
+
+  /* Relationship between warm phase temperature, the turbulent 
+   * velocity dispersion (wtrb), the total velocity dispersion^2 
+   * (sigma_g2), and the scale height of the warm phase (wrad). 
+   * Everything is in cgs in this block */
+#if CLOUD_SCALE == CS_WTRB
+
+#if MU_CALC != MU_CONST
+  /* Note, in case a variable mu is used, we cannot 
+   * calculate a variable mu because cloud is * imcomplete. */
+  fputs("Error: Must use MU_CALC = MU_CONST\n", stderr); 
+  fputs("with CLOUD_SCALE = CS_WTRB as cloud\n", stderr); 
+  fputs("primitives are not yet defined.\n", stderr); 
+  QUIT_PLUTO(1);
+#endif
+
+  wtrb_cgs = g_inputParam[PAR_WTRB]*ini_cgs[PAR_WTRB];
+  mu = MeanMolecularWeight(cloud);
+  // Problem here, because we have neither cloud[PRS] yet nor 
+  // a reference pressure in this routine
+  wtemp_av = TempNrEOS(wrho, cloud[PRS], mu)*vn.temp_norm;
+  csound2  = CONST_kB*wtemp_av/(mu*CONST_amu);
+  sigma_g2 = wtrb*wtrb + csound2;
+  wrad_cgs = sqrt(9.*sigma_g2/(4.*CONST_PI*CONST_G*wrho_cgs));
+
+#else
+  wrad_cgs = g_inputParam[PAR_WRAD]*ini_cgs[PAR_WRAD];
+  sigma_g2 = 4*CONST_PI*CONST_G*wrho_cgs*pow(wrad_cgs, 2)/9.;
+  mu = MeanMolecularWeight(cloud);
+  // Problem here, because we have neither cloud[PRS] yet nor
+  // a reference pressure in this routine
+  wtemp_av = TempNrEOS(wrho, cloud[PRS], mu)*vn.temp_norm;
+  csound2  = CONST_kB*wtemp_av/(mu*CONST_amu);
+  wtrb_cgs = sqrt(sigma_g2 - csound2);
+  // But ok, because we have sigma_g2 already.
+
+#endif
 
   /* Code units for total dens gas velocity dispersion */
   sigma_g2 /= vn.v_norm*vn.v_norm;
@@ -680,16 +720,6 @@ void CloudApodize(double* cloud, const double x1, const double x2, const double 
   /* The profile */
   dens = wrho*exp(-phi/sigma_g2);
 
-  /* Turbulent velocity dispersion - not explicitly used */
-  //wtrb = g_inputParam[PAR_WTRB]*ini_cgs[PAR_WTRB];
-  //sigma_turb2 = wtrb*wtrb;
-
-  /* Mean warm phase temperature. Not explicitly used, 
-   * just for reference. Note, we cannot calculate a variable
-   * mu because cloud is imcomplete. */
-  //mu = MeanMolecularWeight(cloud);
-  //wte = sqrt(sigma_g2 - sigma_turb2)*mu*CONST_amu/CONST_kB;
-
 
 #elif CLOUD_DISTR == CD_TURB_KEPLERIAN_DISC
 
@@ -701,14 +731,49 @@ void CloudApodize(double* cloud, const double x1, const double x2, const double 
 #endif
 
 
-  /* The total dense gas velocity dispersion */
+  /* The dense gas mean density input parameter */
+  wrho_cgs = g_inputParam[PAR_WRHO]*ini_cgs[PAR_WRHO];
   wrho = g_inputParam[PAR_WRHO]*ini_code[PAR_WRHO];
-  wrad = g_inputParam[PAR_WRAD]*ini_cgs[PAR_WRAD];
-  sigma_g2 = 4*CONST_PI*CONST_G*wrho*pow(wrad, 2)/9.;
+
+  /* Relationship between warm phase temperature, the turbulent 
+   * velocity dispersion (wtrb), the total velocity dispersion^2 
+   * (sigma_g2), and the scale height of the warm phase (wrad). 
+   * Everything is in cgs in this block */
+#if CLOUD_SCALE == CS_WTRB
+
+#if MU_CALC != MU_CONST
+  /* Note, in case a variable mu is used, we cannot 
+   * calculate a variable mu because cloud is * imcomplete. */
+  fputs("Error: Must use MU_CALC = MU_CONST\n", stderr); 
+  fputs("with CLOUD_SCALE = CS_WTRB as cloud\n", stderr); 
+  fputs("primitives are not yet defined.\n", stderr); 
+  QUIT_PLUTO(1);
+#endif
+
+  wtrb_cgs = g_inputParam[PAR_WTRB]*ini_cgs[PAR_WTRB];
+  mu = MeanMolecularWeight(cloud);
+  // Problem here, because we have neither cloud[PRS] yet nor 
+  // a reference pressure in this routine
+  wtemp_av = TempNrEOS(wrho, cloud[PRS], mu)*vn.temp_norm;
+  csound2  = CONST_kB*wtemp_av/(mu*CONST_amu);
+  sigma_g2 = wtrb*wtrb + csound2;
+  wrad_cgs = sqrt(9.*sigma_g2/(4.*CONST_PI*CONST_G*wrho_cgs));
+
+#else
+  wrad_cgs = g_inputParam[PAR_WRAD]*ini_cgs[PAR_WRAD];
+  sigma_g2 = 4*CONST_PI*CONST_G*wrho_cgs*pow(wrad_cgs, 2)/9.;
+  mu = MeanMolecularWeight(cloud);
+  // Problem here, because we have neither cloud[PRS] yet nor
+  // a reference pressure in this routine
+  wtemp_av = TempNrEOS(wrho, cloud[PRS], mu)*vn.temp_norm;
+  csound2  = CONST_kB*wtemp_av/(mu*CONST_amu);
+  wtrb_cgs = sqrt(sigma_g2 - csound2);
+  // But ok, because we have sigma_g2 already.
+
+#endif
 
   /* Code units for total dense gas velocity dispersion */
   sigma_g2 /= vn.v_norm*vn.v_norm;
-
 
   /* Gravitational potential*/
   r     = SPH1(x1, x2, x3);
@@ -740,16 +805,6 @@ void CloudApodize(double* cloud, const double x1, const double x2, const double 
   /* The profile */
   wrot = g_inputParam[PAR_WROT]*g_inputParam[PAR_WROT];
   dens = wrho*exp((-phi + phi_cyl*wrot)/sigma_g2);
-
-  /* Turbulent velocity dispersion - not explicitly used*/
-  wtrb = g_inputParam[PAR_WTRB]*ini_cgs[PAR_WTRB];
-  sigma_turb2 = wtrb*wtrb;
-
-  /* Mean warm phase temperature. Not explicitly used, 
-   * just for reference. Note, we cannot calculate a variable
-   * mu because cloud is imcomplete. */
-  //mu = MeanMolecularWeight(cloud);
-  //wte = sqrt(sigma_g2 - sigma_turb2)*mu*CONST_amu/CONST_kB;
 
 
 #elif CLOUD_DISTR == CD_FLAT
@@ -835,7 +890,7 @@ int CloudExtract(double* cloud,
   inner_circ = rrad/(hemf*(urad + uthk));
 
   /* Exclude zone outside interior sphere */
-  wrad = g_inputParam[PAR_WRAD]*ini_code[PAR_WRAD]
+  wrad = g_inputParam[PAR_WRAD]*ini_code[PAR_WRAD];
   if (rad > 0.5*crs || rrad > wrad || inner_circ < 1.){
     fdratio = 1;
     is_cloud = 0;
@@ -1410,6 +1465,10 @@ double Profile(const double x1, const double x2, const double x3)
   *
  ************************************************** */
 {
+
+  if (1) { return 1.0; }
+  else {
+
   /* Steepness of cosh profile */
   int n = 14;
 
@@ -1427,5 +1486,6 @@ double Profile(const double x1, const double x2, const double x3)
 
   /* Return smoothing factor */
   return 1.0/cosh(pow(cr/nz.rad, n));
+  }
 }
 

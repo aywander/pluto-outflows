@@ -50,6 +50,12 @@
 #define CD_TURB_KEPLERIAN_DISC      2
 #define CD_HERNQUIST                3
 
+/* CLOUD_SCALE values.
+ * How the scale height of clouds is set.
+ * Default is by WRAD input parameter. */
+#define CS_WRAD  0
+#define CS_WTRB  1
+
 /* CLOUD_VEL_DISTR values.
  * Cloud velocity distribution.
  * The velocity cube can be modified in different ways. */
