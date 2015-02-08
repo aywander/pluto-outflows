@@ -1,7 +1,7 @@
 #!/bin/bash
 
-##_________________________________________________
-## Some user settings
+#_________________________________________________
+# Some user settings
 
 LINK_OPTS="-s"
 SIM_DIR=$PLUTO_DIR/Real_Problems/Outflows
@@ -10,10 +10,10 @@ FILTER=".c$ .cpp$ .h$ .H$ local_make$ .dat$ .hdr$ .dbl$"
 RMLINK="definitions*.h"
 CPFILES="pluto.ini definitions.h definitions_usr.h"
 
-##_________________________________________________
-## Functions
+#_________________________________________________
+# Functions
 
-## Usage message 
+# Usage message 
 usage()
 {
   sed -e 's/^/    /' << UseMsg
@@ -27,7 +27,7 @@ UseMsg
 
 }
 
-## Description message
+# Description message
 descr()
 {
   sed -e 's/^/    /' << DescrMsg
@@ -70,21 +70,21 @@ DescrMsg
 }
 
 
-##_________________________________________________
-## Main bit
+#_________________________________________________
+# Main bit
 
 
-## PLUTO_DIR defined?
+# PLUTO_DIR defined?
 if [[ ! $PLUTO_DIR ]]; then
   echo PLUTO_DIR not defined
   exit 1
 fi
 
-## Default settings
+# Default settings
 DRY=1
 lopt=$LINK_OPTS
 
-## Get options
+# Get options
 while getopts "hnd:" OPT; do
   case $OPT in 
     n)
@@ -108,19 +108,19 @@ while getopts "hnd:" OPT; do
 done
 
 
-## Number of non option arguments
+# Number of non option arguments
 sargs=$(($# - $OPTIND + 1))
 shift $(($OPTIND - 1))
 
 
-## Minimum set of link files
+# Minimum set of link files
 LNDIRS="$SIM_DIR"
 for i in $SUB_DIRS; do
   LNDIRS="$LNDIRS $SIM_DIR/$i "
 done
 
-## Rest of arguments are additional subdirs 
-## to be linked in
+# Rest of arguments are additional subdirs 
+# to be linked in
 if [[ ($sargs -gt 0) ]]; then
 
   if [[ "Darwin" =~ "$(uname)" ]]; then
@@ -134,7 +134,7 @@ if [[ ($sargs -gt 0) ]]; then
 
 fi
 
-## Do the link command
+# Do the link command
 for j in $LNDIRS; do
   for f in $FILTER; do
     for i in $(find $j -maxdepth 1 -type f -print | grep -E $f); do
@@ -147,7 +147,7 @@ for j in $LNDIRS; do
   done
 done
 
-## Delete links that shouldn't be there
+# Delete links that shouldn't be there
 for f in $CPFILES" "$RMLINK; do
   if [[ $DRY -eq 0 ]]; then
     echo rm $f
@@ -156,7 +156,7 @@ for f in $CPFILES" "$RMLINK; do
   fi
 done
 
-## Do the copy command
+# Do the copy command
 for f in $CPFILES; do
   CPFILE=$SIM_DIR/$f
   if [[ $DRY -eq 0 ]]; then

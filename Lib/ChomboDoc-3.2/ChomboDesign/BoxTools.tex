@@ -1,0 +1,486 @@
+
+\section{Points, Regions and Rectangular Arrays}
+
+BoxTools is a set of abstractions for defining points and regions in a
+multidimensional integer lattice index space, and representing
+aggregate data in such regions.  The dimensionality~$\Dim$ of the index space
+is a compilation-time constant.  It is accessed as a macro 
+{\tt CH\_SPACEDIM}, which is set in the Make process, and is propagated
+into Fortran .F or .ChF files in applying the C preprocessor.
+A second compile-time constant in BoxTools is that of the precision of
+floating-point variables. BoxTools provides a type {\tt Real}, which is
+set using a {\tt typedef} declaration to either {\tt float} or {\tt double}
+at compile time. The macro {\tt REAL\_T} serves the same function in
+Fortran. This macro is defined in the file {\tt REAL.H}, which can be
+included as a header for both C++ and Fortran files.
+
+\subsection{Class {\tt IntVect}}
+\label{sec:intvect}
+
+{\tt IntVect}s represent points in the rectangular lattice 
+$\mathbb{Z}^\Dim$. 
+
+
+\noindent
+{\bf Operations on {\tt IntVect}s.}
+In the following definitions $\ibold$, $\jbold$ are {\tt{IntVects}}
+and $s$, $d$ are integers, $0 \leq d < \Dim$.
+
+\begin{trivlist}
+
+\item $\bullet$ \underline{Constructors.}
+{\tt IntVect} has the usual default and copy constructors, as well as
+constructors that take tuples of integers as arguments, e.g.,
+{\tt IntVect($i_0,i_1$)} (two dimensions), 
+{\tt IntVect($i_0,i_1,i_2$)} (three dimensions).
+
+\item $\bullet$ \underline{Arithmetic operators.}
+$\ibold \oplus \jbold, \ibold \oplus s, \oplus \in$ \{{\tt{+, -, *, /}}\}
+produce {\tt{IntVects}} by operating componentwise on the inputs.  {\tt{+=, -=, *=, /=}}, perform the same operations in
+place. e.g., $\ibold \mbox{\tt{+=}} \jbold$ is the same as $\ibold = \ibold + \jbold$.  {\tt{IntVect}} also provides component-wise ${\tt{min}}(\ibold, \jbold), {\tt{max}}(\ibold, \jbold)$ operators.
+
+\item $\bullet$ \underline{Logical operators.}
+$\ibold_1 \mbox{{\tt{==}}} \ibold_2, (\ibold_1 \mbox{{\tt{!=}}} \ibold_2)$ Test for mathematically
+equal (unequal) {\tt{IntVects}}.  Comparison operators are defined
+element-wise:  {\tt{>,>=,<,<=}}, $\ibold<\jbold \mbox{ iff } i_d<j_d$.  Lexicographic ordering operators ${\tt{\ibold.lexLT(\jbold)}},
+{\tt{\ibold.lexGT(\jbold)}}$ are also provided.
+
+\item $\bullet$ \underline{Static members.}
+{\tt{Unit}} is the {\tt{IntVect}} consisting of all
+ones. {\tt{Zero}} is the vector consisting of all zeros.
+${\tt{BASISV}}(d), d=0, ..., \Dim-1$ returns the unit {\tt{IntVect}} in the $d$
+direction.
+
+\item $\bullet$ \underline{Indexing operations.}
+$\ibold[d]$ returns the component of $\ibold$, and can
+be used to assign values to components:  $\ibold[d] = q$.
+\end{trivlist}
+
+\begin{figure}
+\vspace*{2in}
+\special{psfile=figs/grid.eps hoffset=100}
+\caption{Vertex ($\bullet$), cell ($\square$) and face ($\oplus$ and $\otimes$)
+sites on a grid.
+}
+\label{fig:grid}
+\end{figure}
+
+
+\subsection{Class {\tt Box}}
+\label{sec:box}
+
+A \verb|Box| represents a rectangular region in ${\mathbb Z}^\Dim$, defined by
+specifying the {\tt IntVect}s defining its low and high corners. 
+For each coordinate direction, a {\tt Box} can be {\it cell-centered}
+or {\it node-centered}. This allows one to represent the various face-,
+edge-, and node-centered rectangular grids 
+(figure \ref{fig:grid}). 
+
+\noindent
+{\bf Operations on {\tt{Box}}es.}  In what follows, $B$, 
+$B_1$, $B_2$ 
+are {\tt{Box}}es, $\ibold, \ibold_1, \ibold_2, \vbold$ are
+{\tt{IntVects}}, $\vbold$ having components equal to zero or one, and
+$s$, $d$ are integers, $0 \leq d < \Dim$.
+\begin{trivlist}
+
+\item $\bullet$ \underline{Constructors}.  $B(\ibold_{1}, \ibold_{2}, \vbold = {\tt{Zero}})$
+Constructs a Box with low and high corners $\ibold_{1}, \ibold_{2}$, and
+centering defined by $\vbold$. If $v_d = 0$, then the {\tt Box} is
+cell-centered in the $d$ direction; if $v_d = 1$, then the {\tt Box} is
+node-centered in the $d$ direction. In particular, 
+the default centering is cell-centered
+in all three directions.  {\tt{Box}} has a copy constructor and
+assignment operator.  One can reset the low and high corners of the
+{\tt{Box}} ({\tt{setSmall}}($\ibold$), {\tt{setBig}}($\ibold$)).
+
+\item $\bullet$ \underline{Logical functions}.  $B_1\mbox{{\tt{==}}}B_2$, 
+$B_1\mbox{{\tt{!=}}}B_2$ test whether $B_1$ and $B_2$
+are equal or unequal, including having the same centering.
+$B.{\tt{isEmpty}}()$ tests whether $B$ is empty.
+$B.{\tt{contains}}(B_1)$, $B.{\tt{contains}}(\ibold)$, tests whether $B$
+contains $B_1, \ibold$.  $B_1.{\tt{intersects}}(B_2)$ checks whether 
+$B_1 \bigcap B_2 \neq \emptyset$.  $B_1.{\tt{sameType}}(B_2),
+B_1.{\tt{sameSize}}(B_2)$ check whether $B_1$ and $B_2$ have the same
+centering, or whether $B_1 = B_2 + \ibold$ for some $\ibold$.
+$B_1<B_2$ if $B_1$.{\tt{smallEnd}}().{\tt{LexLT}}($B_2.${\tt{smallEnd}}()).
+
+\item $\bullet$ \underline{Shifting and Centering}.
+$B.{\tt{convert}}(\vbold)$ changes the centering
+of $B$ to that specified by $\vbold$, as in the constructor.
+One can also change the centering in one direction.
+$B.{\tt{surroundingNodes}}()$ converts all the cell-centered
+directions to node-centered, and increments the high corner in those
+directions by 1.  $B.{\tt{surroundingNodes}}(d)$ performs the same
+operation in the $d$ coordinate direction.  $B.{\tt{enclosedCells}}()$,
+$B.{\tt{enclosedCells}}(d)$ perform the opposite operation, converting
+the centerings to be cell-centered, and decrementing by 1 the high
+corner of the box for those directions for which the centering
+changed.  There are also corresponding friend functions,
+e.g., ${\tt{surroundingNodes}}(B)$ that return a new box with the
+appropriately modified centerings.  
+The various grids depicted in figure \ref{fig:grid} can be obtained from
+on another by application of the member functions 
+{\tt surroundingNodes} and {\tt enclosedCells}.
+$B.{\tt{shift}}(\ibold)$, $B \mbox{\tt{+=}}
+\ibold$ perform the identical operation of replacing $B$ with
+${\tt{Box}}(B.{\tt{smallEnd}}() + \ibold, B.{\tt{bigEnd}}() +
+\ibold)$.  $B.{\tt{shift}}(d, s)$ is the same as $B \mbox{\tt{+=}} s*{\tt{BASISV}}(d)$.
+$B \mbox{\tt{-=}} \ibold$ is the same as $B \mbox{\tt{+=}} (-\ibold)$.
+
+\item $\bullet$ \underline{Size functions}.  $B.{\tt{smallEnd}}(), B.{\tt{bigEnd}}(),
+B.{\tt{size}}()$, return {\tt{IntVects}} containing the low corner,
+high corner, and size in each direction.  The same functions called
+with an integer argument $(B.{\tt{size}}(s))$ returns the $s$-th
+component of those {\tt{IntVects}}.  $B.{\tt{numPts}}()$ returns the
+discrete volume of $B$.  $B.{\tt{loVect()}}, B.{\tt{highVect()}}$,
+return pointers to the $\Dim$-tuples of integers defining the low and high
+corners of $B$ in order to pass them to Fortran.
+
+\item $\bullet$ \underline{Set operations}.  Although it is not possible to define a
+complete set calculus on {\tt{Box}}es (the union of two rectangles is
+not always a rectangle), 
+{\tt{Box}} provides many of the set functions most commonly
+required.  $B_1 \mbox{{\tt{\&=}}} B_2$ sets $B_1 = B_1 \bigcap B_2$.
+$B.{\tt{minBox}}(B_2)$ sets $B_1$ to be the minimum sized {\tt{Box}} containing
+$B_1,B_2$.  $B$.{\tt{grow}}($s$) grows $B$ in all directions by a
+size $s$ ($s$ can be negative corresponding to shrinking).
+$B.{\tt{grow}}(\ibold)$ grows $B$ by $i_d$ in the $d$th
+direction, and $B.{\tt{grow}}(d,s) = B.{\tt{grow}}(s*BASISV(d))$.
+$B.{\tt{coarsen}}(s) = {\mathcal{C}_s}(B)$, $B.{\tt{refine}}(s) =
+{\mathcal{C}_s}^{-1}(B)$.  
+$B$ can also be coarsened and refined by
+different amounts in the various coordinate directions using
+$B.{\tt{coarsen}}(\ibold)$, $B.{\tt{refine}}(\ibold)$. {\tt Grow,
+minBox, coarsen, refine} all have corresponding friend functions that
+return a new {\tt Box} on which the operation has been performed,
+e.g., ${\tt{minBox}}(B_1, B_2)$.  ${\tt{adjCellLo}}(B, d, s = 1)$
+returns the cell-centered box of width $s$ direction adjacent to $B$
+on the low side in the $d$th coordinate direction.  {\tt{adjCellHi}} performs the same operation on the high side of $B$
+in the $d$th direction and {\tt{adjBdryLo, adjBdryHi}} return the
+corresponding node-centered {\tt{Box}}es.
+
+\end{trivlist}
+
+
+\subsection{Class IntVectSet}
+\label{sec:ivs}
+
+\verb|IntVectSet| represents an irregular region in an integer lattice
+$\Dim$-dimensional index space as an arbitrary collection of
+\verb|IntVect|s.  A full set calculus
+is defined.
+
+\noindent{\bf Operations on {\tt IntVectSet}s.}  In the
+following, ${\cal I}, {\cal I}_1, {\cal I}_2$ 
+are {\tt IntVectSet}s, $B$ is a {\tt Box},
+and $s$ is an integer.
+
+\begin{trivlist}
+\item $\bullet$ \underline{Constructors}.  The default constructor constructs an empty
+{\tt{IntVectSet}}.  They can also be initialized at construction with
+an {\tt{IntVect}}, a {\tt{Box}} or another {\tt{IntVectSet}}.  An
+existing {\tt{IntVectSet}} can also be re-initialized with any of
+those three objects using the member functions {\tt define}.
+{\tt{IntVectSet}} has an assignment operator.
+
+\item $\bullet$ \underline{Set Operations}.  {\tt{IntVectSets}} can be updated in place by
+taking unions $({\mathcal{I}}_1 ${\tt{|=}}$ {\mathcal{I}}_2$, ${\mathcal{I}} ${\tt{|=}}$ B$, ${\mathcal{I}} ${\tt{|=}}$ \ibold)$ intersections $({\mathcal{I}}_1
+${\tt{\&=}}$ {\mathcal{I}}_2$, ${\mathcal{I}} ${\tt{\&=}}$ B$, ${\mathcal{I}} ${\tt{\&=}}$ \ibold)$ and set-theoretic differences $({\mathcal{I}}_1 ${\tt{-=}}$
+{\mathcal{I}}_2$, ${\mathcal{I}} ${\tt{-=}}$ B$, ${\mathcal{I}} ${\tt{-=}}$ \ibold)$ with another {\tt{IntVectSet}}, a
+{\tt{Box}} or an {\tt{IntVect}}.  ${\mathcal{I}}.{\tt{coarsen}}(s)$ sets
+${\mathcal{I}}$ to
+${\mathcal{C}}_s({\mathcal{I}})$, ${\mathcal{I}}.{\tt{refine}}(s)$ changes ${\mathcal{I}}$ to
+${\mathcal{C}}^{-1}_s({\mathcal{I}})$.  ${\mathcal{I}}.{\tt{grow}}(s)$ changes ${\mathcal{I}}$ to
+$\bigcup_{\ibold:|\ibold| \leq s} ({\mathcal{I}} + \ibold)$.
+Union, intersection, difference, {\tt coarsen}, and {\tt refine} all
+have associated friend functions that return a new {\tt{IntVectSet}}
+suitably modified.  For example, ${\mathcal{I}}_1|{\mathcal{I}}_2$
+returns ${\mathcal{I}}_1 \bigcup {\mathcal{I}}_2$,
+leaving ${\mathcal{I}}_1$ and ${\mathcal{I}}_2$ unchanged.  ${\tt{shift}}({\mathcal{I}},\ibold)$ returns
+${\mathcal{I}} + \ibold$.
+
+\item $\bullet$ \underline{Other functions}.  
+${\mathcal{I}}.{\tt{isEmpty}}()$ returns true if ${\mathcal{I}} = \emptyset$.
+${\mathcal{I}}.{\tt{minBox}}()$ returns the minimum cell-centered
+{\tt{Box}} containing ${\mathcal{I}}$.  ${\mathcal{I}}.{\tt{contains}}(B)$,
+${\mathcal{I}}.{\tt{contains}}(\ibold)$ returns true if 
+$B \subset {\mathcal{I}}, \ibold \in {\mathcal{I}}$.
+
+\end{trivlist}
+
+\noindent
+{\bf Performance Issues}. {\tt IntVectSet} uses two representations
+internally: a fast bitmap for small sets, and a slower tree representation for
+large sets. The heuristic employed between switching between the two
+representations is to use bitmaps for sets that are initialized to be
+rectangles, or that are obtained by applying 
+intersection, set-theoretic difference, {\tt coarsen}, {\tt refine}
+or {\tt grow} to {\tt IntVectSet}(s) that are represented by bitmaps.
+However, the use of the union function causes the representation to be
+converted irreversibly to a tree representation, with a significant
+performance penalty. For that reason, the union operations should be
+used sparingly.
+
+\subsection{{\tt Box} and {\tt IntVectSet} Iterators}
+
+A {\tt{BoxIterator}} or {\tt{IVSIterator}} traverses a sequence of
+{\tt{IntVects}} that comprise a given {\tt{Box}} or
+{\tt{IntVectSet}}.  Each {\tt{IntVect}} appears exactly once in the
+sequence.  There is no guarantee that the {\tt{IntVects}} will
+appear in any particular order.
+
+\noindent
+{\bf{Operations on {\tt{BoxIterator,
+IVSIterator}}}}.  In what follows, $B$ is a {\tt{Box}}, $\mathcal{I}$ is an
+{\tt{IntVectSet}}, and {\tt{iter}} is either a {\tt{BoxIterator}} or an
+{\tt{IVSIterator}}.
+
+\begin{trivlist}
+\item $\bullet$ \underline{Construction}  The iterators can be
+constructed with object to be iterated over ({\tt iter}($B$),
+{\tt iter}($\mathcal{I}$)), or null-constructed and defined later
+({\tt iter.define}($B$), {\tt iter.define}($\mathcal{I}$)).
+
+\item $\bullet$ \underline{Iteration}.  {\tt iter.begin()} sets
+{\tt iter} to the beginning of the iteration sequence, {\tt ++iter}
+advances {\tt iter} to the next iterate, and {\tt iter.ok()} checks to
+see if the current iterate is valid.  A null-constructed iterator, or
+an iterator constructed with an empty {\tt{Box}} or {\tt{IntVectSet}}
+will always return false.  {\tt iter()} returns an {\tt IntVect}
+containing the current value of the iterate.
+
+\end{trivlist}
+
+\subsection{Class Interval}
+\label{sec:interval}
+
+An \verb|Interval| consists of two ordered integers.  An \verb|Interval|
+can be created only by specifying its endpoints.  The only operations that
+can be performed are to extract its endpoints or determine its size, which
+is the number of integers it contains.  If the endpoints are equal, the
+size is one.  It is permitted to define an \verb|Interval| with zero
+or negative size.  It is entirely the responsibility of the user to
+determine whether this is valid.  \verb|Interval| interacts only
+weakly with the other abstractions and is exclusively used to specify
+data component ranges in Chombo (see sections \ref{sec:basefab} and
+\ref{DataHolderSection}).
+
+\subsection{Rectangular arrays}
+\label{sec:basefab}
+
+A \verb|BaseFab<T>| is a templated container class for multidimensional
+array data. It consists of three major elements: a {\tt Box} to define 
+the range of spatial indices over which the array is defined; an integer
+specifying the number of components; and a {\tt T*}
+pointing to a contiguous block of array elements. The data is stored in
+Fortran order so that the pointer can be passed to a Fortran
+routine where it can be accessed as a multidimensional array.
+
+A \verb|BaseFab| is defined by specifying a domain in the form of a
+\verb|Box|, which can have any centering, and the number of components,
+$ncomps$.
+This is intended to represent a~$\Dim+1$ dimensional
+array in Fortran.
+A {\em component index} is an integer in the range $0$ to $ncomps - 1$
+which is used to specify or select a component of a \verb/BaseFab/.
+A range of component indices is often represented by an \verb/Interval/.
+An already defined \verb|BaseFab| can be redefined
+with a new domain and number of components.  The behavior of existing
+data is undefined during redefinition. {\tt BaseFab}s are large
+aggregate objects containing pointer data, so that shallow copy can lead
+to subtle bugs, and deep copying is expensive. For that reason,
+the assignment operator and copy constructor have been rendered 
+inaccessible to the user by making them private. In particular, it is
+necessary to pass {\tt BaseFab}s as reference parameters in procedure
+calls.
+
+\noindent{\bf\underline{Operations on {\tt{BaseFabs}}.}}  
+In the following ${\mathcal{A}}, 
+{\mathcal{A}}'$ are {\tt{BaseFabs}}, $B$ is a {\tt{Box}}, $\ibold$ is
+an {\tt IntVect}, and $n_{comp},
+d, s$ are integers, with $0 \leq d < \Dim, n_{comp} > 0$.
+\begin{trivlist}
+
+\item $\bullet$ \underline{Constructors}.  {\tt{BaseFab}} 
+has a default constructor, as well
+as a constructor {\tt{BaseFab}}$(B)$ that completely defines the
+BaseFab.  ${\mathcal{A}}.{\tt{resize}}(B, n_{comp})$ 
+resets ${\mathcal{A}}$ to be defined over a
+{\tt{Box}} $B$ and with $n$ components.  Any data contained in ${\mathcal{A}}$
+previously is discarded, and the data ${\mathcal{A}}$ is assumed to be
+uninitialized.
+
+\item $\bullet$ \underline{Accessors}.
+$\mathcal{A}(\ibold,s)$ is an indexing operator, returning a reference
+of type {\tt T\&} to the storage location for the value at point
+$\ibold$ and component $s$. For a {\tt BaseFab} that is node-centered in
+one or more of the coordinate directions, the convention for indexing
+with an {\tt IntVect} (which does not have centering) is that 
+$\mathcal{A}(\ibold,s)$ returns the reference corresponding to 
+$\ibold - \half \vbold$, where $\vbold$ is the {\tt IntVect} of zeros
+and ones defining the centering, i.e., the cell center and the
+node-centered points on the low side have the same index.
+${\mathcal{A}}.{\tt{box}}()$ 
+returns the {\tt{Box}} over which ${\mathcal{A}}$ is defined, and
+${\mathcal{A}}.{\tt{ncomp}}()$ the number of components.
+{\tt{BaseFab}} provides
+an interface to the {\tt{Box}} member functions {\tt{smallEnd(),
+bigEnd(), loVect(), hiVect()}}:  ${\mathcal{A}}.{\tt{smallEnd}}()$ 
+$==$ ${\mathcal{A}}.{\tt{box().smallEnd()}}$, etc.  
+${\mathcal{A}}.{\tt{dataPtr}}(s)$ returns a
+pointer of type $T*$ to the data in ${\mathcal{A}}$ 
+beginning at the $n$th component;
+n defaults to zero.  ${\mathcal{A}}.{\tt{nCompPtr}}()$ 
+returns a pointer to an
+integer containing the number of components.  {\tt{loVect, hiVect,
+dataPtr, nCompPtr}} are to be used in calling Fortran.
+\item $\bullet$ \underline{Data Modification Functions}.  
+${\mathcal{A}}.{\tt{setVal}}(t)$ sets all of
+the data values in ${\mathcal{A}}$ to the single 
+value $t$.  ${\mathcal{A}}.{\tt{copy}}({\mathcal{A}}_2)$
+copies all of the values in ${\mathcal{A}}_2$ 
+into the part of ${\mathcal{A}}_1$ defined on
+${\mathcal{A}}.{\tt{box}}() \mbox{\tt{\&}} {\mathcal{A}}_2.{\tt{box}}()$.
+${\mathcal{A}}_1$ and ${\mathcal{A}}_2$ must have the
+same number of components.  Both {\tt{setVal}} and {\tt{copy}} have
+overloaded versions that permit the operations to be performed on a
+specified sub-rectangle and over subsets of the component ranges.
+
+\item $\bullet$ \underline{Domain Modification Functions}  
+${\mathcal{A}}.{\tt{shift}}(\ibold)$ changes
+the {\tt{Box}} over which ${\mathcal{A}}$ is defined 
+to ${\mathcal{A}}.{\tt{box}}() + \ibold$,
+leaving the data unmodified.  Mathematically, 
+${\mathcal{A}}$ becomes ${\mathcal{A}}'$,
+with ${\mathcal{A}}'(\jbold, s) \mbox{{\tt{==}}} {\mathcal{A}}(\jbold
+- \ibold, s), \forall \jbold \in
+{\mathcal{A}}'.{\tt{box}}()$.  The {\tt{shift}} function is overloaded to
+shift ${\mathcal{A}}$ by some distance in a single coordinate direction
+$({\mathcal{A}}.{\tt{shift}}(d, s))$.  
+${\mathcal{A}}.{\tt{shiftHalf}}(\ibold)$ shifts the
+domain of ${\mathcal{A}}$ by $\ibold$ 
+``halves'' in each direction, where a
+half-shift changes the centering to the adjacent nodes/ cells centered
+{\tt{Box}} in that direction.
+
+\end{trivlist}
+
+\noindent
+{\bf FArrayBox}
+
+An \verb|FArrayBox| is-a \verb|BaseFab<Real>| which contains
+floating-point data.  A number of
+aggregate floating-point arithmetic operations are provided.
+\verb|FArrayBox| is implemented as a derived class from
+\verb|BaseFab<Real>|.  In addition to {\tt{BaseFab}} operations,
+{\tt{FArrayBox}} has a collection of operations that are specialized
+to real-valued arrays.
+
+{\bf{Note:}}  All \verb|FArrayBox| objects are initialized upon creation,
+using {\tt{setVal}} with an argument of {\tt{1.23456789e10}},
+whether the Chombo libraries are compiled with debugging on or off.
+
+\begin{trivlist}
+\item $\bullet$ \underline{Pointwise Arithmetic Operators}  
+${\mathcal{A}_1} \oplus = {\mathcal{A}_2}$,
+$\oplus \in $ \{{\tt{+, -, *, /}}\}, updates in place 
+the values of ${\mathcal{A}}_1(\ibold, s)$
+with ${\mathcal{A}}_1(\ibold, s) \oplus {\mathcal{A}}_2(\ibold, s)$, 
+for $0 \leq s <
+{\mathcal{A}}_1.{\tt{nComps}}()={\mathcal{A}}_2.{\tt{nComps}}()$, and
+$ \ibold \in {\mathcal{A}}_1.{\tt{box}}() \bigcap
+{\mathcal{A}}_2.{\tt{box}}()$.  There are also a collection of member functions
+{\tt{plus, minus, mult, divide}}, that perform these operations over
+subboxes and subranges of the components.  ${\mathcal{A}}.{\tt{abs}}()$ updates in
+place the values of ${\mathcal{A}}$ with their absolute values.  {\tt{abs}} is
+overloaded with versions specifying subbox and a single component.
+The unary operators {\tt negate} and {\tt invert} behave in a similar
+fashion to {\tt abs}.
+
+\item $\bullet$ \underline{Reduction Operators}  ${\mathcal{A}}.{\tt{sum}}(s)$,
+${\mathcal{A}}.{\tt{min}}(s)$, ${\mathcal{A}}.{\tt{max}}(s)$, return real values containing the
+sum, minimum, and maximum of the values of the $s$-th component of
+${\mathcal{A}}$.  ${\mathcal{A}}.{\tt{minIndex}}(s)$, ${\mathcal{A}}.{\tt{maxIndex}}(s)$ return
+{\tt{IntVects}} corresponding to one of the locations $\ibold$ such
+that the minimum or maximum is attained.  ${\mathcal{A}}.{\tt{norm}}(p, s), p \geq 1$
+returns the discrete $p$ norm of the $s$-th component of ${\mathcal{A}}$.
+${\mathcal{A}}.{\tt{norm}}(p, s) = (\sum_{\ibold \in {\mathcal{A}}.{\tt{box}}()} | {\mathcal{A}}(\ibold, s)
+|^p)^{1/p}$.  There are also overloaded versions of these functions
+that perform their operations over a subbox, or for a range of components.
+
+\item $\bullet$ \underline{Mask Functions}  
+${\mathcal{A}}.{\tt{maskLT}}(M, a, s)$
+sets the values of the input {\tt BaseFab<int>} $M$ 
+to one or zero, depending on whether ${\mathcal{A}}(\ibold, s) <
+a$ or not.  $M$ is resized by the function so that $M.{\tt{box}}() =
+{\mathcal{A}}.{\tt{box}}()$.  {\tt{maskLT}} also returns the integer number of
+non-zero entries in $M$.  {\tt{maskLE, maskEQ, maskGT, maskGE}} are
+defined similarly.
+\end{trivlist}
+
+\noindent
+{\bf The Fortran Interface.} The collection of values taken on by a 
+{\tt BaseFab} $\mathcal{A}$ is stored in a contiguous block of storage
+beginning at $\mathcal{A}.{\tt dataPtr()}$. The data is stored in
+Fortran ordering corresponding with the spatial indices first, followed
+by the component index. Specifically, if a Fortran routine is called
+from C++
+\begin{verbatim}
+extern "C" {foo_(real*, int*, int* , int* );}
+
+  FArrayBox A(B,nc);
+  foo_(A.dataPtr(),A.loVect(),A.hiVect(),A.nCompPtr())
+
+\end{verbatim}
+The indexing of $\mathcal{A}$ in the Fortran routine is given by
+\begin{verbatim}
+      
+      subroutine foo(a,lo,hi,nc)
+      
+      integer lo(0:CHF_SPACEDIM-1)
+      integer hi(0:CHF_SPACEDIM-1)
+      real_t a(lo(0):hi(0),lo(1):hi(1),0:nc-1)
+          
+      do ic =0,nc-1
+      do j = lo(1),hi(1)
+      do i = lo(0),hi(0)
+
+      a(i,j,ic) = ...
+
+\end{verbatim}
+For further details on the Fortran interface, see Chapter 8.
+
+\subsubsection{Aliasing}
+\label{sec:aliasing}
+
+\verb|BaseFab<T>|, and by inheritance \verb|FArrayBox|, can also be
+built as an {\em alias} of another \verb|BaseFab<T>| (where T is the
+same for the two objects).  For example:
+
+\begin{verbatim}
+
+  BaseFab<int> original(b, 4);
+  Interval     subcomps(2, 3);
+  BaseFab<int> alias(subcomps, original);
+  // component 0 of alias is equivalent to component 2 of original
+
+\end{verbatim}
+
+ This BaseFab does not allocate any memory, but
+ sets its data pointer into the memory pointed to by the argument
+ BaseFab.  It is the users responsibility to ensure this aliased
+ BaseFab is not used after the original BaseFab has deleted its data member
+ (resize, define(..) called, or destruction, etc.).
+
+  This is similar to using an offset pointer into an array. The offset
+pointer is only valid as long as the original array is valid.
+
+    This aliased BaseFab will also generate side effects (modifying the values
+of data in one will modify the other's data). Deleting the alias will not affect the original.  
+
+This aliased BaseFab will have \verb|subcomps.size()| components, 
+starting at zero. The aliased BaseFab can only have the same \verb|Box| domain
+as the original.
+
+

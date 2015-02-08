@@ -1,0 +1,187 @@
+\subsection{Flux Estimation in Two Dimensions}
+
+\begin{enumerate}
+\item Transform to primitive variables.  
+\begin{equation}
+W^n_\vbold = W(U^n_\vbold)
+\end{equation}
+
+\item Compute slopes $\Delta^d W_\vbold$.  This is described
+      separately in section \ref{sec::slopeCalculation}.
+
+\item Compute the effect of the normal derivative terms and the source
+term on the extrapolation in space and time from cell centers to
+faces.  For $0 \le d < \Dim$,
+\begin{align}
+\begin{split}
+W_{\vbold, \pm, d} = & \;
+  W^n_\vbold +
+  \half (\pm I - \frac{\Delta t}{h} A^d_\vbold) P_\pm (\Delta^d W_\vbold) \\
+A^d_\vbold = & \; A^d(W_{\vbold}) \\
+P_\pm(W) = & \; \sum\limits_{\pm \lambda_k > 0} (l_k \cdot W) r_k \\
+W_{\vbold, \pm, d} =  & \; W_{\vbold, \pm, d} + \frac{\Delta t}{2} \nabla_U W 
+\cdot S^n_\vbold 
+\end{split}
+\label{eqn::normalPred}
+\end{align}
+where $\lambda_k$ are eigenvalues of $A^d_\ibold$, and 
+$l_k$ and $r_k$ are the corresponding left and right eigenvectors.
+We then extrapolate to the covered faces.   First we define the VoFs involved.
+\begin{align}
+\begin{split}
+d' =&  1- d \\
+s^d =& \sign{n^d} \\
+\vbold^{up} =& ind^{-1}(ind(\vbold)+s^{d'}\ebold^{d'}- s^d \ebold^d)\\
+\vbold^{side} =& ind^{-1}(ind(\vbold)+ s^d \ebold^d)\\
+\vbold^{corner} =& ind^{-1}(ind(\vbold)+s^{d'}\ebold^{d'})
+\end{split}
+\label{eqn::vofloc2d}
+\end{align}
+Define $W^{\text{up,side,corner}}$, extrapolations to the edges near
+the VoFs near  $\vbold$.   
+\begin{align}
+\begin{split}
+W^{\text{up}} =& W_{\vbold^{\text{up}},\mp,d}              \\       
+W^{\text{side}} =& W_{\vbold^{\text{side}},\mp,d} - s^d \Delta^d W \\      
+W^{\text{corner}} =& W_{\vbold^{\text{corner}},\mp,d}      \\
+\Delta^d W =& 
+\begin{cases}
+\Delta^d W^n_{\vbold^{\text{side}}} & \text{if } n^d > n^{d'} \\
+\Delta^d W^n_{\vbold^{\text{corner}}} & \text{otherwise} \\
+\end{cases} \\
+\Delta^{d'} W =& 
+\begin{cases}
+\Delta^{d'} W^n_{\vbold^{\text{corner}}} & \text{if } n^d > n^{d'} \\
+\Delta^{d'} W^n_{\vbold^{\text{up}}} & \text{otherwise} \\
+\end{cases}
+\end{split}
+\end{align}
+where the slopes are defined in section \ref{sec::slopeCalculation}
+If any of these vofs does not have a monotone path to the original
+VoF $\vbold$, we drop order the order of interpolation.
+
+If $|n_d| < |n_{d'}|$:
+\begin{quotation}
+\begin{equation}
+W^{\text{full}} = \frac{|n_d|}{|n_{d'}|} W^{\text{corner}} + 
+(1-\frac{|n_d|}{|n_{d'}|}) W^{\text{up}} 
+- (\frac{|n^{d}|}{|n^{d'}|}s^d \Delta^d W + s^{d'} \Delta^{d'} W) 
+\end{equation}
+\begin{align}
+\begin{split}
+W^{\text{covered}}_{\vbold, \pm, d} &=  
+\begin{cases} 
+W^{\text{full}} &  \text{if both exist}  \\
+W^{\text{up}} & \text{ if only } \vbold^{\text{up}} 
+\text{ exists} \\
+W^{\text{corner}} & \text{ if only } \vbold^{\text{corner}} 
+\text{ exists} \\
+W^n_\vbold & \text{ if neither exists}
+\end{cases} 
+\end{split}
+\label{eqn::coveredinterp2d}
+\end{align}
+\end{quotation}
+If $|n_d| \ge |n_{d'}|$:
+\begin{quotation}
+\begin{equation}
+W^{\text{full}} = \frac{|n_{d'}|}{|n_{d}|} W^{\text{corner}} + 
+(1-\frac{|n_{d'}|}{|n_{d}|}) W^{\text{side}} 
+- (\frac{|n^{d'}|}{|n^{d}|} s^{d'} \Delta^{d'} W + s^{d} \Delta^{d} W) 
+\end{equation}
+\begin{align}
+\begin{split}
+W^{\text{covered}}_{\vbold, \pm, d} &=  
+\begin{cases} 
+ W^{\text{full}} & \text{if both exist} \\
+W^{\text{side}} & \text{ if only } \vbold^{\text{side}}  \text{ exists} \\
+W^{\text{corner}} & \text{ if only } \vbold^{\text{corner}} \text{ exists} \\
+W^n_\vbold & \text{ if neither exists}
+\end{cases} 
+\end{split}
+\end{align}
+\end{quotation}
+
+\item Compute estimates of $F^d$ suitable for computing 1D flux
+derivatives $\frac{\partial F^d}{\partial x^d}$ using a 
+Riemann solver
+for the interior, $R$, and for the boundary, $R_B$.
+\begin{align}
+\begin{split}
+F^{\text{1D}}_\fbold = 
+      & \; R(  W_{\vbold_{-}(\fbold), +, d}, W_{\vbold_{+}(\fbold), -, d}, d) \\
+~ | ~ & \; R_B(W_{\vbold_{-}(\fbold), +, d}, (\ibold + \half \ebold^d)h  , d) \\
+~ | ~ & \; R_B(W_{\vbold_{+}(\fbold), -, d}, (\ibold + \half \ebold^d)h  , d) \\
+d = & \; dir(\fbold)
+\end{split}
+\label{eqn::riemann1}
+\end{align}
+
+\item Compute the covered fluxes $F^{\text{1D}, \text{covered}}$
+\begin{equation}
+\begin{split}
+F^{\text{1D, covered}}_{\vbold, +, d} = R(W_{\vbold, +, d},
+W^{\text{covered}}_{\vbold, +, d}, d) \\
+F^{\text{1D, covered}}_{\vbold, -, d} = R(W^{\text{covered}}_{\vbold, -, d},
+W_{\vbold, -, d}, d)
+\end{split}
+\label{eqn::coveredflux}
+\end{equation}
+
+
+\item Compute corrections to $W_{\ibold, \pm, d}$ due to
+the transverse derivatives. For regular cells,
+this takes the following form.
+\begin{alignat}{2}
+\label{eqn::updateprim2-2D}
+ W^{n+\half}_{\ibold, \pm, d} = \; & 
+n    W_{\ibold, \pm, d} \; & & - \; \frac{\Delta t}{2h} \nabla_U W \cdot
+ (F^{\text{1D}}_{\ibold + \half \ebold^{d_1}}
+                       - F^{\text{1D}}_{\ibold - \half \ebold^{d_1}}) \\
+ & & & d \neq d_1, ~ 0 \le d, d_1 < \Dim \notag \\
+\label{eqn::updateprim2-3D}
+\end{alignat}
+For irregular cells, we compute the transverse derivatives and use them to
+correct the extrapolated values of $U$ and obtain time-centered fluxes
+at centers of Cartesian faces. In two dimensions, this takes the form
+\begin{align}
+\begin{split}
+ D^{d, \bot} F_\vbold &= \frac{1}{h}(
+\bar{F}_{\vbold, +, d_1} -\bar{F}_{\vbold, -, d_1}) \\
+ \bar{F}_{\vbold, \pm, d^{'}} &= 
+\begin{cases}
+\frac{1}{N_{\vbold, \pm, d^{'}}}
+\sum_{\fbold \in \mathcal{F}_{\vbold, \pm, d^{'}}} F^{1D}_{\fbold, \pm, d^{'}}
+& \mbox{ if } N_{\vbold, \pm, d^{'}} > 0 
+\\
+F^{\text{1D, covered}}_{\vbold, \pm, d^{'}} & \text{ otherwise} \\
+\end{cases} 
+\\
+d \neq d_1, ~~~& 0 \le d, d_1 < \Dim  \\
+W^\nph_\vpmd =& W_\vpmd - \frac{\dt}{2}
+\nabla_U W (D^{d, \bot} F_\vbold) 
+\end{split}
+\end{align}
+Extrapolate to covered faces with the procedure described above using 
+$W^\nph_{\cdot,\mp,d}$ to form $W^{\nph,\text{covered}}_{\cdot,\pm,d}$.
+
+\item Compute the flux estimate.
+\begin{align}
+\begin{split}
+F^{n+\half}_{\fbold} = & \;
+R(W^{n+\half}_{\vbold^-(\fbold), +, d}, W^{n+\half}_{\vbold^+(\fbold), - ,d},  d) \\ 
+| ~ & \; R_B(W^{n+\half}_{\vbold^-(\fbold), +, d}, (\ibold + \half \ebold^d)h, d) \\ 
+| ~ & \; R_B(W^{n+\half}_{\vbold^+(\fbold), -, d}, (\ibold + \half \ebold^d)h, d) \\
+F^{n+\half,\text{covered}}_{\vbold, -, d} = &
+ R(W^{n+\half,\text{covered}}_{\vbold,+,d},W^{\nph}_{\vbold,-,d},d) \\
+F^{n+\half,\text{covered}}_{\vbold, +, d} = &
+ R(W^{n+\half}_{\vbold,+,d},W^{\nph,\text{covered}}_{\vbold,+,d},d)
+\end{split}
+\label{eqn::riemann3}
+\end{align}
+
+\item Modify the flux with artificial viscosity where the
+flow is compressive. 
+
+\end{enumerate}
+

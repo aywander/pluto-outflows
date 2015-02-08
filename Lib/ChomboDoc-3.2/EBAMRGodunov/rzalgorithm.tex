@@ -1,0 +1,223 @@
+\subsection{Modifications for R-Z Computations}
+
+For R-Z calculations, we make some adjustments to the algorithm.
+Specifically, we separate the radial pressure force as a separate
+flux.  This makes free-stream preservation in the radial direction
+easier to achieve.  For this section, we will confine ourselves to the
+compressible Euler equations.
+
+\subsubsection{Equations of Motion}
+The compressible Euler equations in R-Z coordinates are given by
+\begin{equation}
+\frac{\partial U}{\partial t} + 
+\frac{1}{r} \frac{\partial (r F^r)}{\partial r}+
+\frac{1}{r}\frac{\partial (r F^z)}{\partial z} +
+\frac{\partial H}{\partial r} + \frac{\partial H}{\partial z} = 0
+\end{equation}
+where
+\begin{align}
+\begin{split}
+U   =& (\rho     , \rho u_r    ,  \rho u_z    , \rho E          )^T \\
+F^r =& (\rho u_r , \rho u^2_r  ,  \rho u_r u_z, \rho u_r (E + p))^T \\
+F^z =& (\rho u_z , \rho u_r u_z,  \rho u^2_z  , \rho u_z (E + p))^T \\
+H   =& ( 0       ,       p     ,    p         , 0               )^T
+\end{split}
+\end{align}
+
+\subsubsection{Flux Divergence Approximations}
+
+In section \ref{sec::divf}, we describe our solution update
+strategy and this remains largely unchanged.  Our update still takes
+the form of equation \ref{eqn::prelimup} and redistribution still
+takes the form of equation \ref{eqn::redist}.   The definitions of the
+divergence approximations do change, however.  The volume of a full
+cell $\Delta V_j$   is given by
+\begin{equation}
+\Delta V_j = (j + \frac{1}{2}) h^3
+\end{equation}
+where $(i,j)= ind^{-1}(\vbold)$.  Define $\kappa^{vol}_\vbold$ to be
+the real volume of the cell that the VoF occupies.
+\begin{equation}
+\kappa^{vol}_\vbold = 
+\frac{1}{\Delta V}\int_{\Delta_\vbold} r dr dz = 
+\frac{1}{\Delta V}\int_{\partial \Delta_\vbold} \frac{r^2}{2} n_r dl
+\end{equation}
+\begin{equation}
+\kappa^{vol}_\vbold = 
+\frac{h}{2 \Delta V}((\alpha r^2)_{\fbold(\vbold,+,r)} -
+(\alpha r^2)_{\fbold(\vbold,-,r)}- \alpha_B \bar{r}^2_{\delta \vbold} n^r)
+\end{equation}
+The conservative divergence of the flux in RZ is given by
+\begin{gather}
+\begin{align*}
+(D \cdot \vec{F})^c_\vbold = \frac{h}{\Delta V \kappa^{vol}_\vbold}
+( &(r \bar{F}^r \alpha)_{\fbold(\vbold,+,r)} - (r \bar{F}^r \alpha)_{\fbold(\vbold,-,r)} \\
++ &(\bar{r}\bar{F}^z \alpha)_{\fbold(\vbold,+,z)} - (\bar{r} \bar{F}^z\alpha)_{\fbold(\vbold,-,z)} )  
+\end{align*}
+\label{eqn::consdivrz}
+\end{gather}
+\begin{gather}
+\begin{align*}
+\left(\frac{\partial H}{\partial r}\right)^c &=  
+\frac{1}{\kappa_\vbold h^2} \int \frac{\partial H}{\partial r} dr dz  = 
+\frac{1}{\kappa_\vbold h^2} \int H n_r dl  \\
+\left(\frac{\partial H}{\partial z}\right)^c &=  
+\frac{1}{\kappa_\vbold h^2} \int \frac{\partial H}{\partial z} dr dz  = 
+\frac{1}{\kappa_\vbold h^2} \int H n_z dl  
+\end{align*}
+\end{gather}
+We always deal with these divergences in a form multiplied by the
+volume fraction $\kappa$.
+\begin{gather}
+\begin{align*}
+\kappa_\vbold (D \cdot \vec{F})^c_\vbold =
+\frac{h \kappa_\vbold}{\Delta V \kappa^{vol}_\vbold}
+&( (r \bar{F}^r \alpha)_{\fbold(\vbold,+,r)} - (r \bar{F}^r \alpha)_{\fbold(\vbold,-,r)} \\
++ &(\bar{r}\bar{F}^z \alpha)_{\fbold(\vbold,+,z)} - (\bar{r} \bar{F}^z \alpha)_{\fbold(\vbold,-,z)})  
+\end{align*}
+\end{gather}
+\begin{gather}
+\begin{align*}
+\kappa_\vbold \left(\frac{\partial H}{\partial r}\right)^c =&  
+\frac{1}{h^2} \int H n_r dl  =  \frac{1}{h}( (H
+\alpha)_{\fbold(\vbold,+,r)} - (H \alpha)_{\fbold(\vbold,-,r)})  \\
+\kappa_\vbold \left(\frac{\partial H}{\partial z}\right)^c =&  
+\frac{1}{h^2} \int H n_z dl  =  \frac{1}{h}( (H
+\alpha)_{\fbold(\vbold,+,z)} - (H \alpha)_{\fbold(\vbold,-,z)})  
+\end{align*}
+\end{gather}
+where $\bar{F}$ has been interpolated to face centroids where $\alpha$
+denotes the ordinary area fraction.   The nonconservative divergence
+of the flux in RZ is given by
+\begin{gather*}
+\begin{align*}
+(D \cdot \vec{F})^{nc}_\vbold = \frac{1}{h r_\vbold}
+( &(r {F}^r)_{\fbold(\vbold,+,r)} - (r {F}^r )_{\fbold(\vbold,-,r)})   \\
++ \frac{1}{h}&(F^z_{\fbold(\vbold,+,z)} - F^z_{\fbold(\vbold,-,z)} )
+\end{align*}
+\end{gather*}
+\begin{gather*}
+\begin{align*}
+\left(\frac{\partial H}{\partial r}\right)^{nc} &=  
+\frac{1}{h} (H_{\fbold(\vbold,+,r)} - H_{\fbold(\vbold,-,r)}) \\
+\left(\frac{\partial H}{\partial z}\right)^{nc} &=  
+\frac{1}{h} (H_{\fbold(\vbold,+,z)} - H_{\fbold(\vbold,-,z)}) 
+\end{align*}
+\end{gather*}
+
+\subsubsection{Primitive Variable Form of the Equations}
+
+In the predictor step, we use the  nonconservative form of the
+equations of motion.  See Courant and Friedrichs
+\cite{COURANTANDFRIED} for derivations.
+\begin{equation}
+    \frac{\partial W  }{\partial t} + 
+A^r \frac{\partial  W }{\partial r} +
+A^z \frac{\partial  W }{\partial z} = S
+\end{equation}
+where
+\begin{align*}
+\begin{split}
+W   =& \left(\rho     ,  u_r    ,   u_z    , p                    \right)^T \\
+S   =& \left(-\rho \frac{u_r}{r} , 0  ,  0, -\rho c^2 \frac{u_r}{r} \right)^T  
+\end{split}
+\end{align*}
+\begin{equation*}
+  A^r = \left( \begin{array}{cccc} 
+ u_r       & \rho      & 0           & 0                \\
+ 0         & u_r       & 0           & \frac{1}{\rho}   \\
+ 0         & 0         & u_r         & 0                \\
+ 0         & \rho c^2  & 0           &  u_r
+\end{array}        \right)
+\end{equation*}
+\begin{equation*}
+A^r = \left( \begin{array}{cccc} 
+ u_z       & \rho      & 0           & 0                \\
+ 0         & u_z       & 0           & 0                \\
+ 0         & 0         & u_z         & \frac{1}{\rho}   \\
+ 0         & 0         & \rho c^2   &  u_z
+\end{array}        \right)
+\end{equation*}
+
+\subsubsection{Flux Registers}
+
+Refluxing is the balancing the fluxes at coarse-fine interfaces
+so the coarse side of the interface is using the same flux as the
+integral of the fine fluxes over the same area.    In this way,
+we maintain strong mass conservation at coarse-fine interfaces.
+As shown in equation, \ref{eqn::consdivrz}, the conservative
+divergence in cylindrical coordinates is has a difference form than
+in Cartesian coordinates.   It is therefore necessary to describe the
+refluxing operation specifically for cylindrical coordinates.
+
+Let $\vec{F}^{comp} = \{ \vec{F}^f, \vec{F}^{c, valid} \}$ be a
+two-level composite vector field. We want to define a composite
+divergence $D^{comp}(\vec{F}^f, \vec{F}^{c, valid})_\vbold$, for
+$\vbold \in V^c_{valid}$. We do this by extending $F^{c, valid}$ to
+the faces adjacent to $\vbold \in V^c_{valid}$, but are covered by
+$\mathcal{F}^f_{valid}$. 
+
+\newcommand{\bigfrac}{\left(\frac{\kappa_{\vbold_c}}{\kappa^{vol}_{\vbold_c}\Delta
+    V_{\vbold_c}}\right)}
+
+\begin{gather*}
+<F^f_z>_{\fbold_c} = \bigfrac
+\left(\frac{h^2 }{(n_{ref})^{(\Dim-1)}}\right) 
+\sum\limits_{\fbold \in \mathcal{C}^{-1}_{n_{ref}(\fbold_c)}} 
+(\bar{r} \alpha)_\fbold (\bar{F}^z + \bar{H})_\fbold \\ 
+<F^f_r>_{\fbold_c} = \bigfrac
+\left( \frac{h^2}{(n_{ref})^{(\Dim-1)}} \right)
+\sum\limits_{\fbold \in \mathcal{C}^{-1}_{n_{ref}}
+(\fbold_c)}(r \alpha)_\fbold (F^r + H)_\fbold \\ 
+F^c_{r, \fbold_c} =  \bigfrac
+(h^2 (r \alpha)_{\fbold_c}) (F^r + H)_{\fbold_c}  \\
+F^c_{z, \fbold_c} = \bigfrac
+(h^2 (\bar{r} \alpha)_{\fbold_c})  (\bar{F}^z+\bar{H})_{\fbold_c}
+\\  
+\fbold_c \in \ind^{-1}(\ibold + \half \ebold^d), \ibold + \half
+\ebold^d \in \zeta^f_{d, +} \cup \zeta^f_{d, -} \\ 
+\zeta^f_{d, \pm} = \{ \ibold \pm \half \ebold^d : \ibold \pm \ebold^d
+\in \Omega^c_{valid}, \ibold \in \mathcal{C}_{n_{ref}}(\Omega^f) \}  
+\end{gather*}
+The VoF $\vbold_c$ is the coarse volume that is adjacent to the 
+coarse-fine interface and $r_{\vbold_c}$ is the radius of its cell
+center. Then we can define $(D \cdot \vec{F})_\vbold,
+\vbold \in \mathcal{V}^c_{valid}$, using the expression above, with
+$\tilde{F}_\fbold = <F^f_d>$ on faces covered by $\mathcal{F}^f$. 
+We can express the composite divergence in terms of a level
+divergence, plus a correction. We define a flux register $\delta
+\vec{F}^f$, associated with the fine level 
+\begin{gather*}
+\delta \vec{F}^f = (\delta F^f_{0, \ldots} \delta F^f_{D-1}) \\
+\delta F^f_d : \ind^{-1}(\zeta^f_{d, +} \cup \zeta^f_{d,-}) \rightarrow
+\mathbb{R}^m 
+\end{gather*}
+If $\vec{F}^c$ is any coarse level vector field that extends
+$\vec{F}^{c, valid}$, i.e. $F^c_d = F^{c, valid}_d \mbox{ on }
+\mathcal{F}^{c,d}_{valid}$ then for $\vbold \in \mathcal{V}^c_{valid}$ 
+\begin{equation}
+ D^{comp}(\vec{F}^f, \vec{F}^{c, valid})_\vbold = (D \vec{F}^c)_\vbold
++ D_R(\delta \vec{F}^c)_\vbold 
+\end{equation}
+Here $\delta \vec{F}^f$ is a flux register, set to be
+\begin{equation}
+\delta F^f_d = <F^f_d> - F^c_d \mbox{   on } \ind^{-1}(\zeta^c_{d, +}
+\cup \zeta^c_{d, -}) 
+\end{equation}
+$D_R$ is the reflux divergence operator. For valid coarse vofs
+adjacent to $\Omega^f$ it is given by 
+\begin{equation}
+\kappa_\vbold(D_R \delta \vec{F}^f)_\vbold = 
+\sum\limits^{D-1}_{d=0}(
+ \sum\limits_{\fbold:\vbold=\vbold^+(\fbold)} \delta F^f_{d, \fbold} -
+ \sum\limits_{\fbold:\vbold=\vbold^-(\fbold)} \delta F^f_{d, \fbold})
+\end{equation}
+For the remaining vofs in $\mathcal{V}^f_{valid}$, 
+\begin{equation}
+(D_R \delta \vec{F}^f) \equiv 0
+\end{equation}
+We then add the reflux divergence
+to adjust the coarse solution $U^c$ to preserve conservation.
+\begin{equation}
+U^c_{\vbold} \pluseq  \kappa_{\vbold} (D_R(\delta F))_{\vbold}
+\end{equation}

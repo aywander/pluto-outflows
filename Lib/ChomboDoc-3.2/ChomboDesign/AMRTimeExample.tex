@@ -1,0 +1,298 @@
+\section{AMRTimeDependent  Example: Advection-Diffusion}
+
+We provide an example which uses the AMRTimeDependent infrastructure
+to solve the advection-diffusion equation.   Given an analytic
+velocity field $\vec v$ and a diffusion coefficient $\nu$, we evolve
+an advected and diffused scalar $\phi$ using the advection-diffusion
+equation:  
+$$
+\frac{\partial \phi}{\partial t} + \nabla \cdot(\vec v \phi) = \nu
+\Delta \phi .
+$$ 
+The algorithm is mostly as described in previous sections.  The
+solution to the Riemann problem is given by simple upwinding.  $F_d$,
+the advective flux in the $d$ direction, is given by $F_d = v^d \phi$.
+The characteristic values are the velocity components.  
+
+The main difference between the algorithm used in this example and
+that in Figure \ref{fig:HSCLcode} is in the approach taken to
+flux correction during the synchronization step. The total flux
+is the advective flux minus the diffusive flux: $F_d^{tot} = v^d
+\phi - \nu \nabla \phi$. Because the fluxes used to update the
+solution include both advective and diffusive fluxes, simply
+performing the explicit refluxing correction step:
+$$\phi^l(t^l + \Delta t^l) := \phi^l(t^l + \Delta t^l) - \Delta t^l D_R
+(\delta F^{l+1})$$ 
+will be unstable because it represents a forward-Euler update for the
+heat equation (which requires that $\Delta t \approx O(h^2)$ for
+stability). To preserve stability, we instead apply the flux
+correction implicitly, as described in
+\cite{martinColellaGraves:2008}:  
+
+We first solve a Helmholtz equation for a correction:
+\begin{equation}
+(I -  \Delta t^{\ell_{base}} \nu \Delta^{comp}) \delta \phi = \Delta
+t^{\ell} D_R(\delta \vec{F}^{tot,\ell+1}) \ \ \ {\rm for } \ \ \ell \geq
+\ell_{base} 
+\end{equation}
+Then, the correction is added to the solution: 
+\begin{equation}
+\phi^\ell := \phi^\ell + \delta \phi^\ell \ \ {\rm for } \ \ \ell \geq
+\ell_{base}. 
+\end{equation}
+
+\subsection{AdvectionDiffusion-Specific Classes}
+
+The AMR advection-diffusion application in
+{\tt Chombo/example/AMRGodunov}
+uses the AMRTimeDependent infrastructure
+extensively.  These are the classes that are specific to this application.
+\begin{itemize}
+\item \verb|AdvectPhysics| is the \verb|GodunovPhysics|-derived class.   It provides
+  \verb|PatchGodunov| the physics-specific information needed to advance the
+  solution. 
+\item 
+\verb|LevelAdvect| is used to advance an advection-diffusion solution one
+step:
+$$
+\phi^{new} = \phi^{old} - \dt (\nabla \cdot (\vec v \phi) )^{n+\half} .
+$$
+   In the case of non-zero diffusion, we use this advance as an
+input to a semi-implicit advance using the \verb|LevelTGA| class
+described in section \ref{section:TGA}.   In the pure advection
+case, we can just use this update.  
+\item \verb|AMRLevelAdvectDiffuse| is the \verb|AMRLevel|-derived class that drives
+  the calculation.
+\item  \verb|AMRLevelAdvectDiffuseFactory| is the factory class that the user
+  sends to \verb|AMR|.  This class generates \verb|AMRLevelAdvectDiffuse| objects
+  for \verb|AMR|.
+\end{itemize}
+
+\subsection{Usage Pattern}
+
+In broad strokes, the driver for the \verb|AMRLevelAdvectDiffuse| example
+looks something like this:
+\begin{small}
+\begin{verbatim}
+  // read inputs
+  ParmParse ppgodunov;
+
+  //define the domain of computation
+  ProblemDomain prob_domain;
+  getProblemDomain(prob_domain);
+
+  //define the initial and boundary conditions
+  RefCountedPtr<AdvectTestIBC> ibc;
+  getAdvectTestIBC(ibc);
+
+  //define the AdvectPhysics object
+  AdvectPhysics advPhys;
+  advPhys.setPhysIBC(&(*ibc));
+
+  //pick an advection velocity function
+  AdvectionVelocityFunction velFunc;
+  getAdvectionVelocityFunction(velFunc);
+
+  //define the factory object
+  RefCountedPtr<AMRLevelAdvectDiffuseFactory>  amrg_fact;
+  getAMRLADFactory(amrg_fact, velFunc, advPhys);
+
+  //define the AMR object
+  AMR amr;
+  defineAMR(amr, amrg_fact, prob_domain, a_refRat);
+ 
+  //sets all the amr parameters (as opposed to a fixed grid run)
+  setupAMRForAMRRun(amr);
+
+  // run
+  amr.run(a_stopTime,a_nstop);
+
+  // output last pltfile and statistics
+  amr.conclude();
+\end{verbatim}
+\end{small}
+To use these functions  directly (all of these functions exist in
+\verb|AdvectDiffuseUtils|), one must have an input file that looks something
+like this:
+\begin{small}
+\begin{verbatim}
+##cfl number and its initial time counterpart
+cfl = 0.9
+initial_cfl = 0.1
+##nu
+diffusion_coef = 0.001
+##how much output one wants from the application
+verbosity = 1
+##max number of time steps
+max_step = 100
+##final solution time
+max_time = 100.0
+##number of buffer cells
+tag_buffer_size = 3
+##tagging threshold for undivided difference of solution
+refine_thresh = 0.05
+##how often we regrid
+regrid_interval = 2 2 2 2 2 2
+##how fast time step can grow and how far out of bounds it can get
+max_dt_growth = 1.1
+dt_tolerance_factor = 1.1
+## size of the domain
+domain_length = 1.0 
+## distance (in level l cells) between levels l+1 and l-1
+grid_buffer_size = 1
+##do periodic boundary conditions or not
+periodic_bc = 1 1 1 
+##fixed time step size.  negative if not fixing time step
+fixed_dt   = -1.0
+##maximum AMR level number
+max_level = 2
+##coarsest AMRLevel grid size
+n_cell =  64 64 64
+##refinement ratios between levels
+ref_ratio = 2 2 2 2 
+##blocking factor
+block_factor =  4
+##maximum size of grids
+max_grid_size = 64
+##fill ratio for Berger-Rigoutsos
+fill_ratio = 0.75
+## how often to checkpoint.  negative if no checkpoints
+checkpoint_interval = -1
+## how often to dump plotfile.  negative if no plotfiles.
+plot_interval = 10
+##prefix of plotfiles
+plot_prefix  = plt
+##prefix of checkpoint files
+chk_prefix = chk
+blob_center = 0.75 0.5 0.5
+blob_radius = 0.1
+#0 = constant
+#1 = rotating
+advection_vel_type = 0
+use_limiting = true
+amrmultigrid.num_smooth  = 8
+amrmultigrid.tolerance   = 1.0e-10
+amrmultigrid.num_mg      = 1
+amrmultigrid.norm_thresh = 1.0e-10
+amrmultigrid.hang_eps    = 1.0e-10
+amrmultigrid.max_iter    = 100
+amrmultigrid.verbosity   = 1
+##1 = neumann, 0 = dirichlet
+bc_lo   = 1 1 1
+bc_hi   = 1 1 1
+bc_value = 0.
+\end{verbatim}
+\end{small}
+
+\subsection{{\tt AMRLevelAdvectDiffuseFactory} Interface}
+
+We use the following interface to create an \verb|AMRLevelAdvectDiffuseFactory|.
+\begin{small}
+\begin{verbatim}
+  AMRLevelAdvectDiffuseFactory(const AdvectPhysics&        gphys,  
+                               AdvectionVelocityFunction   advFunc,
+                               BCHolder                    bcFunc, 
+                               const Real&                 cfl,
+                               const Real&                 domainLength,
+                               const Real&                 refineThresh,
+                               const int&                  tagBufferSize,
+                               const Real&                 initialDtMultiplier,
+                               const bool&                 useLimiting,
+                               const Real&                 nu);
+
+\end{verbatim}
+\end{small}
+\begin{itemize}
+\item \verb|gphys| -- The \verb|AdvectPhysics| used to create the advection term.  
+\item \verb|advFunc| -- The function that provides the advection velocity.
+  This function must be of the form
+\begin{small}
+\begin{verbatim}
+typedef Real (*AdvectionVelocityFunction)(const RealVect& point,
+                                          const int&      velComp);
+\end{verbatim}
+\end{small}
+\item \verb|bcFunc| -- The boundary condition class sent to solve the
+  diffusion equation.   See section \ref{sec::AMRPBC} for details.
+\item \verb|cfl| -- The CFL number.
+\item \verb|domainLength| -- The physical length of the domain.
+\item \verb|refineThresh| -- Undivided gradient size over which a cell will be
+  tagged for refinement.
+\item \verb|tagBufferSize| -- Number of buffer cells around each tagged point
+  that will also be tagged.
+\item \verb|initialDtMultiplier| -- CFL number at the beginning of the calculation.
+\item \verb|useLimiting| -- Whether to use vanLeer limiting.  Turn this to
+  \verb|true| unless you are doing a convergence test.
+\item \verb|nu| -- Diffusion coefficient.
+\end{itemize}
+
+\subsection{{\tt LevelAdvect} Interface}
+\verb|LevelAdvect| is used to advance an advection-diffusion solution one
+step.   In the case of non-zero diffusion, we use this advance as an
+input to a semi-implicit advance using \verb|LevelTGA|.   In the pure
+advection case, we can just use this update.  If a user is simply
+using the \verb|AMRLevelAdvectDiffuse| application, this class is entirely
+internal to \verb|AMRLevelAdvectDiffuse|.   This discussion is provided for
+the benefit for those who want to use this object for other
+applications. 
+
+We define a \verb|LevelAdvect| with the following interface
+\begin{small}
+\begin{verbatim}
+  void define(const AdvectPhysics&        gphys,
+              const DisjointBoxLayout&    thisDisjointBoxLayout,
+              const DisjointBoxLayout&    coarserDisjointBoxLayout,
+              const ProblemDomain&        domain,
+              const int&                  refineCoarse,
+              const bool&                 useLimiting,
+              const Real&                 dx,
+              const bool&                 hasCoarser,
+              const bool&                 hasFiner);
+
+\end{verbatim}
+\end{small}
+\begin{itemize}
+\item \verb|gphys| -- The \verb|AdvectPhysics| used to create the advection term.  
+\item \verb|domain| -- The domain of the computation.
+\item \verb|refineCoarse| -- The refinement ratio to the next coarser level.
+\item \verb|useLimiting| -- Whether to use vanLeer limiting.  Turn this to
+  \verb|true| unless you are doing a convergence test.
+\item \verb|dx| -- The grid spacing.
+\item \verb|hasCoarser| -- Whether there is a coarser AMR level.
+\item \verb|hasFiner| -- Whether there is a finer AMR level.
+\end{itemize}
+
+We present the interface function that advances the solution.
+$$
+\phi^{new} = \phi^{old} - \dt (\nabla \cdot (\vec v \phi) )^{n+\half}
+$$
+\begin{small}
+\begin{verbatim}
+  Real step(LevelData<FArrayBox>&         U,
+            LevelFluxRegister&            finerFluxRegister,
+            LevelFluxRegister&            coarserFluxRegister,
+            LevelData<FluxBox>&           advectionVelocity,
+            const LevelData<FArrayBox>&   S,
+            const LevelData<FArrayBox>&   UCoarseOld,
+            const Real&                   TCoarseOld,
+            const LevelData<FArrayBox>&   UCoarseNew,
+            const Real&                   TCoarseNew,
+            const Real&                   time,
+            const Real&                   dt);
+\end{verbatim}
+\end{small}
+\begin{itemize}
+\item \verb|U| -- The solution.   Input is the old solution $\phi^{old}$.  Input is the new solution $\phi^{new}$.
+\item \verb|finerFluxRegister| -- The flux register with the next finer level.
+\item \verb|coarserFluxRegister| -- The flux register with the next coarser level.
+\item \verb|advectionVelocity| -- The holder for the advection velocity.
+  This is held in a \verb|LevelData| to make this object of somewhat more 
+  general utility.
+\item \verb|S| -- Source term.  In the case of advection-diffusion, $S= \nu \Delta \phi$.
+\item \verb|UCoarseOld| -- Solution at next coarser level at the old time.   
+\item \verb|TCoarseOld| -- Time at which \verb|UCoarseOld| exists.
+\item \verb|UCoarseNew| -- Solution at next coarser level at the new time.   
+\item \verb|TCoarseNew| -- Time at which \verb|UCoarseNew| exists.
+\item \verb|time| -- Time at which U exists before advance happens ($t^{old}$).
+\item \verb|dt|  -- Time step.
+\end{itemize}

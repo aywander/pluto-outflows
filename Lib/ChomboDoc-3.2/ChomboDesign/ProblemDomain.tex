@@ -1,0 +1,403 @@
+
+\section{Class ProblemDomain}
+
+{\tt ProblemDomain} is a class to handle interaction with boundary
+conditions at the edge of the computational domain, either physical
+boundary conditions or periodic ones. This class contains much of the
+functionality of the Box class, since logically the computational
+domain is generally a Box.   
+  
+Intersection with a ProblemDomain object will result in only removing
+regions which are outside the physical domain in non-periodic 
+directions. Regions outside the logical computational domain in
+periodic directions will be treated as ghost cells which can be filled
+with an exchange() function or through suitable interpolation from a
+coarser domain. 
+
+Since ProblemDomain will contain a Box, it is a dimension-dependent
+class, so SpaceDim must be defined appropriately when compiling.   
+
+Note that this implementation of ProblemDomain is inherently
+cell-centered. 
+
+The user interface for {\tt ProblemDomain} is as follows:
+
+\begin{itemize}
+\item
+\begin{verbatim}
+ProblemDomain()
+\end{verbatim}
+Default constructor -- the object is defined in an unusable state
+until the user calls the {\tt define} function.
+
+\item
+\begin{verbatim}
+ProblemDomain(const Box& domBox, const bool* isPeriodic)
+\end{verbatim}
+Full constructor.  Places the {\tt BRMeshRefine} object in a usable
+state. \\
+\\
+{\bf Arguments:} 
+\begin{itemize} 
+\item  \verb/domBox/ Computational domain.
+\item  \verb/isPeriodic/ SpaceDim array of bools which defines
+whether BC's are physical or periodic in each coordinate direction.   
+
+\end{itemize}
+
+
+\item
+\begin{verbatim}
+ProblemDomain(const Box& domBox)
+\end{verbatim}
+Partial constructor, creates non-periodic (in any coordinate
+direction) ProblemDomain. \\
+\\
+{\bf Arguments:}
+\begin{itemize}
+\item \verb/domBox/ Computational domain.
+\end{itemize}
+
+\item
+\begin{verbatim}
+ProblemDomain(const IntVect& small, const IntVect& big, const
+              bool* isPeriodic)
+\end{verbatim}
+Full constructor, creates ProblemDomain. \\
+\\
+{\bf Arguments:}
+\begin{itemize}
+\item \verb/small/ Location of lower-left corner of domain box
+\item \verb/big/  Location of upper-right corner of domain box
+\item  \verb/isPeriodic/ SpaceDim array of bools which defines
+whether BC's are physical or periodic in each coordinate direction.   
+\end{itemize}
+
+\item
+\begin{verbatim}
+ProblemDomain(const IntVect& small, const IntVect& big)
+\end{verbatim}
+Partial constructor, creates non-periodic (in any coordinate
+direction) ProblemDomain. \\
+\\
+{\bf Arguments:}
+\begin{itemize}
+\item \verb/small/ Location of lower-left corner of domain box
+\item \verb/big/  Location of upper-right corner of domain box
+\end{itemize}
+
+\item
+\begin{verbatim}
+ProblemDomain(const IntVect& small, const int* vec_len,
+              const bool* isPeriodic)
+\end{verbatim}
+Full constructor, creates ProblemDomain. \\
+\\
+{\bf Arguments:}
+\begin{itemize}
+\item \verb/small/ Location of lower-left corner of domain box
+\item \verb/vec_len/ Size of domain in each direction.
+\item  \verb/isPeriodic/ SpaceDim array of bools which defines
+whether BC's are physical or periodic in each coordinate direction.   
+\end{itemize}
+
+\item
+\begin{verbatim}
+ProblemDomain(const IntVect& small, const int* vec_len)
+\end{verbatim}
+Partial constructor, creates ProblemDomain with non-periodic boundary
+conditions by default. \\
+\\
+{\bf Arguments:}
+\begin{itemize}
+\item \verb/small/ Location of lower-left corner of domain box
+\item \verb/vec_len/ Size of domain in each direction.
+\end{itemize}
+
+
+\item
+\begin{verbatim}
+ProblemDomain(const ProblemDomain& src)
+\end{verbatim}
+Copy  constructor  
+
+
+\item 
+\begin{verbatim}
+const Box& domainBox() const 
+\end{verbatim}
+Returns logical computational domain. 
+
+\item
+\begin{verbatim}
+bool isPeriodic(int dir) const
+\end{verbatim}
+Returns {\tt true} if boundary condition is periodic in direction {\tt
+dir}.
+
+
+\item
+\begin{verbatim}
+bool isPeriodic() const
+\end{verbatim}
+Returns {\tt true} if boundary condition is periodic in any direction.
+
+\item
+\begin{verbatim}
+ShiftIterator shiftIterator() const
+\end{verbatim}
+Returns ShiftIterator for this problem domain.  ShiftIterator is a
+utility class to aid with periodic boundary conditions whose use is
+mostly internal to BoxLayout, Copier, etc which allows looping over
+IntVects which used to shift the domain for enforcing periodic
+boundary conditions.
+
+\item
+\begin{verbatim}
+bool isEmpty() const
+\end{verbatim}
+Returns {\tt true} if this ProblemDomain has an empty domainBox.
+
+
+\item
+\begin{verbatim}
+bool contains(const IntVect& p) const
+\end{verbatim}
+Returns true if argument is contained within this ProblemDomain.  An
+empty ProblemDomain does not contain and is not contained by any
+ProblemDomain.  In a periodic direction, all locations are contained,
+since a periodic domain is an infinite domain. If periodic in all
+directions, this will always return {\tt true}.
+
+
+\item
+\begin{verbatim}
+bool contains(const Box& b) const
+\end{verbatim}
+Returns true if argument is contained within this ProblemDomain.  An
+empty ProblemDomain does not contain and is not contained by any
+ProblemDomain.  In a periodic direction, all locations are contained,
+since a periodic domain is an infinite domain. If periodic in all
+directions, this will always return {\tt true}.
+
+
+\item
+\begin{verbatim}
+bool intersects( const Box& a_box) const
+\end{verbatim}
+Returns true if this ProblemDomain and the argument have non-null
+intersections.  It is an error if a\_box is not cell-centered.  An
+empty ProblemDomain does not intersect any Box.  Boxes always
+intersect in periodic dimensions, since a periodic domain is an
+infinite domain.  If periodic in all directions, this will always
+return {\tt true}.
+
+
+\item
+\begin{verbatim}
+bool intersectsNotEmpty (const Box& a_box) const
+\end{verbatim}
+Returns true if this ProblemDomain and the argument have non-null
+intersections.  It is an error if a\_box is not cell-centered.
+This routine does not perform the check to see if *this or b are
+empty boxes.  It is the callers responsibility to ensure that
+this never happens.  If you are unsure, the use the .intersects(..) 
+routine.  In periodic directions, will always return true.
+
+\item
+\begin{verbatim}
+bool intersects(const Box& box1, const Box& box2) const
+\end{verbatim}
+Returns true of box1 and box2 and any of their periodic images
+intersect. (This is useful for checking disjointness).
+
+\item
+\begin{verbatim}
+ProblemDomain& operator= (const ProblemDomain& b)
+\end{verbatim}
+Assignment operator.
+
+\item
+\begin{verbatim}
+void setPeriodic(int a_dir, bool a_isPeriodic)
+\end{verbatim}
+Sets whether boundary condition is periodic in direction a\_dir ({\tt
+true} is periodic).
+
+
+\item
+\begin{verbatim}
+friend
+Box bdryLo(const ProblemDomain& a_pd, int a_dir, int a_len=1)
+\end{verbatim}
+Returns the edge-centered box (in direction a\_dir) defining the low
+side of the domainBox in the argument ProblemDomain.  The neighbor of
+an empty ProblemDomain is an empty Box of the appropriate type.  If
+dir is a periodic direction, will return an empty box. \\ 
+\\
+{\bf Arguments:}
+\begin{itemize}
+\item \verb/a_pd/ input ProblemDomain
+\item \verb/a_dir/ normal direction of edge to return.  Directions are
+zero-based and must be $0 \leq${\tt a\_dir} $<${\tt SpaceDim}.
+\item \verb/a_len/ Width of returned box in normal direction {\tt
+a\_dir}.
+\end{itemize}
+
+
+\item
+\begin{verbatim}
+friend
+Box bdryHi(const ProblemDomain& a_pd, int a_dir, int a_len=1)
+\end{verbatim}
+Returns the edge-centered box (in direction a\_dir) defining the high
+side of the domainBox in the argument ProblemDomain.  The neighbor of
+an empty ProblemDomain is an empty Box of the appropriate type.  If
+dir is a periodic direction, will return an empty box. \\ 
+\\
+{\bf Arguments:}
+\begin{itemize}
+\item \verb/a_pd/ input ProblemDomain
+\item \verb/a_dir/ normal direction of edge to return.  Directions are
+zero-based and must be $0 \leq${\tt a\_dir} $<${\tt SpaceDim}.
+\item \verb/a_len/ Width of returned box in normal direction {\tt
+a\_dir}.
+\end{itemize}
+
+
+\item
+\begin{verbatim}
+friend
+Box adjCellLo(const ProblemDomain& a_pd, int a_dir, int a_len=1)
+\end{verbatim}
+Returns the cell-centered box (in direction a\_dir) adjacent to the low
+side of the domainBox in the argument ProblemDomain.  The neighbor of
+an empty ProblemDomain is an empty Box of cell-centered type.  If
+dir is a periodic direction, will return an empty box. \\ 
+\\
+{\bf Arguments:}
+\begin{itemize}
+\item \verb/a_pd/ input ProblemDomain
+\item \verb/a_dir/ normal direction of side to return.  Directions are
+zero-based and must be $0 \leq${\tt a\_dir} $<${\tt SpaceDim}.
+\item \verb/a_len/ Width of returned box in normal direction {\tt
+a\_dir}.
+\end{itemize}
+
+\item
+\begin{verbatim}
+friend
+Box adjCellLo(const ProblemDomain& a_pd, int a_dir, int a_len=1)
+\end{verbatim}
+Returns the cell-centered box (in direction a\_dir) adjacent to the low
+side of the domainBox in the argument ProblemDomain.  The neighbor of
+an empty ProblemDomain is an empty Box of cell-centered type.  If
+dir is a periodic direction, will return an empty box. \\ 
+\\
+{\bf Arguments:}
+\begin{itemize}
+\item \verb/a_pd/ input ProblemDomain
+\item \verb/a_dir/ normal direction of side to return.  Directions are
+zero-based and must be $0 \leq${\tt a\_dir} $<${\tt SpaceDim}.
+\item \verb/a_len/ Width of returned box in normal direction {\tt
+a\_dir}.
+\end{itemize}
+
+\item
+\begin{verbatim}
+Box operator& (const Box& b) const
+\end{verbatim}
+Returns the Box that is the intersection of the input box {\tt b} and
+the ProblemDomain.  The Box {\tt b} must be cell-centered.  The
+intersection of an empty ProblemDomain and any box is the Empty Box.
+This operator does nothing in periodic directions (since a periodic
+domain is an infinite domain).
+
+\item
+\begin{verbatim}
+ProblemDomain& refine(int a_refinement_ratio)
+\end{verbatim}
+Modifies this ProblemDomain by refining it by (the positive) {\tt
+a\_refinement\_ratio}. The empty ProblemDomain is not modified by this
+function. 
+
+\item
+\begin{verbatim}
+friend
+ProblemDomain refine(const ProblemDomain& a_probdomain,
+                     int a_refinement_ratio)
+\end{verbatim}
+Returns a ProblemDomain that is the argument ProblemDomain refined by
+(the positive) {\tt a\_refinement\_ratio}.  If {\tt a\_probdomain} is
+an Empty ProblemDomain, then an empty problem domain is produced.
+
+\begin{verbatim}
+ProblemDomain& refine(const IntVect& a_refinement_ratio)
+\end{verbatim} 
+Modifies this ProblemDomain by refining it by the given refinement
+ratio in each direction.  The empty ProblemDomain is not modified by
+this function.
+
+\begin{verbatim}
+friend 
+ProblemDomain refine (const ProblemDomain&     a_probdomain,
+                     const IntVect& a_refinement_ratio)
+\end{verbatim}
+Returns a ProblemDomain that is the argument ProblemDomain refined by
+(the positive) {\tt a\_refinement\_ratio}.  If {\tt a\_probdomain} is
+an Empty ProblemDomain, then an empty problem domain is produced.
+
+
+\item
+\begin{verbatim}
+ProblemDomain& coarsen(int a_refinement_ratio)
+\end{verbatim}
+Modifies this ProblemDomain by coarsening it by (the positive) {\tt
+a\_refinement\_ratio}. The empty ProblemDomain is not modified by this
+function. 
+
+\item
+\begin{verbatim}
+friend
+ProblemDomain coarsen(const ProblemDomain& a_probdomain,
+                     int a_refinement_ratio)
+\end{verbatim}
+Returns a ProblemDomain that is the argument ProblemDomain coarsened by
+(the positive) {\tt a\_refinement\_ratio}.  If {\tt a\_probdomain} is
+an Empty ProblemDomain, then an empty problem domain is produced.
+
+\begin{verbatim}
+ProblemDomain& coarsen(const IntVect& a_refinement_ratio)
+\end{verbatim} 
+Modifies this ProblemDomain by coarsening it by the given refinement
+ratio in each direction.  The empty ProblemDomain is not modified by
+this function.
+
+\begin{verbatim}
+friend 
+ProblemDomain refine (const ProblemDomain&     a_probdomain,
+                     const IntVect& a_refinement_ratio)
+\end{verbatim}
+Returns a ProblemDomain that is the argument ProblemDomain coarsened by
+(the positive) {\tt a\_refinement\_ratio}.  If {\tt a\_probdomain} is
+an Empty ProblemDomain, then an empty problem domain is produced.
+
+
+
+\begin{verbatim}
+friend
+std::ostream& operator<< (std::ostream& os, const ProblemDomain& b)
+\end{verbatim}
+Writes and ASCII representation to the ostream.
+
+\begin{verbatim}
+friend
+std::istream& operator<< (std::istream& is, ProblemDomain& b)
+\end{verbatim}
+read from istream.
+
+
+
+\end{itemize}
+
+

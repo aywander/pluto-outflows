@@ -1,0 +1,232 @@
+\section{Data on Unions of Rectangles}
+\label{MultiBoxSection}
+This section describes our tools for doing calculations over
+unions of rectangles.  These tools may be used either
+in serial or in parallel though the design reflects
+our parallel programming model.  
+In this section, we explain the tools 
+we use to describe unions of rectangles and the data which lives
+over these regions.
+
+\subsection{Introduction}
+
+We wish to represent data defined on unions of rectangles.
+Such data can be mapped naturally onto distributed memory
+by assigning boxes to processors, with data defined on
+those boxes stored on the processor to which the box is
+assigned.  This approach has been used quite successfully.
+Berger and Bokhari \cite{BergerBokhari1986},
+Kohn and Baden 
+\cite{KohnBaden1996}, 
+Rendleman, et. al. \cite{CCSE1999}, 
+and others have used this technique.
+Our API is derived from joint work with Baden to develop an abstract
+version of KeLP \cite{fink96:kelp}.
+It is implemented using the following three sets
+of classes:
+\begin{trivlist}
+\item $\bullet$ 
+{\tt BoxLayout, DisjointBoxLayout}---classes that 
+        represent unions of rectangles and the mapping of those 
+        rectangles to processors.
+\item $\bullet$ 
+{\tt LayoutData, BoxLayoutData, LevelData}---
+        templated classes for distributing data over
+        processors.
+\item $\bullet$ 
+{\tt LayoutIterator/LayoutIndex, DataIterator/DataIndex}---
+        classes for iterating over and indexing into the classes
+        above.
+\end{trivlist}
+
+\subsection{Layouts}
+\label{LayoutSection}
+The classes {\tt BoxLayout} and {\tt DisjointBoxLayout} represent
+unions of rectangles and the mapping of the rectangles
+onto processors.  {\tt BoxLayout}  represents an arbitrary
+union of valid boxes. {\tt DisjointBoxLayout} is a
+{\tt BoxLayout} and has the additional 
+property that none of the boxes intersect.  
+Both types of layout have two states:  open and
+closed.  During construction, a layout is open.  In its
+open state, a user can add boxes and modify the mapping 
+of boxes to processors.  When a user is finished changing
+a {\tt BoxLayout} to her satisfaction, she invokes 
+the {\tt close()} function.
+After closing, the {\tt BoxLayout} cannot be accessed
+in a non-const manner.  There is no way to 
+reopen a closed {\tt BoxLayout}.
+The closed property propagates through assignment and copy construction.
+Only closed layouts may be used to build the distributed
+data classes.
+
+\subsubsection{Class BoxLayout}
+\label{BoxLayoutSection}
+\begin{figure}[htp]
+\centerline{
+\epsfxsize=2.0in
+\epsffile{figs/boxlayout2.eps}
+\hspace{1.in} 
+\epsfxsize=2.0in
+\epsffile{figs/boxlayout1.eps}}
+\caption{Left:  Example of a {\tt{BoxLayout}}.  The first integer in the pair
+identifies the {\tt{Box}}, and the second integer the processor ID.
+In this case we have the following assignments.  Processor 0:  $B_1,
+B_5$.  Processor 1:  $B_0, B_2$.  Processor 2:  $B_3, B_4$.  Note that
+ $B_0$ and $B_1$ have a non-empty intersection.  Right:  Example of a {\tt{disjoint BoxLayout}}.  The first integer in the pair
+identifies the {\tt{Box}}, and the second integer the processor ID.
+In this case we have the following assignments.  Processor 0:  $B_0,
+B_2, B_4, B_5$.  Processor 1:  $B_1$.  Processor 2:  $B_3$. Note that a disjoint {\tt{BoxLayout}} has empty intersections.}  
+\label{fig:BoxLayouts}
+\end{figure}
+
+A {\tt BoxLayout} is a collection of boxes. On parallel platforms,
+{\tt BoxLayout} includes a mapping to processors. In both cases,
+the data holders {\tt LayoutData}, {\tt BoxLayoutData}, and {\tt
+LevelData} define mappings from the {\tt Box}es in the {\tt BoxLayout} 
+to objects of the template type {\tt T}. 
+The important functions of {\tt BoxLayout} are as follows:
+\begin{trivlist}
+\item $\bullet$ \underline{Construction}
+\begin{verbatim} 
+BoxLayout(const Vector<Box>& boxes, const Vector<int>& procIDs)
+void define(const Vector<Box>& boxes, const Vector<int>& procIDs)
+virtual void deepCopy(const BoxLayout& source)
+DataIndex addBox(const Box& box, int iProc)
+virtual void close()
+\end{verbatim}
+The constructor and define functions 
+construct a {\tt BoxLayout} from a vector of Boxes and a vector of
+processor assignments. The input {\tt procIDs}
+must all be in the range \verb/[0...numProcs()-1]/ 
+where the function {\tt numProcs()}, located in 
+{\tt SPMD.H}, returns the number of processors being used in
+the calculation.
+\verb/procIDs[i]/ is the processor number of 
+the processor on which the 
+data that maps to the box \verb/boxes[i]/ is stored.
+The processor assignment Vector
+must be the same length
+as the {\tt Vector<Box>} argument.
+On exit, the {\tt BoxLayout} will be closed.
+One can either null construct the {\tt BoxLayout} and call
+the define function or construct and define at once.
+If the user is not using MPI, the {\tt procIDs} argument
+is ignored.
+The new object created with {\tt deepCopy} 
+disassociates itself with original implementation
+safely.  This object now is considered 'open' and can be non-const
+modified.  There is no assurance that the order in which this 
+{\tt BoxLayout}
+is indexed corresponds to the indexing of {\tt source}.
+{\tt addBox} incrementally adds a box and its processor assignment to
+an open layout (if the layout has been closed, calling
+this function generates a run-time error) and returns a {\tt DataIndex}
+object.
+The {\tt DataIndex} object is valid both before and after
+{\tt close} is called.
+It can
+be used later to access this box again, or access the 
+data object ({\tt T})
+in a \verb/BoxLayoutData/ that is built from this 
+{\tt BoxLayout} object. 
+{\tt close} marks this {\tt BoxLayout} as complete and unchangeable.   
+It is here that the layout
+gets sorted.  This must be called before any data containers
+are constructed using the layout.
+
+\item $\bullet$ \underline{Boolean functions.}
+\begin{verbatim} 
+bool operator==(const BoxLayout& rhs) const 
+bool check(const DataIndex& index) const
+bool isClosed()
+\end{verbatim}
+Equality for {\tt BoxLayout} is a reference-counted  pointer
+check.  This returns true if these two objects
+share the same implementation. 
+Important Warning: 
+Two layouts can have the same boxes and same
+processor mapping and still return false if they were built
+separately.  To force equality of two layouts, use 
+the copy constructor.
+{\tt check} returns true if the input {\tt DataIndex} matches
+the layout. 
+{\tt isClosed} returns true if close() has been called.
+
+\item
+$\bullet$ \underline{Accessors.}
+\begin{verbatim} 
+Box& operator[](const DataIndex& it)
+DataIterator dataIterator() const
+LayoutIterator layoutIterator() const
+\end{verbatim}
+This allows access to an individual
+box through the iterator.  
+One must be iterating through the 
+correct layout ({\tt check} must return true) in order 
+for the accessor operator to work correctly.
+The member functions {\tt dataIterator}, {\tt layoutIterator}
+return the iterators associated with this layout.
+
+\item $\bullet$ \underline{Coarsening and Refinement Operations}.
+\begin{verbatim} 
+friend void coarsen(BoxLayout& output, const BoxLayout& input,
+                    int refinement)
+friend void refine(BoxLayout& output, const BoxLayout& input,
+                   int refinement)
+\end{verbatim}
+The functions {\tt coarsen}, {\tt refine} coarsens or refines each 
+box in the layout by the input refinement ratio.
+Iterator objects that worked for the input will work for
+the output.  
+\end{trivlist}
+\subsubsection{Class DisjointBoxLayout}
+\label{DisjointBoxLayoutSection}
+
+
+{\tt DisjointBoxLayout} is-a {\tt BoxLayout}. The difference between
+them is that, for {\tt DisjointBoxLayout}, closed also implies that
+the boxes in a {\tt DisjointBoxLayout} have no non-trivial
+intersection with one another in index space.  Any attempt to close a
+{\tt DisjointBoxLayout} object with boxes which have non-trivial
+intersection will result in a run-time error. Coarsening may not
+preserve disjointedness, and applying the {\tt coarsen} operator to a
+{\tt DisjointBoxLayout} will generate also a run-time error if the new
+coarsened boxes aren't disjoint.  Otherwise, all of the functions of
+{\tt BoxLayout} carry over to {\tt DisjointBoxLayout}. 
+
+If the problem domain is periodic, disjointness is tied to the
+periodicity of the domain -- a box in the BoxLayout may intersect the
+periodic image of another box.  To account for this, {\tt
+DisjointBoxLayout} can also be defined with a {\tt ProblemDomain}.  In
+the default case, the domain is defined to be non-periodic in all
+directions.  If the domain is periodic, then the periodicity of the
+domain is taken into account when checking for disjointness of the
+boxes in the BoxLayout. 
+
+The important extra functions of DisjointBoxLayout are as follows:
+\begin{trivlist}
+\item $\bullet$ \underline{Constructors}
+\begin{verbatim}
+DisjointBoxLayout(const Vector<Box>& boxes, 
+                  const Vector<int>& procIDs,
+                  const ProblemDomain& probDomain) 
+void define(const Vector<Box>& boxes, const Vector<int>& procIDs,
+            const ProblemDomain& probDomain)
+void define(BoxLayout& a_layout, const ProblemDomain& a_physDomain);
+virtual void deepCopy(const BoxLayout& a_source, 
+                      const ProblemDomain& a_physDomain)
+\end{verbatim}
+These functions are the same as the corresponding functions in {\tt
+BoxLayout}, but with the addition of a {\tt ProblemDomain} argument.
+\item $\bullet$ \underline{Checking functions}
+\begin{verbatim}
+bool checkPeriodic(const ProblemDomain& probDomain)
+\end{verbatim}
+The {\tt checkPeriodic} function returns true if the argument
+{\tt ProblemDomain} is consistent with the {\tt ProblemDomain} used to
+define the {\tt DisjointBoxLayout}.  Two {\tt ProblemDomain}s are
+consistent if they are periodic in the same directions, and they have
+same domain size in any periodic directions.  In non-periodic
+directions, no consistency is required.
+\end{trivlist}

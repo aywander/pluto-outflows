@@ -1,0 +1,118 @@
+% \documentstyle[12pt]{report}
+\documentclass[12pt]{report}
+
+% \sffamily
+% \renewcommand{\familydefault}{cmss}
+
+\tolerance=750
+
+\input{../Common/fontset.tex}
+\input{../Common/preamble.tex}
+\input{../Common/macros.tex}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{epsfig}
+
+\title{Chombo Software Package for AMR Applications \\
+       Design Document}
+
+\author{M. Adams \\ P. Colella \\
+        D. T. Graves \\ 
+        J. N. Johnson \\
+        H. S. Johansen \\
+        N. D. Keen \\
+        T. J. Ligocki \\ 
+        D. F. Martin \\ 
+        P. W. McCorquodale \\
+        D. Modiano \\
+        P. O. Schwartz \\
+        T. D. Sternberg \\ 
+        B. Van Straalen \\ 
+        \\ \\
+Applied Numerical Algorithms Group \\
+Computational Research Division \\
+Lawrence Berkeley National Laboratory \\
+Berkeley, CA} 
+%%\date{1/4/2000}
+
+\begin{document}
+
+\begin{figure}
+\epsfxsize=3.75in
+\hspace{1.0in}\epsffile{figs/chologotranscolor.eps}
+\vspace{-0.75in}
+\end{figure}
+
+\maketitle
+
+\input{../Common/disclaimer.tex} 
+
+\tableofcontents
+
+\chapter{Introduction}
+\input{Intro.tex}
+\input{Install.tex}
+
+\chapter{BaseTools and BoxTools}
+\input{BoxToolsIntro.tex}
+\input{BoxTools.tex}
+\input{ProblemDomain.tex}
+\input{Layout.tex}
+\input{DataHolder.tex}
+
+
+\chapter{AMRTools}
+\input{AMRToolsIntro.tex}
+\input{CoarseAverage.tex}
+\input{FineInterp.tex}
+\input{PiecewiseLinearFillPatch.tex}
+\input{QuadCFInterp.tex}
+\input{LevelFluxRegister.tex}
+\input{MeshRefine.tex}
+\input{computeSum.tex}
+
+\chapter{AMRElliptic Algorithm and Implementation}
+\input{AMREIntro.tex}
+\input{AMREUsers.tex}
+\input{AMREExample.tex}
+\input{AMRTGA.tex}
+
+\chapter{AMRTimeDependent}
+\input{AMRTimeIntro.tex}
+\input{AMR.tex}
+\input{AMRTimeExample.tex}
+
+\chapter{HDF5 I/O with Chombo}
+\input{IO_API.tex}
+\input{AMRIO.tex}
+\input{OtherIO.tex}
+
+\chapter{Using PETSc in Chombo}
+\input{petsc.tex}
+
+\chapter{Parallel Programming with Chombo}
+\input{Parallel.tex}
+
+\chapter{Chombo Fortran}
+\input{ChF_user.tex}
+
+\chapter{Multidimensional Chombo \label{sec:multiDim}}
+\input{multiDim.tex}
+
+\chapter{Chombo Debugging and Performance Tools}
+\input{view.tex}
+\input{Memtrack.tex}
+\input{Timer.tex}
+
+% (DFM) comment this out for the 3.1 release
+%\chapter{PyParse}
+%\input{PyParse.tex}
+
+\chapter{Troubleshooting}
+\input{troubleshooting.tex}
+
+
+\bibliography{../Common/references}
+
+\end{document}

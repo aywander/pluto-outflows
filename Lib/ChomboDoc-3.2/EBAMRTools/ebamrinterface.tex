@@ -1,0 +1,710 @@
+\section{EBAMRTools User Interface}
+
+This section describes the various classes which implement 
+the various algorithms described in the above section.
+
+\subsection{Classes {\tt EBCoarseAverage/EBCoarsen}}
+
+The {\tt EBCoarseAverage} class  is used to average
+from finer levels on to coarser levels, or for constructing averaged
+residuals in multigrid iteration.  It averages fine data
+to coarse in a volume-weighted way (see equation 
+\ref{eqn::coarseaverage}). 
+This class uses copying from
+one layout to another for communication.  This class has
+as data a scratch copy of the data at the coarse level.
+The averaging operator is blocking due to the copy.
+ {\tt EBCoarsen} does the same thing
+with the same interface, but averages to $O(h^3) $ and is not conservative.
+The important functions of the {\tt EBCoarseAverage/EBCoarsen} classes
+are as follows:
+\begin{itemize}
+\item \begin{small}\begin{verbatim}
+void define(const DisjointBoxLayout& dblFine,
+            const DisjointBoxLayout& dblCoar,
+            const EBISLayout& ebislFine,
+            const EBISLayout& ebislCoar,
+            const int& nref,
+            const int& nvar);        
+\end{verbatim}\end{small}
+Define the stencils and internal data of the class.  This
+must be called before the {\tt average} function will work. 
+
+\begin{itemize}
+\item {\tt dblFine, dblCoar}: The fine and coarse layouts
+        of the data.
+\item {\tt ebislFine, ebislCoar}: The fine and coarse layouts
+        of the geometric description.
+\item {\tt nref}: The refinement ratio between the two levels.
+\item {\tt nvar}: The number of variables contained in the data
+        at each VoF.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void average(LevelData<EBCellFAB>& coarData,
+             const LevelData<EBCellFAB>& fineData,
+             const Interval& variables);            
+\end{verbatim}\end{small}
+Average the fine data onto the coarse data over the intersection
+of the coarse layout with the coarsened fine layout. 
+
+\begin{itemize}
+\item {\tt coarData}: The data over the coarse layout.
+\item {\tt fineData}: The data over the fine layout.  
+        Fine and coarse data must
+        have the same number of variables.
+\item {\tt variables}:  The variables to average.  Those not
+        in this range will be left alone.   This range of variables
+        must be in both the coarse and fine data.
+\end{itemize}
+\end{itemize}
+
+\subsection{Class {\tt EBPWLFineInterp}}
+
+The {\tt EBPWLFineInterp} class is used to interpolate in a
+piecewise-linear fashion coarse data onto fine layouts
+(see equation \ref{eqn::uberpwlinterp}). This
+is primarily a useful class for regridding.  It
+contains stencils and slopes over the coarse level and uses
+copy for communication.   This makes its {interpolate} function
+blocking.  The important functions of {\tt EBPWLFineInterp} are 
+as follows:
+\begin{itemize}
+\item \begin{small}\begin{verbatim}
+void define(const DisjointBoxLayout& dblFine,
+            const DisjointBoxLayout& dblCoar,
+            const EBISLayout& ebislFine,
+            const EBISLayout& ebislCoar,
+            const Box& domainCoar,
+            const int& nref,
+            const int& nvar);        
+\end{verbatim}\end{small}
+Define the stencils and internal data of the class.  This
+must be called before the {\tt interpolate} function will work. 
+
+\begin{itemize}
+\item {\tt dblFine, dblCoar}: The fine and coarse layouts
+        of the data.
+\item {\tt ebislFine, ebislCoar}: The fine and coarse layouts
+        of the geometric description.
+\item {\tt nref}: The refinement ratio between the two levels.
+\item {\tt nvar}: The number of variables contained in the data
+        at each VoF.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void interpolate(LevelData<EBCellFAB>& fineData,
+                 const LevelData<EBCellFAB>& coarData,
+                 const Interval& variables);
+\end{verbatim}\end{small}
+Interpolate the fine data from the coarse data 
+over the intersection
+of the fine layout with the refined coarse layout. 
+
+\begin{itemize}
+\item {\tt fineData}: The data over the fine layout.
+\item {\tt coarData}: The data over the coarse layout.
+\item {\tt variables}:  The variables to interpolate.  Those not
+        in this range will be left alone.   This range of variables
+        must be in both the coarse and fine data.
+\end{itemize}
+\end{itemize}
+
+\subsection{Class {\tt EBPWLFillPatch}}
+
+Given coarse data at old and new times, during subcycling
+in time, we need to interpolated ghost data onto  a fine
+data set at a time between the old and new coarse times.
+The {\tt EBPWLFillPatch}  class is used to interpolate
+fine data over the ghost region that is not covered
+by other fine grids.   Data is simply copied from other
+fine grids where it is available.  Only one layer
+of ghost cells is filled.
+\begin{itemize}
+\item \begin{small}\begin{verbatim}
+void define(const DisjointBoxLayout& dblFine,
+            const DisjointBoxLayout& dblCoar,
+            const EBISLayout& ebislFine,
+            const EBISLayout& ebislCoar,
+            const Box& domainCoar,
+            const int& nref,
+            const int& nvar);        
+\end{verbatim}\end{small}
+Define the stencils and internal data of the class.  This
+must be called before the {\tt interpolate} function will work. 
+
+\begin{itemize}
+\item {\tt dblFine, dblCoar}: The fine and coarse layouts
+        of the data.
+\item {\tt ebislFine, ebislCoar}: The fine and coarse layouts
+        of the geometric description.
+\item {\tt nref}: The refinement ratio between the two levels.
+\item {\tt nvar}: The number of variables contained in the data
+        at each VoF.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void interpolate(LevelData<EBCellFAB>& fineData,
+                 const LevelData<EBCellFAB>& coarDataOld,
+                 const LevelData<EBCellFAB>& coarDataNew,
+                 const Real& coarTimeOld,
+                 const Real& coarTimeNew,
+                 const Real& fineTime,
+                 const Interval& variables);
+\end{verbatim}\end{small}
+Interpolate the indicated fine data variables 
+from the coarse data on ghost cells which overlay
+a coarse-fine interface.  Copy fine data onto
+ghost cells where appropriate (using \verb/LevelData::exchange/). 
+Only one layer of ghost cells is filled.
+
+\begin{itemize}
+\item {\tt fineData}:  The data over the fine layout.
+\item {\tt coarDataOld, coarDataNew}: The data over the coarse layout
+        at the old and new times.  Fine and coarse data must
+        have the same number of variables.
+\item {\tt coarTimeOld, coarTimeNew}: The values of the old and new
+       time of the coarse data.  The old time must be
+       smaller than the new time.
+\item {\tt fineTime}: The time at which the fine data exists.  This
+        time must be between the old and new coarse time.
+\end{itemize}
+\end{itemize}
+
+\subsection{Class {\tt RedistStencil}}
+
+The {\tt RedistStencil} class holds the stencil
+at every irregular VoF in a layout.  The default weights
+that the stencil holds are volume weights.  The class
+does allow the flexibility to redefine these weights.
+The weights correspond to $w_{\vbold, \vbold'}$ in 
+equations \ref{eqn::redisteqn1} and \ref{eqn::redisteqn2}.
+\begin{itemize}
+\item \begin{small}\begin{verbatim}
+void define(const DisjointBoxLayout& dbl,
+            const EBISLayout& ebisl,
+            const Box& domain,
+            const int& redistRadius);        
+\end{verbatim}\end{small}
+Define the internals of the {\tt RedistStencil} class.
+\begin{itemize}
+\item {\tt dbl}: The layout of the data.
+\item {\tt ebisl}: The layout of the geometric description.
+\item{\tt domain}: The computational domain at this level of refinement.
+\item {\tt nvar}: The number of variables contained in the data
+        at each VoF.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void resetWeights(const LevelData<EBCellFAB>& modifier,
+                  const int& ivar)
+\end{verbatim}\end{small}
+Modify the weights in the stencil by multiplying by
+the inputs in a normalized way.
+\begin{itemize}
+\item {\tt weights:}  Relative weights at each VoF in the
+stencil.  For instance, if one were to want to set the 
+weighting to be mass weighting then {\tt modifier(v, ivar)}
+would contain the density at VoF {\tt v}.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+const BaseIVFAB<VoFStencil>&
+operator[] (const DataIndex& datInd) const
+\end{verbatim}\end{small}
+Returns the redistribution stencil at every irregular
+point in input {\tt Box} associated with  this {\tt DataIndex}.
+\end{itemize}
+
+\subsection{Class {\tt EBLevelRedist}}
+
+The {\tt EBLevelRedist} class performs mass redistribution in an
+embedded boundary context.  The algorithm for this is described in
+section \ref{sec::levelredist}.  At irregular cells in a level
+described by a  union of rectangles, mass to be redistributed is stored 
+incrementally (one {\tt Box} at a time, with a ghost width equal
+to the redistribution radius).   {\tt EBLevelRedist}  is then used
+to increment a solution by the stored redistribution mass.
+The redistribution radius is a constant static member of the class.
+The important functions of {\tt EBLevelRedist} are as follows:
+\begin{itemize}
+\item \begin{small}\begin{verbatim}
+void define(const DisjointBoxLayout& dbl,
+            const EBISLayout& ebisl,
+            const Box& domain,
+            const int& nvar)
+\end{verbatim}\end{small}
+Define the internals of the {\tt EBLevelRedist} class.  Buffers
+are made at every irregular cell including ghost buffers at a width
+of the redistribution radius. Sets values at all buffers to zero.
+\begin{itemize}
+\item {\tt dbl}: The layout of the data.
+\item {\tt ebisl}: The layout of the geometric description.
+\item{\tt domain}: The computational domain at this level of refinement.
+\item {\tt nvar}: The number of variables contained in the data
+        at each VoF.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void resetWeights(const LevelData<EBCellFAB>& modifier,
+                  const int& ivar)
+\end{verbatim}\end{small}
+Modify the weights in the stencil by multiplying by
+the inputs in a normalized way.
+\begin{itemize}
+\item {\tt weights:}  Relative weights at each VoF in the
+stencil.  For instance, if one were to want to set the 
+weighting to be mass weighting then {\tt modifier(v, ivar)}
+would contain the density at VoF {\tt v}.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void storeMass(const BaseIVFAB<Real>& massDiff,
+               const DataIndex& datInd,
+               const Interval& variables);
+\end{verbatim}\end{small}
+Store the input mass difference in the internal buffers of the class
+by incrementing the buffer with the mass difference.
+\begin{itemize}
+\item {\tt massDiff:}  Conserved values to store in registers.
+\item {\tt datInd:} The index of the {\tt Box} in the input
+{\tt DisjointBoxLayout} to which {\tt massDiff} corresponds].
+\item {variables:}  The variables to store.  These must fit within
+        zero and the number of variables input to the define function.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void setToZero();
+\end{verbatim}\end{small}
+Set the internal buffer to zero.
+
+\item \begin{small}\begin{verbatim}
+void redistribute(LevelData<EBCellFAB>& solution,
+                  const Interval& variables);
+\end{verbatim}\end{small}
+Redistribute the data contained in the internal buffers
+$U_{\vbold'} \pluseq  w_{\vbold,\vbold'} \delta M_{\vbold}$.
+\begin{itemize}
+\item {\tt solution:} Solution to increment.
+\item {variables:}  The variables to increment. 
+\end{itemize}
+
+\end{itemize}
+
+\subsection{Class {\tt EBFluxRegister}}
+
+The {\tt EBFluxRegister} class performs refluxing in an
+embedded boundary context.  The algorithm for this is described in
+section \ref{sec::reflux}.
+The important functions of {\tt EBFluxRegister} are as follows:
+\begin{itemize}
+\item \begin{small}\begin{verbatim}
+void define(const DisjointBoxLayout& dblFine,
+            const DisjointBoxLayout& dblCoar,
+            const EBISLayout& ebislFine,
+            const EBISLayout& ebislCoar,
+            const Box& domainCoar,
+            const int& nref,
+            const int& nvar);
+\end{verbatim}\end{small}
+Define the internals of the {\tt EBFluxRegister} class.  Buffers
+are made at every irregular cell including ghost buffers at a width
+of the redistribution radius. Sets values at all buffers to zero.
+\begin{itemize}
+\item {\tt dblFine, dblCoar}: The fine and coarse layouts
+        of the data.
+\item {\tt ebislFine, ebislCoar}: The fine and coarse layouts
+        of the geometric description.
+\item {\tt nref}: The refinement ratio between the two levels.
+\item {\tt nvar}: The number of variables contained in the data
+        at each VoF.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void setToZero();
+\end{verbatim}\end{small}
+Set the registers to zero.
+
+\item \begin{small}\begin{verbatim}
+void incrementCoarseRegular(
+                const EBFaceFAB& coarseFlux,
+                const Real& scale,
+                const DataIndex& coarsePatchIndex,
+                const Interval& variables,
+                const int& dir);
+void incrementCoarseIrregular(
+                const BaseIFFAB<Real>& coarseFlux,
+                const Real& scale,
+                const DataIndex& coarsePatchIndex,
+                const Interval& variables,
+                const int& dir);
+\end{verbatim}\end{small}
+Increments the register with data from \verb/coarseFlux/, multiplied by 
+\verb/scale/ ($\alpha$):
+$\delta F^f_d \pluseq  \alpha F^c_d$, for all of the d-faces where
+the input flux (defined on a single rectangle) coincide with the d-faces on
+which the flux register is defined. \verb/coarseFlux/ contains fluxes in
+the \verb/dir/ direction for the grid \verb/dblCoar[coarsePatchIndex]/.
+Only the registers corresponding to the low faces of
+\verb/dblCoarse[coarsePatchIndex]/ in the \verb/dir/ direction
+are incremented (this avoids double-counting at coarse-coarse interfaces.
+of the flux register.
+\begin{itemize}
+\item
+\verb/coarseFlux/ :
+Flux to put into the flux register.
+This is not \verb/const/ because its box is shifted back and forth -
+no net change occurs.
+\item
+\verb/scale/ :
+Factor by which to multiply \verb/coarseFlux/ in flux register.
+\item
+\verb/coarsePatchIndex/ :
+Index which corresponds to the box in the coarse
+solution from which \verb/coarseFlux/ was calculated.
+\item
+\verb/variables/ :
+The components to put into the flux register.
+\item
+\verb/dir/ :
+Direction of the faces upon which the fluxes live.
+\end{itemize}
+
+\item
+\begin{small}\begin{verbatim}
+void incrementFineRegular(
+                const EBFaceFAB& fineFlux,
+                const Real& scale,
+                const DataIndex& finePatchIndex,
+                const Interval& variables,
+                const int& dir,
+                const Side::LoHiSide& sd);
+void incrementFineIrregular(
+                const BaseIFFAB<Real>& fineFlux,
+                const Real& scale,
+                const DataIndex& finePatchIndex,
+                const Interval& variables,
+                const int& dir,
+                const Side::LoHiSide& sd);
+\end{verbatim}\end{small}
+Increments the register with the average over each face of data from 
+\verb/fineFlux/, scaled by \verb/scale/ ($\alpha$):
+$\delta F^f_d \pluseq \alpha <F^f_d>$, for all of the d-faces
+where the input flux (defined on a single rectangle) cover the
+d-faces on which the flux register is defined.
+\verb/fineFlux/ contains fluxes in the \verb/dir/
+direction for the grid \verb/dbl[finePatchIndex]/. Only the register
+corresponding to the direction \verb/dir/ and the side \verb/sd/ is 
+initialized. \verb/srcInterval/ and \verb/dstInterval/ are as
+above.
+  \begin{itemize}
+  \item
+  \verb/fineFlux/ :
+  Flux to put into the flux register.
+  This is not \verb/const/ because its box is shifted back and forth -
+  no net change occurs.
+  \item
+  \verb/scale/ :
+  Factor by which to multiply \verb/fineFlux/ in flux register.
+  \item
+  \verb/finePatchIndex/ :
+  Index which corresponds to which box in the \verb/LevelData<FArrayBox>/
+  solution from which \verb/fineFlux/ was calculated.
+  \item
+  \verb/variables/ :
+  The \verb/Interval/ of components of the flux register into which the
+  flux data is put.
+  \item
+  \verb/dir/ :
+  Direction of faces upon which fluxes live.
+  \item
+  \verb/sd/ :
+  Side of the fine face where coarse-fine interface lies.
+  \end{itemize}
+
+\item
+\begin{small}\begin{verbatim}
+void reflux(LevelData<EBCellFAB>& uCoarse,
+            const Interval& variables,
+            const Real& scale);
+\end{verbatim}\end{small}
+Increments \verb/uCoarse/ with the reflux divergence of the contents of
+the flux register, scaled by \verb/scale/ ($\alpha$):
+$U^c \pluseq \alpha D_R(\delta \vec{F})$. 
+  \begin{itemize}
+  \item
+  \verb/uCoarse/ :
+The solution that gets modified by refluxing.
+  \item
+\verb/variables/: gives the \verb/Interval/ of components of
+the flux register that correspond to the components
+of \verb/uCoarse/.
+  \item
+  \verb/scale/ :
+  Factor by which to scale the flux register.
+  \end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void incrementRedistRegister(EBCoarToFineRedist& register,
+                              const Interval& variables);
+\end{verbatim}\end{small}
+Increments redistribution register with left-over mass
+from reflux divergence as in equation \ref{eqn::mlredist2}:
+$\delta^2 M^{l, l+1}_\vbold \pluseq
+\kappa_\vbold(1-\kappa_\vbold)D_R(\delta F^{l+1})_\vbold$.
+\begin{itemize}
+\item \verb/register:/ Coarse to fine register that must
+        be incremented ($\delta^2 M^{l, l+1}$).
+\item \verb/variables:/ Array indices to be incremented.
+\end{itemize}
+\end{itemize}
+
+\subsection{Class {\tt EBCoarToFineRedist}}
+
+The {\tt EBCoarToFineRedist} class stores and redistributes mass
+that must move from the coarse solution to the fine solution
+The important functions of {\tt EBCoarToFineRedist} are as follows:
+\begin{itemize}
+\item \begin{small}\begin{verbatim}
+void define(const DisjointBoxLayout& dblFine,
+            const DisjointBoxLayout& dblCoar,
+            const EBISLayout& ebislFine,
+            const EBISLayout& ebislCoar,
+            const Box& domainCoar,
+            const int& nref,
+            const int& nvar);
+\end{verbatim}\end{small}
+Define the internals of the class. 
+\begin{itemize}
+\item {\tt dblFine, dblCoar}: The fine and coarse layouts
+        of the data.
+\item {\tt ebislFine, ebislCoar}: The fine and coarse layouts
+        of the geometric description.
+\item {\tt nref}: The refinement ratio between the two levels.
+\item {\tt nvar}: The number of variables contained in the data
+        at each VoF.
+\item {\tt weightModifier}: Multiplier to stencil weights (density
+        if you want mass weighting).  If this is NULL, use
+        volume weights.
+\item {\tt weightModVar} Variable number of weight modifier.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void resetWeights(const LevelData<EBCellFAB>& modifier,
+                  const int& ivar)
+\end{verbatim}\end{small}
+Modify the weights in the stencil by multiplying by
+the inputs in a normalized way.
+\begin{itemize}
+\item {\tt weights:}  Relative weights at each VoF in the
+stencil.  For instance, if one were to want to set the 
+weighting to be mass weighting then {\tt modifier(v, ivar)}
+would contain the density at VoF {\tt v}.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void setToZero();
+\end{verbatim}\end{small}
+Set the registers to zero.
+
+\item \begin{small}\begin{verbatim}
+void increment(BaseIVFAB<Real>& coarMass,
+               const DataIndex& coarPatchIndex,
+               const Interval& variables);
+\end{verbatim}\end{small}
+Increment the registers by the mass difference
+in coarMass as shown in the second part equation 
+\ref{eqn::mlredist2}.
+\begin{itemize}
+\item \verb/coarMass:/  The mass difference to add to the register.
+\item \verb/coarPatchIndex:/ The index to the box on the coarse grid. 
+\item \verb/variables:/ The variables in the register to increment.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void redistribute(LevelData<EBCellFAB>& fineSolution,
+                  const Interval& variables);
+\end{verbatim}\end{small}
+Redistribute the data contained in the internal buffers
+$U^{new,l+1}_{\vbold^f} \pluseq w_{\vbold,\vbold'}
+\delta^2 M^{l, l+1}_\vbold,~~\vbold^f \in C^{-1}_{nref}(\vbold)$
+\begin{itemize}
+\item {\tt fineSolution:} Solution to increment.
+\item {variables:}  The variables to increment. 
+\end{itemize}
+\end{itemize}
+
+\subsection{Class {\tt EBFineToCoarRedist}}
+
+The {\tt EBFineToCoarToRedist} class stores and redistributes mass
+that must go from the fine to the coarse grid.
+The important functions of {\tt EBFineToCoarRedist} are as follows:
+\begin{itemize}
+\item \begin{small}\begin{verbatim}
+void define(const DisjointBoxLayout& dblFine,
+            const DisjointBoxLayout& dblCoar,
+            const EBISLayout& ebislFine,
+            const EBISLayout& ebislCoar,
+            const Box& domainCoar,
+            const int& nref,
+            const int& nvar);
+\end{verbatim}\end{small}
+Define the internals of the class. 
+\begin{itemize}
+\item {\tt dblFine, dblCoar}: The fine and coarse layouts
+        of the data.
+\item {\tt ebislFine, ebislCoar}: The fine and coarse layouts
+        of the geometric description.
+\item {\tt nref}: The refinement ratio between the two levels.
+\item {\tt nvar}: The number of variables contained in the data
+        at each VoF.
+\item {\tt weightModifier}: Multiplier to stencil weights (density
+        if you want mass weighting).  If this is NULL, use
+        volume weights.
+\item {\tt weightModVar} Variable number of weight modifier.
+\end{itemize}
+
+
+\item \begin{small}\begin{verbatim}
+void resetWeights(const LevelData<EBCellFAB>& modifier,
+                  const int& ivar)
+\end{verbatim}\end{small}
+Modify the weights in the stencil by multiplying by
+the inputs in a normalized way.
+\begin{itemize}
+\item {\tt weights:}  Relative weights at each VoF in the
+stencil.  For instance, if one were to want to set the 
+weighting to be mass weighting then {\tt modifier(v, ivar)}
+would contain the density at VoF {\tt v}.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void setToZero();
+\end{verbatim}\end{small}
+Set the registers to zero.
+
+\item \begin{small}\begin{verbatim}
+void increment(BaseIVFAB<Real>& fineMass,
+               const DataIndex& finePatchIndex,
+               const Interval& variables);
+\end{verbatim}\end{small}
+Increment the registers by the mass difference
+in fineMass as shown in equation \ref{eqn::mlredist2}.
+\begin{itemize}
+\item \verb/fineMass:/  The mass difference to add to the register.
+\item \verb/finePatchIndex:/ The index to the box on the fine grid. 
+\item \verb/variables:/ The variables in the register to increment.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void redistribute(LevelData<EBCellFAB>& coarSolution,
+                  const Interval& variables);
+\end{verbatim}\end{small}
+Redistribute the data contained in the internal buffers
+$U^{new,l}_{\vbold'} \pluseq w^{fc}_{\vbold,\vbold'}
+\delta^2 M^{l+1, l}_\vbold $
+\begin{itemize}
+\item {\tt fineSolution:} Solution to increment.
+\item {variables:}  The variables to increment. 
+\end{itemize}
+\end{itemize}
+
+\subsection{Class {\tt EBCoarToCoarRedist}}
+
+
+The {\tt EBCoarToCoarToRedist} class stores and redistributes mass
+that was redistributed to the coarse grid that is covered by the 
+fine grid and now must be corrected.  This is the notorious
+``re-redistribution'' process.
+The important functions of {\tt EBCoarToCoarRedist} are as follows:
+\begin{itemize}
+\item \begin{small}\begin{verbatim}
+void define(const DisjointBoxLayout& dblFine,
+            const DisjointBoxLayout& dblCoar,
+            const EBISLayout& ebislFine,
+            const EBISLayout& ebislCoar,
+            const Box& domainCoar,
+            const int& nref,
+            const int& nvar);
+\end{verbatim}\end{small}
+Define the internals of the class. 
+\begin{itemize}
+\item {\tt dblFine, dblCoar}: The fine and coarse layouts
+        of the data.
+\item {\tt ebislFine, ebislCoar}: The fine and coarse layouts
+        of the geometric description.
+\item {\tt nref}: The refinement ratio between the two levels.
+\item {\tt nvar}: The number of variables contained in the data
+        at each VoF.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void resetWeights(const LevelData<EBCellFAB>& modifier,
+                  const int& ivar)
+\end{verbatim}\end{small}
+Modify the weights in the stencil by multiplying by
+the inputs in a normalized way.
+\begin{itemize}
+\item {\tt weights:}  Relative weights at each VoF in the
+stencil.  For instance, if one were to want to set the 
+weighting to be mass weighting then {\tt modifier(v, ivar)}
+would contain the density at VoF {\tt v}.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void setToZero();
+\end{verbatim}\end{small}
+Set the registers to zero.
+
+\item \begin{small}\begin{verbatim}
+void increment(BaseIVFAB<Real>& coarMass,
+               const DataIndex& finePatchIndex,
+               const Interval& variables);
+\end{verbatim}\end{small}
+Increment the registers by the mass difference
+in coarMass as shown in equation \ref{eqn::mlredist2}.
+\begin{itemize}
+\item \verb/coarMass:/  The mass difference to add to the register.
+\item \verb/coarPatchIndex:/ The index to the box on the fine grid. 
+\item \verb/variables:/ The variables in the register to increment.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+void redistribute(LevelData<EBCellFAB>& coarSolution,
+                  const Interval& variables);
+\end{verbatim}\end{small}
+Redistribute the data contained in the internal buffers
+$U^{new,l}_{\vbold'} \pluseq w_{\vbold,\vbold'}
+\delta^2 M^{l, l}_\vbold $
+\begin{itemize}
+\item {\tt coarSolution:} Solution to increment.
+\item {variables:}  The variables to increment. 
+\end{itemize}
+\end{itemize}
+
+\subsection{Class {\tt EBQuadCFInterp} }
+This class interpolates to ghost cells over the coarse-fine interface
+with $O(h^3)$ error.
+\begin{itemize}
+\item \begin{verbatim}
+  EBQuadCFInterp(const DisjointBoxLayout&          a_dblFine,
+                 const DisjointBoxLayout&          a_dblCoar,
+                 const EBISLayout&                 a_ebislFine,
+                 const EBISLayout&                 a_ebislCoar,
+                 const ProblemDomain&              a_domainCoar,
+                 const int&                        a_nref,
+                 const int&                        a_nvar,
+                 const LayoutData<IntVectSet>&     a_cfivs);
+\end{verbatim}
+Define the interpolation object.  
+
+
+\item \begin{verbatim}
+  void
+  interpolate(LevelData<EBCellFAB>&       a_fineData,
+              const LevelData<EBCellFAB>& a_coarData,
+              const Interval&             a_variables);
+\end{verbatim}
+Interpolate to the ghost cells of the fine data to $O(h^3)$.
+\end{itemize}
+

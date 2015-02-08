@@ -1,4 +1,5 @@
-Doc/
 *.sw*
 **/*.sw*
-Lib/
+**/*.pyc
+Doxygen
+.svn

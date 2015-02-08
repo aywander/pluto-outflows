@@ -1,0 +1,116 @@
+\section{Diffusion\label{sec:Diffusion}}
+
+Unlike the Euler equations, the Navier-Stokes equations include the effects 
+of viscosity and thermal heat exchange in fluids. In this section we describe 
+the elliptical operators that represent these contributions and describe how 
+they are integrated with respect to their hyperbolic counterparts.
+
+\subsection{Viscous Tensor and Thermal Conduction Operators}
+The viscous term in \refEq{momentum} is 
+
+\begin{equation}
+\ddxj{}\left(\mu\left[\ddxj{v_i} + \ddxi{v_j}\right] + \lambda\deltaij\ddxk{v_k}\right)
+\end{equation}
+
+\noindent
+and may be expressed in terms of the linear elliptical operator $\Lmu$ that 
+operates on the 3-dimensional velocity vector $\vec{v}$:
+
+\begin{equation}
+\Lmu(\vec{v}) = \alpha \tens{I} + \beta\diverg{\left(\mu\left[\grad{\vec{v}} + 
+                   \grad{\vec{v}}^T\right] + \lambda (\diverg{\vec{v}})\tens{I}\right)} \label{eq:Lmu}
+\end{equation}
+
+\noindent
+where $\alpha$ and $\beta$ are time integration parameters (discussed in 
+\refApp{TGA}), $\tens{I}$ is the $3\times 3$ identity matrix, $\grad{\vec{v}}$ 
+and $\grad{\vec{v}}^T$ are matrices representing the deformation gradient, and
+$\diverg{\vec{v}}$ is a scalar representing the velocity divergence.  We refer 
+to the discrete form of this operator as $L_\mu$. In this discrete form, the 
+spatial derivatives of the velocity are approximated with the finite volume 
+method we have mentioned earlier.
+
+The contribution to \refEq{energy} from thermal conduction is
+
+\begin{equation}
+\rho\ddxi{}\left(K\ddxi{T}\right).
+\end{equation}
+
+\noindent
+We can rewrite this term using the linear elliptic operator $\LK$, which 
+operates upon the scalar temperature $T$:
+
+\begin{equation}
+\LK(T) = \left(\alpha A T + \beta \diverg{\left[B \grad{T}\right]}\right)
+\end{equation}
+
+\noindent
+where $\alpha$ and $\beta$ are the integration parameters and $B = \rho c_v K$.
+\em What is A? Just a generalization? \em The discrete form of $\LK$ is $L_K$, 
+in which the spatial derivatives of $T$ are replaced by finite volume 
+approximations.
+
+\subsection{Implicit Time Integration}
+
+To avoid the $(\dx)^2$ constraint on the time step from these elliptic 
+operators, we integrate their terms implicitly to compute stable updates for 
+$\rho\vec{v}$ and $\rho E$. Because we have already computed contributions 
+from the hyperbolic terms, we account for these contributions as sources in 
+their respective diffusion equations. For example, the viscous contribution to 
+the momentum equation is obtained given by integrating
+
+\begin{equation}
+\rho_\ib\ddt{\vec{v}_\ib} = L_\mu(\vec{v}_\ib) + \rho_\ib\left(\ddt{\vec{v}_\ib}\right)_{hb} \label{eq:viscContrib}
+\end{equation}
+
+\noindent
+where $(\iddt{\vec{v}_\ib})_{hb} = -(\vec{v}\cdot\grad{\vec{v}})_\ib - (\grad{p}/\rho)_\ib$ 
+represents the hyperbolic portion of $\iddt{\vec{v}}$ on the VoF $\ib$. 
+\em Check on this!\em
+
+We integrate \refEq{viscContrib} using an algorithm by Twizell, Gummel and Arign 
+\cite{TGA}, which we refer to henceforth as the TGA algorithm. This algorithm 
+is second-order accurate and $L^\infty$-stable and has been successfully used 
+to treat incompressible Navier-Stokes flows on embedded boundaries\cite{???}.
+By contrast, the more well-known Crank-Nicholson algorithm can become unstable 
+near boundaries of irregular domains in the presence of the discrete Laplacian 
+operator\cite{???}. We outline the TGA algorithm in \refApp{TGA}. 
+
+In any case, integrating \refEq{viscContrib} gives us an updated velocity 
+$\vec{v}^{n+1}_\ib$ which we can use to create a stabilized value for 
+$L_\mu(\vec{v})$:
+
+\begin{equation}
+\hat{L}_\mu(\vec{v}_\ib) \rightarrow \frac{\rho^{n+\half}_\ib(\vec{v}^{n+1}_\ib - \vec{v}^n_\ib)}{\dt} \label{eq:stableLmu}
+\end{equation}
+
+\noindent
+Then we add the viscous contribution to the momentum:
+
+\begin{equation}
+(\rho\vec{v})^{n+1}_\ib \rightarrow (\rho\vec{v})^{n+1}_\ib + \dt \hat{L}_\mu(\vec{v}_\ib) \label{eq:viscUpdate}
+\end{equation}
+
+The treatment of the thermal contribution to the energy is similar. The 
+rate of heat transfer through thermal contribution in the energy equation is
+
+\begin{equation}
+\rho_\ib\ddt{T_\ib} = L_K(T_\ib) + \frac{1}{\rho_\ib}\left(\ddt{\rho_\ib E_\ib}\right)_{hb} \label{eq:thermContrib}
+\end{equation}
+
+\noindent
+where $(\iddt{\rho E_\ib})_{hb} = -\diverg{([\rho E + p]\vec{v})}_\ib$ 
+represents the (hyperbolic) transport of energy on the VoF $\ib$. We integrate
+\refEq{thermContrib} to obtain $T^{n+1}$, the updated temperature, which we 
+use to stabilize $L_K(T)$:
+
+\begin{equation}
+\hat{L}_K(T_\ib) = \frac{\rho^{n+\half}_\ib c_v (T^{n+1}_\ib - T^n_\ib)}{\dt} \label{eq:stableLK}
+\end{equation}
+
+\noindent
+Finally, we add the thermal contribution to the specific energy:
+
+\begin{equation}
+(\rho E)^{n+1}_\ib \rightarrow (\rho E)^{n+1}_\ib + \dt \hat{L}_K(T_\ib) \label{eq:thermUpdate}
+\end{equation}

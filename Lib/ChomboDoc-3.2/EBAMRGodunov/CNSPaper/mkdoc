@@ -1,0 +1,9 @@
+#!/bin/csh -f
+# Start with a LaTeX document and produce a DVI and PostScript version.
+set target=paper
+pdflatex $target.tex
+bibtex $target
+pdflatex $target.tex
+pdflatex $target.tex
+pdflatex $target.tex
+#dvips -f -D 600 -t letter $target.dvi > $target.ps

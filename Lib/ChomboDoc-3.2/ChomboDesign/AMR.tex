@@ -1,0 +1,349 @@
+\section{Classes {\tt AMR} and {\tt AMRLevel}}
+
+The class \verb|AMR| implements a framework for the Berger--Oliger
+adaptive mesh refinement (AMR) algorithm for time-dependent
+simulations~\cite{bergerOliger:1984}.  The data is organized on a
+hierarchy of levels of refinement, stored as a collection of
+\verb|AMRLevel|s.  The class \verb|AMRLevel| is an abstract base class
+from which must be derived a concrete class which defines and contains
+the data representation for one level and implements the algorithms
+for advancing one level in time.  The class \verb|AMR| implements
+refinement of the time step~$\Delta t$ based on the refinement of the
+grid.
+
+\subsection{Class structure}
+
+The class \verb|AMR| manages the entire hierarchy of levels.  The
+levels are represented in the class \verb|AMR| as a collection of
+\verb|AMRLevel|s.  The class \verb|AMRLevel| is an abstract base class
+from which the applications implementer must derive a concrete {\em
+physics class\/} which defines the form of the solution data and,
+for a single level, implements algorithms for advancement by~$\Delta
+t$, calculation of a stable~$\Delta t$, initialization, input and
+output, etc.  The class \verb|AMR| has no knowledge of the form of the
+solution data.  The applications implementer must instantiate an
+object of type \verb|AMR| and an object of the physics class type.
+The physics class object is required input to the definition of an
+\verb|AMR|.  See figure~\ref{fig:classes}.
+
+\begin{figure}
+\vspace{2.5in}
+\special{psfile=figs/classes.eps hscale=50 vscale=50}
+\caption{Class structure.  {\tt AMR} contains some
+{\tt AMRLevel}s.  Physics class is derived from
+{\tt AMRLevel} and contains the data representation.}
+\label{fig:classes}
+\end{figure}
+
+Applications code constructs and invokes public member functions of
+the class \verb|AMR|.  The class \verb|AMR| controls the entire
+hierarchy of levels.  It constructs and invokes member functions of
+the \verb|AMRLevel|s.  It requires a physics class derived from
+\verb|AMRLevelFactory| as input.
+
+\subsection{Class {\tt AMR}}
+
+   The {\tt AMR} class is a framework for Berger--Oliger timestepping for
+   adaptive mesh refinement of time-dependent problems.  It is
+   applicable to both hyperbolic and parabolic problems.  It
+   represents a hierarchy of levels of refinement as a collection of
+   {\tt AMRLevel}s.  
+   The usage pattern of this class is as follows: 
+\begin{itemize}
+\item Call \verb/define/ to define the parameters that do not change
+      throughout the run (max level, refinement ratios, domain, and operator).
+\item Modify any parameters you like (blocking factor and so forth)
+      using access functions.
+\item Call any one of the three setup functions so \verb|AMR| can set up all its
+      internal data structures.
+\item Call \verb/run/ to run the calculation.
+\item Call \verb/conclude/ to produce statistical output, e.g., how many
+      cells were updated. 
+\end{itemize}
+The important functions of the public interface for the \verb|AMR| class are:
+
+\begin{itemize}
+
+\item
+\begin{verbatim}
+void define(int a_max_level, 
+            const Vector<int>& a_ref_ratios,
+            const ProblemDomain& a_prob_domain,
+            const AMRLevelFactory* const a_amrLevelFact);
+
+void define(int a_max_level, 
+            const Vector<int>& a_ref_ratios,
+            const Box& a_prob_domain,
+            const AMRLevelFactory* const a_amrLevelFact);
+\end{verbatim}
+Defines this object.  User must call a setup function before running.
+\\ {\bf Arguments:}
+  \begin{itemize}
+  \item
+  \verb/a_max_level/ (not modified):
+  The maximum level number allowed, where the base level is zero.  There
+  may be a total of \verb/a_max_level/+1 levels, since level zero and level
+  \verb/a_max_level/ can both exist.  Note that it while this is the maximum
+  possible level, it is possible that fewer levels are actually defined,
+  depending on the problem and the method and tolerances used to tag cells
+  for refinement.
+  \item
+  \verb/ref_ratios/ (not modified):
+  Refinement ratios.  There must be at least \verb/a_max_level/+1 elements
+  or an error will result.  Element  zero is the base level.
+  \item
+  \verb/a_prob_domain/ (not modified):
+  Problem domain on the base level.
+  \item
+  \verb/a_amrLevelFact/ (not modified):
+  Pointer to a physics class factory object. The object it points to is
+  used to construct the collection of \verb|AMRLevel|s in this \verb|AMR| as objects of
+  the physics class type.  
+  \end{itemize}
+
+\item
+\begin{verbatim}
+void setupForRestart(HDF5Handle& a_handle);
+\end{verbatim}
+Sets up this object from checkpointed data.  User must have
+previously called {\tt define}. A user needs to call either this
+function or 
+\verb|setupForNewAMRRun| or \verb|setupforFixedHierarchyRun|
+before she calls \verb|run|.
+
+\item
+\begin{verbatim}
+void setupForNewAMRRun();
+\end{verbatim}
+Sets up this object for cold start.  User must have previously called
+{\tt define}.  Need to call this function or \verb|setupForRestart| or
+\verb|setupforFixedHierarchyRun| before you run.
+
+\item
+\begin{verbatim}
+void setupForFixedHierarchyRun(const Vector<Vector<Box>>& a_amr_grids,
+                               int a_proper_nest = 1);
+\end{verbatim}
+This sets the grid hierarchy and sets \verb/regrid_intervals/ to -1
+(turns off regridding).  If you want to keep regridding
+on, reset regridIntervals after this call.
+
+\item
+\begin{verbatim}
+void run(Real a_max_time, int a_max_step);
+\end{verbatim}
+Run the calculation.  User must have previously called both the \verb|define|
+function and a setup function in order to call this.
+\\ {\bf Arguments:} 
+  \begin{itemize}
+  \item
+  \verb/a_max_time/ :
+  Time to stop the calculation.
+  \item
+  \verb/a_max_step/ :
+  Maximum number of iterations.
+  \end{itemize}
+
+\item
+\verb/void conclude() const/:
+The user should call this last.  It writes the last checkpoint file
+and performs other housekeeping functions.
+
+\end{itemize}
+
+There are also functions in the {\tt AMR} class which allow the user to reset
+various parameters of the run (blocking factor, regridding 
+intervals, checkpointing intervals, etc.  See the reference
+manual for details.  Examples of applications that
+use the \verb|AMR| class to implement an adaptive Godunov method
+are given in {\tt Chombo/example/AMRGodunov}.
+
+\subsection{Class {\tt AMRLevel}}
+{\tt AMRLevel} is an abstract base class for data at the same level of
+refinement within a hierarchy of levels.  The concrete class
+derived from {\tt AMRLevel} is called a {\em physics class}.  The domain
+of a level is a disjoint union of rectangles in a logically
+rectangular index space.  Data is defined within this domain.
+There is also a problem domain, which may be larger, within which
+data can, in theory, be interpolated from some coarser level.
+
+{\tt AMRLevel} is the interface that the class {\tt AMR}
+uses to call the physics class.   The important parts
+of the public interface to {\tt AMRLevel} are:
+\begin{itemize}
+
+\item
+\begin{verbatim}
+virtual void define (AMRLevel* a_coarser_level_ptr,
+                     const ProblemDomain& a_problem_domain,
+                     int a_level,
+                     int a_ref_ratio);
+
+virtual void define (AMRLevel* a_coarser_level_ptr,
+                     const Box& a_problem_domain,
+                     int a_level,
+                     int a_ref_ratio);
+\end{verbatim}
+Defines this \verb|AMRLevel|.
+\\ {\bf Arguments:}
+  \begin{itemize}
+  \item
+  \verb/coarser_level_ptr/ (not modified):
+  Pointer to next coarser level object.
+  \item
+  \verb/problem_domain/ (not modified):
+  Problem domain of this level.
+  \item
+  \verb/level/ (not modified):
+  Index of this level.  The base level is zero.
+  \item
+  \verb/ref_ratio/ (not modified):
+  The refinement ratio between this level and the next finer level.
+  \end{itemize}
+
+\item
+\begin{verbatim}
+virtual Real advance() = 0;
+\end{verbatim}
+Advance this level by one time step.
+Return an estimate of the new time step at this level.
+
+\item
+\begin{verbatim}
+virtual void postTimeStep() = 0;
+\end{verbatim}
+Do all operations that are required after a timestep is completed.
+Refluxing happens here.
+
+\item
+\begin{verbatim}
+virtual void tagCells(IntVectSet& a_tags) const = 0;
+\end{verbatim}
+Create tagged cells for dynamic mesh refinement.
+
+\item
+\begin{verbatim}
+virtual void tagCellsInit(IntVectSet& a_tags) const = 0;
+\end{verbatim}
+Create tagged cells for mesh refinement at initialization.
+
+\item
+\begin{verbatim}
+virtual void preRegrid(int a_base_level,
+                       const Vector<Vector<Box> >& a_new_grids);
+\end{verbatim}
+Perform any pre-regridding operations which are necessary.
+This is not a pure virtual function, to preserve compatibility
+with earlier versions of \verb|AMRLevel|.  The \verb|AMRLevel::preRegrid()|
+instantiation does nothing.
+
+\item
+\begin{verbatim}
+virtual void regrid(const Vector<Box>& a_new_grids) = 0;
+\end{verbatim}
+Redefines this level to have the specified grids as its defined union of
+rectangles.
+
+\item
+\begin{verbatim}
+virtual void postRegrid(int a_base_level);
+\end{verbatim}
+Perform any post-regridding operations which are necessary.
+This is not a pure virtual function to preserve compatibility
+with earlier versions of \verb|AMRLevel|.  The \verb|AMRLevel::postRegrid()|
+instantiation does nothing.
+
+\item
+\begin{verbatim}
+virtual void initialGrid(const Vector<Box>& a_new_grids) = 0;
+\end{verbatim}
+Initialize this level to have the specified domain \verb/a_new_grids/.
+
+\item
+\begin{verbatim}
+virtual void initialData() = 0;
+\end{verbatim}
+Initialize the data.
+
+\item
+\begin{verbatim}
+virtual void postInitialize() = 0;
+\end{verbatim}
+Do any operations that are required just after initialization.
+
+\item
+\begin{verbatim}
+virtual Real computeDt() = 0;
+\end{verbatim}
+Returns maximum stable time step for this level.
+
+\item
+\begin{verbatim}
+virtual Real computeInitialDt() = 0;
+\end{verbatim}
+Returns maximum stable time step for this level with initial data.
+
+\item
+\begin{verbatim}
+virtual void writeCheckpointHeader(HDF5Handle& a_handle) const = 0;
+\end{verbatim}
+Write the header to the checkpoint file handle.
+
+\item
+\begin{verbatim}
+virtual void writeCheckpointLevel(HDF5Handle& a_handle) const = 0;
+\end{verbatim}
+Write checkpoint data for this level.
+ 
+\item
+\begin{verbatim}
+virtual void readCheckpointHeader(HDF5Handle& a_handle) = 0;
+\end{verbatim}
+Read checkpoint header.
+
+\item
+\begin{verbatim}
+virtual void readCheckpointLevel(HDF5Handle& a_handle) = 0;
+\end{verbatim}
+Read checkpoint data for this level.
+ 
+\item
+\begin{verbatim}
+virtual void writePlotHeader(HDF5Handle& a_handle) const = 0;
+\end{verbatim}
+Write plot file header for this level.
+
+\item
+\begin{verbatim}
+virtual void writePlotLevel(HDF5Handle& a_handle) const = 0;
+\end{verbatim}
+Write plot file data for this level.
+
+\end{itemize}
+
+These are all the pure virtual functions of the {\tt AMRLevel}
+interface and therefore all the functions that the user {\bf must}
+define for her application.  There are other ancillary functions in
+the interface that have reasonable defaults.  Most of these involve
+data member access and modification.
+
+\subsection{Class {\tt AMRLevelFactory}}
+
+The class {\tt AMRLevelFactory} is a pure virtual base class, with only
+one member function:
+
+\begin{itemize}
+
+\item
+\begin{verbatim}
+virtual AMRLevel* new_amrlevel() const = 0;
+\end{verbatim}
+This is the only member function of {\tt AMRLevelFactory}, and it must
+be defined by the user in a derived class. The derived function will
+return a pointer to a physics-specific class derived from {\tt
+AMRLevel}.
+
+\end{itemize}
+A pointer to an object of this class is passed to the 
+define function of an {\tt AMR} object, which uses it to construct the 
+various {\tt AMRLevel} objects that it requires.

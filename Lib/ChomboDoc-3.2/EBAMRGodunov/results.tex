@@ -1,0 +1,140 @@
+\section{Results}
+
+We run the Modiano problem for one time step to compute the truncation
+error of the operator.   The error at a given level of refinement
+$E^h$ is approximated by
+\begin{equation}
+E^\text{trunc} = \frac{U^h(t) -U^e(t)}{t}
+\end{equation}
+where $U^h(t)$ is the discrete solution  and  $U^e (t)$ is the exact
+solution at time $t = \Delta t$.     We run the Modiano problem for a
+fixed time to compute the solution error of the operator.   The error
+at a given level of refinement $E^h$ is approximated by
+\begin{equation}
+E^\text{soln} = {U^h(t) -U^e(t)}
+\end{equation}
+where $U^h(t)$ is the discrete solution  and  $U^e (t)$ is the exact
+solution at time $t$.     The order of convergence $p$ is given by 
+\begin{equation}
+p = \frac{\log(\frac{|E^{2h}|}{|E^{h}|})}{\log(2)}
+\end{equation}
+
+
+\begin{table}[p]
+\begin{center}
+\begin{tabular}{|c|c|c|c|} \hline
+Variable & Coarse Error & Fine Error & Order\\
+\hline \hline 
+mass-density &    	 3.127796e-05 & 1.669137e-05 & 9.060445e-01 \\ 
+\hline
+x-momentum &    	 3.292329e-05 & 1.675957e-05 & 9.741235e-01 \\ 
+\hline
+y-momentum &    	 6.766401e-05 & 3.141857e-05 & 1.106771e+00 \\ 
+\hline
+energy-density &    	 1.094807e-04 & 5.842373e-05 & 9.060502e-01 \\ 
+\hline
+\end{tabular}
+\end{center}
+\caption{Truncation error convergence rates using L-0 norm. 
+$h_f = \frac{1}{512}$ and $h_c = 2 h_f$, $D = 2$ }
+\end{table}
+
+
+\begin{table}[p]
+\begin{center}
+\begin{tabular}{|c|c|c|c|} \hline
+Variable & Coarse Error & Fine Error & Order\\
+\hline \hline 
+mass-density &    	 7.358933e-08 & 1.616991e-08 & 2.186185e+00 \\ 
+\hline
+x-momentum &    	 7.569344e-08 & 2.010648e-08 & 1.912508e+00 \\ 
+\hline
+y-momentum &    	 1.764416e-07 & 4.648945e-08 & 1.924216e+00 \\ 
+\hline
+energy-density &    	 2.575709e-07 & 5.659651e-08 & 2.186185e+00 \\ 
+\hline
+\end{tabular}
+\end{center}
+\caption{Truncation error convergence rates using L-1 norm. 
+$h_f = \frac{1}{512}$ and $h_c = 2 h_f$, $D = 2$ }
+\end{table}
+
+
+\begin{table}[p]
+\begin{center}
+\begin{tabular}{|c|c|c|c|} \hline
+Variable & Coarse Error & Fine Error & Order\\
+\hline \hline 
+mass-density &    	 4.010155e-07 & 1.164273e-07 & 1.784228e+00 \\ 
+\hline
+x-momentum &    	 6.057493e-07 & 2.402295e-07 & 1.334308e+00 \\ 
+\hline
+y-momentum &    	 1.717569e-06 & 5.992271e-07 & 1.519193e+00 \\ 
+\hline
+energy-density &    	 1.403616e-06 & 4.075112e-07 & 1.784237e+00 \\ 
+\hline
+\end{tabular}
+\end{center}
+\caption{Truncation error convergence rates using L-2 norm. 
+$h_f = \frac{1}{512}$ and $h_c = 2 h_f$, $D = 2$ }
+\end{table}
+
+
+\begin{table}[p]
+\begin{center}
+\begin{tabular}{|c|c|c|c|} \hline
+Variable & Coarse Error & Fine Error & Order\\
+\hline \hline 
+mass-density &    	 3.769203e-07 & 7.212809e-08 & 2.385626e+00 \\ 
+\hline
+x-momentum &    	 3.427140e-07 & 7.681266e-08 & 2.157589e+00 \\ 
+\hline
+y-momentum &    	 7.501614e-07 & 1.692840e-07 & 2.147755e+00 \\ 
+\hline
+energy-density &    	 1.319233e-06 & 2.524508e-07 & 2.385625e+00 \\ 
+\hline
+\end{tabular}
+\end{center}
+\caption{Solution error convergence rates using L-0 norm. 
+$h_f = \frac{1}{512}$ and $h_c = 2 h_f$, $D = 2$ }
+\end{table}
+
+
+\begin{table}[p]
+\begin{center}
+\begin{tabular}{|c|c|c|c|} \hline
+Variable & Coarse Error & Fine Error & Order\\
+\hline \hline 
+mass-density &    	 1.103779e-09 & 1.855826e-10 & 2.572317e+00 \\ 
+\hline
+x-momentum &    	 1.125935e-09 & 2.356203e-10 & 2.256588e+00 \\ 
+\hline
+y-momentum &    	 1.617258e-09 & 2.371548e-10 & 2.769649e+00 \\ 
+\hline
+energy-density &    	 3.863314e-09 & 6.495531e-10 & 2.572320e+00 \\ 
+\hline
+\end{tabular}
+\end{center}
+\caption{Solution error convergence rates using L-1 norm. 
+$h_f = \frac{1}{512}$ and $h_c = 2 h_f$, $D = 2$ }
+\end{table}
+
+
+\begin{table}[p]
+\begin{center}
+\begin{tabular}{|c|c|c|c|} \hline
+Variable & Coarse Error & Fine Error & Order\\
+\hline \hline 
+mass-density &    	 5.553216e-09 & 1.114919e-09 & 2.316385e+00 \\ 
+\hline
+x-momentum &    	 6.038922e-09 & 1.251264e-09 & 2.270905e+00 \\ 
+\hline
+y-momentum &    	 9.515687e-09 & 2.244841e-09 & 2.083695e+00 \\ 
+\hline
+energy-density &    	 1.943688e-08 & 3.902358e-09 & 2.316379e+00 \\ 
+\hline
+\end{tabular}
+\end{center}
+\caption{Solution error convergence rates using L-2 norm. 
+$h_f = \frac{1}{512}$ and $h_c = 2 h_f$, $D = 2$ }
+\end{table}

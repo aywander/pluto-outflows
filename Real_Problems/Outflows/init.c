@@ -320,24 +320,33 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
     if (box->vpos == CENTER) {
       BOX_LOOP(box,k,j,i){  
 
-        OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k]);
-
         /* Reflective boundary */
         for (nv = 0; nv < NVAR; ++nv) {
           mirror[nv] = d->Vc[nv]
             FLOWAXIS([k][j][2*IBEG - i - 1],
-                     [k][2*JBEG - j - 1][i],
-                     [2*KBEG - k - 1][j][i]);
+                [k][2*JBEG - j - 1][i],
+                [2*KBEG - k - 1][j][i]);
         }
-
 
         mirror[FLOWAXIS(VX1, VX2, VX3)] *= -1.0;
 
-        /* Profiled nozzle inlet */
-        for (nv = 0; nv < NVAR; ++nv){
-          d->Vc[nv][k][j][i] = mirror[nv] + (out_primitives[nv] - mirror[nv])*
-                               Profile(x1[i], x2[j], x3[k]);
+        if (InNozzleRegion(x1[i], x2[j], x3[k])){
+
+          OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k]);
+
+          /* Profiled nozzle inlet */
+          for (nv = 0; nv < NVAR; ++nv){
+            d->Vc[nv][k][j][i] = mirror[nv] + (out_primitives[nv] - mirror[nv])*
+              Profile(x1[i], x2[j], x3[k]);
+          }
+
         }
+        else {
+          for (nv = 0; nv < NVAR; ++nv){
+            d->Vc[nv][k][j][i] = mirror[nv];
+          }
+        }
+
       }
     }else if (box->vpos == X1FACE){
       BOX_LOOP(box,k,j,i){  }

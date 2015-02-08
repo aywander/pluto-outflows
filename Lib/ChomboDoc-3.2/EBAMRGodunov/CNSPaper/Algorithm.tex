@@ -1,0 +1,400 @@
+\newcommand{\ib}{{\bf i}}
+\newcommand{\jb}{{\bf j}}
+\newcommand{\kb}{{\bf k}}
+\newcommand{\eb}{{\bf e}}
+\newcommand{\dt}{{\Delta t}}
+\newcommand{\dx}{{\Delta x}}
+\newcommand{\nph}{{n + \frac{1}{2}}}
+\newcommand{\ddt}[1]{\frac{\partial #1}{\partial t}}
+\newcommand{\iddt}[1]{\partial #1/\partial t}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\newcommand{\tens}[1]{\mathbf{#1}}
+\newcommand{\grad}[1]{\nabla{#1}}
+\newcommand{\diverg}[1]{\nabla\cdot{#1}}
+\newcommand{\ddxi}[1]{\frac{\partial #1}{\partial x_i}}
+\newcommand{\ddxj}[1]{\frac{\partial #1}{\partial x_j}}
+\newcommand{\ddxk}[1]{\frac{\partial #1}{\partial x_k}}
+\newcommand{\ddxd}[1]{\frac{\partial #1}{\partial x_d}}
+\newcommand{\iddxi}[1]{\partial #1/\partial x_i}
+\newcommand{\iddxj}[1]{\partial #1/\partial x_j}
+\newcommand{\iddxk}[1]{\partial #1/\partial x_k}
+\newcommand{\iddxd}[1]{\partial #1/\partial x_d}
+\newcommand{\deltaij}{\delta_{ij}}
+\newcommand{\sigmaij}{\sigma_{ij}}
+\newcommand{\Lmu}{\mathcal{L}_\mu}
+\newcommand{\Lalpha}{\mathcal{L}_\alpha}
+\newcommand{\refEq}[1]{(\ref{eq:#1})}
+\newcommand{\refSec}[1]{Section \ref{sec:#1}}
+
+\section{Governing Equations\label{GoverningEquations}}
+
+%\begin{table}
+%\begin{center}
+%\begin{tabular}{|l|l|} 
+%\hline $\rho$  &   Mass density  \\ 
+%\hline v     &   Velocity      \\
+%\hline T     &   Temperature   \\
+%\hline $\lambda, \nu$     &   Viscosity coefficients   \\
+%\hline $\mu$    &   Thermal diffusivity   \\
+%\hline p     &   Pressure   \\
+%\hline e     &   Strain rate, 
+%   $e_{ij}  = \frac{1}{2}(\frac{\partial v_i}{\partial x_j} + \frac{\partial v_j}{\partial x_i} )$\\
+%\hline E     &   Total energy density, $u  = c_v T + u_j u_j$ \\
+%\hline $F^\rho$ & Density  flux, $F^\rho_j = \rho v_j$\\
+%\hline $F^M$    & Momentum flux, $F^M_ij = \rho v_j v_j + p \delta_{ij}$\\
+%\hline $F^E$    & Energy   flux, $F^T_j = \rho v_j E + v_j p$ \\
+%\hline $L^v$    & Velocity diffusion operator, 
+%   $L^v(v)_i = \frac{\partial}{\partial x_j} \left( \lambda \delta_{ij} e_{kk} + 2 \mu e_{ij} \right)$\\
+%\hline $L^T$    & Temperature diffusion operator, 
+%   $L^T(T) = \frac{\partial}{\partial x_j} \left( \kappa \frac{\partial T}{\partial x_j} \right)$ \\
+%\hline
+%\end{tabular}
+%\end{center}
+%\label{fig::variables}
+%\caption{Symbols and their descriptions.}
+%\end{table}
+
+We are concerned with solving systems of advection-diffusion equations on 
+irregular domains. A system of this sort can be written as
+
+\begin{equation}
+\ddt{U} + \diverg{\vec{F}} = \mathcal{L}(U) \label{eq:advectionDiffusion}
+\end{equation}
+
+\noindent
+where $U = U(\vec{x}, t)$ is a solution vector, $\vec{F} = \vec{F}(U)$ is an 
+advective flux, and $\mathcal{L}$ is a linear diffusion operator. The presence 
+of diffusion (elliptical) terms in such a system presents a problem for the
+explicit time integration methods often used in advective (hyperbolic) systems, 
+since discretizations containing these terms have time step constraints 
+that scale with $\dx^2$ (where $\dx$ is the grid spacing). Our goal is to 
+treat the elliptical terms implicitly while integrating the hyperbolic terms
+explicitly.
+
+We illustrate this implicit/explicit method by solving the compressible 
+Navier-Stokes equations. These conservation laws describe the behavior of a 
+compressible fluid with thermal conduction and viscosity. Written
+in conservative form, the Navier-Stokes equations are
+
+\begin{eqnarray}
+\ddt{\rho} + \diverg{(\rho \vec{v})} &=& 0 \notag \\ 
+\ddt{(\rho \vec{v})} + \diverg{(\rho \vec{v}\vec{v})} &=& -\grad{p} + \diverg{\tens{\sigma}} \label{eq:CNS} \\
+\ddt{(\rho E)} + \diverg{(\rho E \vec{v})} &=& -\diverg{(p\vec{v})} + \rho\diverg{\vec{Q}} \notag
+%\ddt{\rho} + \ddxi{(\rho v_i)} &=& 0 \label{} \\
+%\ddt{(\rho v_i)} + \ddxi{(\rho v_i v_j)} &=& -\ddxi{p} + \ddxi{\sigmaij} \\
+%\ddt{(\rho E)} + \ddxi{(\rho v_i E)} &=& -\ddxi{(v_i p)} + \rho\ddxi{Q_i}
+\end{eqnarray}
+
+\noindent
+These equations are (respectively) the laws of conservation of mass, momentum, 
+and energy. Above, $\rho$ is the mass density of the fluid, $\vec{v}$ is its 
+bulk velocity, $p$ its pressure, and $E$ its total energy per unit volume. 
+$\tens{\sigma}$ is the viscous stress tensor representing the dissipation of 
+kinetic energy into heat, and $\vec{Q}$ is the flow of heat within the fluid. 
+
+In a Newtonian fluid, the viscous stress can be expressed in terms of the 
+viscosity coefficients $\mu$ and $\lambda$ and the strain rate tensor 
+$\tens{e}$ whose components are defined by $e_{ij} = (\iddxj{v_i} + \iddxi{v_j})/2$. In Einstein 
+notation, in which repeated indices are summed:
+
+\begin{eqnarray}
+\sigmaij &=& \mu\left(\ddxj{v_i} + \ddxi{v_j}\right) + \lambda \deltaij \ddxk{v_k} \notag \\
+         &=& 2\mu e_{ij} + \lambda e_{kk} \deltaij \label{eq:viscTensor}
+\end{eqnarray}
+
+\noindent
+$\mu$ represents the rate at which shear flows generate heat at the expense of 
+the fluid's mechanical energy. This parameter can depend upon the pressure 
+and temperature of the fluid and thus is allowed to vary spatially. $\lambda$,
+often called the \em second viscosity\em, is the rate at which this conversion 
+occurs in the presence of compression, It is customary to prescribe 
+$\lambda$ in terms of $\mu$ in order to make $\tens{\sigma}$ traceless:
+
+\begin{equation}
+\lambda = -\frac{2}{3}\mu \label{eq:lambda}
+\end{equation}
+
+\noindent
+We adopt this practice for the present study. In reality, $\lambda$ can depend 
+on the frequencies of compression waves, so its behavior can be much more 
+complicated\cite{Landau1959}.
+
+The heat flow $\vec{Q}$ is related to gradients in the fluid's temperature $T$ 
+by the thermal conductivity $\alpha$ of the fluid, which can also vary in space:
+
+\begin{equation}
+\vec{Q} = \alpha \grad{T} \label{eq:heatFlow}
+\end{equation}
+
+When \refEq{viscTensor} and \refEq{heatFlow} are used in \refEq{CNS}, they 
+result in diffusion terms within the momentum and energy equations. 
+We can rearrange the resulting equations to place them into a form resembling 
+\refEq{advectionDiffusion}:
+
+\begin{eqnarray}
+\ddt{\rho} + \ddxi{(\rho v_i)} &=& 0 \label{eq:continuity} \\
+\ddt{(\rho v_i)} + \ddxj{(\rho v_i v_j + p\deltaij)} &=& 
+   \ddxj{}\left(\mu\left[\ddxj{v_i} + \ddxi{v_j} - \frac{2}{3}\deltaij\ddxk{v_k}\right]\right) \label{eq:momentum} \\
+\ddt{(\rho E)} + \ddxi{(\rho E v_i + p v_i)} &=& \rho\ddxi{}\left(\alpha\ddxi{T}\right) \label{eq:energy} 
+\end{eqnarray}
+
+\noindent
+To express \refEq{continuity} - \refEq{energy} in the form of 
+\refEq{advectionDiffusion}, we identify the solution vector $U$ and the flux 
+$F^d$ in the $d$th direction:
+
+\begin{eqnarray}
+U &=& (\rho, \rho\vec{v}, \rho E)^T \label{eq:solnVector} \\
+F^d(U) &=& (\rho v^d, \rho v^d\vec{v} + p\tens{e}^d,\rho v^d E + v^d p)^T \label{eq:Fd}
+\end{eqnarray}
+
+\noindent
+Since the diffusion terms on the right hand sides of \refEq{momentum} and 
+\refEq{energy} do not couple the conserved quantites, the momentum and energy 
+equations are not coupled in the operator $\mathcal{L}$. This means we are 
+allowed to treat the diffusion terms separately, defining the a viscous 
+operator $\Lmu$ and a thermal conduction operator $\Lalpha$. Since $\Lmu$ and 
+$\Lalpha$ are decoupled, each operates on its respective primitive variable and 
+not on $U$. The specific forms of these operators can be found by ignoring 
+the advection terms in \refEq{momentum} and \refEq{energy}.  For instance, the 
+dissipation in the momentum of an element of fluid with mass density $\rho$ 
+due to viscous heating is
+
+\begin{eqnarray}
+\left(\ddt{(\rho v_i)}\right)_{\mu} &=& \ddxj{}\left(\mu\left[\ddxj{v_i} + \ddxi{v_j} - \frac{2}{3}\deltaij\ddxk{v_k}\right]\right) \notag \\
+                                    &\equiv& \Lmu(\vec{v}). \label{eq:Lmu}
+\end{eqnarray}
+
+\noindent
+For the energy equation, we need to relate the fluid's temperature $T$ to its 
+energy density $E$. If the fluid has a specific heat $c_v$, the thermal energy 
+density of a fluid element is $E_{therm} = \rho c_v T$.  We then express the 
+thermal diffusion equation as
+
+\begin{eqnarray}
+\left(\ddt{(\rho c_v T)}\right)_\alpha &=& \rho\ddxi{}\left(\alpha\ddxi{T}\right) \notag \\
+                                       &\equiv& \Lalpha(T). \label{eq:Lalpha}
+\end{eqnarray}
+
+\noindent
+For simplicity, we assume that $c_v$ is constant within the fluid.  
+
+\section{Time Integration\label{sec:TimeIntegration}}
+
+In this section we describe the time integration algorithm schematically, 
+giving details of each step of the calculation in later sections.
+At the beginning of a time step $n$, we integrate the hyperbolic terms in 
+\refEq{continuity} - \refEq{energy} explicitly, treating the elliptic terms in 
+\refEq{momentum} and \refEq{energy} as sources. To compute the source 
+contributions, we evaluate the discrete form of \refEq{LU} within \refEq{advectionDiffusion} at
+the current timestep.  In this language, the operator $\mathcal{L}$ can 
+be written
+
+\begin{equation}
+\mathcal{L}(U) = [0, \Lmu(\vec{v}), \Lalpha(T)]^T. \label{eq:LU}
+\end{equation}
+
+\noindent
+We denote the discrete form of this operator evaluated at time step $n$ on the 
+VoF $\ib$ as $L(U^n_\ib)$, which consists of the separate discrete Helmholtz 
+operators $L_\mu(\vec{v}^n_\ib)$ and $L_\alpha(T^n_\ib)$. We represent the 
+elliptic terms as a source term in \refEq{advectionDiffusion}:
+
+\begin{equation}
+S^n_\ib = L(U^n_\ib) = [0, L_\mu(\vec{v}^n_\ib, L_\alpha(T^n_\ib)]^T \label{eq:hyperbolicSources}
+\end{equation}
+
+The details of the evaluation of these ``hyperbolic sources" are given in 
+\refSec{HyperbolicSources}.
+
+Next, we must calculate the flux divergence 
+$(\diverg{\vec{F}})^{n+1/2}_\ib = \diverg{F}(U^n_\ib, S^n_\ib)$,
+incorporating the source terms computed above. This step is similar to the 
+calculation of the flux divergence described in \cite{???} for solving the 
+Euler equations; we review it in \refSec{FluxDivergence}. 
+
+When we have computed the flux divergence, we can predict a value for 
+$U^{n+1}_\ib$ using \refEq{advectionDiffusion}:
+
+\begin{equation}
+U^{n+1,*}_\ib = U^b_\ib - \dt(\diverg{\vec{F}})^{n+\half}_\ib
+\end{equation}
+
+\noindent
+We ignore the implicit terms in \refEq{advectionDiffusion} in this explicit 
+advance, apart from incorporating them as sources in the calculation of the 
+flux divergence. We then update the momentum and energy in $U$ by solving the 
+appropriate diffusion equations and backing out time derivatives. For example, 
+implicitly integrating the viscous contribution to the momentum equation 
+produces a value for $\vec{v}^{n+1}_\ib$, which can be used to compute 
+$L_\mu(\vec{v}^{n+1/2}_\ib)$:
+
+\begin{equation}
+L_\mu(\vec{v}^{n+\half}_\ib) = \frac{\rho^{n+\half}(\vec{v}^{n+1} - \vec{v}^n)}{\dt}
+\end{equation}
+
+\noindent
+Similarly, the implicit treatment of thermal conduction for the energy equation
+gives us $T^{n+1}_\ib$, which is used to compute $L_\alpha(T^{n+1/2}_\ib)$:
+
+\begin{equation}
+L_\alpha(T^{n+\half}_\ib) = \frac{\rho^{n+\half} c_v (T^{n+1} - T^n)}{\dt}
+\end{equation}
+
+The integration of these equations is described in \refSec{Diffusion}. 
+
+Finally, the solution variable is updated with the diffusive contributions:
+
+\begin{equation}
+U^{n+1}_\ib = U^{n+1,*} + \dt L(U^{n+\half}_\ib) \label{eq:Uupdate}
+\end{equation}
+
+\noindent
+or, in terms of the conserved quantities:
+
+\begin{eqnarray}
+(\rho\vec{v})^{n+1}_\ib &=& (\rho\vec{v})^{n+1,*} + \dt L_\mu(\vec{v}^{n+\half}_\ib) \label{eq:rhovupdate} \\
+(\rho E)^{n+1}_\ib &=& (\rho E)^{n+1,*} + \dt L_\alpha(T^{n+\half}_\ib) \label{eq:rhoEupdate}
+\end{eqnarray}
+
+\section{Calculation of Hyperbolic Source Terms\label{sec:HyperbolicSources}}
+
+A discrete Helmholtz operator $L$ actually evaluates $\kappa_\ib L(U_\ib)$ on 
+every VoF $\ib$ within a domain. On regular cells, $\kappa_\ib = 1$ and 
+the correct value of $L(U_\ib)$ is obtained. However, on each irregular 
+cell, $\kappa_\ib < 1$ and we need to compute an average value for $L(U_\ib)$ 
+over a set of surrounding VoFs $\{\jb\}$. If we denote the monotone path radius 
+of a VoF $\ib$ by $\mathcal{S}(\ib)$, the averaged value of 
+$L(U_\ib)$ is 
+
+\begin{equation}
+L(U_\ib) := \kappa_\ib L(U_\ib) + \frac{1-\kappa_\ib}
+{(\sum\limits_{\jb \in \mathcal{S}(\ib)} \kappa_\jb)} 
+\sum\limits_{\jb \in \mathcal{S}(\ib)} \kappa_\jb L(U_\jb).
+\end{equation}
+
+We define the discrete operators $L_\mu$ and $L_\alpha$ explicitly in 
+\refSec{Diffusion}.
+
+\section{The Flux Divergence\label{sec:FluxDivergence}}
+
+This calculation is described in greater detail in \cite{???}; we outline it 
+briefly here, elaborating in later sections. We begin by defining edge-centered 
+flux terms for a VoF $\ib$:
+
+\begin{equation}
+F^{n+\half}_{\ib\pm\half\eb_d} = F(U^{n+\half}_{\ib\pm\half\eb_d}) \label{eq:edgeCenteredFluxes}
+\end{equation}
+
+\noindent
+where we use the upstream-centered Taylor expansion
+
+\begin{equation}
+U^{n+\half}_{\ib\pm\half\eb_d} = U^n_\ib + \frac{\dx}{2}\left(\ddxd{U}\right)^n_\ib + 
+                                 \frac{\dt}{2}\left(\ddt{U}\right)^n_\ib. \label{eq:edgeCenteredU}
+\end{equation}
+
+\noindent
+Here, $(\iddt{U})^n_\ib = L(U^n_\ib)$.
+
+\section{Diffusion\label{sec:Diffusion}}
+
+Our equations for energy and momentum have elliptic terms.   These
+terms need to be advanced implicitly in a way that preserves the
+conservation of momentum and energy.   To do this, we advance the
+primitive variables to form stable estimates of $L^T(T)$ and $L^v(v)$.
+We then use these stable estimates to update energy and momentum.
+For momentum we advance the following one step using TGA:
+$$
+\frac{\partial \rho u}{\partial t} = L^u u + R_u
+$$
+where 
+$$
+R_u = -\rho(u \cdot \nabla u) - \nabla p.
+$$
+We then compute the stable evaluation of $L^v v$:
+$$
+L^v v = \frac{\rho^{n+\half}(u^{n+1}-u^n)}{\dt}
+$$
+and update the solution  with the diffusive contribution (the
+hyperbolic part has already been added).
+$$
+(\rho v)^{n+1} += \dt L^v v
+$$
+Similarly, with energy we solve the following equation for a
+temerpature update 
+$$
+(\rho^{n+\half} C_v I - \dt L^{T}) T = R_T
+$$
+where
+$$
+R_T  = -\rho C_v u \cdot \nabla T- u L^v v - p \nabla \cdot v 
+$$
+and compute the stable evaluation of $L^T T$
+$$
+L^T = \frac{\rho^{n+\half} C_v(T^{n+1}-T^n)}{\dt} - D^r F^e
+$$
+$$
+(\rho E)^{n+1} += \dt L^T T
+$$
+\section{Implicit refluxing}
+
+Say you are solving the heat equation
+\begin{equation}
+\frac{\partial \phi}{\partial t} = \nabla \phi + R
+\label{eqn::heat}
+\end{equation}
+We can break the composite solution into the level solution plus a
+correction :$\phi^{comp} = \phi^l + e$.
+We can break the composite operator into the level operator plus the
+reflux divergence of the flux (which in this case is a gradient):
+$ L^{comp} \phi^{comp} = L^l \phi^l + D^r \delta$.   
+A backward Euler discretization of  \ref{eqn::heat} yeilds
+$$
+(I - \dt L^{comp}) \phi^{n+1} = R.
+$$
+Expanding this gives us
+$$
+(I - dt L^l)\phi^l - dt D^r (\delta) + (I - \dt L^{comp}) e = R
+$$
+Functionally, if we are using backward Euler in the advance in
+subcycling,  when we are advancing a level, we solve
+$$
+(I - \dt L^l) \phi^l = R
+$$
+(caveat: our advance is really the more complicated
+TGA solve, not the simple backward Euler discretization shown above).
+We then solve for $\delta$:
+$$
+(I - \dt L^{comp}) e = \dt D^r \delta^l
+$$
+$$
+\phi^{comp} = \phi^l + e
+$$
+
+Unfortunately, we are solving something more complicated than the heat
+equation.    For momentum we solve
+$$
+(\rho^{n+\half} I - \dt L^{v}) v = \dt D^r F^{mom}
+$$
+We then compute the stable evaluation of $L^v v$
+$$
+L^v v = \frac{\rho^{n+\half}(v^{n+1}-v^n)}{\dt} - D^r F^{mom}
+$$
+and update the solution  with the diffusive contribution (the
+hyperbolic part has already been added).
+$$
+(\rho v)^{n+1} += \dt L^v v
+$$
+Similarly, with energy we solve the following equation for a
+temerpature update 
+$$
+(\rho^{n+\half} C_v I - \dt L^{T}) T = \dt D^r F^e
+$$
+and compute the stable evaluation of $L^T T$
+$$
+L^T = \frac{\rho^{n+\half} C_v(T^{n+1}-T^n)}{\dt} - D^r F^e
+$$
+$$
+(\rho E)^{n+1} += \dt L^T T
+$$

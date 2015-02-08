@@ -1,0 +1,1011 @@
+
+\section{Introduction}
+
+This document is meant to discuss the different components of the
+EBAMRTools component of the EBChombo infrastructure for embedded
+boundary, block-structured adaptive mesh  applications.  The principal
+operations that these tools execute are as follows:
+\begin{itemize}
+\item Average a level's worth of data onto the next coarser level.
+\item Interpolate in a piecewise-linear fashion data from a coarser
+      level to a finer level.
+\item Fill ghost cells at a coarse-fine interface with a second-order
+        interpolation between the coarse and fine data.
+\item Fill ghost cells at a coarse-fine interface with data
+        interpolated using a bilinear interpolation.
+\item Preserve multi-level conservation using refluxing.
+\item Redistribute mass differences between stable and conservative
+schemes. 
+\end{itemize}
+After a discourse on the notational difficulties of embedded
+boundaries, we will discuss our algorithm for each of these tasks.
+
+\section{Notation}
+
+All these operations take place in a very similar context to
+that presented in \cite{ChomboDesign}.  For non-embedded boundary
+notation, refer to that document. 
+The standard $(i,j,k)$ is not sufficient here to denote a
+computational cell as there can be multiple VoFs per cell.
+We define $\vbold$ to be the notation for a VoF and $\fbold$
+to be a face. The function $ind(\vbold)$ produces the 
+cell which the VoF lives in.  We define $\vbold^+(f)$ to be the
+VoF on the high side of face~$f$; $\vbold^-(f)$ is the VoF on the low side
+of face~$\fbold$; $\fbold^+_d(v)$ is the set of faces on the high side of
+VoF~$v$; $f^-_d(v)$ is the set of faces on the low side of VoF~$\vbold$,
+where $d\in\{x,y,z\}$ is a coordinate direction (the number of
+directions is $D$).  Also, we compose these operators to represent the
+set of VoFs directly connected to a given VoF:  $v^+_d(v) =
+\vbold^+(f^+_d(\vbold))$ and $\vbold^-_d(v) = v^-(f^-_d(\vbold))$.
+The $<<$ operator shifts data in the direction of the right hand argument:
+\begin{equation}
+(\phi << \ebold^d)_\vbold =  \phi_{v^+_d(v)}
+\end{equation}
+
+We follow the same approach in the EB case in defining multilevel data
+and operators as we did for ordinary AMR. Given an AMR mesh hierarchy
+$\{ \Omega^l \}^{lmax}_{l=0}$, we define the valid VoFs on level $l$ to be 
+\begin{equation}
+\mathcal{V}^l_{valid} = ind^{-1}(\Omega^l_{valid})
+\end{equation}
+and composite cell-centered data
+\begin{equation}
+\varphi^{comp} = \{ \varphi^{l, valid} \}^{lmax}_{l=0}, 
+\varphi^{l,valid} : \mathcal{V}^l_{valid} \rightarrow \mathbb{R}^m
+\end{equation}
+For face-centered data,
+\begin{equation}
+\begin{array}{c}
+\mathcal{F}^{l, d}_{valid} = ind^{-1}(\Omega^{l, \ebold^d}_{valid}) \\
+\vec{F}^{l, valid} = (F^{l, valid}_0, \ldots, F^{l, valid}_{D-1}) \\
+F^{l, valid}_d : \mathcal{F}^{l, d}_{valid} \rightarrow \mathbb{R}^m
+\end{array}
+\end{equation}
+
+\section{Conservative Averaging}
+
+Assume that there are two levels of grids $\Omega^c, \Omega^f,$ with
+data defined on the fine grid and on the valid region of the coarse
+grid 
+\begin{equation}
+\varphi^f : \ind^{-1}(\Omega^f) \rightarrow \mathbb{R} \\
+\varphi^{c, valid} : \ind^{-1}(\Omega^c_{valid}) \rightarrow \mathbb{R}
+\end{equation}
+We assume that $\mathcal{C}_r(\tilde{\Omega}^f) \cap \Gamma^c \subset
+\Omega^c$.   We want to replace the coarse data which is covered
+by fine data with the volume-weighted average of the fine data.
+This operator is used to average
+from finer levels on to coarser levels, or for constructing averaged
+residuals in multigrid iteration.  We define the volume weighted average
+\begin{equation}
+\begin{array}{c}
+\varphi^c_{\vboldc} = Av(\varphi^f, n_{ref})_{\vboldc}  \\
+Av(\varphi^f)= \frac{1}{V^c} \sum\limits_{{\vboldf} \in {\cal F}} V^f
+\varphi_{\vboldf} \\
+{\cal F} =  \mathcal{C}^{-1}_{n_{ref}}(\vboldc)
+ \end{array}
+\label{eqn::coarseaverage}
+\end{equation}
+
+\section{Interpolation Operations}      
+
+\subsection{Piecewise Linear Interpolation}
+\label{sec::pwlinearinterp}
+This method is primarily used to initialize fine grid data after
+regridding. Given a level array $\varphi^c$ on $\Omega^c$, we want to 
+compute  $I_{pwl}({\varphi})$ defined on an $\Omega^f$ properly nested
+in $\Omega^c$.  
+For the values on $C(\tilde{\Omega}^f)$, interpolate in a
+piecewise-linear fashion in space, using the values
+$\tilde{\varphi}^c$ (we assume that the coarse data already contains
+the average of the fine data as discussed in the last section).
+\begin{equation}
+\begin{array}{c}
+\varphi^f_{\vboldf} = \tilde{\varphi}^c_{\vboldc} +
+\sum\limits^{D-1}_{d=0}(\frac{(\ind(\vboldf)_d + \half)}{n_{ref}} -
+\ind(\vboldc) + \half))\Delta^d \cdot \varphi^c_{\vboldc} \\
+\mbox{where } \vboldc \in \ind^{-1}(\tilde{\Omega}^f - \Omega^f) \\
+\vboldc = \mathcal{C}_{n_{ref}}(\vboldf).
+\label{eqn::uberpwlinterp}
+\end{array}
+\end{equation}
+The slopes $\Delta^d$ are computed using minmod limiting as shown below:
+\begin{equation}
+\begin{array}{c}
+\Delta^d W_{\vboldc} = \delta^{minmod}(W_{\vboldc})|
+\delta^L(W_{\vboldc})| \delta^R(W_{\vboldc})| 0 \\
+\delta^L(W_{\vboldc}) = W_{\vboldc} - (W^n_{\vbold <<-\ebold^d}) \\
+\delta^R(W_{\vboldc}) =(W^n_{\vbold << \ebold^d}) - W_{\vboldc} \\
+\end{array}
+\end{equation}
+\begin{equation}
+\delta^{minmod} = \left\{ \begin{array}{ll} 
+         min(|\delta_L|, |\delta_R|) \cdot sign(\delta_L +
+\delta_R)  & \mbox{ if } \delta_L \cdot \delta_R > 0 \\
+  ~0 & \mbox{ otherwise} 
+\end{array}        \right\}
+\label{eqn::deltaminmod}
+\end{equation}
+The shift operator (denoted by $<<$) 
+is defined using a simple average of connected values.
+
+
+\subsection{Piecewise-Linear Coarse-Fine Boundary Interpolation}
+
+In the next algorithm, we use the same linear interpolant but we
+also interpolate in time between levels of time.  We have
+the solution on the coarser level of refinement at two time levels,
+$t_{Cold}$ and $t_{Cnew}$.
+We want to compute an extension $\tilde{\varphi}^f$ of $\varphi^f$ on
+$\tilde{\Omega}^f = \mathcal{G}(\Omega^f, p) \cap \Gamma^f, p>0$ 
+that exists at time level $t_{F}$ where $t_{Cold} < t_f < t_{Cnew}$.
+We assume that $\mathcal{C}_r(\tilde{\Omega}^f) \cap \Gamma^c C
+\Omega^c$. 
+Extend $\varphi^{c, valid}$ to $\varphi^c$, defined on all of
+$\ind^{-1}(\Omega^c)$.
+\begin{equation}
+\varphi^c_{\vboldc} = Av(\varphi^f, n_{ref})_{\vboldc}, 
+\vboldc \in \ind^{-1} \mathcal{C}_{n_{ref}}(\Omega^f) 
+\end{equation}
+At both $t_{Cold}$ and $t_{Cnew}$, 
+for the values on $\tilde{\Omega}^f - \Omega^f$ compute a
+piecewise linear interpolant, using the values $\tilde{\varphi}^c$. 
+\begin{equation}
+\begin{array}{c}
+\tilde{\varphi}^f_{\vboldf} = \tilde{\varphi}^f_{\vboldc} +
+\sum\limits^{D-1}_{d=0}(\frac{(\ind(\vboldf)_d + \half)}{n_{ref}} -
+(\ind(\vboldc) + \half))\Delta^d \cdot \varphi^c_{\vboldc} \\
+\mbox{where } \vboldc \in \ind^{-1}(\tilde{\Omega}^f - \Omega^f), \\
+\vboldc= \mathcal{C}_{n_{ref}}(\vboldf). 
+\end{array}
+\end{equation}
+The slopes $\Delta^d$ are computed using minmod limiting as shown
+in equation \ref{eqn::deltaminmod}.
+We then interpolate  in time between the new and old interpolated
+values.
+\begin{equation}
+{\varphi}^f_{\vboldf, t_F} =  \tilde{\varphi}^f_{\vboldf, t_{Cold}} 
++\frac{t_F - t_{Cold}}{t_{Cnew}-t_{Cold}}
+(\tilde{\varphi}^f_{\vboldf, t_{Cnew}}-\tilde{\varphi}^f_{\vboldf, t_{Cold}})
+\end{equation}
+This process should produce an interpolated value which has
+second-order error in both time and space.
+
+\subsection{Quadratic Coarse-Fine Boundary Interpolation}
+
+Away from locations where the embedded boundary crosses the
+coarse-fine interface, we use the algorithm in  \cite{ChomboDesign}.
+
+To proceed from here we need to define the corner ghost cells region.
+Say we have two levels of refinement.  Define $\Omega^f$ as that region covered by
+the finer level. Define $\Lambda^f$ to be the problem domain at the
+finest refinement.  Define $G^d$ to be the grow operation that only grows a region in the
+coordinate direction $d$.  Define
+the  grow operator $G$ to be the operator which grows a region by one
+cell in all coordinate directions.  In three dimensions, this is
+$$
+ G(\Omega, 1)  \equiv G^1(G^2(G^3(\Omega,1), 1), 1)
+$$
+The coarse-fine layer of ghost 
+$\Omega^{cf}$
+cells is defined to be 
+$$
+\Omega^{cf,f} = (G(\Omega^f, 1) - \Omega^f) \cap \Lambda^f
+$$
+The ghost cells which are not corners $\Omega^e$ can be
+obtained by shifting $\Omega^f$ along coordinate directions:
+$$
+\Omega{e,f} = (\bigcup\limits^{D}_{d = 1} G^d(\Omega^f, 1) - \Omega^f)
+\cap \Lambda^f
+$$
+The corner ghost cells $\Omega^{p}$ are defined to be 
+$$
+\Omega^p = \Omega^{cf} - \Omega^e
+$$
+Define $C$ to be the pointwise coarsening operation and $r$ to be the
+refinement ratio.  We define  the coarse-fine interface set on the
+coarse level $\Omega^{cf,c}$ to be the coarse cells which underly the
+fine ghost cells.
+$$
+\Omega^{cf, c} = C(\Omega^{cf,f}, r)
+$$
+Because of proper nesting requirements, we claim that
+$ \Omega^{e, c} = C(\Omega^{e,f}, r) $ and 
+$ \Omega^{p, c} = C(\Omega^{c,f}, r) $ do not intersect and 
+$\Omega^{cf, c} =\Omega^{e,c} \cap \Omega^{p,c}$.
+
+We use the Johansen stencil for Dirichlet EB boundary conditions
+away from the coarse-fine boundary.  When any VoF of the Johansen
+stencil is within a ghost cell on the coarse-fine interface, we drop
+to the least-squares stencil which has a smaller.   The least-squares
+stencil still requires corner ghost cells be filled.
+In the absence of coarse-fine interfaces intersecting embedded
+boundaries,  we only need to fill ghost cells which were not corners
+$\Omega^e$.    Since we are proposing to allow this intersection, we
+must interpolate to all of $\Omega^{cf}$.
+
+\subsubsection{Interpolation to non-corner ghost cells $\Omega^{e,f}$}
+
+Away from points where the  coarse-fine interface, we interpolate
+using QuadCFInterp.   It uses one-sided differences to avoid using
+coarse data under finer data.  See the AMRTools section of the Chombo
+design document for details.   Though that is somewhat ideologically
+inconsistent with the following strategy near embedded boundaries, we
+feel that, as a proven technology, QuadCFInterp should be left alone.
+
+
+This section deals only with quadratic interpolation near where the
+coarse-fine interface crosses the embedded boundary
+design document.   The functional change from QuadCFInterp here is that we only
+need to do one-sided difference when covered cells are near.   Because
+we are doing higher-order averaging to fill coarse data that is under
+finer data (see section \ref{sec::hoave}), 
+we can allow the coarse-fine interpolation stencil to
+reach under finer grids.
+
+We present the natural extension of the regular grid description to
+embedded boundaries of quadratic coarse-fine interpolation.   For each
+coordinate direction $d$, we compute values of $\phi$ in the set 
+$\Omega^{e,f}_d = (G^d(\Omega^f, 1) - \Omega^f) \cap \Lambda^f$.
+Define the ``valid'' parts of the domain to be the parts of the domain
+whose volume fractions are greater than zero.
+$$
+\Omega^{c,valid}_\ibold = \{ \ibold: \ibold \in \Omega^c \mbox{ and } \kappa_\ibold > 0 \}
+$$
+
+To perform this interpolation, we first observe that, given $\ibold
+\in \tilde{\Omega}^f_k - \Omega^f$, there is a unique choice of $\pm$
+and $d$, such that $\ibold \mp \ebold^d \in \Omega^f_k$. Having
+specified that choice, the interpolant
+is constructed in two steps 
+\begin{trivlist}
+\item 
+(i) Interpolation in the direction orthogonal to $\ebold^d$. We
+compute
+\beqa
+\xbold = \frac{\ibold + \half \ubold}{r} - (\ibold^c +
+\half \ubold)
+\eeqa
+where $\ibold^c = {\mathcal{C}}_{r}(\ibold)$. 
+The real-valued vector $\xbold$ is the displacement of the cell center
+$\ibold$ on the fine grid from the cell center at $\ibold^c$ on the
+coarse
+grid, scaled by $h^c$.
+\beqa
+\hat{\varphi}_\ibold = \varphi^c_{\ibold^c} +
+\sum_{d' \neq d}
+\Bigl[
+  \bigl(
+    x_{d'}(D^{1, d'}\varphi^c)_{\ibold^c} +
+    \half (x_{d'})^2(D^{2, d'}\varphi^c)_{\ibold^c}
+  \bigr) + 
+  \sum_{d'' \neq d, d'' \neq d'} x_{d'}x_{d''}(D^{d'd''}\varphi^c)_{\ibold^c}
+\Bigr]
+\eeqa
+The second sum has only one term if $\Dim=3$, and no terms if $\Dim=2$.
+\item
+(ii) Interpolation in the normal direction.  
+\begin{equation*}
+\tilde{\varphi}_\ibold = I_q^B(\varphi^f,\varphi^{c,valid}) \equiv
+4a + 2b + c ~ , ~ 
+\tilde{x_d} = x_d - \half (r + 3)
+1\end{equation*}
+where $a,b,c$ are computed
+to interpolate between the collinear data
+\begin{align*}
+&((\ibold \pm \half(n^l_{ref} -1)\ebold^d)h,
+\hat{\varphi}_\ibold), \\ &((\ibold \mp \ebold^d)h, \varphi^l_{\ibold \mp
+\ebold_d}), \\ &((\ibold \mp 2\ebold^d)h, \varphi^l_{\ibold \mp 2\ebold_d)}
+\end{align*}
+\end{trivlist}
+In (i), the quantities $D^{1, d'}\varphi^c, D^{2, d'}\varphi^c$
+and $D^{d'd''}\varphi^c$ are difference approximations to $
+\frac{\partial}{\partial x_{d'}}, \frac{\partial^2}{\partial
+x^2_{d'}}$, and $\frac{\partial^2}{\partial x_{d'}\partial x_{d''}}$,
+respectively.  $D^{1, d}\varphi$ must be accurate to $O(h^2)$, while
+the other two quantities need only be $O(h)$.  The
+strategy for computing these quantities is to use only values in
+$\Omega^c_{valid}$ to compute these difference approximations.  For
+the case of $D^{1, d'}\varphi, D^{2, d'}\varphi$, we use 3-point
+stencils, centered if possible, or shifted as required to consist of
+points on $\Omega^c_{valid}$.
+
+\beqa
+(D^{1, d'}\varphi)_\ibold =
+  \begin{cases}
+    \frac{1}{2}(\varphi^c_{\ibold + \ebold^{d'}} -
+                 \varphi^c_{\ibold - \ebold^{d'}}) &
+      \text{if both $\ibold \pm \ebold^{d'} \in \Omega^c_{valid}$}
+    \\
+    \pm\frac{3}{2}(\varphi^c_{\ibold \pm  \ebold^{d'}} -
+                    \varphi^c_\ibold                      )
+    \mp\frac{1}{2}(\varphi^c_{\ibold \pm 2\ebold^{d'}} -
+                    \varphi^c_{\ibold \pm  \ebold^{d'}}) &
+      \text{if $\ibold \pm \ebold^{d'}     \in \Omega^c_{valid}$,
+               $\ibold \mp \ebold^{d'} \not\in \Omega^c_{valid}$}
+    \\
+    0 &
+      \text{otherwise}
+  \end{cases}
+\eeqa
+\beqa
+(D^{2, d'}\varphi)_\ibold =
+  \begin{cases}
+    \varphi^c_{\ibold+\ebold^{d'}} -
+                 2\varphi^c_\ibold               +
+                  \varphi^c_{\ibold-\ebold^{d'}} &
+      \text{if both $\ibold \pm \ebold^{d'} \in \Omega^c_{valid}$}
+    \\
+    \varphi^c_\ibold                     -
+                 2\varphi^c_{\ibold \pm   \ebold^{d'}} +
+                  \varphi^c_{\ibold \pm 2 \ebold^{d'}} &
+      \text{if $\ibold \pm \ebold^{d'}     \in \Omega^c_{valid}$,
+               $\ibold \mp \ebold^{d'} \not\in \Omega^c_{valid}$}
+    \\
+    0 &
+      \text{otherwise}
+  \end{cases}
+\eeqa
+
+\begin{figure}[htp]
+\epsfxsize=2.0in
+\hspace{1.5in} \epsffile{../ChomboDesign/figs/mixed.eps}
+\caption{Mixed-derivative approximation illustration.
+        The upper-left corner is covered by a finer level
+        so the mixed derivative in the upper left (the uncircled
+        x) has a stencil which extends into the finer level.
+        We therefore average the mixed derivatives centered
+        on the other corners (the filled circles) to approximate
+        the mixed derivatives for coarse-fine interpolation in three 
+        dimensions.}
+\label{MIXEDFIG}
+\end{figure}
+
+In the case of $D^{d'd''}\varphi^c$, we use an average of all of
+the four-point difference approximations $\frac{\partial^2}{\partial
+x_{d'}\partial x_{d''}}$ centered at $d', d''$ corners adjacent to
+$\ibold$ such that all four points in the stencil are in $\Omega^c_{valid}$
+(Figure \ref{MIXEDFIG})
+\beqa
+(D^{d'd''}_{corner}\varphi^c)_{\ibold + \half \ebold^{d'} + \half \ebold^{d''}} = 
+  \begin{cases}
+    \frac{1}{h^2}(\varphi_{\ibold+\ebold^{d'} + \ebold^{d''}} +
+                  \varphi_\ibold -
+                  \varphi_{\ibold + \ebold^{d'}} -
+                  \varphi_{\ibold + \ebold^{d''}}) &
+      \text{if $[\ibold, \ibold + \ebold^{d'} + \ebold^{d''}] \subset \Omega^c_{valid}$}
+    \\
+    0 &
+      \text{otherwise}
+  \end{cases}
+\eeqa
+\beqa
+(D^{2, d'd''}\varphi^c)_\ibold = 
+  \begin{cases}
+    \frac{1}{N_{valid}} \sum_{s' = \pm 1} \sum_{ s'' = \pm 1}
+      (D^{d'd''}\varphi^c)_{\ibold + \half s'\ebold^{d'} + \half s'' \ebold^{d''}} &
+      \text{if $N_{valid} > 0$}
+    \\
+    0 &
+      \text{otherwise}
+  \end{cases}
+\eeqa
+where $N_{valid}$ is the number of nonzero summands.
+To compute (ii), we need to compute the interpolation coefficients $a$
+$b$, and $c$.
+
+\begin{gather*}
+a=\frac{\hat{\varphi} - 
+		   (r\cdot |x_d| + 2) \varphi_{\ibold \mp \ebold^d} + 
+		   (r\cdot |x_d| + 1) \varphi_{\ibold \mp 2 \ebold^d}}
+		   {(r\cdot |x_d| + 2)(r\cdot |x_d| + 1)}
+\\
+b = \varphi_{\ibold \mp \ebold^d} - \varphi_{\ibold \mp 2 \ebold^d} - a
+\\
+c = \varphi_{\ibold \mp 2 \ebold^d}
+\end{gather*}
+
+\subsubsection{Interpolation to corner ghost cells}
+
+We now discuss how we fill data on $\Omega^{p,f}$ the ghost cells over
+the coarse fine interface which cannot be reached from a single move
+in a coordinate direction.   Define  ${\cal D}$
+to be the set of directions which have the requisite number of
+uncovered, single-valued cells from a corner cell $\ibold$.
+It is clear from the location of the corner which direction
+one needs to extrapolate from.
+$$
+{\cal D}_\ibold = \{ d : \kappa_{\ibold \pm \ebold} > 0 \mbox{ and }
+\kappa_{\ibold \pm 2\ebold} > 0\mbox{ and } \kappa_{\ibold \pm 3\ebold} > 0 \}
+$$
+We also exclude from ${\cal D}$ any directions with a multivalued cell
+in the stencil.  We define
+$N_D$ to be the number of directions contained in ${\cal D}$.   
+$$
+\phi_{\ibold} = \frac{1}{N_D} \sum\limits_{d \in {\cal D}}
+3(\phi_{\ibold \pm \ebold^d} - \phi_{\ibold \pm 2\ebold^d}) +
+\phi_{\ibold \pm 3\ebold^d} 
+$$
+We must exercise some care here to ensure
+that our algorithm is independent of how we divide our region into
+rectangles.    For this reason, after we do the above extrapolation,
+we do a cornerCopier exchange operation to fill corner cells that
+are covered by ghost cells of a neighboring fine grid.   Finally we do
+an ordinary exchange operation to fill any ghost cells which are
+covered by the valid fine grid.
+
+
+%%%%%%%%%%%%5
+\section{Redistribution}
+\label{sec::levelredist}
+
+To preserve stability and conservation in embedded boundary
+calculations, we must redistribute a quantity of mass $\delta M$
+(the difference between stable and conservative updates)
+from irregular VoFs to their neighbors.  This mass is normalized
+by $h^D$ where $h$ is the grid spacing on the level.  We define 
+${\eta}_{\vbold}$ to be the set of neighbors (no farther away
+than the redistribution radius) which can be reached by 
+a monotonic path.  We then assign normalized weights to each of the
+neighbors ${\vprime}$ and divide the mass accordingly:
+\begin{equation}
+\delta M_{\vbold} = \sum\limits_{\vprime \in {\eta}_{\vbold}} w_{\vbold, \prime}
+        \kappa_{\vprime} \delta M_{\vbold}
+\end{equation}
+where 
+\begin{equation}
+\sum\limits_{\vprime \in {\eta}_{\vbold}} w_{\vbold, \vprime} \kappa_{\vprime} = 1
+\end{equation}
+We then update the solution $U$ at the neighboring cells ${\vprime}$
+\begin{equation}
+U^l_{\vprime} \pluseq  w_{\vbold,\vprime} \delta M^l_{\vbold}.
+\label{eqn::levelredist}
+\end{equation}
+This operation occurs at all $\vbold \in \ind^{-1}(\Omega^l)$
+without regard to valid or invalid regions.
+If the irregular cell is within the redistribution radius of
+a coarse-fine interface, we must account for mass that 
+is redistributed across the interface.  
+
+\subsection{Multilevel Redistribution Summary}
+
+We begin with $\delta
+M^l_\vbold, \vbold \in \ind^{-1} \Omega^l$, the redistribution
+mass for level $l$. 
+
+Define the redistribution radius to be $R^r$.  We define the 
+coarsening operator to be $C_{\nref}$ and the refinement
+operator to be $C^{-1}_{\nref}$.  We define the ``growth''
+operator to be $G$.  The operator which produces the $Z^D$
+index of a vof is $\ind$ and the operator to produces the 
+VoFs for points in $Z^D$ is $\ind^{-1}$.  
+
+If $\vbold$ is part of the valid region, 
+the redistribution mass is divided into three parts,
+\begin{equation}
+\begin{array}{c}
+ \delta M^l_\vbold = \delta^1 M^l_\vbold +  
+\delta^2 M^{l,l+1}_\vbold +  \delta^2 M^{l,l-1}_\vbold, \\
+\vbold \in \ind^{-1}(\Omega^{l, valid}).
+\end{array}
+\end{equation}
+$\delta^1 M^l_\vbold$ is the part of the mass which is put onto the
+$\Omega^{l, valid}$. $\delta^2 M^{l,l+1}_\vbold$ is the part of the
+mass which is redistributed to $\Omega^l \cap C_{\nref}(\Omega^{l+1})$
+(the part of the level covered by the next finer level).
+$\delta M^{l,l-1}_\vbold$ is the part of the mass which is
+redistributed off level $l$.  
+
+If $\vbold$ is not part of the valid region, 
+the redistribution mass is divided into two parts,
+\begin{equation}
+\begin{array}{c}
+ \delta M^l_\vbold = \delta^I M^l_\vbold + \delta M^{l,l}_\vbold \\
+\vbold \in \ind^{-1}(\Omega - \Omega^{l, valid}).
+\end{array}
+\end{equation}
+$\delta^I M^l_\vbold$ is the portion of $\delta^l M^l_\vbold$ which
+is redistributed to other invalid VoFs of level $l$.
+$\delta^I M^P{l,l}\vbold$ is the portion of $\delta^l M^l_\vbold$ which
+is redistributed to valid VoFs of level $l$ and must be removed
+later from the solution.
+
+We must account for $\delta M^{l,l-1}_\vbold$,
+$\delta^2 M^{l,l+1}_\vbold$ and $\delta^3 M^{l,l}_\vbold$ 
+to preserve conservation. $\delta^2 M^{l,l+1}_\vbold$ is 
+added to the level $l+1$ solution.  $\delta^2 M^{l,l-1}_\vbold$ is 
+added to the level $l-1$ solution. $\delta^3 M^{l,l}_\vbold$ 
+is removed from the level $l$ solution.  
+
+\subsection{Coarse to Fine Redistribution}
+
+The mass going from coarse to fine is accounted for as follows.
+Recall that the mass we store is normalized by $h^D_c$ where
+$h_c$ is the grid spacing of the level of the source.  Define 
+$h_f$ to be the grid spacing of the destination.
+For all VoFs 
+$\vboldc \in \ind^{-1}(C_{\nref}(G(\Omega^{l+1}, R^r) - \Omega^{l+1}))$,
+we define the coarse-to-fine redistribution mass $\delta^2 M^{l,l+1}$
+to be 
+\begin{equation}
+\begin{array}{c}
+\delta^2 M^{l,l+1}_{\vboldc} = 
+\sum\limits_{\vprimec \in S(\vboldc)}  \delta M^l_{\vboldc}
+w_{\vboldc,\vprimec} \kappa_\vprimec
+\\
+S(\vboldc) = \eta_{\vboldc} \cap \ind^{-1}(C_{\nref}(\Omega^{l+1})).
+\end{array}
+\label{eqn::ctofredist}
+\end{equation}
+Define $\zeta^2_\vprimec$ to be the unnormalized mass that goes
+to VoF $\vprimec$.   We distribute this mass to the VoFs $\vprimef$ that
+cover $\vprimec$ ($\vprimef \in C^{-1}_\nref(\vprimec)$) in a
+volume-weighted fashion.
+\begin{equation}
+\begin{array}{c}
+\zeta^2_\vprimec = h^D_c w_{\vboldc,\vprimec} \kappa_\vprimec
+  \delta M^l_{\vboldc} \\
+\zeta^2_\vprimef = \frac{\kappa_\vprimef h^D_f}{\kappa_c h^D_c}\zeta^2_\vprimec \\
+\zeta^2_\vprimef = \kappa_\vprimef h^D_f w_{\vboldc,\vprimec} 
+\delta M^l_{\vboldc} 
+\end{array}
+\end{equation}
+The change in the fine solution is the given by
+\begin{equation}
+\begin{array}{c}
+\delta U^{l+1}_{\vprimef}=\frac{\zeta^2_\vprimef}{\kappa_\vprimef h^D_f}
+ = \delta M^l_{\vboldc} w_{\vboldc,\vprimec} \\
+U^{l+1}_{\vprimef} \pluseq  
+\delta M^l_{\vboldc} w_{\vboldc,\vprimec} \\
+\vboldc \in \ind^{-1}(C_{\nref}(G(\Omega^{l+1}, R^r) - \Omega^{l+1})) \\
+\vprimec = \eta_{\vboldc} \cap \ind^{-1}(C_{\nref}(\Omega^{l+1})) \\
+\vprimef \in C^{-1}_\nref(\vprimec) 
+\end{array}
+\end{equation}
+This can be interpreted as a piecewise-constant interpolation of the
+solution density.
+
+\subsection{Fine to Coarse Redistribution}
+
+The mass going from fine to coarse is accounted for as follows.
+Recall that the mass we store is normalized by $h^D_f$ where
+$h_f$ is the grid spacing of the level of the source.  Define 
+$h_c$ to be the grid spacing of the destination.
+For all VoFs 
+$\vboldf \in \ind^{-1}(\Omega^{l}-G(\Omega^{l}, -R^r))$,
+we define the fine-to-coarse redistribution mass $\delta^2 M^{l,l-1}$
+to be 
+\begin{equation}
+\begin{array}{c}
+\delta^2 M^{l,l-1}_{\vboldf} = 
+\sum\limits_{\vprimef \in Q(\vboldf)}  \delta M^l_{\vboldf}
+w_{\vboldf,\vprimef} \kappa_\vprimef
+\\
+Q(\vboldf) = \eta_{\vboldf} \cap 
+\ind^{-1}(C^{-1}_{\nref}(\Omega^{l-1}) - \Omega^{l}).
+\end{array}
+\end{equation}
+For all VoFs 
+$\vboldc \in \ind^{-1}(C_{\nref}(G(\Omega^{l+1}, R^r) - \Omega^{l+1}))$,
+we define the coarse-to-fine redistribution mass $\delta^2 M^{l,l+1}$
+to be 
+\begin{equation}
+\begin{array}{c}
+\delta^2 M^{l,l+1}_{\vboldc} = 
+\sum\limits_{\vprimec \in S(\vboldc)}  \delta M^l_{\vboldc}
+w_{\vboldc,\vprimec} \kappa_\vprimec
+\\
+S(\vboldc) = \eta_{\vboldc} \cap \ind^{-1}(C_{\nref}(\Omega^{l+1})).
+\end{array}
+\label{eqn::ctofredist2}
+\end{equation}
+Define $\zeta^2_\vprimef$ to be the unnormalized mass that goes
+to VoF $\vprimef$.   We distribute this mass to the VoF 
+$\vprimec = C_\nref(\vprimef)$.
+\begin{equation}
+\zeta^2_\vprimef = \zeta^2_\vprimec = h^D_f w_{\vboldf,\vprimef} \kappa_\vprimef
+  \delta M^l_{\vboldf} 
+\end{equation}
+We define $\delta U^{l-1}_\vprimec$ to be the change in 
+the coarse solution density
+due to $\delta^w M_{\vboldf, \vprimef}$:
+\begin{equation}
+\begin{array}{c}
+\delta U^{l-1}_{\vprimec} = 
+\frac{\zeta^2_\vprimef}{\kappa_{\vprimec} h^D_c} 
+\end{array}
+\end{equation}
+Substituting from above, we  increment 
+the coarse solution as follows
+\begin{equation}
+\begin{array}{c}
+U^{l-1}_{\vprimec} \pluseq  
+\frac{\kappa_\vprimef}{\kappa_\vprimec N^D_{ref}}  
+\delta M^l_{\vboldf} w_{\vboldf,\vprimef}\\
+\vboldf \in \ind^{-1}(\Omega^{l}-G(\Omega^{l}, -R^r)),\\
+\vprimef \in \eta_{\vboldf} \cap 
+\ind^{-1}(C^{-1}_{\nref}(\Omega^{l-1}) - \Omega^{l}) \\
+\vprimec = C_\nref(\vprimef)
+\end{array}
+\end{equation}
+
+\subsection{Coarse to Coarse Redistribution}
+
+The re-redistribution algorithm proceeds as follows.
+Given $\vbold \in \ind^{-1}(C_\nref(\Omega^{l+1})$,
+we define the re-redistribution mass $\delta^3 M{l,l}$ to be 
+\begin{equation}
+\begin{array}{c}
+\delta^3 M^{l,l}_\vbold = 
+\sum\limits_{\vprime \in T(\vbold)}  \delta M^l_{\vbold}
+w_{\vbold,\vprime} \kappa_\vprime
+\\
+T(\vbold) = \eta_{\vbold} \cap \ind^{-1}(\Omega^l).
+\end{array}
+\label{eqn::doublesmush}
+\end{equation}
+In the level redistribution step, we have added this mass
+to the solution density using equation \ref{eqn::levelredist}.
+Re-redistribution is the process of removing it so
+that the solution is not modified by invalid regions
+\begin{equation}
+\begin{array}{c}
+U^{l}_{\vprime} \minuseq  
+\delta M^l_{\vbold} w_{\vbold,\vprime} \\
+\vbold \in \ind^{-1}(C_\nref(\Omega^{l+1}))
+\end{array}
+\end{equation}
+
+
+
+\section{Refluxing}
+\label{sec::reflux}
+First we describe the refluxing algorithm which, along with
+redistribution, preserves conservation at coarse-fine interfaces.
+The standard refluxing algorithm
+Given a level vector field $F$ on $\Omega$, we define a discrete
+divergence operator $D$ as follows:
+\begin{equation}
+\begin{array}{c}
+\kappa_\vbold(D \cdot \vec{F}) = \frac{1}{h}(
+\sum\limits^{D-1}_{d=0} (
+\sum\limits_{\fbold \in {\cal F}^+_d(\vbold)} \alpha_\fbold \tilde{F}_\fbold-
+\sum\limits_{\fbold \in {\cal F}^-_d(\vbold)} \alpha_\fbold \tilde{F}_\fbold)
+ + \alpha^B_\vbold F^B_\vbold) \\ 
+\tilde{F}_\fbold = F_\fbold + \sum\limits_{d:d \neq dir(\fbold)}|x_{\fbold,
+d}|(F_{\fbold<<sign(x_{\fbold, d})\ebold^d}-F_\fbold),
+\end{array}
+\label{eqn::discdiv}
+\end{equation}
+where $\kappa_\vbold$ is the volume fraction of VoF $\vbold$
+and $\alpha_\fbold$ is the area fraction of face $\fbold$.
+Equation \ref{eqn::discdiv}  consists of a summation of interpolated
+fluxes and a boundary flux.  The flux interpolation is described
+in \cite{JohansenColella1998}.
+Let $\vec{F}^{comp} = \{ \vec{F}^f, \vec{F}^{c, valid} \}$ be a
+two-level composite vector field. We want to define a composite
+divergence $D^{comp}(\vec{F}^f, \vec{F}^{c, valid})_\vbold$, for
+$\vbold \in V^c_{valid}$. We do this by extending $F^{c, valid}$ to
+the faces adjacent to $\vbold \in V^c_{valid}$, but are covered by
+$\mathcal{F}^f_{valid}$. 
+\begin{equation}
+\begin{array}{c}
+<F^f_d>_{\fbold^c} = \frac{1}{(n_{ref})^{(\Dim-1)}}
+\sum\limits_{\fbold \in \mathcal{C}^{-1}_{n_{ref}}
+(\fbold^c)}\alpha_\fbold F^f_d \\ 
+\fbold^c \in \ind^{-1}(\ibold + \half \ebold^d), \ibold + \half
+\ebold^d \in \zeta^f_{d, +} \cup \zeta^f_{d, -} \\ 
+\zeta^f_{d, \pm} = \{ \ibold \pm \half \ebold^d : \ibold \pm \ebold^d
+\in \Omega^c_{valid}, \ibold \in \mathcal{C}_{n_{ref}}(\Omega^f) \} 
+\end{array}
+\end{equation}
+Then we can define $(D \cdot \vec{F})_\vbold, \vbold \in
+\mathcal{V}^c_{valid}$, using the expression above, with
+$\tilde{F}_\fbold = <F^f_d>$ on faces covered by $\mathcal{F}^f$. 
+We can express the composite divergence in terms of a level
+divergence, plus a correction. We define a flux register $\delta
+\vec{F}^f$, associated with the fine level 
+\begin{equation}
+\begin{array}{c}
+\delta \vec{F}^f = (\delta F^f_{0, \ldots} \delta F^f_{D-1}) \\
+\delta F^f_d : \ind^{-1}(\zeta^f_{d, +} \cup \zeta^f_{d,-}) \rightarrow
+\mathbb{R}^m 
+\end{array}
+\end{equation}
+If $\vec{F}^c$ is any coarse level vector field that extends
+$\vec{F}^{c, valid}$, i.e. $F^c_d = F^{c, valid}_d \mbox{ on }
+\mathcal{F}^{c,d}_{valid}$ then for $\vbold \in \mathcal{V}^c_{valid}$ 
+\begin{equation}
+ D^{comp}(\vec{F}^f, \vec{F}^{c, valid})_\vbold = (D \vec{F}^c)_\vbold
++ D_R(\delta \vec{F}^c)_\vbold 
+\end{equation}
+Here $\delta \vec{F}^f$ is a flux register, set to be
+\begin{equation}
+\delta F^f_d = <F^f_d> -  \alpha_{\fbold^c} F^c_d \mbox{   on } \ind^{-1}(\zeta^c_{d, +}
+\cup \zeta^c_{d, -}) 
+\end{equation}
+$D_R$ is the reflux divergence operator. For valid coarse vofs
+adjacent to $\Omega^f$ it is given by 
+\begin{equation}
+\kappa_\vbold(D_R \delta \vec{F}^f)_\vbold = 
+\sum\limits^{D-1}_{d=0}(
+ \sum\limits_{\fbold:\vbold=\vbold^+(\fbold)} \delta F^f_{d, \fbold} -
+ \sum\limits_{\fbold:\vbold=\vbold^-(\fbold)} \delta F^f_{d, \fbold})
+\end{equation}
+For the remaining vofs in $\mathcal{V}^f_{valid}$, 
+\begin{equation}
+(D_R \delta \vec{F}^f) \equiv 0
+\end{equation}
+We then add the reflux divergence
+to adjust the coarse solution $U^c$ to preserve conservation.
+\begin{equation}
+U^c_{\vbold} \pluseq  \kappa_{\vbold} (D_R(\delta F))_{\vbold}
+\end{equation}
+At coarse cells which are also irregular, this leaves unaccounted-for 
+the quantity of mass $\delta M^{Ref}$ given by
+\begin{equation}
+\delta M^{Ref} = (1-\kappa_{\vbold})(D_R(\delta F))_{\vbold}
+\end{equation}
+This mass must be redistributed to preserve conservation:
+\begin{equation}
+\delta M^{Ref,c}_{\vbold} = 
+\sum\limits_{{\vprime} \in {\eta}_{\vbold} - C({{\cal V}^{l, valid}})}
+\kappa_{\vprime} w_{\vbold,\vprime} \delta M^{Ref, c}_{\vbold}
+\label{eqn::redisteqn1}
+\end{equation}
+We increment the solution in the neighboring VoFs with their portion
+of $\delta M^{Ref}$:
+\begin{equation}
+\begin{array}{c}
+U^{c}_{\prime} \pluseq \kappa_{\vprime} 
+w_{\vbold,\vprime} \delta M^{Ref,c}_{\vbold} \\
+{\vprime} \in {\eta}_{\vbold} -  C({{\cal V}^{f, valid}})
+\end{array}
+\label{eqn::adddmref1}
+\end{equation}
+Time steps and other factors have  been absorbed into the 
+definition of $\delta M$.   Unfortunately, we are not finished.
+In equation \ref{eqn::adddmref1}, some of the mass will be going back onto
+the fine grid
+\begin{equation}
+\delta M^{RR,c} \pluseq
+\delta M^{Ref} \sum\limits_{{\vprime} \in {\eta}_{\vbold} - {{\cal V}^{c,
+valid}}} 
+ \kappa_{\vbold} w_{\vbold,\vprime} 
+\end{equation}
+This mass must be accumulated at each fine time step.  When 
+the fine level has caught up with the coarse level in time,
+we adjust the fine solution to account for this mass:
+\begin{equation}
+\begin{array}{c}
+U^{f}_{C^{-1}(\vprime)} \pluseq 
+w_{\vbold,\vprime} \delta M^{RR,c}_{\vbold} \\
+{\vprime} \in {\eta}_{\vbold} - {{\cal V}^{f, valid}}
+\end{array}
+\label{eqn::adddmref2}
+\end{equation}
+
+\section{Subcycling in time with embedded boundaries}
+
+We use the subcycling-in-time algorithm specified by
+Berger and Oliger  \cite{bergerOliger:1984} to advance
+an AMR solution in time.
+Embedded boundary synchronization substantially complicates
+Berger-Oliger timestepping.
+Here we present an overview of
+Berger-Oliger subcycling in time for adaptive mesh refinement in the
+context of embedded boundaries.
+Say we are solving the hyperbolic system of equations
+\begin{equation}
+\frac{\partial U}{\partial t} + \grad \cdot F = 0
+\end{equation}
+in a domain discretized as described above.
+Here is an outline of the Berger-Oliger algorithm for this equation.
+First we perform the steps required to preserve stability and
+conservation in the presence of embedded boundaries.
+\begin{itemize}
+\item Compute fluxes $F^l$ on $ {\cal F}$.
+\item Compute the conservative and non-conservative solution updates
+   ($D^{C}(F^l)$ and $D^{NCC}(F^l)$).
+\item Update the solution on the level:
+\begin{equation}
+  U^{new, l}_\vbold = U^{old, l}_\vbold - \dt(\kappa
+  D^{NC}(F^l)_\vbold +  (1-\kappa)D^{C}(F^l)_\vbold),
+  ~~\vbold \in \ind^{-1}(\Omega^l)
+\end{equation}
+\item Initialize redistribution mass $\delta M^l$ to be the mass left
+out in the previous step.
+\begin{equation}
+\begin{array}{c}
+\delta M^l_\vbold = \dt
+\kappa_\vbold(1-\kappa_\vbold)(D^{NC}(F^l)_\vbold-D^{C}(F^l)_\vbold)
+\\
+ \vbold \in \ind^{-1}{\cal I}^l
+\end{array}
+\end{equation}
+\item Perform level redistribution of $\delta M^l$:
+\begin{equation}
+\begin{array}{c}
+U^{new,l}_{\vprime} \pluseq w_{\vbold, \vprime} \delta M^l_v \\
+\vprime \in \{ {\eta}_\vbold \cap \ind^{-1}(\Omega^l) \} \\
+\sum\limits_{\vprime \in {\eta}_v} w_{\vbold,\vprime}\kappa_{\vprime}=1 
+\end{array}
+\label{eqn::redisteqn2}
+\end{equation}
+\end{itemize}
+Second we perform the steps required to preserve 
+conservation across coarse-fine interfaces.  We define $\delta F$
+to be flux registers and $\delta^2 M$ to be redistribution registers.
+\begin{itemize}
+\item We increment the flux register between this level and the next
+      coarser level.
+\begin{equation}
+\begin{array}{c}
+\delta F^{l,l-1}_\fbold \pluseq <F^l>_\fbold \dt^l \\
+\fbold \in \partial(C({\cal F}^{l-1}))
+\end{array}
+\end{equation}
+\item We initialize the flux register between this level and the next
+finer level.
+\begin{equation}
+\begin{array}{c}
+\delta F^{l+1,l}_\fbold = <F^l>_\fbold \dt^l \\
+\fbold \in \partial({\cal F}^{l+1})
+\end{array}
+\label{eqn::reflux}
+\end{equation}
+\item Increment redistribution registers between this level
+      and the next coarser level.
+\begin{equation}
+\begin{array}{c}
+\delta^2 M^{l, l-1}_\vbold = \delta M^l_\vbold
+\vbold \in \ind^{-1}({\cal I}^l) 
+\end{array}
+\end{equation}
+\item Initialize redistribution registers with next finer level
+      and the coarse-coarse (``re-redistribution'') registers.
+      for $\vbold \in \ind^{-1}({\cal I})^l$
+\begin{equation}
+\begin{array}{c}
+\delta^2 M^{l, l+1}_\vbold = \delta M^l_\vbold \\
+\delta^2 M^{l, l}_\vbold =-\delta M^l_\vbold \\
+\delta^2 M^{l+1, l}_\vbold = 0 
+\end{array}
+\label{eqn::mlredist1}
+\end{equation}
+\item Advance level $l+1$ solution to time $t^{new,l}$ (requires
+a minimum of $n_{ref}$ time steps.
+\item Reflux a portion of the flux difference
+in equation \ref{eqn::reflux} and save the extra mass into the
+appropriate redistribution register.
+\begin{equation}
+\begin{array}{c}
+U^{new,l}_\vbold \pluseq \kappa D_R(\delta F^{l+1})_\vbold \\
+\delta^2 M^{l, l+1}_\vbold \pluseq
+\kappa_\vbold(1-\kappa_\vbold)D_R(\delta F^{l+1})_\vbold  \\
+\delta^3 M^{l, l}_\vbold \pluseq
+\kappa_\vbold(1-\kappa_\vbold)D_R(\delta F^{l+1})_\vbold  
+\end{array}
+\label{eqn::mlredist2}
+\end{equation}
+\item Redistribute mass that was redistributed (in both directions)
+      across coarse-fine interfaces.
+\begin{equation}
+\begin{array}{c}
+U^{l+1}_{\vprimef} \pluseq  
+\delta^2 M^{l,l+1}_{\vboldc} w_{\vboldc,\vprimec} \\
+\vboldc \in \ind^{-1}(C_{\nref}(G(\Omega^{l+1}, R^r) - \Omega^{l+1})) \\
+\vprimec = \eta_{\vboldc} \cap \ind^{-1}(C_{\nref}(\Omega^{l+1})) \\
+\vprimef \in C^{-1}_\nref(\vprimec) \\
+\end{array}
+\end{equation}
+\begin{equation}
+\begin{array}{c}
+U^{l-1}_{\vprimec} \pluseq  
+\frac{\kappa_\vprimef}{\kappa_\vprimec N^D_{ref}}  
+\delta^2 M^{l,l-1}_{\vboldf} w_{\vboldf,\vprimef}\\
+\vboldf \in \ind^{-1}(\Omega^{l}-G(\Omega^{l}, -R^r)),\\
+\vprimef \in \eta_{\vboldf} \cap 
+\ind^{-1}(C^{-1}_{\nref}(\Omega^{l-1}) - \Omega^{l}) \\
+\vprimec = C_\nref(\vprimef)
+\end{array}
+\end{equation}
+
+\item Re-redistribute mass that was redistributed from invalid 
+        regions.
+\begin{equation}
+\begin{array}{c}
+U^{l}_{\vprime} \minuseq  
+\delta^3 M^{l,l}_{\vbold} w_{\vbold,\vprime} \\
+\vbold \in \ind^{-1}(C_\nref(\Omega^{l+1}))
+\end{array}
+\end{equation}
+
+\item Finally average down the finer solution where appropriate
+\begin{equation}
+U^{new,l}_\vbold = <U^{new,l+1}>, ~~\vbold \in \ind^{-1}C_{\nref}(\Omega^l+1)
+\end{equation}
+
+\end{itemize}
+
+\subsubsection{$O(h^3)$ Averaging } 
+\label{sec::hoave}
+
+The stencil for Dirichlet EB boundary conditions on a coarse level can
+reach under the fine level.
+Because of this, we need to average $\phi$ from the finer level to the
+coarser level before evaluating $L\phi$.
+We use a higher-order ($O(h^3)$) averaging operator because we
+need a more accurate value at a coarse location than averaging
+the fine values which cover the coarse cell would produce.  Martin
+and Cartwright discuss this in detail. 
+The standard averaging operator is second order accurate and the
+truncation error analysis works such that to avoid making $O(1)$
+errors in the Laplacian on coarse cells near the fine grid, we need a third order
+estimate of the solution on regions covered by finer grids.  We
+therefore use a  modified averaging operator in which we eliminate
+term of the truncation error of the standard averaging operator.
+Consider a coarse cell at $\vec i_c$. 
+The coarse cell is covered by fine cells and the refinement ratio is
+two, the fine grid spacing is $h_f$ and the coarse grid spacing is 
+$h_c$.  
+Suppose we have a smooth function $\phi^e$ which exists at all
+points in space.
+Away from coarse-fine interfaces, the Laplacian is discretized in the
+standard way.  In two dimensions, this discretization is:
+\begin{equation}
+(L\phi)_\ij = \frac{1}{h^2}
+    (\phi_{i+1,j}+\phi_{i-1,j}+\phi_{i,j+1}+\phi_{i,j-1}-4\phi_\ij)
+\label{DISCLAPL}
+\end{equation}
+and in three dimensions
+\begin{equation}
+(L\phi)_\ij = \frac{1}{h^2}
+       (\phi_{i+1,j,k}+\phi_{i-1,j,k}+
+        \phi_{i,j+1,k}+\phi_{i,j-1,k}+
+        \phi_{i,j,k+1}+\phi_{i,j,k-1}-6\phi_\ijk)
+\label{DISCLAPL3D}
+\end{equation}
+At the coarse-fine interface, we interpolate values onto ghost cells
+which surround the union of rectangles that correspond to the level's
+domain and use equation \ref{DISCLAPL} to calculate the Laplacian. 
+We define the standard averaging operator $A_{S}$ in two 
+dimensions to be
+\begin{equation}        
+(A_S(\phi^e))(h_c \vec i_c) = \frac{1}{4}\left( \begin{array}{ll}
+\phi^e(h_f i_f   ,h_f j_f) + \\
+\phi^e(h_f(i_f+1),h_f j_f) + \\ 
+\phi^e(h_f i_f   ,h_f(j_f+1)) + \\
+\phi^e(h_f(i_f+1),h_f(j_f+1))
+\end{array} \right)
+\end{equation}
+and in three dimensions to be
+\begin{equation}        
+(A_S(\phi^e))(h_c \vec i_c) = \frac{1}{8}\left( \begin{array}{ll}
+\phi^e(h_f i_f   ,h_f j_f, h_f k_f) + \\
+\phi^e(h_f(i_f+1),h_f j_f, h_f k_f) + \\ 
+\phi^e(h_f i_f   ,h_f(j_f+1,), h_f k_f) + \\
+\phi^e(h_f(i_f+1),h_f(j_f+1), h_f k_f)  + \\
+\phi^e(h_f i_f   ,h_f j_f, h_f(k_f+1)) + \\
+\phi^e(h_f(i_f+1),h_f j_f, h_f(k_f+1)) + \\ 
+\phi^e(h_f i_f   ,h_f(j_f+1), h_f(k_f+1)) + \\
+\phi^e(h_f(i_f+1),h_f(j_f+1), h_f(k_f+1))
+\end{array} \right)
+\end{equation}
+where $\vec i_f = 2 \vec i_c$.
+The truncation error $\tau$ of $A_S$ is given by
+\begin{equation}
+\tau = \phi^e(h_c \vec i_c)-(A_S(\phi^e))(h_c \vec i_c) =
+\frac{h^2_f}{2} \grad^2 \phi_e(h_c \vec i_c) + O(h^3_f)
+\end{equation}
+Away from the embedded boundary,
+we define the modified averaging operator $A_M$ to be
+$A_S$ with the leading order in the truncation error subtracted off:
+\begin{equation}
+(A_M(\phi_f))_{\vec i_c} = 
+        A_S(\phi_f)_{\vec i_c} - \frac{h^2_f}{2} L(\phi_f)_{\vec i_c}
+\label{MODAVERAGE}        
+\end{equation}
+Near the embedded boundary, we extrapolate to $O(h^2)$ from fine cells
+to the coarse cell and average the result.
+

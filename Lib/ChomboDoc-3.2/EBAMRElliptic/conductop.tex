@@ -1,0 +1,84 @@
+
+\section{Conductivity Equation}
+This section describes the method for solving the elliptic partial
+differential equation
+$$
+\kappa L \phi = \kappa \alpha a \phi + \beta \nabla \cdot F = \kappa \rho.
+$$
+$\alpha$ and $beta$ are constants, $a$ is a function of space and $F$ is given by 
+\begin{equation}
+F = b \nabla \phi
+\label{eqn::condfluxform}
+\end{equation}
+The conductivity $b$ is a function of space.
+
+\subsection{Discretization}
+
+We discretize the face-centered gradient  for the flux using 
+a centered-difference approximation.
+$$
+(\nabla \phi)^{d}_{\ibold + \half \ebold^d} =  \frac{1}{h}(phi_{\ibold+ \ebold^d}  -\phi_{\ibold})
+$$
+We discretize the divergence as follows
+$$
+(\kappa \nabla \cdot F)_{\ibold} = \sum\limits^{D}_{d'=1} 
+(\alpha \nabla F)^{d'}_{\ibold + \half \ebold^d} + \alpha_B F^B
+$$
+where $\kappa$ and $\alpha$ are the volume and area fractions.
+We use equation \ref{eqn::condfluxform} get the flux at cell face
+centers.   We then interpolate the flux to face centroids.
+In two dimensions, this interpolation takes the form
+\begin{gather}
+\widetilde{F}^\nph_\fbold = 
+F^\nph_\fbold  + |\bar x| 
+(F^\nph_{\ebshift{\fbold}{\,sign(\bar x) \ebold^d}}-F^\nph_\fbold) 
+\end{gather}
+where $\bar x$ is the centroid in the direction $d$ perpendicular to the
+face normal. In three dimensions, define $(\bar x, \bar y)$ to be the
+coordinates of the centroid in the plane $(d^1, d^2)$ perpendicular 
+to the face normal. 
+\begin{align}
+\widetilde{F}^\nph_\fbold =& 
+F^\nph_\fbold( 1 -\bar x \bar y + |\bar x \bar y | ) + \\
+&F^\nph_{\ebshift{\fbold}{\,sign(\bar x) \ebold^{d^1}}} 
+(|\bar x| - |\bar x \bar y|) + \\
+&F^\nph_{\ebshift{\fbold}{\,sign(\bar x) \ebold^{d^2}}} 
+(|\bar y| - |\bar x \bar y|) + \\
+&F^\nph_{\fbold << sign(\bar x) \ebold^{d^1} << sign(\bar x)
+\ebold^{d^2}}  (|\bar x \bar y |)
+\end{align}
+Centroids in any dimension are normalized by $\dx$ and centered at the
+cell center.   This interpolation is only done if the shifts that are
+used in the interpolation are uniquely-defined and single-valued.
+We use a conservative discretization for the flux divergence.
+\begin{gather}
+\kappa_\vbold \nabla \cdot \vec{F} \equiv (D \cdot \vec{F}) = 
+((\sum^{\Dim-1}_{d=0} \sum_{\pm = +,-} \sum_{\fbold \in
+\mathcal{F}^{d, \pm}_\vbold} \pm \alpha_\fbold \widetilde{F}^\nph_\fbold) +
+\alpha^B_\vbold F^{B, \nph}_\vbold) 
+\end{gather}
+where 
+where $F^B$ is the flux at the irregular boundary, wherein lies most
+of the difficulty in this operator.
+
+\subsection{Flux at the Boundary}
+In all cases, we construct the gradient at the boundary and use 
+equation \ref{eqn::condfluxform} to construct the flux.
+
+For Neumann boundary conditions, the gradient of the solution is
+specified at the boundary.
+
+For Dirichlet boundary conditions, the gradient normal to the boundary
+is determined using the value at the boundary.  The gradients
+tangential to the boundary are specified.  For irregular
+boundaries, the procedure for calculating the gradient normal to the
+boundary is given in section \ref{sec::ebbc}.   For domain boundaries,
+we construct a quadratic function with the value at the boundary and
+the two adjacent points along the normal to construct the gradient.
+For example, say we are at the low side of the domain with a value 
+$\phi_0$ at the boundary.  The normal gradient is given by.
+that means that normal gradient  is given by
+$$
+(\nabla \phi)^x_{-\half, j, k} = \frac{9(\phi_{0,j,k}-\phi_0)  -
+  (\phi_{1,j,k}-\phi_0)}{3 \dx}
+$$

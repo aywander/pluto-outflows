@@ -1,0 +1,280 @@
+\subsection{Class {\tt LevelFluxRegister}}
+
+{\tt LevelFluxRegister} manages the manipulations at coarse-fine boundaries
+associated with maintaining conservation form of cell-centered
+discretizations of the divergence operator, using the algorithm
+described in section \ref{sec:fluxreg}. Unlike the previous operators, 
+{\tt LevelFluxRegister} holds data, corresponding to the flux register 
+$\delta \vec{F^f}$ defined in section \ref{sec:fluxreg}. 
+The class also manages the manipulation of that data. 
+
+The user interface for {\tt LevelFluxRegister} is as follows.
+
+\begin{itemize}
+
+\item
+\begin{verbatim}
+void define(const DisjointBoxLayout& a_dbl,
+            const DisjointBoxLayout& a_dblCoarse,
+            const ProblemDomain& a_dProblem,
+            int a_nRefine,
+            int a_nComp);
+
+void define(const DisjointBoxLayout& a_dbl,
+            const DisjointBoxLayout& a_dblCoarse,
+            const Box& a_dProblem,
+            int a_nRefine,
+            int a_nComp);
+\end{verbatim}
+Defines the internal state of the flux register, allocating space for
+the register itself, as well as the indexing information required to
+perform the other operations. 
+\\ {\bf Arguments:} 
+  \begin{itemize}
+  \item
+  \verb/a_dbl/ (not modified):
+  The grids at the current level.        
+  \item
+  \verb/a_dblCoarse/ (not modified):
+  The grids at the next coarser level in the AMR hierarchy.
+  \item
+  \verb/a_dProblem/ (not modified):
+  The problem domain at the current level.
+  \item
+  \verb/a_nRefine/ (not modified):
+  The refinement ratio between this level and the next coarser level.
+  \item
+  \verb/a_nComp/ (not modified):
+  The number of variables used in the computation.
+  \end{itemize}
+
+\item
+{\tt void setToZero()} Initializes the register to all zeros.
+
+\item
+\begin{verbatim}
+void incrementCoarse(FArrayBox& a_coarseFlux,
+                     Real a_scale,
+                     const DataIndex& a_coarseDataIndex,
+                     const Interval& a_srcInterval,
+                     const Interval& a_dstInterval,
+                     int a_dir);
+\end{verbatim}
+Increments the register with data from \verb/a_coarseFlux/, multiplied by 
+\verb/a_scale/ ($\alpha$):
+$\delta F^f_d := \delta F^f_d + \alpha F^c_d$, for all of the d-faces where
+the input flux (defined on a single rectangle) coincides with the d-faces on
+which the flux register is defined. \verb/a_coarseFlux/ contains fluxes in
+the \verb/a_dir/ direction for the grid \verb/a_dblCoarse[a_coarsePatchIndex]/.
+Only the registers corresponding to the low faces of
+\verb/a_dblCoarse[a_coarseDataIndex]/ in the \verb/a_dir/ direction
+are incremented (this avoids double-counting at coarse-coarse interfaces.
+\verb/a_srcInterval/ gives the \verb/Interval/ of components of
+\verb/a_coarseFlux/ that correspond to \verb/a_dstInterval/ of components
+of the flux register.
+\\ {\bf Arguments:} 
+  \begin{itemize}
+  \item
+  \verb/a_coarseFlux/ (not modified):
+  Flux to put into the flux register.
+  This is not \verb/const/ because its box is shifted back and forth -
+  no net change occurs.
+  \item
+  \verb/a_scale/ (not modified):
+  Factor by which to multiply \verb/a_coarseFlux/ in flux register.
+  \item
+  \verb/a_coarseDataIndex/ (not modified):
+  DataIndex which corresponds to which box in the coarse-level
+  \verb/DisjointBoxLayout/ (\verb/a_dblCoarse/ in the \verb/define/
+  function) over which \verb/a_coarseFlux/ was calculated.
+  \item
+  \verb/a_srcInterval/ (not modified):
+  The \verb/Interval/ of components to put into the flux register.
+  \item
+  \verb/a_dstInterval/ (not modified):
+  The \verb/Interval/ of components of the flux register which are
+  incremented by the flux data. Should have the same size as
+  \verb/a_srcInterval/. 
+  \item
+  \verb/a_dir/ (not modified):
+  Direction of faces upon which fluxes live.
+  \end{itemize}
+
+\item
+\begin{verbatim}
+void incrementFine(FArrayBox& a_fineFlux,
+                   Real a_scale,
+                   const DataIndex& a_finePatchIndex,
+                   const Interval& a_srcInterval,
+                   const Interval& a_dstInterval,
+                   int a_dir,
+                   Side::LoHiSide a_sd);
+\end{verbatim}
+Increments the register with the average over each face of data from 
+\verb/a_fineFlux/, scaled by \verb/a_scale/ ($\alpha$):
+$\delta F^f_d = \delta F^f_d + \alpha <F^f_d>$, for all of the d-faces
+where the input flux (defined on a single rectangle) covers the
+d-faces on which the flux register is defined.
+\verb/a_fineFlux/ contains fluxes in the \verb/a_dir/
+direction for the grid \verb/a_dbl[a_finePatchIndex]/. Only the register
+corresponding to the direction \verb/a_dir/ and the side \verb/a_sd/ is 
+initialized. \verb/a_srcInterval/ and \verb/a_dstInterval/ are as
+above.
+\\ {\bf Arguments:} 
+  \begin{itemize}
+  \item
+  \verb/a_fineFlux/ (not modified):
+  Flux to put into the flux register.
+  This is not \verb/const/ because its box is shifted back and forth -
+  no net change occurs.
+  \item
+  \verb/a_scale/ (not modified):
+  Factor by which to multiply \verb/a_fineFlux/ in flux register.
+  \item
+  \verb/a_finePatchIndex/ (not modified):
+  Index which corresponds to which box in the fine-level
+  \verb/DisjointBoxLayout/ (\verb/a_dbl/ in the \verb/define/
+  function) over which \verb/a_fineFlux/ was calculated.
+  \item
+  \verb/a_srcInterval/ (not modified):
+  The \verb/Interval/ of components to put into the flux register.
+  \item
+  \verb/a_dstInterval/ (not modified):
+  The \verb/Interval/ of components of the flux register which are
+  incremented by the flux data.
+  \item
+  \verb/a_dir/ (not modified):
+  Direction of faces upon which fluxes live.
+  \item
+  \verb/a_sd/ (not modified):
+  Side of the fine face where coarse-fine interface lies.
+  \end{itemize}
+
+\item
+\begin{verbatim}
+void reflux(LevelData<FArrayBox>& a_uCoarse,
+            const Interval& a_coarse_interval,
+            const Interval& a_flux_interval,
+            Real a_scale);
+\end{verbatim}
+Increments \verb/a_uCoarse/ with the reflux divergence of the contents of
+the flux register, scaled by \verb/a_scale/ ($\alpha$):
+$U^c := U^c + \alpha D_R(\delta \vec{F})$. 
+\verb/a_flux_interval/ gives the \verb/Interval/ of components of
+the flux register that correspond to \verb/a_coarse_interval/ of components
+of \verb/a_uCoarse/.
+\\ {\bf Arguments:} 
+  \begin{itemize}
+  \item
+  \verb/a_uCoarse/ (modified):
+  \verb/LevelData<FArrayBox>/ which is modified by the refluxing operation.
+  \item
+  \verb/a_coarse_interval/ (not modified):
+  The \verb/Interval/ of components to put into \verb/a_uCoarse/.
+  \item
+  \verb/a_flux_interval/ (not modified):
+  The \verb/Interval/ of components to use from the flux register.
+  \item
+  \verb/a_scale/ (not modified):
+  Factor by which to scale the flux register.
+  \end{itemize}
+
+\end{itemize}
+
+
+\subsection{Class {\tt LevelFluxRegisterEdge}}
+In Magnetohydrodynamics (among other fields), there is a class of
+numerical schemes commonly known as ``constrained transport'' schemes
+in which the solenoidal property of a field is maintained by making use of the
+identity $div(curl(u) ) == 0$. In MHD, for example, one can write the
+evolution of the magnetic field $\vec{B}$ in terms of the curl of the
+electric field $\vec{E}$, which ensures that the $div(\vec{B}) = 0$
+down to roundoff. This is generally accomplished on a staggered mesh,
+in which $\vec{B}$ is face-centered and $\vec{E}$ is edge-centered.
+
+At coarse-fine interfaces, one must perform a correction analogous to
+the reflux-divergence operation in order to maintain a divergence-free
+magnetic field. This correction is described, for example, in
+\cite{Balsara:2001}. The {\tt LevelFluxRegisterEdge} is a class
+designed to manage and apply this correction, and is analogous to the
+{\tt LevelFluxRegister}. While the {\tt LevelFluxRegister} corrects a
+cell-centered field with a ``reflux-divergence'' of face-centered
+fluxes, the {\tt LevelFluxRegisterEdge} corrects a face-centered field
+with a ``reflux curl'' of edge-centered ``fluxes''. 
+
+\begin{itemize}
+\item
+\begin{verbatim}
+void define(const DisjointBoxLayout& a_dbl,
+            const DisjointBoxLayout& a_dblCoarse,
+            const ProblemDomain& a_dProblem,
+            int a_nRefine,
+            int a_nComp)
+\end{verbatim}
+Defines this object
+
+
+\item
+\begin{verbatim}
+  void setToZero()
+\end{verbatim}
+Sets all registers to zero.
+
+\item
+\begin{verbatim}
+void incrementCoarse(FArrayBox& a_coarseFlux,
+                     Real a_scale,
+                     const DataIndex& a_coarseDataIndex,
+                     const Interval& a_srcInterval,
+                     const Interval& a_dstInterval)
+\end{verbatim}
+increments the register with data from coarseFlux, multiplied by
+\verb/a_scale/. \verb/a_coarseFlux/ must contain the edge-centered (in 3d, node
+centered in 2d) coarse fluxes in the dir direction for the grid        
+\verb/m_coarseLayout[coarseDataIndex]/.
+By convention, only the low side flux is used to avoid double-counting
+at coarse-fine interfaces. 
+
+
+
+\item
+\begin{verbatim}
+void incrementFine(FArrayBox& a_fineFlux,
+                   Real a_scale,
+                   const DataIndex& a_fineDataIndex,
+                   const Interval& a_srcInterval,
+                   const Interval& a_dstInterval)
+\end{verbatim}
+increments the register with data from fineFlux (which is edge-centered
+in 3d, node-centered in 2d), multiplied by \verb/a_scale/, for all coarse-fine
+face directions associated with the grid box \verb/m_fineLayout[fineDataIndex]/
+
+
+\item
+\begin{verbatim}
+void incrementFine(FArrayBox& a_fineFlux,
+                   Real a_scale,
+                   const DataIndex& a_fineDataIndex,
+                   const Interval& a_srcInterval,
+                   const Interval& a_dstInterval,
+                   int a_dir,
+                   Side::LoHiSide a_sd)
+\end{verbatim}
+increments the register with data from fineFlux (which is edge-centered
+in 3d, node-centered in 2d), multiplied by \verb/a_scale/.
+\verb/a_dir/ is the normal of the coarse-fine interface, and
+\verb/a_sd/ determines whether we're looking at the high-side or the
+low-side for the grid box \verb/m_fineLayout[fineDataIndex]/
+
+
+\item
+\begin{verbatim}
+void refluxCurl(LevelData<FluxBox>& a_uCoarse,
+                Real a_scale)
+\end{verbatim}
+increments uCoarse with the reflux "CURL" of the
+contents of the flux register. This is done for all components so
+\verb/a_uCoarse/ has to have the same number of components as input
+\verb/a_nComp/. This operation is global and blocking.
+
+\end{itemize}

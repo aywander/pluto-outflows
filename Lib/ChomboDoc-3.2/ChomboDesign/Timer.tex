@@ -1,0 +1,169 @@
+\section{TraceTimer}
+
+     TraceTimer class is a self-tracing code instrumentation system
+     for Chombo (or any other package really).  The user interface is specified
+     by a small set of macros.  The usage model is that you just leave these
+     timers in the code, for good.  Initially, your application will have 'main'
+     and a few heavy functions instrumented, and the lower level Chombo library
+     instrumentation.  As your tool or application matures, it
+     will garner a larger set of instrumentation giving clear views of your
+     code performance.  After a routine has been
+     cleverly and lovingly optimized, the timers are left in place to spot when
+     some later bug fix or *improvement* undoes your previous labors. 
+
+     You should never need to use or interact with the the classes TraceTimer or
+     AutoStart.  Use the macros. They call the right functions and classes for you.
+
+     The first macro is what people will use the most:
+\begin{verbatim}
+     CH_TIME("label");
+\end{verbatim}
+
+     This is the simplest interface for TraceTimer.  You place this macro call in a function
+     you wish to be timed.  It handles making the timer, calling 'start' when you
+     enter the function, and calling 'stop' when you leave the function.  A good
+     idea is to use a 'label' specific enough to be unambiguous without being
+     overwhelming.  for instance:
+
+\begin{verbatim}
+    void AMRLevelPolytropicGas::define(AMRLevel*            a_coarserLevelPtr,
+                                       const ProblemDomain& a_problemDomain,
+                                       int                  a_level,
+                                       int                  a_refRatio)
+    {  
+       CH_TIME("AMRLevelPolytropicGas::define");
+     .
+     .
+    }
+\end{verbatim}
+     
+     In this case, we have a class with many constructors and define functions that
+     all funnel into a single general function.  We can just call this 'define' and
+     not worry about naming/instrumenting all the different overloaded instances. If
+     you slip up and use the same label twice, that is not a real problem, the two
+     locations will be timed and tracked properly (even if one is a sibling or parent
+     of the other). The only place it will make things a little harder is in the output
+     where you might have the same name show up and look confusing.
+   
+     In serial, you will see a file called {\tt time.table} (in parallel, you will get a 
+     {\tt time.table.n} (where n is the rank number) files).  
+%I won't go into this file format.  It is kind of gprof-ish, with what I consider improvements.  
+%The real 
+% benefit here is profiling that understands our Chombo context, a smaller information
+%     set to observe, and the fact that, so far in my testing, the timers have negligible
+%     impact on the run time or memory use of the code.
+   
+     By default, Chombo compiles in the instructions for the timers wherever the macros
+     appear.  
+     If the compiler macro \verb|CH_TIMER| is defined,
+      then all the \verb|CH_TIME*| macros
+     evaluate to empty expressions at compile time.
+
+     So, you put some \verb|CH_TIME| calls in your code and ran it, and nothing happened:
+     Chombo looks for the environment variable {\bf CH\_TIMER}. If it is set to anything (even
+     if it is set to 'false' or 'no' or whatever) then the timers will be active and
+     reporting will happen.  If this environment variable is not set, then all the timers
+     check a bool and return after doing nothing.
+     
+     One point of interest with using the environment variable: In parallel jobs using
+     mpich, only processor 0 inherits the environment variables from the shell where
+     you invoke 'mpirun', the rest read your .cshrc (.bashrc, etc.) file to get their
+     environment.  To time all your processes, you need to make sure the {\bf CH\_TIMER} 
+     environment variable gets to all your processes.
+
+ 
+
+    \subsection{Auto hierarchy}
+
+     The timers automatically figure out their parent/child relationships.  They
+     also can be placed in template code.  This has some consequences.  First,
+     if you have a low level function instrumented that has no timers near it in
+     the code call stack, you will see it show up as a child of a high level timer.
+     the root timer "main" will catch all orphaned timers.  So, even though you
+     might make no call to, say, 'exchange' in your 'main' function, you might
+     very well call a function, that calls a function, that calls 'exchange'. Since
+     no code in between was instrumented, this exchange is accounted for at 'main'.
+     This might look strange, but it should prove very powerful. An expensive orphan
+     is exactly where you should consider some more timers, or reconsidering code
+     design.
+
+    
+      For performance reasons, child timers have only one parent.  As a consequence
+      each CH\_TIME("label") label can show up at multiple places in your output. Each
+      instance has it's own timer.  So, each path through the call graph that arrives
+      at a low-level function has a unique lineage, with it's own counter and time.
+      Thus, I can instrument LevelData::copyTo once, but copyTo can appear in many
+      places in the time.table file. 
+
+\subsection{Finer control} 
+     The next level up in complexity is the set of *four* macros for when you want
+     sub-function resolution in your timers. For instance, in a really huge function
+     that you have not figured out how to re-factor, or built with lots of bad cut n paste
+     code 're-use'. 
+
+\begin{verbatim}
+     CH_TIMERS("parent");
+     CH_TIMER("child1", t1);
+     CH_TIMER("child2", t2);
+     CH_START(t1);
+   //some code go here
+     CH_STOP(t1);
+     CH_START(t2);
+   //some other code go here
+     CH_STOP(t2);
+     CH_START(t1);
+   //can start something here again
+     CH_STOP(t1);
+\end{verbatim}
+
+  One very good place to use the more sophisticated API is within loops.  START and STOP are
+very fast compared to the timer declaration:
+
+\begin{verbatim}
+     CH_TIMERS("parent"); // parent declared and started
+     CH_TIMER("t1", t1); // t1 declared and made child parent, not started
+     for(IVSIterator it(ivs); it.ok(); ++it){
+            CH_START(t1);
+           //some code go here
+            CH_STOP(t1);
+           //other stuff you don't want timed
+     }
+\end{verbatim}
+
+
+
+     CH\_TIMERS has the same semantic as CH\_TIME, except that you can declare an 
+     arbitrary number of children after it in the same function scope.  The 
+     children here do not autostart and autostop, you have to tell them where to
+     start and stop timing.  The children can themselves be parents for timers 
+     in called functions, of course. The children obey a set of mutual exclusions. The
+     following generate run time errors:
+\begin{itemize}
+     \item double start called
+     \item double stop called
+     \item start called when another child is also started
+     \item you leave the function with a child not stopped
+\end{itemize}
+
+     the following will generate compile time errors:
+\begin{itemize}
+     \item more than one CH\_TIME macro in a function
+     \item invoking CH\_TIMER("child", t) without having first invoked CH\_TIMERS
+     \item re-using the timer handle ie. CH\_TIMER("bobby", t1); CH\_TIMER("sally", t1)
+     \item mixing CH\_TIME macro with CH\_TIMER
+     \item mixing CH\_TIME macro with CH\_TIMERS
+ \end{itemize}
+
+     You do not have to put any calls in your main routine to activate the clocks
+     or generate a report at completion, this is handled with static initialization 
+     and an {\tt atexit} function. The exception to this is for parallel reporting. Since
+     {\tt atexit} and {\tt MPI\_Finalize()} do not interact in an agreeable fashion, you need
+     to explicitly call the Chombo macro {\tt CH\_TIMER\_REPORT()} before the code reaches
+     {\tt MPI\_Finalize}
+    
+  There is a larger argument about manual instrumentation being detrimental to clean software.
+     Profiling the code is supposed to tell you where to expend your optimization effort.
+     Manual instrumentation opens the door to people wasting time *assuming* what parts of the
+     code are going to take up lots of time and instrumenting them, before seeing any real
+     performance data.  Good judgment is needed.  We have a body of knowledge about Chombo
+     that will inform us about a good minimal first set of functions to instrument. 

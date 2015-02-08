@@ -1,0 +1,353 @@
+\subsection{Templated Data Holders}
+\label{DataHolderSection}
+
+\verb/LayoutData<T>/, \verb/BoxLayoutData<T>/, and \verb/LevelData<T>/
+are templated data holders over a {\tt BoxLayout} that hold one {\tt T}
+at each box in the layout. Each class represents a different level of
+functionality. {\tt LayoutData<T>} is a holder for creating local data
+corresponding to the part of the {\tt BoxLayout} assigned to that
+processor. In particular, there is no support in Chombo for
+communicating {\tt LayoutData<T>} information between processors. 
+{\tt LevelData<T>} implements an abstract form of a cell-centered level
+array, represented as a collection of 
+rectangular ``arrays'' (i.e., objects of type 
+{\tt T}),  each of which is defined on an element of $\mathcal{R}(\Omega)$.
+These arrays are distributed over processors using the rule encoded in
+the {\tt DisjointBoxLayout} used to construct them.
+Finally, a {\tt BoxLayoutData<T>} is a generalization of a 
+{\tt LevelData<T>}, in that the underlying {\tt BoxLayout} is allowed
+to have overlapping {\tt Box}es. Thus one can copy from a {\tt LevelData<T>}
+to a {\tt LevelData<T>} or {\tt BoxLayoutData<T>},
+but not from a {\tt BoxLayoutData<T>}, since the latter is not
+guaranteed to be single-valued on each cell.
+
+\subsubsection{Class LayoutData}
+\label{LayoutDataSection}
+
+{\tt LayoutData} is a templated data holder for
+a collection of Box-oriented objects.  
+A {\tt LayoutData} can be built upon either a {\tt BoxLayout}
+or a {\tt DisjointBoxLayout}.
+The arrangement
+of the \verb/T/ objects is given by the underlying BoxLayout object.
+Each box in the {\tt BoxLayout} will have a corresponding {\tt T}
+object in the {\tt LayoutData} object.  The {\tt T} objects 
+contained within a {\tt LayoutData} object should be accessed
+through a {\tt DataIterator}.   
+Non-local access to a LayoutData (access to a {\tt T}
+that lives on another processor) is an error.
+Data in a {\tt LayoutData} {\it cannot} be communicated to other
+processors.
+The class \verb/T/ must provide null construction.
+
+\noindent
+The important parts of the \verb/LayoutData<T>/ API are as follows:
+\begin{trivlist} 
+\item $\bullet$ \underline{Construction.}
+\begin{verbatim}        
+LayoutData(const BoxLayout& dp);
+void define(const BoxLayout& dp);
+\end{verbatim}
+The constructor allocates a \verb/T/ object for every box in the
+BoxLayout {\tt dp}
+using the \verb/T()/ (null) constructor. 
+The function {\tt define} performs the
+same task for a null-constructed {\tt LayoutData}.
+The  \verb/dp/ must be closed
+or a runtime error will occur.
+
+\item $\bullet$ \underline{Accessors.}
+\begin{verbatim}        
+DataIterator dataIterator() const;
+T& operator[](const DataIndex& index);
+\end{verbatim}
+The input {\tt DataIndex} for the indexing operator {\tt []} must match the
+{\tt BoxLayout} which was used in construction of the {\tt LayoutData}. It must
+also correspond to an element in the {\tt BoxLayout} on 
+{\tt myProc()}. {\tt dataIterator} returns an
+iterator which provides the {\tt DataIndex}(es) which
+can be used to access the objects {\tt T} which live at each box.
+
+\end{trivlist}
+
+\subsubsection{Class BoxLayoutData}
+\label{BoxLayoutDataSection}
+
+\noindent
+{\bf Requirements on the template class T}:
+\verb/BoxLayoutData<T>/ requires that \verb/T/ 
+provides the following member functions, in addition to a null constructor for
+{\tt T}:
+\begin{trivlist}
+\item $\bullet$ \underline{Constructors.} 
+\begin{verbatim}
+T(const Box& box, int comps)
+define(const Box& box, int comps)
+\end{verbatim}
+Allocate all the memory for data
+given a region and the number of components.
+The data does not necessarily need to
+be initialized.
+\item $\bullet$ \underline{Copiers.}
+\begin{verbatim}
+copy(const Box& regionFrom, const Interval& destInterval,
+     const Box& regionTo, const T& source, 
+     const Interval& sourceInterval) 
+void linearOut(void* const buf, const Box& R, const Interval& comps) 
+const void linearIn(const void* const buf, const Box& R, const Interval& comps) 
+int size(const Box& R, const Interval& comps) 
+const static int preAllocatable()
+\end{verbatim}
+{\tt copy} copies the data from \verb/source/ over the
+\verb/regionFrom/ to the \verb/regionTo/ in the destination.  The two
+regions must be the same size, and must be valid in the source and
+destination, respectively. The component range specified by
+\verb/sourceInterval/ is copied to the component range specified by
+\verb/destInterval/ and the size of these two {\tt Interval}s must be the same.
+{\tt linearIn}/{\tt linearOut} copy the object from/to the stream 
+of bytes \verb/buf/.  This stream is assumed to be allocated by the
+calling program.
+{\tt size} returns the size of the linearized object in bytes.
+{\tt preAllocateable} returns:
+\begin{enumerate}
+\item  if the {\tt size} function is strictly a function 
+        of Box and Interval, and does not depend
+        on the current state of the T object.
+\item if {\tt size} is symmetric, in that sender and receiver T object
+        can size their message buffers, but a static object cannot.
+\item if the object is truly dynamic.  the message {\tt size} is 
+        subject to unique object data.
+\end{enumerate}
+\end{trivlist}
+
+A \verb/BoxLayoutData/ can be built upon either a {\tt BoxLayout}
+or a {\tt DisjointBoxLayout}.
+\verb/BoxLayoutData<T>/ is-a \verb/LayoutData<T>/ which
+means that it has all of the member functions of \verb/LayoutData<T>/.
+The important extra functions of \verb/BoxLayoutData<T>/ are:
+
+\begin{trivlist}
+\item $\bullet$ \underline{Constructors.}
+\begin{verbatim}
+BoxLayoutData(const BoxLayout& boxes, int comps);
+virtual void define(const BoxLayout& boxes, int comps);
+virtual void define(const BoxLayoutData<T>& da);
+virtual void define(const BoxLayoutData<T>& da,
+                    const Interval& comps);
+\end{verbatim}
+Defines the object from a layout and a number of components.
+Because of the semantics of inheritance, any
+\verb/DisjointBoxLayout/ can be used as an argument here instead
+of \verb/BoxLayout/.
+The second {\tt define} explicitly defines this {\tt BoxLayoutData} 
+from input. This includes copying the data values.  
+The third {\tt define} defines this {\tt BoxLayoutData}
+to be on the same {\tt BoxLayout}
+as the input {\tt da} but only for the components defined by 
+the {\tt Interval comps}.
+
+\item $\bullet$ \underline{Accessors.}
+\begin{verbatim}
+int nComp() const;
+Interval interval() const;
+\end{verbatim}
+{\tt nComp} returns the number of components in the data holder.
+{\tt interval} returns the component range of the data holder 
+\verb/(0:nComp()-1)/.
+
+\end{trivlist}
+
+\subsubsection{Class LevelData}
+\label{LevelDataSection}
+
+A {\tt LevelData} can be built
+only upon {\tt DisjointBoxLayouts}.
+\verb/LevelData<T>/ has the same requirements
+on  its \verb/T/ that \verb/BoxLayoutData<T>/ has.
+It also contains the important extra concepts
+of ghost values and data communication.  Each box 
+in the input layout is grown in each direction by the 
+number of ghost cells in that direction.  The data 
+that lives on the input region (the part inside of the
+ghost cells)  is considered ``valid'' data and the
+data on the ghost cells is considered ``ghost'' data.
+There are two data communication paradigms.  One is 
+the \verb/exchange/ function which copies data
+from the valid regions to the ghost regions where
+they intersect.  The other function is \verb/copyTo/
+which allows data communication between data holders.
+The source of a \verb/copyTo/ must be a \verb/LevelData<T>/.
+The destination of \verb/copyTo/ may be either a \verb/LevelData<T>/
+or a \verb/BoxLayoutData<T>/.
+\verb/LevelData<T>/ is-a \verb/BoxLayoutData<T>/ 
+(which is-a \verb/LayoutData<T>/) which
+means that it has all of the member functions of \verb/BoxLayoutData<T>/ 
+(and, by transitivity, all the member functions of \verb/LayoutData<T>/).
+The important extra functions of \verb/LevelData<T>/ are as follows:
+\begin{trivlist}
+\item $\bullet$ \underline{Constructors.}
+\begin{verbatim}
+LevelData(const DisjointBoxLayout& dp, int comps,
+          const IntVect& ghost = IntVect::TheZeroVector());
+virtual void define(const DisjointBoxLayout& dp, int comps, 
+                    const IntVect& ghost = IntVect::TheZeroVector());
+virtual void define(const LevelData<T>& da);
+virtual void define(const LevelData<T>& da, const Interval& comps);
+\end{verbatim}
+The construction functions work in the same way as the 
+construction functions for {\tt BoxLayoutData}. The main difference is that 
+for each {\tt Box} $B$ in the {\tt BoxLayout}, the object of type {\tt T}
+is associated to the {\tt Box} grown from $B$ by {\tt ghost}, i.e.,
+{\tt T(grow(B,ghost),comps)}. 
+
+
+\item $\bullet$ \underline{Copiers.}
+\begin{verbatim}
+virtual void copyTo(const Interval& srcComps, 
+                    BoxLayoutData<T>& dest,
+                    const Interval& destComps) const;
+virtual void copyTo(const Interval& srcComps, 
+                    LevelData<T>& dest,
+                    const Interval& destComps) const;
+virtual void exchange(const Interval& comps);
+const IntVect& ghostVect();
+\end{verbatim}
+
+\begin{figure}[htp]
+\centerline{
+\epsfxsize=2.0in
+\epsffile{figs/boxlayoutmerge.eps}
+\label{fig::bl1}                
+\hspace{1.in} 
+\epsfxsize=2.0in
+\epsffile{figs/boxlayoutexchange.eps}}
+\label{fig::bl2}                
+\caption{Left:  {\tt{CopyTo}} example.  This figure illustrates copying from
+a {\tt{LevelData}} built on the {\tt{DisjointBoxLayout}} in figure 
+\ref{fig:BoxLayouts}
+to a {\tt{BoxLayoutData}} built on top of the {\tt{BoxLayout}} in
+figure \ref{fig:BoxLayouts}.  A single call to {\tt{Copy}} would perform the following
+data movements:  Data from $B_0$ copied to $B_0'$.  Data from $B_1$
+copied to $B_0'$,$B_1'$,$B_3'$.  Data from $B_3$ copied to
+$B_2'$,$B_3'$.  Data from $B_4$ copied to $B_4'$.  Data from $B_5$
+copied to $B_2'$.  No data is copied from $B_2$ or to $B_5'$.  Right:
+{\tt{exchange}} example.  This figure illustrates copying
+data from the valid regions of a {\tt{LevelData}} built on top of the
+{\tt{DisjointBoxLayout}} in figure \ref{fig:BoxLayouts} to ghost cell regions of the
+same {\tt{LevelData}}.  The dashed {\tt{Boxes}} indicate which ghost
+cell regions will be filled by a single call to {\tt{exchange}}.}
+\label{fig:BoxLayouts2}
+\end{figure}
+
+The first {\tt copyTo} copies all of the data in the valid regions of 
+this object to {\tt dest} where the two
+{\tt BoxLayout}s intersect.  The length of the input and
+output intervals must be the same.
+The second version of {\tt copyTo} copies to the {\tt LevelData} 
+{\tt dest} filling the ghost cells of 'dest' with data from 'this' also
+(figure \ref{fig:BoxLayouts2}).
+The \verb/exchange/ function copies data from the valid regions to the ghost
+regions where they intersect (figure \ref{fig:BoxLayouts2}).  If the
+{\tt DisjointBoxLayout} used to define this {\tt LevelData} is
+periodic in any direction, both \verb/copyTo/ and \verb/exchange/ will
+also fill cells from valid regions of the appropriate periodic images
+as necessary.
+{\tt ghostvect} returns the {\tt IntVect} defining the size of the ghost
+region.
+\end{trivlist}
+
+\subsubsection{Aliasing}
+
+  For template classes that support an {\em aliasing} constructor, eg:
+
+\begin{verbatim}
+  BaseFab<int> original(b, 4);
+  Interval     subcomps(2, 3);
+  BaseFab<int> alias;
+  alias.define(subcomps, original);
+\end{verbatim}
+
+then a user can alias an entire LevelData at once  using the function
+
+\begin{verbatim}
+template <class T>
+void aliasLevelData(LevelData<T>& a_alias, 
+                    LevelData<T>* a_original, 
+                    const Interval& a_interval);
+\end{verbatim}
+
+See section \ref{sec:aliasing} for semantics of aliasing.
+
+
+\subsection{Iterators}
+\label{IteratorSection}
+
+There are two iterators over multiple-box objects in Chombo,
+\verb/LayoutIterator/ and \verb/DataIterator/. They each return objects
+({\tt LayoutIndex}, {\tt DataIndex}) that can be used to index into
+layouts and data holders.  A layout may be indexed
+into by either {\tt LayoutIndex} or a {\tt DataIndex}, while a 
+data holder may only be indexed into using a \verb/DataIndex/.
+In serial the iteration patterns of the two types of iterator 
+are exactly the same.  The iterators iterate through every box in
+the layout.  In parallel, the \verb/LayoutIterator/ still
+iterates through every box in the layout but the \verb/DataIterator/
+iterates through only boxes whose data resides upon the current processor.
+
+\noindent
+{\bf{Principal Operations on {\tt{DataIterator}, {\tt LayoutIterator}}}}.
+In the following, $BL$ is a {\tt BoxLayout}, $DBL$ is a {\tt
+DisjointBoxLayout}, and {\tt iter} is either a {\tt DataIterator} or a
+{\tt LayoutIterator}.
+
+\begin{trivlist}
+
+\item $\bullet$ \underline{Construction.} 
+The iterators can be
+constructed with the object to be iterated over ({\tt{iter}}($BL$),
+{\tt{iter}}($DBL$)), or null-constructed and defined later
+({\tt{iter.define}}($BL$), {\tt{iter.define}}($DBL$)).
+
+\item $\bullet$ \underline{Iteration}.  
+{\tt{iter.begin}}() sets
+{\tt{iter}} to the beginning of the iteration sequence, {\tt{++iter}}
+advances {\tt{iter}} to the next iterate, and {\tt{iter.ok}}() checks to
+see if the current iterate is valid.  
+{\tt iter()} returns the current value of the iterate which is
+a {\tt DataIndex} if {\tt iter()} is a {\tt DataIterator} or
+a {\tt LayoutIndex} if {\tt iter()} is a {\tt LayoutIterator}.
+\end{trivlist}
+
+We give examples of the use of {\tt LayoutIterator} and 
+{\tt DataIterator}. In the first example, we iterate over all the 
+{\tt Box}es in the layout to determine whether they cover the {\tt Box} 
+$B$.
+\begin{verbatim}
+Box B;
+IntVectSet ivs(B);
+BoxLayout bl;
+...
+LayoutIterator liter(bl);
+
+for (liter.begin();liter.ok();++liter)
+{
+     ivs -= bl[liter];
+}
+
+if (ivs.isEmpty()) 
+{ 
+...
+}
+\end{verbatim}
+In the second example, we set the values of all the components in all the {\tt FArrayBox}es in a
+{\tt BoxLayoutData<FArrayBox>} to zero.
+\begin{verbatim}
+BoxLayout bl;
+...
+BoxLayoutData<FArrayBox> bld(bl,1);
+DataIterator diter(bl);
+for (diter.begin();diter.ok();++diter)
+{
+    bld[diter].setVal(0.0);
+}
+\end{verbatim}

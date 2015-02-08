@@ -1,0 +1,20 @@
+\section{Introduction}
+
+In this paper, we extend the unsplit embedded boundary method for hyperbolic 
+conservation laws described in \cite{???}, allowing the addition of elliptic 
+operators for advection-diffusion processes. We use these elliptic terms 
+to represent the viscous and conductive terms in the compressible 
+Navier-Stokes equations.
+
+This paper is organized as follows. In \refSec{Equations} we discuss the 
+compressible Navier-Stokes equations and relate them to their more general 
+advection-diffusion conservation laws. In \refSec{Evolution} we outline an 
+algorithm for treating the hyperbolic and elliptic terms, integrating them 
+separately for stability. \refSec{DivF} describes the process by which the 
+hyperbolic (transport) terms are treated in greater detail, whereas the 
+elliptic (diffusion) terms are discussed in \refSec{Diffusion}. We explain 
+some important details of the implementation in \refSec{Implementation}. In 
+\refSec{Results}, we demonstrate the performance of the algorithm and its 
+implementation on some interesting problems in gasdynamics.
+
+

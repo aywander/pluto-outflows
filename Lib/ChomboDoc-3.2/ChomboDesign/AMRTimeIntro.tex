@@ -1,0 +1,198 @@
+\section{Hyperbolic Systems of Conservation Laws}
+In this section, we will describe a general framework for solving
+time-dependent problems using AMR, including refinement in time. In
+order to motivate that framework, we first describe in detail 
+the AMR algorithm in \cite{bergerColella:1989} for solving systems of
+hyperbolic conservation laws.
+
+We want to solve a system of equations of the form
+\begin{gather*}
+\frac{\partial V}{\partial t} + \nabla \cdot \vec{\mathcal{F}} = 0 \\
+V = V(\xbold, t) \in {\mathbb{R}}^m \\
+\vec{\mathcal{F}} = ({\mathcal{F}}^0(V), ..., {\mathcal{F}}^{\Dim-1}(V)) \\
+{\mathcal{F}}^d : {\mathbb{R}}^m \rightarrow {\mathbb{R}}^m .
+\end{gather*}
+We assume that the system is hyperbolic, i.e., that the matrices
+$\sum^{\Dim-1}_{d=0} \xi_d \nabla_v {\mathcal{F}}^d$ have real
+eigenvalues and a complete set of  eigenvectors for all ${\mathbf{\xi}}
+\in {\mathbb{R}}^\Dim$. If the system is hyperbolic, we expect that 
+specifying initial conditions of the form
+\beqa
+V(\xbold, 0) = \Psi(\xbold)
+\eeqa
+leads to a well-posed problem.
+
+A variety of multiple-scale phenomena arise in solutions to hyperbolic
+systems of conservation laws arising from continuum mechanics problems
+that make AMR an attractive option.  These include dynamics of
+shocks and interfaces, shock-shock intersections, and nonlinear wave
+focusing.
+
+We assume that the underlying discretization of the above hyperbolic
+system of equations on a uniform grid
+is an explicit finite-difference method in discrete conservation form:
+\begin{equation*}
+U^{new} = U^{old} - \Delta t ~ D\vec{F} ~~\text{on}~ \Gamma
+\end{equation*}
+where $\vec{F}$ is a staggered-grid vector field on $\Gamma$, and $D$
+is the discrete divergence operator defined in section \ref{sec:fluxreg}.
+$\vec{F}$ is a function of
+$U^{old}$, with a finite domain of dependence:  $F_d(U^{old})_{\ibold
++ \half \ebold^d}$ depends only on $\{ U^{old}_{\ibold + \sbold} \}_{|
+\sbold - \half \ebold^d | \leq p}$ where $p$ is independent of
+the mesh spacing.
+
+We extend this method to an adaptive mesh hierarchy using the
+Berger--Oliger algorithm \cite{bergerOliger:1984}.  We define
+\beqa
+\{ U^l \}^{l_{max}}_{l=0}, \ \
+U^l : \Omega^l \rightarrow {\mathbb{R}}^m
+\eeqa
+where $U^l = U^l(t^l)$.  Here $\{ t^l \}$ are a collection of discrete times
+that satisfy the temporal analogue of proper nesting;  $ \{ t^l \} =
+\{ t^{l-1} + k \Delta t^l : 0 \leq k < n^l_{ref} \}$.  The
+algorithm in \cite{bergerColella:1989} 
+for advancing the solution in time is given in
+pseudo-code in figure \ref{fig:HSCLcode}.
+The discrete fluxes $\vec{F}$ are computed
+by using the piecewise linear interpolation function in
+section \ref{sec:pwl} to define
+an extended solution on 
+\begin{equation*}
+\tilde{\Omega} = {\mathcal{G}}(\Omega^l, p) \cap \Gamma^l ,
+\end{equation*}
+namely
+$\tilde{U} : \tilde{\Omega} \rightarrow {\mathbb{R}}^m$,
+where
+\begin{equation*}
+\tilde{U}_{\ibold} = 
+  \begin{cases}
+    U^l_\ibold (t^l) &
+      \text{for $\ibold \in \Omega^l$;}
+    \\ 
+    I_{pwl} ((1 - \alpha)  U^{l-1}(t^{l-1}                 ) +
+                  \alpha ~ U^{l-1}(t^{l-1} + \Delta t^{l-1}))_\ibold &
+      \text{otherwise}
+  \end{cases}
+\end{equation*}
+\begin{equation*}
+\text{where \ \ } \alpha = \frac{t^l - t^{l-1}}{\Delta t^{l-1}} .
+\end{equation*}
+
+Regridding is performed in the following steps.
+\begin{enumerate}
+\item
+Construct ${\mathcal{I}}^l \subset \Omega^l, l = l_{base}, ..., l_{max} -1$
+corresponding to those cells for which a user-specified  measure of
+the error exceeds a specified tolerance.
+\item
+Generate new
+grids $\Omega^{l, new}, l = l_{base} +1, ..., l_{max}$ on which the
+new solution is to be defined.  These new grids should satisfy
+${\mathcal{C}}_{n^l_{ref}}(\Omega^{l+1, new}) \supset {\mathcal{I}}^l$, and should
+be properly nested, as well as satisfying any other required nesting
+conditions.  
+If $l_{base} > 0$,
+these conditions impose some constraints on ${\mathcal{I}}^l$,
+which are met typically by reducing
+the size of the ${\mathcal{I}}^l$'s prior to the grid generation step.
+\item
+Initialize the new data $U^{l, new} (t^l)$.  For $l = l_{base} ,
+U^l = U^{l, new}$.
+For $l = l_{base} +1, ..., l_{max}$,
+\begin{equation*}
+U^{l, new} (t_{regrid})_\ibold =
+  \begin{cases}
+    U^{l, new} (t_{regrid})_\ibold = U^l(t_{regrid})_\ibold &
+      \ibold \in \Omega^l \cap \Omega^{l, new} ;
+    \\
+    I_{pwl} (U^{l-1, new} (t_{regrid}))_\ibold &
+      \text{otherwise.}
+  \end{cases}
+\end{equation*}
+\end{enumerate}
+
+\begin{figure}[thp]
+\hrulefill
+\begin{tabbing} 
+xxxx\=xxxx\=xxxx\=xxxx\=\kill
+\>procedure advance $(l)$ \\
+\>$U^l(t^l + \Delta t^l) = U^l(t^l) - \Delta t D \vec{F}^l \mbox{ on }
+\Omega^l$ \\
+\>if $l<l_{max}$ \\
+\>\>$\delta F^{l+1}_d = -F^l_d \mbox{ on }
+{\zeta}^{l+1}_{+,d} \cup {\zeta}^{l+1}_{-,d} , d=0, ..., \Dim-1$ \\
+\> end if \\
+\>if $l>0$ \\
+\>\> $\delta F^l_d :=  \delta F^l_d + \frac{1}{n^{l-1}_{ref}} \langle F^l_d \rangle \mbox{ on }
+{\zeta}^l_{+,d} \cup {\zeta}^l_{-,d} , d=0, ..., \Dim-1$  \\
+\> end if \\
+\>for $q = 0, ..., n^l_{ref} -1$ \\
+\>\> advance$(l+1)$ \\
+\> end for \\
+\>$U^l(t^l + \Delta t^l) = Average(U^{l+1}(t^l + \Delta t^l), n^l_{ref})
+\mbox{ on } {\mathcal{C}}_{n^l_{ref}} (\Omega^{l+1})$ \\
+\>$U^l(t^l + \Delta t^l) := U^l(t^l + \Delta t^l) - \Delta t^l D_R
+(\delta F^{l+1})$ \\
+\>$t^l := t^l + \Delta t^l$ \\
+\>$n^l_{step} := n^l_{step}+ 1$ \\
+\>if $(n^l_{step} = 0 \mbox{ mod } n_{regrid}) \mbox{ and } (n^{l-1}_{step} \neq 0 \mbox{ mod } n_{regrid}) $\\
+\>\>regrid($l$) \\
+\> end if
+\end{tabbing}
+\hrulefill
+\caption{Pseudo-code description of the Berger--Colella AMR algorithm for 
+hyperbolic conservation laws.}
+\label{fig:HSCLcode}
+\end{figure}
+
+\subsubsection*{Refinement Criteria}
+
+Generally speaking, there are two approaches to determining which
+cells are to be tagged for refinement.  One is to tag points at which
+some local function of the dependent variables or their derivatives
+exceeds some threshold.  The second approach is to compute a local
+estimate of the truncation error, and tag points at which the
+magnitude of that error exceeds a given threshold.  The first approach
+can be used very successfully in cases where the user can exploit
+application-specific information.  The second approach is more
+general and more difficult to implement correctly.  For that reason,
+we will discuss it in some detail here.
+
+Let $L^h(\varphi^h): \Gamma \rightarrow {\mathbb{R}}$ be a
+finite-difference approximation on a uniform grid to a differential operator
+${\mathcal{L}}$ defined for any $\varphi^h : \Gamma \rightarrow
+{\mathbb{R}}^m$.  We define the truncation error for $L$ to be
+\beqa
+\tau^h_\ibold = L^h(\psi^h)_\ibold - {\mathcal{L}}(\psi)(\xbold_0 +
+\ibold h)
+\eeqa
+where $\psi^h = \psi(\xbold_0 + \ibold h)$, and $\psi$ is a
+smooth function $\psi : {\mathbb{R}}^\Dim \rightarrow {\mathbb{R}}^m$.
+To compute the truncation error in a numerical solution to a system of
+PDE's, $\psi$ would be the particular solution being computed.  The
+difficulty is that we don't know the exact solution to the PDE.
+Instead, we can compute the Richardson estimate to the truncation
+error,
+\beqa
+\tau^{R, 2h}_\ibold = (L^{2h}(Average(\varphi^h, 2))_\ibold -
+Average(L^h(\varphi^h), 2)_\ibold)
+\eeqa
+for $\ibold \in {\mathcal{C}}_2(\Gamma)$.  Here $\tau^{R, 2h}_\ibold = C
+\tau^h_\ibold + O(h^{p+1})$ where $p$ is the order of accuracy of the
+operator $L: \tau_\ibold = O(h^p)$.  It is straightforward to extend
+the definition of $\tau^R$ to an AMR grid hierarchy.  In that case,
+one can tag points to be refined based on whether $| \tau^R_\ibold |$
+exceeds some threshold.
+
+We can see two difficulties with this approach.  The first is that
+finite-difference operators often have a lower-order accurate
+truncation error at the problem domain boundaries.  In addition, the
+discussion in section \ref{sec:amrOps} indicates that the truncation
+error is of lower-order accuracy at coarse-fine boundaries as well.
+However, as indicated previously, the effect of the truncation error
+at boundaries on the solution error is typically much smaller than the
+magnitude of the former would indicate.  To compute an error estimator
+that appropriately reflects this fact, we rescale the tagging criterion
+at cells adjacent to the boundaries.
+

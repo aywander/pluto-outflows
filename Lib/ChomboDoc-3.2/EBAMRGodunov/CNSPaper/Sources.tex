@@ -1,0 +1,19 @@
+\section{Calculation of Hyperbolic Source Terms\label{sec:HyperbolicSources}}
+
+A discrete Helmholtz operator $L$ actually evaluates $\kappa_\ib L(U_\ib)$ on 
+every VoF $\ib$ within a domain. On regular cells, $\kappa_\ib = 1$ and 
+the correct value of $L(U_\ib)$ is obtained. However, on each irregular 
+cell, $\kappa_\ib < 1$ and we need to compute an average value for $L(U_\ib)$ 
+over a set of surrounding VoFs $\{\jb\}$. If we denote the monotone path radius 
+of a VoF $\ib$ by $\mathcal{S}(\ib)$, the averaged value of 
+$L(U_\ib)$ is 
+
+\begin{equation}
+L(U_\ib) := \kappa_\ib L(U_\ib) + \frac{1-\kappa_\ib}
+{(\sum\limits_{\jb \in \mathcal{S}(\ib)} \kappa_\jb)} 
+\sum\limits_{\jb \in \mathcal{S}(\ib)} \kappa_\jb L(U_\jb).
+\end{equation}
+
+We define the discrete operators $L_\mu$ and $L_\alpha$ explicitly in 
+\refSec{Diffusion}.
+

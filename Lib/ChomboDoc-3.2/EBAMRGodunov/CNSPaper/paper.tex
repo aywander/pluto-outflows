@@ -1,0 +1,139 @@
+% Template article for preprint document class `elsart'
+% with harvard style bibliographic references
+% SP 2001/01/05
+
+\documentclass{elsart}
+
+\include{macros}
+
+\bibliographystyle{plain}
+
+% Use the option doublespacing or reviewcopy to obtain double line spacing
+% \documentclass[doublespacing]{elsart}
+
+
+% if you use PostScript figures in your article
+% use the graphics package for simple commands
+% \usepackage{graphics}
+% or use the graphicx package for more complicated commands
+% \usepackage{graphicx}
+% or use the epsfig package if you prefer to use the old commands
+\usepackage{epsfig}
+
+% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+\usepackage{amsmath}
+\include{preamble}
+
+% Convenient stuff.
+\newcommand{\ib}{{\bf i}}
+\newcommand{\jb}{{\bf j}}
+\newcommand{\kb}{{\bf k}}
+\newcommand{\eb}{{\bf e}}
+\newcommand{\dt}{{\Delta t}}
+\newcommand{\dx}{{\Delta x}}
+\newcommand{\nph}{{n + \frac{1}{2}}}
+\newcommand{\ddt}[1]{\frac{\partial #1}{\partial t}}
+\newcommand{\iddt}[1]{\partial #1/\partial t}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\newcommand{\tens}[1]{\mathbf{#1}}
+\newcommand{\grad}[1]{\nabla{#1}}
+\newcommand{\diverg}[1]{\nabla\cdot{#1}}
+\newcommand{\ddxi}[1]{\frac{\partial #1}{\partial x_i}}
+\newcommand{\ddxj}[1]{\frac{\partial #1}{\partial x_j}}
+\newcommand{\ddxk}[1]{\frac{\partial #1}{\partial x_k}}
+\newcommand{\ddxd}[1]{\frac{\partial #1}{\partial x_d}}
+\newcommand{\iddxi}[1]{\partial #1/\partial x_i}
+\newcommand{\iddxj}[1]{\partial #1/\partial x_j}
+\newcommand{\iddxk}[1]{\partial #1/\partial x_k}
+\newcommand{\iddxd}[1]{\partial #1/\partial x_d}
+\newcommand{\deltaij}{\delta_{ij}}
+\newcommand{\sigmaij}{\sigma_{ij}}
+\newcommand{\Lmu}{\mathcal{L}_\mu}
+\newcommand{\LK}{\mathcal{L}_K}
+\newcommand{\refEq}[1]{(\ref{eq:#1})}
+\newcommand{\refSec}[1]{Section \ref{sec:#1}}
+\newcommand{\refApp}[1]{Appendix \ref{app:#1}}
+
+
+\begin{document}
+
+\begin{frontmatter}
+
+% Title, authors and addresses
+
+\title{A Cartesian Grid Embedded Boundary Method for the Compressible
+  Navier Stokes Equations}
+
+% use optional labels to link authors explicitly to addresses:
+% \author[label1,label2]{}
+% \address[label1]{}
+% \address[label2]{}
+
+\author{Phillip Colella, \thanksref{lbl}}
+\author{Daniel T. Graves,\thanksref{lbl}}
+\author{Bjorn Sjogreen,  \thanksref{lbl}}
+\author{Jeffrey Johnson  \thanksref{lbl}}
+\thanks[lbl]{\input{thanks}}
+\thanks[ben]{Research supported by the Computational Science Graduate Fellowship program of the Department of Energy, under grant number DE-FG02-97ER25308.}
+% \ead[url]{home page}
+\address{Lawrence Berkeley National Laboratory, Berkeley, CA\thanksref{lbl}}
+\address{Mathematics Department, University of Michigan, Ann Arbor, MI
+\thanksref{ben}}
+
+
+\begin{abstract}
+We present a second-order Godunov algorithm to solve the
+compressible Navier-Stokes equations.
+\end{abstract}
+
+\begin{keyword}
+% keywords here, in the form: keyword \sep keyword
+
+% PACS codes here, in the form: \PACS code \sep code
+
+\end{keyword}
+
+\end{frontmatter}
+
+\include{Introduction}
+\include{Equations}
+\include{Evolution}
+\include{DivF}
+\include{Diffusion}
+\include{Implementation}
+\include{Results}
+
+% The Appendices part is started with the command \appendix;
+% appendix sections are then done as normal sections
+
+\appendix
+\include{TGA}
+% \section{}
+% \label{}
+
+
+\bibliography{references}
+
+%\begin{thebibliography}{00}
+
+% \bibitem{label}
+% Text of bibliographic item
+
+% notes:
+% \bibitem{label} \note
+
+% subbibitems:
+% \begin{subbibitems}{label}
+% \bibitem{label1}
+% \bibitem{label2}
+% If there is a note, it should come last:
+% \bibitem{label3} \note
+% \end{subbibitems}
+
+%\bibitem{}
+
+%\end{thebibliography}
+
+\end{document}
+

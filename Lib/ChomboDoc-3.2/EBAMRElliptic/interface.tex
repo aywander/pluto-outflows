@@ -1,0 +1,224 @@
+\section{Overview}
+
+The principal {\tt EBAMRElliptic} classes are:
+\begin{itemize}
+\item {\tt EBPoissonOp} conforms to the {\tt MGLevelOp} interface and
+  is used to solve Poisson's equation over a single level.
+\item {\tt EBAMRPoissonOp} conforms to the {\tt AMRLevelOp} interface and
+  is used to solve Poisson's (or Helmholtz's) equation over an AMR hierarchy with
+  constant coefficients.
+\item {\tt EBConductivityOp} conforms to the {\tt AMRLevelOp} interface and
+  is used to solve Poisson's (or Helmholtz's) equation over an AMR hierarchy with
+  variable coefficients.
+\item {\tt EBViscousTensorOp} conforms to the {\tt AMRLevelOp} interface and
+  is used to solve the viscous tensor equation over an AMR hierarchy with
+  variable coefficients.
+\item {\tt EBAMRTGA} advances a solution of the heat equation one step
+  using the TGA \cite{TGA} algorithm.
+\end{itemize}
+The first two, since their interface is well described in the Chombo
+Design document \cite{ChomboDesign} will only be described through
+their factories, since the factories are the parts of the interface
+that the user actually has to use in order to use the class.
+
+\section{{\tt EBPoissonOpFactory} }
+   Factory to generate an operator to solve $(\alpha + \beta L)
+   \phi = \rho$.   
+This follows the MGLevelOp interface.
+
+\begin{small}\begin{verbatim}
+  EBPoissonOpFactory(const EBLevelGrid&                            eblgs,
+                     const RealVect&                               dx,
+                     const RealVect&                               origin,
+                     const int&                                    orderEB,
+                     const int&                                    numPreCondIters,
+                     const int&                                    relaxType,
+                     RefCountedPtr<BaseDomainBCFactory>            domainBCFactory,
+                     RefCountedPtr<BaseEBBCFactory>                ebBcFactory,
+                     const Real&                                   alpha,
+                     const Real&                                   beta,
+                     const IntVect&                                ghostCellsPhi,
+                     const IntVect&                                ghostCellsRhs);
+\end{verbatim}\end{small}
+\begin{itemize}
+     \item {\tt eblgs }: layout of the level
+     \item {\tt domainFactory }: domain boundary conditions 
+     \item {\tt ebBCFactory}:    eb boundary conditions 
+     \item {\tt dxCoarse}:      grid spacing at coarsest level 
+     \item {\tt origin}:        offset to lowest corner of the domain 
+     \item {\tt refRatio}:     refinement ratios. refRatio[i] is between levels i and i+1 
+     \item {\tt preCondIters}:  number of iterations to do for pre-conditioning 
+     \item {\tt relaxType}:     0 means point Jacobi, 1 is Gauss-Seidel, 2 is line solver. 
+     \item {\tt orderEB}:       0 to not do flux interpolation at cut faces. 
+     \item {\tt alpha}:         coefficient of identity 
+     \item {\tt beta}:          coefficient of Laplacian.
+     \item {\tt ghostCellsPhi}:  Number of ghost cells in phi, correction (typically one)
+     \item {\tt ghostCellsRhs}:  Number of ghost cells in RHS, residual, lphi (typically zero)
+     Ghost cell arguments are there for caching reasons.  Once you set them, an error is thrown if 
+     you send in data that does not match.   
+\end{itemize}
+
+\section{{\tt EBAMRPoissonOpFactory} }
+   Factory to generate an operator to solve $(\alpha + \beta L)  \phi = \rho$.   
+This follows the AMRLevelOp interface.
+\begin{small}\begin{verbatim}
+  EBAMRPoissonOpFactory(const Vector<EBLevelGrid>&                    eblgs,
+                        const Vector<int>&                            refRatio,
+                        const Vector<RefCountedPtr<EBQuadCFInterp> >& quadCFI,
+                        const RealVect&                               dxCoarse,
+                        const RealVect&                               origin,
+                        const int&                                    orderEB,
+                        const int&                                    numPreCondIters,
+                        const int&                                    relaxType,
+                        RefCountedPtr<BaseDomainBCFactory>            domainBCFactory,
+                        RefCountedPtr<BaseEBBCFactory>                ebBcFactory,
+                        const Real&                                   alpha,
+                        const Real&                                   beta,
+                        const Real&                                   time,
+                        const IntVect&                                ghostCellsPhi,
+                        const IntVect&                                ghostCellsRhs,
+                        int numLevels = -1);                                                                     
+\end{verbatim}\end{small} 
+\begin{itemize}
+     \item {\tt eblgs }: layouts at each AMR level 
+     \item {\tt domainFactory }: domain boundary conditions 
+     \item {\tt ebBCFactory}:    eb boundary conditions 
+     \item {\tt dxCoarse}:      grid spacing at coarsest level 
+     \item {\tt origin}:        offset to lowest corner of the domain 
+     \item {\tt refRatio}:     refinement ratios. refRatio[i] is between levels i and i+1 
+     \item {\tt preCondIters}:  number of iterations to do for pre-conditioning 
+     \item {\tt relaxType}:     0 means point Jacobi, 1 is Gauss-Seidel, 2 is line solver. 
+     \item {\tt orderEB}:       0 to not do flux interpolation at cut faces. 
+     \item {\tt alpha}:         coefficient of identity 
+     \item {\tt beta}:          coefficient of Laplacian.
+     \item {\tt time}:          time for boundary conditions 
+     \item {\tt ghostCellsPhi}:  Number of ghost cells in phi, correction (typically one)
+     \item {\tt ghostCellsRhs}:  Number of ghost cells in RHS, residual, lphi (typically zero)
+     Ghost cell arguments are there for caching reasons.  Once you set them, an error is thrown if 
+     you send in data that does not match.   Use numlevels = -1 if you want to use the
+     size of the vectors for numlevels.
+\end{itemize}
+
+\section{{\tt EBAMRTGA} }
+   EBAMR implementation of the TGA algorithm 
+   to solve the heat equation.
+\begin{small}\begin{verbatim}
+  EBAMRTGA(const Vector<EBLevelGrid>&                    eblg,
+           const Vector<int>&                            refRatio,
+           const Vector<RefCountedPtr<EBQuadCFInterp> >& quadCFI,
+           const RealVect&                               dxCoar,
+           const RefCountedPtr<BaseDomainBCFactory>&     domainBCFactory,
+           const RefCountedPtr<BaseEBBCFactory>&         ebBCFactory,
+           const int&                                    numlevels,
+           const RealVect&                               origin,
+           const Real&                                   diffusionConst,
+           const IntVect&                                ghostCellsPhi,
+           const IntVect&                                ghostCellsRHS,
+           const int&                                    numSmooths,
+           const int&                                    iterMax,
+           const int&                                    ODESolver,
+           const int&                                    numMGCycles,
+           const int&                                    numPreCondIters,
+           const int&                                    relaxType,
+           const int&                                    verbocity);
+\end{verbatim}\end{small} 
+
+\section{Example}
+\section{Snippet to solve Poisson's equation}
+\begin{small}\begin{verbatim}
+void solve(const PoissonParameters&  a_params,
+  Vector<LevelData<EBCellFAB>* >& phi,
+  Vector<LevelData<EBCellFAB>* >& rhs,
+  Vector<DisjointBoxLayout>&      grids,
+  Vector<EBISLayout>&             ebisl)
+  )
+{
+  int nvar = 1;
+  //create the solver
+  AMRMultiGrid<LevelData<EBCellFAB> > solver;
+  pout() << "defining  solver" << endl;
+
+  BiCGStabSolver<LevelData<EBCellFAB> > newBottomSolver;
+  newBottomSolver.verbosity = 0;
+  defineSolver(solver, grids, ebisl, newBottomSolver, a_params,1.e99);
+  pout() << "solving " << endl;
+
+  //solve the equation
+  solver.solve(phi, rhs, a_params.maxLevel, 0);
+}
+ \end{verbatim} \end{small}
+
+\section{Snippet to Project a Cell-Centered Velocity Field}
+\begin{small}\begin{verbatim}
+void projectVel(
+              const Vector< DisjointBoxLayout >&   a_grids, 
+              const Vector< EBISLayout >&          a_ebisl, 
+              const PoissonParameters&             a_params)
+              const int&                           a_dofileout,
+              const bool&                          a_isFine)
+              Vector<LevelData<EBCellFAB>* >& velo,
+              Vector<LevelData<EBCellFAB>* >& gphi)
+{
+  int nlevels = a_params.numLevels;
+
+  RealVect dxLevCoarsest = RealVect::Unit;
+  dxLevCoarsest *=a_params.coarsestDx;
+  ProblemDomain domLevCoarsest(a_params.coarsestDomain);
+
+  RealVect dxLev = dxLevCoarsest;
+
+  Real domVal = 0.0;
+  NeumannPoissonDomainBCFactory* domBCPhi = new NeumannPoissonDomainBCFactory();
+  RefCountedPtr<BaseDomainBCFactory> baseDomainBCPhi = domBCPhi;
+  domBCPhi->setValue(domVal);
+  DirichletPoissonDomainBCFactory* domBCVel = new DirichletPoissonDomainBCFactory();
+  RefCountedPtr<BaseDomainBCFactory> baseDomainBCVel = domBCVel;
+  domBCVel->setValue(domVal);
+
+  NeumannPoissonEBBCFactory*      ebBCPhi = new NeumannPoissonEBBCFactory();
+  ebBCPhi->setValue(domVal);
+  RefCountedPtr<BaseEBBCFactory>     baseEBBCPhi     = ebBCPhi;
+
+
+  Vector<LevelData<EBCellFAB>*> rhoinv;
+  const int bottomSolverType = 1;
+  
+  Vector<EBLevelGrid>                      eblg   (a_grids.size()); 
+  Vector<RefCountedPtr<EBQuadCFInterp> >   quadCFI(a_grids.size(), NULL);
+  domLev = domLevCoarsest;
+  for(int ilev = 0; ilev < a_grids.size(); ilev++)
+    {
+      int nvar = 1;
+      int nref = a_params.refRatio[ilev];
+      eblg[ilev] = EBLevelGrid(a_grids[ilev], a_ebisl[ilev], domLev);
+      if(ilev > 0)
+        {
+          int nrefOld = a_params.refRatio[ilev-1];
+          ProblemDomain domLevCoar = coarsen(domLev, nrefOld);
+          quadCFI[ilev] = new EBQuadCFInterp(a_grids[ilev  ],
+                                             a_grids[ilev-1],
+                                             a_ebisl[ilev  ],
+                                             a_ebisl[ilev-1],
+                                             domLevCoar,
+                                             nrefOld, nvar,
+                                             *(eblg[ilev].getCFIVS()));
+          
+        }
+      domLev.refine(nref);
+    }
+
+  
+  EBCompositeCCProjector projectinator(eblg,  a_params.refRatio, quadCFI, 
+                                       a_params.coarsestDx,
+                                       RealVect::Zero,
+                                       baseDomainBCVel,
+                                       baseDomainBCPhi,
+                                       baseEBBCPhi,
+                                       rhoinv, false, true, -1, 3 ,40,1.e99, 1,
+  projectinator.project(velo, gphi);
+
+}
+\end{verbatim}\end{small}
+
+
+

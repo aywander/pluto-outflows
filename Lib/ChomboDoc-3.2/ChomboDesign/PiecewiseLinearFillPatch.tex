@@ -1,0 +1,195 @@
+% \documentstyle[12pt]{article}
+% 
+% \newcommand{\sfrac}[2]{\mbox{$\frac{#1}{#2}$}}
+% 
+% \parindent 0in
+% \parskip 2ex
+% 
+% \begin{document}
+% 
+\subsection{Class {\tt PiecewiseLinearFillPatch}}
+
+This class fills some of the ghost cells of a level of data by
+piecewise linear interpolation from data on a coarser level of
+refinement.  It is intended to be used in the context of a multilevel
+time-dependent adaptive mesh refinement (AMR) calculation.
+The algorithm used is that described in section \ref{sec:pwlB}. The interface
+described here is slightly more general, as it allows for the coarse
+grid data to be a linear combination of the form 
+\begin{equation*}
+\varphi^{c,valid} = \alpha \varphi^{c,old} + (1 - \alpha)
+\varphi^{c,new}
+\end{equation*}
+This can be useful, for example, when one has coarse-level data at two
+times ($t^{c,old}$ and $t^{c,new}$) and needs interpolated ghost cell
+data at an intermediate time $t^{fine} = t^{c,old} + \alpha(t^{c,new}
+- t^{c,old})$.
+
+Ghost cells which lie inside the valid region of another fine grid are
+not filled. 
+Also, note that cells outside the problem domain are never filled; it is the 
+application developer's responsibility to fill them elsewhere
+according to the application-specific boundary conditions. Cells
+outside the computational domain in periodic direction,  however, are
+considered to be inside the problem domain and are filled. 
+
+\begin{itemize}
+
+\item
+\begin{verbatim}
+void
+define(const DisjointBoxLayout& a_fine_domain,
+       const DisjointBoxLayout& a_coarse_domain, 
+       int a_num_comps,
+       const ProblemDomain& a_crse_problem_domain,
+       int a_ref_ratio,
+       int a_interp_radius);
+
+void
+define(const DisjointBoxLayout& a_fine_domain,
+       const DisjointBoxLayout& a_coarse_domain, 
+       int a_num_comps,
+       const Box& a_crse_problem_domain,
+       int a_ref_ratio,
+       int a_interp_radius);
+\end{verbatim}
+Defines domains of the levels and other persistent data.  
+\\ {\bf Arguments:}
+  \begin{itemize}
+  \item
+  \verb|a_fine_domain| (not modified): grids on the fine level. 
+  \item
+  \verb|a_coarse_domain| (not modified): grids on the coarse level. 
+  \item
+  \verb|a_num_comps| (not modified): number of components of state vector. 
+  \item
+  \verb|a_crse_problem_domain| (not modified): problem domain on the coarse
+  level. 
+  \item
+  \verb|a_ref_ratio| (not modified): refinement ratio.
+  \item
+  \verb|a_interp_radius| (not modified): number of layers of fine ghost
+  cells to fill by interpolation. 
+  \end{itemize}
+
+\item
+\begin{verbatim}
+void
+fillInterp(LevelData<FArrayBox>& a_fine_data,
+           const LevelData<FArrayBox>& a_old_coarse_data,
+           const LevelData<FArrayBox>& a_new_coarse_data,
+           Real a_time_interp_coef,
+           int a_src_comp,
+           int a_dest_comp,
+           int a_num_comp);
+\end{verbatim}
+Fills the ghost cells of the fine level data by interpolation. 
+\\ {\bf Arguments:}
+  \begin{itemize}
+  \item
+  \verb|a_fine_data| (modified): fine data whose ghost
+  cells are to be filled.
+  \item
+  \verb|a_old_coarse_data| (not modified): coarse level data at
+  the old time.
+  \item
+  \verb|a_new_coarse_data| (not modified): coarse level data at
+  the new time.
+  \item
+  \verb|a_time_interp_coef| (not modified): time interpolation
+  coefficient, $\alpha$.  It is required
+  that~$0 \le \alpha \le 1$.
+  \item
+  \verb|a_src_comp| (not modified): starting coarse data component.
+  \item
+  \verb|a_dest_comp| (not modified): starting fine data component.
+  \item
+  \verb|a_num_comp| (not modified): number of data components to be
+  interpolated.
+  \end{itemize}
+
+\end{itemize}
+
+\subsection{Class {\tt PiecewiseLinearFillPatchFace}}
+The {\tt PiecewiseLinearFillPatchFace} class is similar to the {\tt
+  PiecewiseLinearFillPatch} class, but computes interpolated 
+  face-centered data to fill ``ghost faces'' around fine grids by
+  interpolating from coarse-level face-centered data. This
+  interpolation is performed in two steps:
+\begin{enumerate}
+\item Data on fine-level faces which overlie coarse-level faces is
+  interpolated using only the underlying co-planar coarse faces.
+\item Data on fine-level faces which do not overlie coarse-level faces
+  is computed using linear interpolation in the normal direction
+  between the two nearest fine-level faces which overlie coarse-level
+  faces (and were filled in the previous step)
+\end{enumerate}
+
+\begin{itemize}
+\item
+\begin{verbatim}
+  void
+  define(const DisjointBoxLayout& a_fine_domain,
+         const DisjointBoxLayout& a_coarse_domain,
+         int a_num_comps,
+         const ProblemDomain& a_crse_problem_domain,
+         int a_ref_ratio,
+         int a_interp_radius)
+\end{verbatim}
+Defines domains of the coarse and fine levels and other persistent data.  
+\\ {\bf Arguments:}
+  \begin{itemize}
+  \item
+  \verb|a_fine_domain| (not modified): grids on the fine level. 
+  \item
+  \verb|a_coarse_domain| (not modified): grids on the coarse level. 
+  \item
+  \verb|a_num_comps| (not modified): number of components of state vector. 
+  \item
+  \verb|a_crse_problem_domain| (not modified): problem domain on the coarse
+  level. 
+  \item
+  \verb|a_ref_ratio| (not modified): refinement ratio.
+  \item
+  \verb|a_interp_radius| (not modified): number of layers of fine ghost
+  faces to fill by interpolation. 
+  \end{itemize}
+
+
+\item
+\begin{verbatim}
+  void
+  fillInterp(LevelData<FluxBox>& a_fine_data,
+             const LevelData<FluxBox>& a_old_coarse_data,
+             const LevelData<FluxBox>& a_new_coarse_data,
+             Real a_time_interp_coef,
+             int a_src_comp,
+             int a_dest_comp,
+             int a_num_comp)
+\end{verbatim}
+Fills fine-level ghost faces by linear interpolation.
+\\ {\bf Arguments:}
+  \begin{itemize}
+  \item
+  \verb|a_fine_data| (modified): fine data whose ghost
+  faces are to be filled.
+  \item
+  \verb|a_old_coarse_data| (not modified): coarse level data at
+  the old time.
+  \item
+  \verb|a_new_coarse_data| (not modified): coarse level data at
+  the new time.
+  \item
+  \verb|a_time_interp_coef| (not modified): time interpolation
+  coefficient, $\alpha$.  It is required
+  that~$0 \le \alpha \le 1$.
+  \item
+  \verb|a_src_comp| (not modified): starting coarse data component.
+  \item
+  \verb|a_dest_comp| (not modified): starting fine data component.
+  \item
+  \verb|a_num_comp| (not modified): number of data components to be
+  interpolated.
+  \end{itemize}
+
+\end{itemize}

@@ -1,0 +1,50 @@
+% \documentstyle[12pt]{report}
+\documentclass[12pt]{report}
+
+\tolerance=600
+
+\input{../Common/fontset.tex}
+\input{../Common/preamble.tex}
+\input{../Common/macros.tex}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{epsfig}
+
+\title{Embedded Boundary AMR Elliptic Algorithm and Implementation}
+
+\author{P. Colella \\
+        D. T. Graves \\ 
+        T. J. Ligocki \\ 
+        B. Van Straalen \\
+        \\ \\
+Applied Numerical Algorithms Group \\
+Computational Research Division \\
+Lawrence Berkeley National Laboratory \\
+Berkeley, CA} 
+
+\date{May 29, 2003}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\chapter{Introduction}
+\input{intro.tex}
+
+\chapter{Poisson's Equation}
+\input{algorithm.tex}
+%\input{results.tex}
+\chapter{Viscous Tensor Equation}
+\input{visalgorithm.tex}
+%\input{visresults.tex}
+\chapter{Conductivity Operator}
+\input{conductop.tex}
+\chapter{EBAMRElliptic Interface}
+\input{interface.tex}
+
+\bibliography{../Common/references}
+
+\end{document}

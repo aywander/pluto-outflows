@@ -1,0 +1,201 @@
+\section{Introduction}
+
+For some computations, it is possible to specify 
+the domain of computation based upon functional description
+of the boundary interface.  The workshop package
+provides a systematic algorithm and API that will
+produce an embedded boundary description of the
+interface which converges to second order
+with grid refinement to the functional description
+of the interface.  Gueyffier, et. al. \cite{sandz:1999}
+solve a similar problem in their volume-of-fluid method
+in three dimensions.  We have used some of their ideas
+about renormalization in this work.
+
+This document specifies the workshop algorithm and
+the associated  API.  
+
+\section{Algorithm}
+
+The workshop algorithm provides a numerically convergent way to convert a functional description of an interface to an embedded boundary description.  Any given
+cell is either entirely inside the covered region (covered),  entirely outside the covered region (regular), or intersected the cell by the interface (irregular).   A workshop class  must be able to identify cells as such.
+Once a cell is identified to be irregular, the workshop class then
+defines which direction is ``up''.  This determines which coordinate
+direction of the surface is treated as the dependent variable 
+in the cell ($y = \phi(x,z)$, for example). The workshop class 
+must then provide the intersection of the surface with coordinate lines that vary only in the ``up'' direction.   
+
+\subsection{Calculation of Edge Intersections} 
+Given a surface, $S$, we have assumed that $S$ is specified locally as a function. To fix notation, suppose that at a given n-dimensional cell,$E$, a coordinate direction $x_{i}$ has been specified as well as a the local function $\phi:\mathbf{R}^{n-1} \rightarrow \mathbf{R}$, which describes $S$. For any $\mathbf {x}\in \partial E$, the intersection of $S$ with the line in the $x_{i}$ direction that passes through $\mathbf {x}$ may be calculated by evaluating  $\phi (x_{1},x_{2}, \cdot \cdot \cdot x_{i-1},x_{i+1}, \cdot \cdot \cdot x_{n})$.
+
+For the edges of $E$ that don't lie in the $\mathbf{e}_{i}$ direction an iterative method such as Brent's Algorithm may be used to calculate the intersection or observe the non-intersection of $S$ with the edge. However for the special case of the discrete Divergence operator a simpler method suffices. We now address this special case.
+
+Denote the endpoints of such an edge by $\mathbf {a^\prime}$ and $\mathbf {c^\prime}$. Let $\mathbf {a} = 
+a_{1},a_{2}, \cdot \cdot \cdot a_{i-1},a_{i+1}, \cdot \cdot \cdot a_{n})$. That is, $\mathbf {a}$ denotes the projection of $\mathbf {a^\prime}$ onto the space spanned by the $n-1$ vectors $\mathbf{e}_{j}$ for $j\neq i $. Similarly, $\mathbf {c}$ denotes the projection of $\mathbf {c^\prime}$ on the same space.
+
+If $A=\phi(\mathbf a) > a_{i}$ and $C=\phi(\mathbf c) > c_{i}$ or $A=\phi(\mathbf a) < a_{i}$ and $C=\phi(\mathbf c) < c_{i}$, we conclude that $S$ does not intersect the edge. If $A=\phi(\mathbf a) = a_{i}$ or $C=\phi(\mathbf c) = c_{i}$, then $S$ intersects an endpoint of the segment. If $(A - a_{i})(C-c_{i})<0$ then there is an intersection in the interior, which we estimate by linear interpolation.
+
+\subsection{Algorithm for {\bf{d}}-dimensional cube sliced by a co-dimension {\bf{1}} surface }
+
+Let $\Omega$ denote a polytope formed by the intersection of an d-dimensional cube with a codimension one surface. Let $\Theta$ denote the portion of the surface that forms one of the faces of $\Omega$. Define $B$ by $B = \partial \Omega - \Theta$. $B$ comprises the faces of $\Omega$ that lie in coordinate directions.
+
+We consider the problem of computing moments over $\Omega$, assuming that the intersections of $\Theta$ with the one-dimensional edges of $\Omega$ have been calculated. 
+
+Let $\mathbf{k}$ denote a multiindex of whole numbers, $\mathbf{k} = k_{1},\cdot \cdot \cdot k_{n}$. Let $\mathbf{x}^{\mathbf k}$ denote a monomial of order $|\mathbf{k}| = k_{1}+ \cdot \cdot \cdot + k_{n}$. That is,$\mathbf{x}^{\mathbf k}=  x_{1}^{k_{1}}\cdot \cdot \cdot x_{n}^{k_{n}}$. Finally, let $\evec_{i}$ denote a unit vector in the $i$ direction.
+
+Fix a whole number $p > 0$.  For each coordinate direction, $\evec_{i}$, for each multi-index, $\mathbf{k}$, of order $p+1$, we construct a vector field, $\Fvec = \Fvec(\mathbf{k},i) =  \mathbf{x}^{\mathbf k}\evec_{i}$. Note that the divergence of $\Fvec$ is either zero or a monomial of order $p$. Furthermore, every monomial of order $p$ may be obtained as the divergence of such an $\Fvec$. For example, let $\mathbf{j}$ denote a multi-index of order p, for each $i$, $\Fvec = \mathbf{x}^{\mathbf j}x_{i}\evec_{i}$ satisfies the condition $\frac{1}{j_{i}+1}\nabla \cdot \Fvec =\mathbf{x}^{\mathbf j}$.
+
+Therefore, using the divergence theorem we may write: 
+
+\begin{eqnarray}
+C\int_{\Omega}  \mathbf{x}^{\mathbf {j}} d\Omega 
+=\int_{\Omega}  \nabla \cdot \Fvec d\Omega 
+= \int_{\partial \Omega} \Fvec \cdot \normal \,  d(\partial \Omega) 
+\label{eqn::divThm}
+\end{eqnarray}
+
+where $\normal$ denotes the outward unit normal and $C = j_{i} +1$ is a constant.
+
+ If we let $\mu^{+}_{i}$ and $\mu^{-}_{i}$ denote the two faces of $\Omega$ with outward normal $\evec_{i}$ and $-\evec_{i}$, respectively, we can rearrange the terms of last integral to observe:
+
+\begin{eqnarray}
+C\int_{\Omega}  \mathbf{x}^{\mathbf {j}} \, d\Omega - \int_{\Theta}\mathbf{x}^{\mathbf {j}}x_{i}\normal^{\theta}_{i}  d\theta\\  =\sum_{\mu \in M}\int_{\mu}\Fvec \cdot \normal^{\mu} d\mu\\
+=\int_{\mu^{+}_{i}}\, \mathbf{x}^{\mathbf {k}}\, d\mu^{+}_{i} -\int_{\mu^{-}_{i}}\,\mathbf{x}^{\mathbf {k}}  \,d\mu^{-}_{i} .
+\label{eqn::twoUnkns}
+\end{eqnarray}
+where $\normal^{\theta}$ denotes the normal to $\Theta$ and similarly for $\normal^{\mu}$. 
+$\mu^{+}_{i}$ and $\mu^{-}_{i}$ are polytopes of dimension $n-1$.
+
+We make the approximation that $\normal^{\theta}_{i}$ is constant.
+\begin{eqnarray}
+\int_{\Theta}\mathbf{x}^{\mathbf {j}}x_{i}\normal^{\theta}_{i}  d\theta \approx \normal^{\theta}_{i} \int_{\Theta}\mathbf{x}^{\mathbf {j}}x_{i}  d\theta
+\label{eqn::approx}
+\end{eqnarray}
+Using this approximation, we write an approximate divergence theorem expression:
+\begin{eqnarray}
+C\int_{\Omega}  \mathbf{x}^{\mathbf {j}} \, d\Omega -\normal^{\theta}_{i} \int_{\Theta}\mathbf{x}^{\mathbf {j}}x_{i}  d\theta\\  \approx \sum_{\mu \in M}\int_{\mu}\Fvec \cdot \normal^{\mu} d\mu\\
+=\int_{\mu^{+}_{i}}\, \mathbf{x}^{\mathbf {k}}\, d\mu^{+}_{i} -\int_{\mu^{-}_{i}}\,\mathbf{x}^{\mathbf {k}}  \,d\mu^{-}_{i} .
+\label{eqn::approxDivThm}
+\end{eqnarray}
+
+We consider the the terms on the left as unknowns, and for the moment we assume that the terms on the right are known as well as the normal to $\Theta$, $\normal^{\theta}$. We replace $\approx$ by $=$ and form the linear system of all such equations that can be obtained by varying $i$ and $\mathbf{j}$ in the construction of $\Fvec(\mathbf {j},i)$. (Recall that $|\mathbf {j}| = p+1$.) Each monomial of order $p$ contributes $n+1$ unknowns to the systems. While each monomial of order $p+1$ contributes $n$ equations to the system. Since the number of monmomials of order (p+1) is always at least $n$ more than the number of monomials of order p, the system is formally overdetermined. In the event that the surface $S$ is planar, our approximation is exact and the system is consistent. In the event that $S$ is not planar there may still be a plane that passes through the edge intersections. Here again the system is consistent; the algorithm recovers this plane. However, whether the system is consistent or not, approximate or not, the column space of the associated matrix has full rank, and the system has a least squares solution which we find.
+
+Still assuming that the right hand side is known, $\normal^{\theta}$ may be approximated by taking $\Fvec$ to be a constant vector field $(p=0)$. In this case the linear system is exactly determined and we solve it exactly. Therefore the algorithm will be complete provided the right hand sides are known. However, the right hand sides are moments over $n-1$ dimensional cubes sliced by codimension $1$ surfaces. Hence after $(n-2)$ further iterations of the algorithm we may express the right hand sides as  $(p+n-1)$th moments over a set of one dimensional line segments, which may be conveniently calculated directly.
+
+\section{API}
+
+\subsection{Design}
+
+{\tt Workshop} is a class
+which inherits from {\tt GeometryService} and 
+implements the {\tt GeometryService} interface
+using the workshop algorithm.  {\tt Workshop} contains
+a {\tt BaseLocalGeometry} class.  This base class 
+is an interface which encapsulates the steps
+to the workshop algorithm of reducing a surface that is
+locally defined as a function to an embedded boundary description.
+The {\tt Workshop} class is defined by its only constructor.
+\begin{itemize}
+\item
+\begin{small}\begin{verbatim}
+Workshop(const BaseLocalGeometry& localGeometry)
+\end{verbatim}\end{small}
+Define the Workshop with the input local geometry description.
+\end{itemize}
+
+A {\tt BaseLocalGeometry}-derived 
+class must be able to answer the following questions:
+\begin{itemize}
+\item Is the box in question regular, or covered (or neither)?
+      A regular box in this context is a cell which is 
+      entirely outside the covered region.  A covered box
+      is entirely inside the covered region.
+\item If the cell is irregular, which signed coordinate direction is
+        ``up'' in the cell?   
+     The up direction corresponds to the coordinate
+      direction that corresponds to the largest component of the
+      normal to the boundary at this cell.
+\item For an irregular cell, given the independent variables,
+      return the  dependent variable.  Consider again figure
+      \ref{fig::3dsurf}.  In this example, the $y$ direction
+      is the ``up'' direction and the workshop-derived class 
+      must be able to return values of $y$ in the cell given
+      $x$ and $z$.
+\end{itemize}
+Given this, the {\tt BaseLocalGeometry} class has the following
+pure virtual functions in its interface:
+\begin{itemize}
+\item
+\begin{small}\begin{verbatim}
+virtual bool isRegular(const Box& region, const Box& domain,
+                       const RealVect& origin, const Real& dx)
+                       const =0;
+virtual bool isCovered(const Box& region, const Box& domain,
+                       const RealVect& origin, const Real& dx)
+                       const =0;
+\end{verbatim}\end{small}
+Return true if {\em every} cell in the input region
+is regular or covered.  
+Argument {\tt region} is the subset of the domain.
+The {\tt domain} argument specifies is the span of the solution
+index space.  The {\tt origin} argument specifies the location of the
+lower-left corner (the zero node)
+of the solution domain and the {\tt dx} argument 
+specifies the grid spacing.
+
+\item \begin{small}\begin{verbatim}
+virtual
+int upDirection(const IntVect& iv, 
+                const Box& domain,
+                const RealVect& a_origin, 
+                const Real& a_dx)  const = 0; 
+\end{verbatim}\end{small}
+This returns the signed integer which most closely 
+represents the normal direction
+of the interface at an irregular cell (which coordinate
+direction has the largest normal component).  
+This will only be called if the cell is irregular.
+
+\item \begin{small}\begin{verbatim}
+virtual
+Real localFuncValue(const RealVect& independentCoords,
+                    const int& upDirection,
+                    const IntVect& a_iv, 
+                    const Box& a_domain, 
+                    const RealVect& a_origin, 
+                    const Real& a_dx) const = 0;  
+\end{verbatim}\end{small}
+Return the value at the dependent coordinate given the independent
+coordinates.  The {\tt upDirection} argument defines which
+coordinate is the dependent one.
+
+\item \begin{small}\begin{verbatim}
+virtual
+BaseLocalGeometry* new_baseLocalGeometry() const = 0;       
+\end{verbatim}\end{small}
+Return a newly allocated derived class.  The responsibility
+for deleting the memory is left to the calling function.
+\end{itemize}
+
+\subsection{Example}
+
+The {\tt Workshop} class has the following usage pattern.  The 
+local geometry description is defined and used to 
+define the {\tt Workshop} class.  The {\tt Workshop} is
+then used to define the global {\tt EBIndexSpace}.
+\begin{small}\begin{verbatim}
+class MyGeometry: public BaseLocalGeometry
+{
+....        
+};
+
+void defineMyEBIS(const Box& domain, 
+                  const RealVect& origin, 
+                  const Real& dx)
+{
+  MyGeometry myLocalGeom;
+  Workshop myWorkshop(myLocalGeom);
+  EBIndexSpace* ebisPtr = Chombo_EBIS::instance();
+  ebisPtr->define(domain, origin, dx, myWorkshop);         
+} 
+\end{verbatim}\end{small}

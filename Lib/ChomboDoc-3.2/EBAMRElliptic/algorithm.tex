@@ -1,0 +1,696 @@
+% math shortcuts
+\newcommand{\sfrac}[2]{\mbox{$\frac{#1}{#2}$}}
+\def\udelu{\ubold \cdot \nabla \ubold}
+
+
+\section{Poisson's equation}
+This section describes the method for solving the elliptic partial
+differential equation
+\begin{equation}
+L(\phi(\vec{x})) = \rho(\vec{x})
+\end{equation}
+on a Cartesian grid embedded boundary mesh, for the special case of
+Poisson's equation, in which
+\begin{equation}
+L(\phi(\vec{x})) = \nabla^2 \phi(\vec{x})
+\end{equation}
+is the Laplacian.  This algorithm is largely an extension of that
+developed by Johansen and Colella \cite{JohansenColella1998} combined with
+the AMR multigrid algorithm of Martin and  Cartwright \cite{MARTCART}.
+
+
+\subsection{Operator Discretization}
+\label{sec::discrete}
+
+\subsubsection{Notation}
+ 
+To suppress the use $(i,j,k)$ notation, we define:  $v^+(f)$ to be the
+VoF on the high side of face~$f$; $v^-(f)$ to be the VoF on the low side
+of face~$f$; $f^+_d(v)$ to be the set of faces on the high side of
+VoF~$v$; $f^-_d(v)$ to be the set of faces on the low side of VoF~$v$,
+where $d\in\{x,y,z\}$ is a coordinate direction (the number of
+directions is $\Dim$).  Also, we compose these operators to obtain the
+set of VoFs directly connected to a given VoF:  $v^+_d(v) =
+v^+(f^+_d(v))$ and $v^-_d(v) = v^-(f^-_d(v))$.
+
+Barred variables, such as $\bar{x}_v$ or $\bar{x}_f$, are distances from the
+center of the grid cell containing $v$ or of the grid face containing $f$,
+respectively, that have been normalized by the grid spacing $h$.  Typically,
+$-\sfrac{1}{2} \le \bar{(\cdot)} \le \sfrac{1}{2}$.
+
+
+\subsubsection{Interior Method}
+
+The Laplacian of $\phi$ is defined in three stages: compute the grid-centered
+gradient of $\phi$, recenter the gradient, and compute the divergence of
+recentered gradient.
+The face-centered gradient of $\phi$ is defined as
+\begin{equation}
+\widetilde{g}^d_f = \frac{1}{h} \left( \phi_{v^+(f)} - \phi_{v^-(f)} \right)
+\label{eqn::ccgrad}
+\end{equation}
+The gradients at the irregular face centroids $g_f^d$ are computed by
+interpolation 
+using a modification of the Johansen-Colella method.  Interpolation is done
+in the $\Dim - 1$ dimensional, linear subspace which contains the irregular
+face.  In 2D, this is a line and, in 3D, this is a plane.  If possible,
+multilinear interpolation is done using the face-centered gradients whose
+locations bound the centroid of the irregular face.  Multilinear interpolation
+is possible if all the face-centered gradients needed can be used (see below
+for the definition of ``can be used'' in this context).  If multilinear
+interpolation is not possible then the $\widetilde{g}^d_f$ is used at the
+irregular face centroid, i.e., piecewise constant interpolation.
+
+By the divergence theorem, the integral of the Laplacian of $\phi$
+over a VoF is equal to the integral around the boundary of the VoF of
+the gradient of $\phi$. Discretizing the integral with the midpoint
+rule yields the approximation 
+\begin{equation}
+L_v(\phi) = \frac{1}{\kappa_v h}
+            \left( 
+              \sum_{f\in f^+_d(v)} \alpha_f g^d_f   -
+              \sum_{f\in f^-_d(v)} \alpha_f g^d_f \;-\;
+              \alpha^{EB}_v \left( \vec{g}^{EB}_v \!\cdot\! \widehat{n}^{EB}_v
+            \right)
+\right)
+\end{equation}
+where $\kappa_v$ is the volume fraction of a VoF $v$, $\alpha_f$ is the area
+fraction of face $f$, and $\alpha^{EB}_v$ is the area fraction of the embedded
+boundary of the VoF.  The superscript $EB$, in general, refers to
+quantities associated with the segment of the embedded boundary within a VoF.
+The calculation
+of $(\vec{g}^B_v \!\cdot\! \widehat{n}^B_v)$, the normal gradient of $\phi$ at
+the boundary, is described in section~\ref{sec::bc}.
+In regions of the grid where all VoFs and faces involved are regular,
+no recentering of the gradient is required and there is no
+contribution from the embedded boundary.
+In this case 
+equation \ref{eqn::ccgrad} gives the gradient at the VoF face
+and this method reduces to the familiar star-shaped direction-split
+stencil for the Laplacian:
+\begin{equation}
+L_v(\phi)  = \frac{1}{h^2}
+             \left( \sum_{d = 0}^{\Dim-1}
+               \phi_{v_d^+(v)} - 2\phi_v + \phi_{v_d^-(v)}
+             \right).
+\end{equation}
+See figure \ref{fig::simpleLap} for a graphical version of the stencil
+in two dimensions.
+
+\begin{figure}
+\epsfxsize=3.0in
+\hspace{1.0in} \epsffile{simpleLap.eps}
+\caption{Illustration of the 5-point Laplacian stencil in two dimensions.}
+\label{fig::simpleLap}
+\end{figure}
+
+Now we define when a face-centered gradient ``can be used'' in the context of
+computing the gradient at the centroid of an irregular face.  
+For each direction~$d'\neq d$, we define two sets of VoFs,
+\begin{eqnarray}
+v^-_{d'} &=& v^\pm ( f^\pm_{d'} ( ( v^- ( f ) ) )\nonumber \\
+v^+_{d'} &=& v^\pm ( f^\pm_{d'} ( ( v^+ ( f ) ) )
+\end{eqnarray}
+where the choice of sign is the sign of $\bar{x}^{d'}_f$, the normalized
+centroid of $f$ in the $d'$ direction.  Basically, we take the VoF on each 
+side of $f$ (in the $d$ direction), find all faces connected to that VoF in
+the low or high, $\pm$, $d'$ direction, and then collect all the VoFs connected to the other side of these faces.
+
+Now, construct the set of faces that are shared by a VoF in $v^-_{d'}$ and
+a VoF in $v^+_{d'}$.  If there is one such face, it is $f'(d')$.  If there
+are no faces or more than one face then $g^d_f = \widetilde{g}^d_f$, i.e.,
+drop order.
+
+
+\subsubsection{Boundary Conditions}
+\label{sec::bc}
+
+\begin{figure}
+\epsfxsize=3.0in
+\hspace{1.0in} \epsffile{faces.eps}
+\caption{Boundary faces and embedded boundary segments.}
+\label{fig::faces}
+\end{figure}
+
+There are two distinct type of boundaries: faces which lie on the
+boundary of the solution domain, and embedded boundary segments
+which are contained within a VoF.  See figure~\ref{fig::faces}.
+Discretization of homogeneous Dirichlet and Neumann boundary conditions
+are described for each type of boundary face.  Homogeneous Neumann boundary
+conditions are defined by setting the appropriate gradient to zero.
+Homogeneous Dirichlet boundary conditions are more involved.
+
+\subsubsection{Homogeneous Dirichlet Boundary Condition at Faces}
+\label{sec::facebc}
+
+For a boundary face~$f$ normal to $d$, the normal gradient depends on
+whether the solution domain is on the high side~($+$) of $f$ or on the
+low side~($-$) of $f$.  The gradient is
+\begin{equation}
+\widetilde{g}^d_f = \pm \frac{1}{h} \left ( 3 \phi_v - \phi_1/3 \right)
+\end{equation}
+where
+\begin{equation}
+v = v^\pm(f)
+\end{equation}
+is the first VoF in the solution domain,
+and
+\begin{equation}
+\phi_1 = \frac{\displaystyle
+\sum_{f'\in f^\pm_d(v)} \ell_{f'} \phi_{v^\pm(f')}
+}{\displaystyle
+\sum_{f'\in f^\pm_d(v)} \ell_{f'}
+}
+\end{equation}
+is the face-area-averaged value of the solution in the set of VoFs in
+the second cell inward in the solution domain that are directly
+connected to the VoF~$v$.  An example is shown in
+figure~\ref{fig::dirbc}.  In the figure, the solution domain is on the
+high side of the face~$f$.  The set of VoFs~$v^+(f')$ is shaded gray.
+Note that the crosshatched VoF is in the same cell as $v^+(f')$, but
+does not participate in the average.
+
+\begin{figure}
+\epsfxsize=3.0in
+\hspace{1.0in} \epsffile{dirbc.eps}
+\caption{VoFs and faces for Dirichlet boundary condition at a boundary
+face.}
+\label{fig::dirbc}
+\end{figure}
+
+\subsubsection{Homogeneous Dirichlet Boundary Condition at Embedded
+Boundary Segments}
+\label{sec::ebbc}
+
+\begin{figure}
+\epsfxsize=3.0in
+\hspace{1.0in} \epsffile{boundary-gradient.eps}
+\caption{Dirichlet boundary condition at embedded boundary segment.
+Stencil for quadratic interpolation.  Interpolate values from cell
+centers ($+$) to intersection points ($\circ$).  Gradient at boundary
+segment centroid ($\bullet$) is found by differencing values at the
+$\circ$s.}
+\label{fig::ebdirbc2D}
+\end{figure}
+
+For an embedded boundary segment, the gradient normal to the segment
+is found by casting a ray normal to the segment into the solution
+domain.  See figure~\ref{fig::ebdirbc2D}.  The
+% we apologize for the \stackrel nonsense below, but there is no
+% basic command to do the ``ray'' symbol in LaTeX.
+ray~$\stackrel{-\!\!-\!\!-\!\!-\!\!\!\longrightarrow}{B\!C\!D}$ is cast
+from the centroid of the embedded boundary face~$B$ in VoF~$v$.  Note
+that, in this example, $\widehat{n}^B_{v,x} \ge \widehat{n}^B_{v,y}
+\ge 0$.  If this inequality does not hold, the problem is transformed
+into a different coordinate system in which it does hold by means of
+coordinate swaps and reflections.  The direction that transforms
+to $x$ is called the {\em major coordinate}.  Unless otherwise
+specified, the rest of this discussion is in terms of the transformed
+coordinate system.  
+
+Planes are constructed normal to $x$ through the centers of cells
+near $v$.  We then find the
+intersection of the ray with the two planes that are closest to but do
+not intersect $v$.  In the figure, the intersection points are $C$,
+the closer point, and $D$, the further point.
+We will first describe the method assuming all the cells necessary are
+regular except this one containing the embedded boundary.
+We locate the centers of the cells these intersections are
+within, $C_0$ and $D_0$, and the centers of the neighbor cells of each
+in the same intersection plane, $C_+$ and $C_-$, and $D_+$ and $D_-$,
+respectively (in three dimensions, there are eight neighbors each,
+$C_{++}$, $C_{+0}$, $C_{+-}$, {\em etc.}).
+Values at $C$ and $D$ are
+found by quadratic interpolation.  In two dimensions,
+\begin{equation}
+\phi_C = N_+(\bar{y}_C) \phi_{C_+} + 
+         N_0(\bar{y}_C) \phi_{C_0} + 
+         N_-(\bar{y}_C) \phi_{C_-} 
+\label{eqn::quad-interp-c}
+\end{equation}
+and similarly for $\phi_D$, where
+\begin{equation}
+\bar{y}_C h = y_C - y_{C_0} 
+\label{eqn::ybar}
+\end{equation}
+and the interpolation functions are
+\begin{eqnarray}
+N_+(\xi) &=& \sfrac{1}{2} \xi \left( \xi + 1 \right) \nonumber \\
+N_0(\xi) &=& 1 - \xi^2 \\
+N_-(\xi) &=& \sfrac{1}{2} \xi \left( \xi - 1 \right) \nonumber .
+\end{eqnarray}
+\begin{figure}
+\epsfxsize=3.0in
+\hspace{1.0in} \epsffile{planes.eps}
+\caption{Quadratic approximation of $C$ in three dimensions.   We
+  interpolate in each plane then interpolate along ray.}
+\label{fig::ebdirbc3D}
+\end{figure}
+If the major coordinate were $y$, then $y$ would be replaced by $x$
+in equation~\ref{eqn::quad-interp-c}.
+
+With the values $\phi_C$ and $\phi_D$ known, the gradient at $B$ normal
+to the embedded boundary segment is
+\begin{equation}
+\left( \vec{g}^B_v \!\cdot\! \widehat{n}^B_v \right) = 
+\frac{n^B_{v,x}}{h}
+\left( 
+\frac{2-\bar{x}^B}{1-\bar{x}^B}~\phi_C 
+\;-\;
+\frac{1-\bar{x}^B}{2-\bar{x}^B}~\phi_D 
+\right)
+\end{equation}
+where $\bar{x}^B h = x^B - i^Bh$ is the $x$-component of the distance from
+the centroid of the embedded boundary face~$B$ to the center of the cell
+it is in.  The terms $n^B_{v,x}$ and $\bar{x}^B$ are associated with the
+major coordinate.
+
+Note that the value of the solution at a VoF~$v$ does not affect the
+value of the gradient at $B$, and therefore does not contribute to the
+Laplacian at $v$ via this boundary condition.
+
+The method just described can be extended to the case where the cells are
+not all regular.  Define ${VoF}_0$ to be the VoF containing the current
+embedded boundary.  Let ${VoF}_1$ be the set of VoFs connected to ${VoF}_0$
+via the face the normal first intersects (what is done if the normal
+intersects an edge or corner is described below).  Note, all the VoFs,
+${VoF}_1$, will lie in one cell, ${Cell}_1$.  Continuing in this fashion, let
+${VoF}_2$ be the set of all the VoFs connected to a VoF in ${VoF}_1$ via the
+second face the normal intersects and they will all lie in ${Cell}_2$.
+Observe that one of the ${Cell}_i$ will be the cell that $C$ lies in, $C_0$,
+and one will be the cell that $D$ lies in, $D_0$.  Call these cells ${Cell}_C$
+and ${Cell}_D$, respectively.  Now, the set of VoFs corresponding to these
+cells, ${VoF}_C$ and ${VoF}_D$, may or may not be empty.  If ${VoF}_C$ is
+empty then we approximate the gradient at $B$ normal to the embedded boundary
+by 0.  If ${VoF}_C$ is not empty but ${VoF}_D$ is empty we will use linear
+interpolation to compute the value a $C$
+
+ \begin{figure}
+ \epsfxsize=3.0in
+ \hspace{1.0in} \epsffile{boundary-gradient-2.eps}
+ \caption{Dirichlet boundary condition at embedded boundary segment.
+ Stencil for least-squares fit.  Left:: typical situation.  Right::
+ nearly degenerate situation.}
+ \label{fig::ebdirbc2}
+ \end{figure}
+ 
+ If the cells containing $C$ and $D$, described above, are not regular
+ or are part of a coarse-fine interface, a
+ different method is used to approximate the normal gradient.  The
+ gradient also can be found by a least-squares minimization method.
+ See figure~\ref{fig::ebdirbc2}.  Note that the components of the normal
+ in this example are positive.  If they are not, the problem is
+ transformed via coordinate swaps into a coordinate system in which
+ they are.  We wish to find the normal gradient at $B$, the
+ centroid of an embedded boundary face, in a VoF~$v$.  The details
+ depend on the dimensionality of the problem.  The two-dimensional case
+ is described first.
+ 
+ In two dimensions, we select three cells adjacent to $v$'s cell, two
+ directly adjacent and one diagonally adjacent.  The centers of these
+ cells are the points $P_{1,0}$, $P_{0,1}$ and $P_{1,1}$.  Note that
+ the points $P_{1,0}$ {\em etc.} are always the centers of the cells,
+ even if a cell is irregular.  We then do a least-squares fit on the
+ gradients in the directions $B\!P_{0,1}$, $B\!P_{1,0}$
+ and $B\!P_{1,1}$ (which are known) to determine the components of the
+ full vector gradient~$(\phi_x^B,\phi_y^B)$.
+ 
+ Figure~\ref{fig::ebdirbc2} also shows the need for a least-squares fit,
+ rather than a coordinate transformation.  On the left of the figure is
+ the situation if the volume of $v$ is not small.  In this situation,
+ the gradients in the directions $B\!P_{1,0}$ and $B\!P_{0,1}$ are linearly
+ independent, so it is possible to compute the full gradient from them
+ alone.  On the right is the situation in the degenerate case in which
+ the volume of $v$ is small (and the normal~$\widehat{n}^B_v$ is not
+ aligned with the grid).  The point~$B$ is almost at the corner of the
+ grid cell, directly between $P_{1,0}$ and $P_{0,1}$.  Thus, the
+ gradients in the directions $B\!P_{1,0}$ and $B\!P_{0,1}$ are not linearly
+ independent, and a full gradient cannot be computed from them alone.
+ 
+ The overdetermined system we need to approximate is
+ \begin{eqnarray}
+ \phi_{1,0} - \phi^B &=& 
+ \left( x_{1,0} - x^B \right) \phi^B_x 
+ +
+ \left( y_{1,0} - y^B \right) \phi^B_y 
+ \nonumber \\
+ %
+ \phi_{0,1} - \phi^B &=& 
+ \left( x_{0,1} - x^B \right) \phi^B_x 
+ +
+ \left( y_{0,1} - y^B \right) \phi^B_y 
+ \nonumber \\
+ %
+ \phi_{1,1} - \phi^B &=& 
+ \left( x_{1,1} - x^B \right) \phi^B_x 
+ +
+ \left( y_{1,1} - y^B \right) \phi^B_y
+ \end{eqnarray}
+ or, with $\bar{x} h = x - i^Bh$, and replacing $\bar{x}_{1,0}$ {\em
+ etc.} with the actual values (which are always either unity or zero
+ because $P_{1,0}$ {\em etc}. are cell centers),
+ \begin{equation}
+ {\rm\bf A} \, {\boldmath g} = {\boldmath \Delta \Phi}
+ \label{eqn::3e2u}
+ \end{equation}
+ where
+ \begin{equation}
+ {\boldmath \Delta \Phi} = \left\{ \begin{array}{c}
+ \phi_{1,0} - \phi^B \\
+ \phi_{0,1} - \phi^B \\
+ \phi_{1,1} - \phi^B 
+ \end{array} \right\}
+ , \;\;
+ {\rm \bf A} = \left[ \begin{array}{rr}
+ 1 - \bar{x}^B  &    - \bar{y}^B \\
+   - \bar{x}^B  &  1 - \bar{y}^B \\
+ 1 - \bar{x}^B  &  1 - \bar{y}^B 
+ \end{array} \right] h
+ , \;\;
+ {\boldmath g} = \left\{ \begin{array}{c}
+ \phi^B_x \\
+ \phi^B_y
+ \end{array} \right\}
+ .
+ \end{equation}
+ Note that $\phi^B=0$.  The least-squares approximation to
+ equation~\ref{eqn::3e2u} is the solution~$\boldmath g$ to
+ \begin{equation}
+ {\rm\bf M} \, {\boldmath g} = {\boldmath b}
+ \end{equation}
+ where
+ \begin{equation}
+ {\rm\bf M} = {\rm\bf A^T} \! {\rm\bf A},\;\; 
+ {\boldmath b} = {\rm\bf A^T} {\boldmath \Delta \Phi}
+ .
+ \end{equation}
+ The normal gradient is then
+ \begin{equation}
+ \left( \vec{g}^B_v \!\cdot\! \widehat{n}^B_v \right) \;=\;
+ \widehat{n}^B_v \!\cdot\! g \;=\;
+ n^B_{v,x} \phi^B_x \;+\; n^B_{v,y} \phi^B_y
+ \end{equation}
+ 
+ \begin{figure}
+ \epsfxsize=3.0in
+ \hspace{1.0in} \epsffile{ls-vofs.eps}
+ \caption{VoFs in the least-squares stencil.  The VoFs $v_0$, $v_1$,
+ $v_2$ and $v_4$ are in the stencil for the gradient at $B$.}
+ \label{fig::ls-vofs}
+ \end{figure}
+ 
+ If any of the cells containing a point~$P_{1,0}$ {\em etc.} are
+ irregular and contain multiple VoFs, we use for the value~$\phi$ at
+ that cell's center the volume-weighted average of the values of $\phi$
+ in the set of VoFs in that cell which are correctly connected to the
+ VoF~$v$.  Note that the appropriate set of VoFs for the diagonal
+ neighbor~$P_{1,1}$ is the set of VoFs in that cell that are connected
+ to the appropriate VoFs in both the cells of $P_{1,0}$ and $P_{0,1}$.
+ See figure~\ref{fig::ls-vofs}.  In the figure, the VoFs $v_0$, $v_1$
+ and $v_2$ are in the stencil because they are directly connected
+ to $v$.  The VoF~$v_3$ is in an adjacent cell, but is not connected
+ to $v$.  We call the set of VoFs~$\{v_0,v_1\}$ the {\em x-neighbors}\
+ of $v$ and the set of VoFs~$\{v_2\}$ the {\em y-neighbors}\ of $v$.
+ Of the VoFs in the diagonally adjacent cell, the VoF~$v_4$ is in the
+ stencil because it is connected both to an $x$-neighbor of $v$
+ (namely $v_0$), and to a $y$-neighbor of $v$ (namely $v_2$); the
+ VoF~$v_5$ is excluded because it is connected neither to
+ an $x$-neighbor nor a $y$-neighbor of $v$; and the VoF~$v_6$ is
+ excluded because, although it is connected to an $x$-neighbor of $v$
+ (namely $v_1$), is is not connected to any $y$-neighbor.
+ 
+ \begin{figure}
+ \epsfxsize=3.0in
+ \hspace{1.0in} \epsffile{3dls-1.eps}
+ \caption{Least-squares stencil for three dimensions.  The centroid of
+ the embedded boundary face is the $\bullet$.  The centers of the neighbor
+ cells for the least-squares approximation are the $+$s.}
+ \label{fig::3dls}
+ \end{figure}
+ 
+ In three dimensions, we need four equations to form an overdetermined
+ system for three components of the full vector gradient.  We use the
+ directional gradients from $B$ to each of four cell centers.  The
+ cells are the three directly adjacent cells and one cell that is
+ diagonally adjacent in the plane through $v$'s cell that is normal to the
+ direction in which the component of the normal~$\widehat{n}^B_v$ is
+ the least.  See figure~\ref{fig::3dls}.  In the figure, $n^B_{v,x} >
+ n^B_{v,y} > n^B_{v,z}$, so that the fourth point is $P_{1,1,0}$, the
+ center of the cell in the same $xy$-plane as the center of $v$'s cell.
+ We now have
+ \begin{equation}
+ {\rm\bf A} \; {\boldmath g} = {\boldmath \Delta \Phi}
+ \label{eqn::4e3u}
+ \end{equation}
+ where
+ \begin{equation}
+ {\boldmath \Delta \Phi} = \left\{ \begin{array}{c}
+ \phi_{1,0,0} - \phi^B \\
+ \phi_{0,1,0} - \phi^B \\
+ \phi_{0,0,1} - \phi^B \\
+ \phi_{1,1,0} - \phi^B 
+ \end{array} \right\}
+ , \;\;
+ {\rm \bf A} = \left[ \begin{array}{rrr}
+ 1 - \bar{x}^B  &    - \bar{y}^B &    - \bar{z}^B \\
+   - \bar{x}^B  &  1 - \bar{y}^B &    - \bar{z}^B \\
+   - \bar{x}^B  &    - \bar{y}^B &  1 - \bar{z}^B \\
+ 1 - \bar{x}^B  &  1 - \bar{y}^B &    - \bar{z}^B 
+ \end{array} \right] h
+ , \;\;
+ {\boldmath g} = \left\{ \begin{array}{c}
+ \phi^B_x \\
+ \phi^B_y \\
+ \phi^B_z
+ \end{array} \right\}
+ \end{equation}
+ which is approximated similarly to the two-dimensional case.
+ 
+ Again, the value of the solution at a VoF~$v$ does not affect the
+ value of the gradient at $B$, and therefore does not contribute to the
+ Laplacian at $v$ via this boundary condition.
+
+
+\subsection{Relaxation Method}
+\label{sec::gsrb}
+
+The relaxation method is based on Gauss-Seidel iteration with
+red-black ordering (GSRB)~\cite{}.  The VoFs are divided into three sets:
+irregular VoFs, and two sets of regular VoFs, red and black, such that
+every black VoF is adjacent only to red and irregular VoFs, and every
+red VoF is adjacent only to black and irregular VoFs.  One iteration
+consists of the following steps:
+\begin{itemize}
+\item
+update the solution at the black VoFs,
+
+\item
+update the solution at the red VoFs,
+
+\item
+update the solution at the irregular VoFs~$N_{\mbox{\scriptsize
+irreg}}$ times, where $N_{\mbox{\scriptsize irreg}}>0$ is an
+adjustable parameter.
+\end{itemize}
+The solution at a VoF is updated by incrementing it with
+\begin{equation}
+\delta \phi_v = \alpha_v \left( \rho_v - L_v \left( \phi \right) \right)
+\end{equation}
+where $\alpha_v$ is a relaxation coefficient designed to annihilate
+the diagonal terms of the differential operator $L_v(\phi)$.  It is
+constructed by applying the operator to a delta function and taking
+the inverse,
+\begin{equation}
+\frac{1}{\alpha_v} = L_v \left( \delta_v \right)
+\end{equation}
+where
+\begin{equation}
+\delta_v\left( \vec{x} \right) = \left\{ \begin{array}{ll}
+1 & \mbox{if $\vec{x}$ is within~$v$} \\
+0 & \mbox{otherwise}
+\end{array} \right.
+\end{equation}
+The operator~$L_v$ must include the face boundary conditions (see
+section~\ref{sec::facebc}), but does not require the embedded boundary
+segment boundary conditions (see section~\ref{sec::ebbc}) because in
+the latter the contribution to the operator at the VoF~$v$ does not
+depend on the value of the solution at $v$.
+
+
+\subsection{Multigrid Algorithm}
+\label{sec::mg}
+
+Multigrid is a method for the acceleration of convergence of iterative
+schemes for elliptic and parabolic equations.  It involves the
+creation of a sequence of coarser grids on which a coarser problem is
+solved.  A procedure is also specified for transferring solution data
+between grids of different resolution.  For solving a linear problem,
+we use the residual-correction form of multigrid.  One multigrid cycle
+consists of the following sequence of steps:
+\begin{itemize}
+\item
+perform $N_{pre}$ iterations of the relaxation procedure
+
+\item
+restrict residual from this grid to the next coarser grid:
+\begin{equation}
+\rho^{2h} = I^{2h}_h \left( \rho^h - L^h(\phi^h) \right)
+\end{equation}
+
+\item
+perform $N_{cycles}$ multigrid cycles on the coarser grid to solve
+\begin{equation}
+L^{2h}(\phi^{2h}) = \rho^{2h}
+\end{equation}
+
+\item
+interpolate correction from the next coarser grid to this grid:
+\begin{equation}
+e^h = I^h_{2h} \left( \phi^{2h} \right)
+\end{equation}
+
+\item
+increment solution on this grid with the correction~$e^h$
+
+\item
+perform $N_{post}$ iterations of the relaxation procedure
+\end{itemize}
+If $N_{cycles}=1$, the method is called a V-cycle; if $N_{cycles}=2$,
+the method is called a W-cycle; other values of $N_{cycle}$ are
+unusual.
+
+Something about bottom solves.
+
+We use the sequence of coarse grids produced by \verb|EBIndexSpace|'s
+coarsening algorithm.  A grid has half the resolution of the finer
+grid from which it was created, and the volumes of VoFs and areas of
+faces are ``conserved,''  
+\begin{eqnarray}
+\Lambda_v &=& \displaystyle
+\frac{1}{2^D}     \sum_{v'\in\mbox{\scriptsize refine}(v)} \Lambda_{v'} 
+\nonumber \\
+\ell_f    &=& \displaystyle
+\frac{1}{2^{D-1}} \sum_{f'\in\mbox{\scriptsize refine}(f)} \Lambda_{f'} 
+.
+\end{eqnarray}
+
+Data is transferred to a coarser grid by a volume-weighted average
+restriction operator~$I^{2h}_h$, defined as
+\begin{equation}
+\phi_v = \frac{1}{2^D \Lambda_v} 
+\sum_{v'\in\mbox{\scriptsize refine}(v)} \Lambda_{v'} \phi_{v'}
+.
+\end{equation}
+Data is transferred to a finer grid by piecewise-constant
+interpolation operator~$I^h_{2h}$.
+
+Because we are using the residual-correction form of multigrid, all
+boundary conditions on the coarser grids are homogeneous.
+
+
+
+\subsection{Viscous operator discretization}
+\label{sec::viscOp}
+
+
+In this section, we define a Helmholtz operator and how we solve
+it.   We are  solving 
+\begin{equation}
+(I + \mu L) \phi = rho
+\label{eqn::discHelmholtz}
+\end{equation}
+where $\mu$ is a constant.
+Just as we did for the MAC projection, we discretize  
+$L \equiv D G^{mac}$ (see equation \ref{eqn::consdiv}).
+In this context, however, since the irregular
+boundary is a no-slip boundary, we must solve
+(\ref{eqn::discHelmholtz}) with Dirichlet boundary conditions
+ $\phi =0$
+ on the irregular boundary.  To do this, we must compute 
+$$
+F^{B} =  \frac{\partial \phi}{\partial \hat{n}}
+$$
+at the embedded boundary.   We follow Schwartz, et. al
+\cite{SBCL:2005}  and compute this gradient by casting a
+ray into space, interpolating $\phi$ to points along the ray, and
+computing the normal gradient of phi by differencing the result.
+We cast a ray along
+the normal of the VoF from  the  centroid of area of the irregular
+face $C$.    We find the closest points $B$ and $C$ where the ray intersects
+the planes formed by cell centered points.   The axes of these planes
+$d_1, d_2$ will be the directions not equal to the largest direction
+of the normal.    We use biquadratic interpolation
+to interpolate data from the nearest cell
+centers to the intersection points $B$ and $C$.  In two dimensions, we
+find the nearest lines of cell centers (instead of planes) and the
+interpolation is quadratic. We then use this
+interpolated data to compute a $O(h^2$ approximation of
+$\frac{\partial \phi}{\partial \hat{n}}$.   In the case  where there
+are not enough cells to cast this ray, we use a least-squares
+approximation to $\frac{\partial \phi}{\partial \hat{n}}$ which is
+$O(h)$.  As shown in \cite{johansenColella:1998}, the modified
+equation analysis shows that, for Dirichlet boundary conditions, it is
+sufficient to have $O(1)$ boundary conditions to achieve second order
+solution error convergence for elliptic equations.
+
+\begin{figure}
+\hspace{0.5in}  \epsfxsize=3.5in \epsffile{johansen3d.eps}
+\caption{Ray casting to get fluxes for Dirichlet boundary conditions
+  at the irregular boundary.   A ray is cast along the normal from the
+  centroid of the irregular area $C$ and the points $A$ and $B$ are
+  the places where this ray intersects the planes formed by cell
+  centers.   Data is interpolated  in these planes to get
+  values at the intersection points.    That data is used to compute a
+  normal gradient of the solution.}
+\label{fig::johansenExtrap3d}.    
+\end{figure}
+\subsection{Slope Calculation} \label{sec::slopeCalculation}
+  
+The notation
+\beqa
+CC = A ~ | ~ B ~ | ~ C
+\eeqa
+means that
+the 3-point formula $A$ is used for $CC$ if all cell-centered values it uses
+are available,
+the 2-point formula $B$ is used if the cell to the right (i.e. the high side) of the current cell is covered, and
+the 2-point formula $C$ is used if the cell to the left (i.e. the low side) current cell is covered. 
+
+To compute the limited differences in the first step on the algorithm, we use the second-order slope calculation 
+\cite{BCG} with van Leer limiting.
+
+$$
+\begin{array}{r l}
+\Delta^d_2 W_\ibold = & 
+\Delta^{vL}(\Delta^C W_\ibold, \Delta^L W_\ibold, \Delta^R
+W_\ibold)~|~\Delta^{VLL} W_\ibold~|~\Delta^{VLR} W_\ibold \\ 
+\Delta^B W_\ibold = &  \frac{2}{3}((W -\frac{1}{4}\Delta^d_2
+W)_{\ibold + \ebold^d} - 
+(W + \frac{1}{4}\Delta^d_2 W)_{\ibold -\ebold^d}) \\
+\Delta^C {W}_\ibold = &  \half(W^n_{\ibold+\ebold^d} -
+                                 W^n_{\ibold-\ebold^d}) \\
+\Delta^L {W}_\ibold = &  W^n_\ibold           - W^n_{\ibold-\ebold^d} \\ 
+\Delta^R {W}_\ibold = & W^n_{\ibold+\ebold^d} - W^n_\ibold  \\
+\Delta^{3L} {W}_\ibold = &  \frac{1}{2}(3 W^n_\ibold -4 W^n_{\ibold-\ebold^d} + W^n_{\ibold-2\ebold^d})\\ 
+\Delta^{3R} {W}_\ibold = &  \frac{1}{2}(-3 W^n_\ibold+4
+W^n_{\ibold+\ebold^d} - W^n_{\ibold+2\ebold^d}) 
+\end{array}
+$$
+$$
+\begin{array}{r l l}
+\Delta^{VLL} W_\ibold =&
+  \min(\Delta^{3L} W_\ibold,  \Delta^L W_{\ibold}) &
+    \mbox{ if $\Delta^{3L} W_\ibold \cdot \Delta^L W_{\ibold} > 0$}
+  \\
+  \Delta^{VLL} W_\ibold =& 0 & \mbox{ otherwise} \\
+    
+\Delta^{VLR} W_\ibold =&
+  \min(\Delta^{3R} W_\ibold,  \Delta^R W_{\ibold}) &
+    \mbox{ if $\Delta^{3R} W_\ibold \cdot \Delta^R W_{\ibold} > 0$}
+  \\
+  \Delta^{VLR} W_\ibold =& 0 &  \mbox{ otherwise}
+  \end{array} 
+$$
+We apply the van Leer limiter  
+component-wise to the differences. 
+

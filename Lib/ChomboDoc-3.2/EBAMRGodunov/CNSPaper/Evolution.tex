@@ -1,0 +1,78 @@
+\section{Evolution of Equations\label{sec:Evolution}}
+
+In this section we describe the time integration algorithm schematically, 
+giving details of each step of the calculation in later sections.
+At the beginning of a time step $n$, we integrate the hyperbolic terms in 
+\refEq{continuity} - \refEq{energy} explicitly, treating the elliptic terms in 
+\refEq{momentum} and \refEq{energy} as sources. To compute the source 
+contributions, we evaluate the discrete form of \refEq{LU} within \refEq{advectionDiffusion} at
+the current timestep.  In this language, the operator $\mathcal{L}$ can 
+be written
+
+\begin{equation}
+\mathcal{L}(U) = [0, \Lmu(\vec{v}), \LK(T)]^T. \label{eq:LU}
+\end{equation}
+
+\noindent
+We denote the discrete form of this operator evaluated at time step $n$ on the 
+VoF $\ib$ as $L(U^n_\ib)$, which consists of the separate discrete Helmholtz 
+operators $L_\mu(\vec{v}^n_\ib)$ and $L_K(T^n_\ib)$. We represent the 
+elliptic terms as a source term in \refEq{advectionDiffusion}:
+
+\begin{equation}
+S^n_\ib = L(U^n_\ib) = [0, L_\mu(\vec{v}^n_\ib), L_K(T^n_\ib)]^T \label{eq:hyperbolicSources}
+\end{equation}
+
+The details of the evaluation of these ``hyperbolic sources" are given in 
+\refSec{HyperbolicSources}.
+
+Next, we must calculate the flux divergence 
+$(\diverg{\vec{F}})^{n+1/2}_\ib = \diverg{F}(U^{n+1/2}_\ib, S^n_\ib)$,
+incorporating the source terms computed above. This step is similar to the 
+calculation of the flux divergence described in \cite{???} for solving the 
+Euler equations; we review it in \refSec{FluxDivergence}. 
+
+When we have computed the flux divergence, we can predict a value for 
+$U^{n+1}_\ib$ using \refEq{advectionDiffusion}:
+
+\begin{equation}
+U^{n+1,*}_\ib = U^b_\ib - \dt(\diverg{\vec{F}})^{n+\half}_\ib
+\end{equation}
+
+\noindent
+We ignore the implicit terms in \refEq{advectionDiffusion} in this explicit 
+advance, apart from incorporating them as sources in the calculation of the 
+flux divergence. We then update the momentum and energy in $U$ by solving the 
+appropriate diffusion equations and backing out time derivatives. For example, 
+implicitly integrating the viscous contribution to the momentum equation 
+produces a value for $\vec{v}^{n+1}_\ib$, which can be used to compute 
+$L_\mu(\vec{v}^{n+1/2}_\ib)$:
+
+\begin{equation}
+L_\mu(\vec{v}^{n+\half}_\ib) = \frac{\rho^{n+\half}(\vec{v}^{n+1} - \vec{v}^n)}{\dt}
+\end{equation}
+
+\noindent
+Similarly, the implicit treatment of thermal conduction for the energy equation
+gives us $T^{n+1}_\ib$, which is used to compute $L_K(T^{n+1/2}_\ib)$:
+
+\begin{equation}
+L_K(T^{n+\half}_\ib) = \frac{\rho^{n+\half} c_v (T^{n+1} - T^n)}{\dt}
+\end{equation}
+
+The integration of these equations is described in \refSec{Diffusion}. 
+
+Finally, the solution variable is updated with the diffusive contributions:
+
+\begin{equation}
+U^{n+1}_\ib = U^{n+1,*} + \dt L(U^{n+\half}_\ib) \label{eq:Uupdate}
+\end{equation}
+
+\noindent
+or, in terms of the conserved quantities:
+
+\begin{eqnarray}
+(\rho\vec{v})^{n+1}_\ib &=& (\rho\vec{v})^{n+1,*} + \dt L_\mu(\vec{v}^{n+\half}_\ib) \label{eq:rhovupdate} \\
+(\rho E)^{n+1}_\ib &=& (\rho E)^{n+1,*} + \dt L_K(T^{n+\half}_\ib) \label{eq:rhoEupdate}
+\end{eqnarray}
+

@@ -1,0 +1,118 @@
+\section{Multigrid Algorithm}
+\label{MGSEC}
+
+We want to solve the equation 
+\beqa 
+L^{comp} \varphi^{comp} =\rho^{comp}  \label{eqn:ellipticEqn}
+\eeqa 
+on an AMR hierarchy $\{ \Omega^l \}^{l_{max}}_{l=0}$
+satisfying the nesting conditions described in
+\cite{bergerColella:1989}.  The algorithm we use here is a natural
+extension of multigrid iteration. The particular version we describe
+here \cite{martcart,martthesis} is a linear version of the algorithm
+used in \cite{thompsonFerziger:1989} to compute steady incompressible
+flow, and has been used in a variety of settings
+\cite{almgrenButtkeColella:1994, 
+      almgrenETAL:1998,
+      bettencourt:phdthesis,
+      colellaDorrWake:1999b}.
+
+A pseudo-code description of the algorithm is given in 
+figure (\ref{MGSUMMARY}).  The
+operators $Average$ and $I_{pwc}$ are described in section \ref{sec:ilt}, and
+the operator $L^{nf}$ is a two-level discretization of the Laplacian:
+\beqa
+L^{nf} (\psi^f, \psi^{c,valid}) = D(\vec{G}^f(\psi^f,\psi^{c,valid})).
+\eeqa
+It computes a uniform grid $2 \Dim +1$ point discretization of the
+Laplacian applied to an extension of $\psi^f$ obtained using the
+quadratic interpolation procedure in section \ref{sec:quadB}. 
+The smoothing operator mgRelax($\varphi^f, R^f, r$) performs a multigrid
+V-cycle iteration on $\varphi^f$ for the operator $L^{nf}$, assuming the
+coarse-grid values required for the boundary conditions are
+identically zero.
+
+\begin{figure}[thp]
+\hrulefill
+\begin{tabbing} 
+xxxx\=xxxx\=xxxx\=xxxx\=\kill
+\>procedure mgRelax($\varphi^f, R^f, r$) \\
+\>\{ \\
+\>\> for $i$ = 1, \ldots, NumSmoothDown \\
+\>\>\> LevelGSRB($ \varphi^f, R^f$) \\
+\>\> end for \\
+\>\>if $(r > 2)$ then \\
+\>\>\>$\delta^c := 0$ \\
+\>\>\>$R^c := Average(R^f - L^{nf}(\varphi^f, \varphi^c \equiv 0))$ \\
+\>\>\>mgRelax($\delta^c, R^c, r/2$) \\
+\>\>\>$\varphi^f := \varphi^f + I_{pwc}(\delta^c)$ \\
+\>\>\> for $i$ = 1, \ldots, NumSmoothUp \\
+\>\>\>\> LevelGSRB($ \varphi^f, R^f$) \\
+\>\>\> end for \\
+\>\>end if \\
+\>\}
+\end{tabbing}
+\caption{Recursive relaxation procedure.}
+\label{mgRelax}
+\hrulefill
+\end{figure}
+
+\begin{figure}[thp]
+\hrulefill
+\begin{tabbing} 
+xxxx\=xxxx\=xxxx\=xxxx\=\kill
+procedure LevelGSRB($\varphi^f, R^f$) \\
+\{ \\
+\>$ \varphi^f := \varphi^f +
+ \lambda(L^{nf} (\varphi^f, \varphi^c \equiv0) - R^f)
+\mbox{ on } \Omega^{BLACK}$ \\
+\>$ \varphi^f := \varphi^f +
+ \lambda(L^{nf} (\varphi^f, \varphi^c \equiv 0) - R^f)
+\mbox{ on } \Omega^{RED}$ \\
+\}
+\end{tabbing}
+\caption{Gauss-Seidel relaxation with red-black ordering.
+Here $\lambda$ is the relaxation parameter.}
+\label{LevelGSRB}
+\hrulefill
+\end{figure}
+
+\begin{figure}[thp]
+\hrulefill
+\begin{tabbing} 
+xxxx\=xxxx\=xxxx\=xxxx\=\kill
+\>$R:= \rho - L(\varphi)$ \\
+\>while ($||R|| > \eps||\rho||$)\\
+\>\>AMRVCycleMG($l^{max}$) \\
+\>\>$R:= \rho - L(\varphi)$\\
+\>end while\\
+\\
+\> Procedure AMRVCycleMG(level $l$):
+\\
+\>if ($l = l^{max}$) then $R^l:= \rho^l - L^{nf}(\varphi^l,\varphi^{l-1})$ \\
+\>if ($l > 0 $) then \\
+\>\>$\varphi^{l,save} := \varphi^l$ on $\Omega^l$ \\
+\>\>$e^{l} :=0$ on $\Omega^l$ \\
+\>\>mgRelax($e^l, R^l, n_{ref}^{l-1}$) \\
+\>\>$\varphi^l := \varphi^l + e^l$ \\
+\>\>$e^{l-1} :=0$ on $\Omega^{l-1}$ \\
+\>\>$R^{l-1}:= Average(R^{l} - L^{nf}(e^l,e^{l-1}))$  on
+$\mathcal{C}_{n_{ref}^{l-1}}(\Omega^l)$ \\
+\>\>$R^{l-1}:= \rho^{l-1} - L^{comp,l-1}(\varphi)$  on
+$\Omega^{l-1}-\mathcal{C}_{n_{ref}^{l-1}}(\Omega^l)$ \\
+\>\>AMRVCycleMG($l-1$) \\
+\>\>$e^l := e^l + I_{pwc}(e^{l-1})$ \\
+\>\>$R^l := R^l - L^{nf,l}(e^l, e^{l-1})$ \\
+\>\> $\delta e^l := 0$ on $\Omega^l$ \\
+\>\>mgRelax($\delta e^l, R^l, n_{ref}^{l-1}$) \\
+\>\>$e^l := e^l + \delta e^l$ \\
+\>\>$\varphi^l := \varphi^{l,save} + e^l$ \\
+\>else \\        
+\>\> solve $L^{nf} (e^0) = R^0$ on $\Omega^0$. \\
+\>\>$\varphi^0 := \varphi^0 + e^0$ \\
+\>end if
+\end{tabbing}
+\caption{Pseudo-code description of the AMR multigrid algorithm.}
+\label{MGSUMMARY}
+\hrulefill
+\end{figure}

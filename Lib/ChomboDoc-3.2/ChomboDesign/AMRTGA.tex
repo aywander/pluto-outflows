@@ -1,0 +1,575 @@
+\section{Parabolic Equations -- the TGA scheme \label{section:TGA}}
+In this section, we describe our approach to solving parabolic
+equations of the form:
+\begin{equation}
+\frac{\partial \phi}{\partial t} = L(\phi) + S,
+\label{eqn:parabolicEqn}
+\end{equation}
+where $L$ is a second-order linear elliptic operator, and  $S$ is a
+source term. 
+
+To evolve $\phi$ in time from time $t^n$ to time $t^{n+1} = t^n +
+\Delta t$, we use a variant of the $L_0$-stable Runge-Kutta scheme
+presented by Twizell, Gumel, and Arigu (TGA) \cite{TGA}, which is
+second-order in time.  Our variation is based on time-centering the 
+source term $S$ at time $t^{n+\half} = t^n + \frac{\Delta t}{2}$, and
+is also described in \cite{martinColellaGraves:2008}. 
+
+Following \cite{TGA}, we discretize (\ref{eqn:parabolicEqn}) in time:
+\begin{equation}
+\phi^{n+1} = (I-\mu_1L)^{-1}(I-\mu_2L)^{-1}\bigl[(I+\mu_3L)\phi^n + \Delta t
+  (I +  \mu_4L)S^{n+\half}\bigr],
+\label{eqn:basicTGA}
+\end{equation}
+where $\phi^n = \phi(n \Delta t)$, $S^{n+\half} = S\bigl( (n+\half)\Delta
+t\bigr)$, and the coefficients $\mu_1, \mu_2, \mu_3, \mu_4$ are the
+values suggested in \cite{TGA}: 
+\begin{gather}
+\mu_1   =   \frac{2a - 1}{a + discr}\Delta t, \nonumber \\
+\mu_2   =   \frac{2a - 1}{a - discr}\Delta t, \nonumber \\
+\mu_3   =   (1-a)\Delta t, \nonumber \\
+\mu_4   =   (\half - a)\Delta t \nonumber \\
+a   =   2 - \sqrt{2} - \epsilon, \nonumber \\
+discr   =   \sqrt{a^2 - 4a + 2}, \nonumber 
+\end{gather}
+where $\epsilon$ is a small quantity (we use $10^{-8}$).  We use this 
+to define the operator $L^{TGA}(\phi^n,S^{n+\half})$ as follows: 
+\begin{eqnarray}
+L^{TGA}(\phi^n, S^{n+\half}) & \equiv & \frac{\phi^{n+1} - \phi^n}{\Delta t} -
+S^{n+\half} \label{eqn:defLTGA} \\
+& \approx & (L\phi)\Bigl( (n+\half)\Delta t\Bigr) + O(\Delta t^2). \nonumber
+\end{eqnarray}
+where $\phi^{n+1} = \phi^{n+1}(\phi^n,S^{n + \frac{1}{2}})$ is defined to be
+the expression (\ref{eqn:basicTGA}). 
+
+% The update proceeds as follows. We begin with the solution $\phi^n
+% \approx \phi(t^n)$ and the source term at the half-time
+% $S^{n+\half} \approx S(t^n + \frac{\Delta t}{2})$.
+
+To simplify the use of the TGA scheme, Chombo includes two classes which
+implement $L^{TGA}$ -- one for a single AMR level, and one for an
+entire AMR hierarchy.  Note that computing $L^{TGA}$ requires solving the
+heat equation and applying the operator $L$, these classes require
+that there be suitable {\tt AMRLevelOp}-derived operator classes which
+discretize the appropriate Helmholtz operator. 
+
+\subsection{The {\tt TGAHelmOp} and {\tt LevelTGAHelmOp} classes}
+Since implementing the TGA algorithm requires some additional
+functionality in addition to that specified in the {\tt AMRLevelOp<T>}
+class, we have the {\tt TGAHelmOp<T>} and {\tt LevelTGAHelmOp<T,
+  TFlux>} classes, which are general Helmholtz-type operators like
+$(\alpha + \nabla \cdot \beta \nabla)$  publicly derived from {\tt
+  AMRLevelOp<T>}.  
+ The multilevel TGA implementation uses {\tt TGAHelmOp}.  The
+ single-level TGA implementation requires two functions not needed by
+ the multilevel solve, so it uses {\tt LevelTGAHelmOp<T,TFlux>}, which is
+ publicly derived from {\tt TGAHelmOp<T>} and includes the extra required
+ functions. The {\tt AMRPoissonOp, ResistivityOp}, and {\tt
+   ViscousTensorOp} classes are derived from {\tt LevelTGAHelmOp}, and
+ so may be used by both of the TGA solvers. \\
+{\bf Additional functions required by {\tt TGAHelmOp<T>} and {\tt LevelTGAHelmOp<T,TFlux>}: }
+\begin{itemize}
+\item
+\begin{verbatim}
+virtual void setAlphaAndBeta(const Real& a_alpha,
+                             const Real& a_beta) = 0
+\end{verbatim}
+-- Set the Helmholtz equation constants in the operator.
+
+\item
+\begin{verbatim}
+virtual void diagonalScale(T& a_rhs) = 0
+virtual void diagonalScale(T& a_rhs, bool a_kappaWeighted) = 0
+\end{verbatim}
+-- Set the diagonal scaling of the operator.  For example, if solving
+$\rho(x) \frac{\partial \phi}{\partial t} = L(\phi)$, the diagonalScale
+would be $\rho$. In EB applications, even for constant coefficients,
+it means multiplication by $\kappa$.  
+
+\item
+\begin{verbatim}
+virtual void applyOpNoBoundary(T& a_ans, const T& a_phi) = 0
+\end{verbatim}
+-- Apply operator without any boundary or coarse-fine boundary conditions
+and no finer level. This implies that we've set ghost-cell values
+outside the operator and want to use them in the operator evaluation. 
+
+\end{itemize}
+
+{\bf Additional functions required by {\tt LevelTGAHelmOp<T,TFlux>}:}
+\begin{itemize}
+\item
+\begin{verbatim}
+virtual void fillGrad(const T& a_phi)
+\end{verbatim}
+-- This a function used in operators of fairly complex flux functions
+in which the gradient of the solution is computed and stored
+separately.  This function is to signal the operator to do said
+computation with the input data. The default implementation does nothing. 
+
+\item  
+\begin{verbatim}
+virtual void getFlux(TFlux&           a_flux,
+                     const T&         a_data,
+                     const Box&       a_grid,
+                     const DataIndex& a_dit,
+                     Real             a_scale) =0
+\end{verbatim}
+-- compute face-centered flux.
+\begin{itemize}
+\item {\tt flux} -- face-centered dataholder into which to place flux
+\item {\tt data} -- cell-centered data used to compute the flux
+\item {\tt grid} -- cell-centered box over which to compute
+  face-centered flux. 
+\item {\tt dit} -- DataIndex of grid box we're working with
+\item {\tt scale} -- scaling factor to multiply flux. 
+\end{itemize}
+
+\end{itemize}
+
+\subsection{The {\tt AMRTGA} class}
+The {\tt AMRTGA<T>} class is a templated implementation of the TGA
+algorithm designed to advance an entire multilevel hierarchy of AMR grids by
+one (non-subcycled) timestep where {\tt T} is the data holder for a
+single AMR level (like a {\tt   LevelData<FArrayBox>}. \\
+{\bf Public member functions:}
+\begin{itemize}
+
+\item
+\begin{verbatim}
+AMRTGA(const RefCountedPtr<AMRMultiGrid<T> >&   a_solver,
+       const AMRLevelOpFactory<T>&              a_factory,
+       const ProblemDomain&                     a_level0Domain,
+       const Vector<int>&                       a_refRat,
+       int                                      a_numLevels = -1,
+       int                                      a_verbosity = 0)
+\end{verbatim}
+-- constructor
+\begin{itemize}
+\item {\tt solver} -- AMRMultiGrid solver used to do the elliptic
+  solves. This should be predefined with the appropriate {\tt
+    TGAHelmOp} operators.
+\item {\tt factory} -- Factory which can be used to create {\tt
+    TGAHelmOp}s for this problem.
+\item {\tt level0Domain} -- problem domain on the coarsest level
+\item {\tt refRat} -- vector of refinement ratios
+\item {\tt numLevels} -- number of AMR levels 
+\item {\tt verbosity} -- how much output is written out. Higher number
+  is more verbose (default is 0).
+\end{itemize}
+
+\item
+\begin{verbatim}
+void oneStep(Vector<T*>&     a_phiNew,
+             Vector<T*>&     a_phiOld,
+             Vector<T*>&     a_source,
+             const Real&     a_dt,
+             int             a_lbase,
+             int             a_lmax)
+\end{verbatim}
+-- advances a parabolic PDE one timestep using TGA on a non-moving domain.
+\begin{itemize}
+\item {\tt phiNew} -- new-time solution computed using TGA.
+\item {\tt phiOld} -- old-time solution
+\item {\tt source} -- source term at the half-time
+\item {\tt dt}     -- timestep
+\item {\tt lbase}  -- coarsest level to be advanced
+\item {\tt lmax} -- finest level to be advanced
+\end{itemize}
+
+\end{itemize}
+ 
+\subsection{The {\tt BaseLevelTGA} and {\tt LevelTGA} classes}
+The {\tt BaseLevelTGA<T, TFlux, TFR>} class is a pure-virtual base
+class which implements the basic TGA scheme on a
+DisjointBoxLayout, which corresponds to solving on a single AMR
+level. The {\tt BaseLevelTGA} class is templated on {\tt T}, a
+(cell-centered) data holder over the entire {\tt DisjointBoxLayout}
+(which is the same template type {\tt T} used by the {\tt
+  AMRLevelOp}-derived operator, and which is the datatype of the
+solution on a single level), {\tt TFlux}, a face-centered data
+holder on a single patch, and {\tt TFR}, the appropriate FluxRegister
+type of object to store diffusive fluxes along any coarse-fine
+interfaces. 
+
+The simplest example of a {\tt BaseLevelTGA}-derived class is the {\tt
+  LevelTGA} class, which is a publicly-derived {\tt
+  BaseLevelTGA<LevelData<FArrayBox>, FluxBox, LevelFluxRegister>}. 
+Note that the {\tt BaseLevelTGA} objects are defined over the entire
+AMR hierarchy at once, and then advance a single-level as specified. \\
+{\bf Public member functions:}
+\begin{itemize}
+
+\item
+\begin{verbatim}
+BaseLevelTGA(const Vector<DisjointBoxLayout>&            a_grids,
+             const Vector<int>&                          a_refRat,
+             const ProblemDomain&                        a_level0Domain,
+             RefCountedPtr<AMRLevelOpFactory< T > >&     a_opFact,
+             const RefCountedPtr<AMRMultiGrid<T > >&     a_solver)
+\end{verbatim}
+-- constructor
+\begin{itemize}
+\item {\tt grids} -- grids over the entire AMR hierarchy
+\item {\tt refRat} -- refinement ratios
+\item {\tt level0domain} -- problem domain on coarsest level
+\item {\tt opFact} -- factory used to create {\tt LevelTGAHelmOp}s for
+  this problem. 
+\item {\tt solver} -- AMR Multigrid solver over entire AMR hierarchy,
+  pre-defined with the appropriate {\tt LevelTGAHelmOp}-derived operators.
+\end{itemize}
+
+\item
+\begin{verbatim}
+void updateSoln(T&                 a_phiNew,
+                T&                 a_phiOld,
+                T&                 a_src,
+                LevelData<TFlux>&  a_flux,
+                TFR*               a_FineFluxRegPtr,
+                TFR*               a_CrseFluxRegPtr,
+                const T*           a_crsePhiOldPtr,
+                const T*           a_crsePhiNewPtr,
+                Real               oldTime,
+                Real               crseOldTime,
+                Real               crseNewTime,
+                Real               dt,
+                int                a_level,
+                bool               a_zeroPhi = true,
+                int                a_fluxStartComponent = 0);
+\end{verbatim}
+-- update ALL components of phi
+\begin{itemize}
+\item {\tt phiNew} -- updated solution at oldTime + dt
+\item {\tt phiOld} -- solution at oldTime
+\item {\tt src} -- source term at (oldTime + 0.5*dt)
+\item {\tt flux} -- 
+\item {\tt FineFluxRegPtr} -- flux register for diffusive fluxes
+  along coarse-fine interface between this level ({\tt level}) and the
+  next-finer level ({\tt level}+1).
+\item {\tt CrseFluxRegPtr} -- flux register for diffusive fluxes
+  along coarse-fine interface between this level ({\tt level}) and the
+  next-coarser level ({\tt level}-1).
+\item {\tt crsePhiOldPtr} -- pointer to old-time coarse data (for
+  coarse-fine boundary conditions)
+\item {\tt crsePhiNewPtr} -- pointer to new-time coarse data (for
+  coarse-fine boundary conditions)
+\item {\tt oldTime} -- time centering of {\tt phiOld}
+\item {\tt crseOldTime} -- time centering of {\tt crsePhiOldPtr}
+\item {\tt crseNewTime} -- time centering of {\tt crsePhiNewPtr}
+\item {\tt dt} -- timestep
+\item {\tt level} -- AMR level which we're advancing
+\item {\tt zeroPhi} -- 
+\item {\tt fluxStartComponent} -- component at which to place first
+  component of flux
+\end{itemize}
+\item
+\begin{verbatim}
+void computeDiffusion(T&                a_DiffusiveTerm,
+                      T&                a_phiOld,
+                      T&                a_src,
+                      LevelData<TFlux>& a_flux,
+                      TFR*              a_FineFluxRegPtr,
+                      TFR*              a_crseFluxRegPtr,
+                      const T*          a_crsePhiOldPtr,
+                      const T*          a_crsePhiNewPtr,
+                      Real              a_oldTime,
+                      Real              a_crseOldTime,
+                      Real              a_crseNewTime,
+                      Real              a_dt,
+                      int               a_level);
+
+\end{verbatim}
+-- compute time-centered $L^{TGA}(\phi,S)$ for use in subsequent update
+operations.  In this case, we do solve for phiNew, then subtract
+source and phiOld back out to get L(phi). Function arguments have the
+same meanings as for the {\tt updateSoln} function.
+\begin{itemize}
+\item {\tt DiffusiveTerm} -- $L^{TGA}(\phi, S)$ as computed by this function.
+\end{itemize}
+
+\end{itemize}
+
+
+\section{TGA addendum for EB and non-unity identity coefficients}
+
+Consider the partial differential equation
+\begin{eqnarray}
+a \frac{\partial \phi}{\partial t} &=& L \phi + S \label{eqn:nonUnityParabolicEqn} \\
+a &=& a(x), ~~~~ a > 0. \notag
+\end{eqnarray}
+We can extend the TGA algorithm by defining 
+$$
+L_a \phi \equiv \frac{L \phi}{a}
+$$
+$$
+S_a \phi \equiv \frac{S}{a}
+$$
+The solution is given by
+$$
+(I-\mu_1 L_a)(I-\mu_2 L_a)\phi^{n+1}=(I+\mu_3 L_a) \phi^n + \dt (I+\mu_4 L_a)S_a
+$$
+Because $a$ (though non-zero), can be quite small, we are reluctant to
+have it in the denominator.    We use the handy identity $(AB)^{-1} =
+B^{-1}A^{-1}$ to get
+\begin{equation}
+(I - L)^{-1} = (a I - a L)^{-1} (a) \label{eqn:aLIdentity}
+\end{equation}
+to derive
+\begin{equation}
+\phi^{n+1}=(a I - \mu_1 L)^{-1}( a      (a I - \mu_2 L)^{-1}
+         [ (a I + \mu_3 L) \phi^n + \dt (a I + \mu_4 L)\frac{S}{a}]).
+  \label{eqn:nonUnityTGAUpdate}
+\end{equation}
+Note that we still have to divide the source term by the coefficient
+but, since this is typically density, it should be floored reasonably
+above zero.
+
+Finally, with embedded boundaries, we must also multiply out factors
+of the volume fraction $\kappa$.   $L$ is divided by $\kappa$ and
+$\kappa$ can be arbitrarily small.   We can reuse the above identity
+to obtain the following.
+$$
+\phi^{n+1}=(\kappa a I - \kappa \mu_1 L)^{-1}\kappa a \left[(\kappa a I - \kappa \mu_2 L)^{-1}
+         [ (\kappa a I + \kappa \mu_3 L) \phi^n +        \dt (\kappa  a I + \kappa \mu_4 L)\frac{S}{a}]) \right].
+$$
+Mercifully, we never have to divide by the volume fraction.
+
+To accommodate these variable coefficient issues {\tt LevelTGAHelmOp} needs
+some extra functions.
+
+\begin{itemize}
+\item   
+\begin{verbatim}
+virtual void  diagonalScale(T& a_rhs, bool a_kappaWeighted)
+\end{verbatim}
+  This function multiplies in place the input by the identity coefficient. 
+  In the case of EB, setting \verb a_kappaWeighting  to \verb true  means the 
+  input gets multiplied by $\kappa a$.
+
+\begin{verbatim}
+virtual void  diagonalScale(T& a_rhs)
+\end{verbatim}
+  This version of \verb diagonalScale  assumes that $\kappa$ weighting is 
+  desired in EB applications.
+
+\item
+\begin{verbatim}
+virtual void  divideByIdentityCoef(T& a_S)
+\end{verbatim}
+  This function
+  divides the input in place by the $a$ coefficient.    
+
+\end{itemize}
+
+\section{TGA with time-dependent operator coefficients}
+
+Consider a parabolic partial differential equation in which a quantity 
+$a \phi$ is conserved and in both $a$ and $\phi$ are time dependent:
+
+\begin{eqnarray}
+\frac{\partial (a \phi)}{\partial t} &=& L \phi + S \label{eqn:timeDepNonUnityParabolicEqn} \\
+a &=& a(\vec{x}, t), ~~~~ a > 0. \notag
+\end{eqnarray}
+
+For the purposes of this discussion, we assume that $a$ can be updated 
+explicitly, and that $a^n$ and $a^{n+1}$ are known and may be used in the 
+solution of (\ref{eqn:timeDepNonUnityParabolicEqn}) to obtain $\phi^{n+1}$ from 
+$\phi^n$.
+
+Equations of this form arise in the diffusion of energy and momentum in 
+compressible hydrodynamic flows.  In fluid flows with heat conduction, for 
+example, the energy per unit volume $E$ is related to both the mass density 
+$\rho$ and the temperature $T$ by the expression 
+
+\begin{equation}
+E = c_p \rho T
+\end{equation}
+
+\noindent
+where $c_p$ is the specific heat as measured under constant pressure. If we 
+assume that $c_p$ is constant within a material, the transfer of energy by 
+heat conduction throughout a body with thermal conductivity $K$ is described 
+by the conservation equation 
+
+\begin{equation}
+c_p \frac{\partial (\rho T)}{\partial t} = \nabla \cdot (K \nabla T) + S
+\label{eqn:heatConductionEqn}
+\end{equation}
+
+\noindent
+where $S$ is an external source of energy. The total energy is conserved in 
+this process. 
+
+\subsection{Implicit TGA update for $\phi$}
+
+We begin by expressing (\ref{eqn:timeDepNonUnityParabolicEqn}) in a form that 
+more closely resembles (\ref{eqn:nonUnityParabolicEqn}). The time change in 
+$a \phi$ is
+
+\begin{equation}
+\frac{\partial (a \phi)}{\partial t} = 
+  \left[\left(\frac{\partial a}{\partial t}\right) \phi + 
+            a \left(\frac{\partial \phi}{\partial t}\right)\right].
+\end{equation}
+
+\noindent
+Thus, we can express the evolution equation for $\phi$ as
+
+\begin{equation}
+a \frac{\partial \phi}{\partial t} = L(\phi) + S 
+ - \left(\frac{\partial a}{\partial t}\right) \phi
+\label{eqn:dphidt}
+\end{equation}
+
+\noindent
+Since we have explicitly updated $a$ and have $a^{n+1}$ as well as $a^n$, 
+we may explicitly estimate the second term on the right hand side of 
+(\ref{eqn:dphidt}) as a source using the first-order finite difference 
+
+\begin{equation}
+\left(\frac{\partial a}{\partial t}\right) \phi \approx 
+  \frac{(a^{n+1} - a^n)}{\Delta t} \phi^n.
+\end{equation}
+
+\noindent
+Because this expression appears on the right hand side of (\ref{eqn:dphidt}), 
+it is then multiplied by a factor of $\Delta t$ and rendered second-order 
+accurate.
+
+In order to conserve $a \phi$, it is crucial that we use values of $a$ at the 
+correct time centerings in the TGA update for $\phi$. We define
+
+\begin{eqnarray}
+L_a(t) &\equiv& \frac{L(\phi, t)}{a(t)} \\
+S_a(t) &\equiv& \frac{S(t) - \phi^n (a^{n+1} - a^n)/\Delta t}{a(t)}
+\end{eqnarray}
+
+\noindent
+where we have added $t$ as a parameter to all time-dependent quantities to 
+emphasize their time dependence. The TGA update for $\phi$ is then written
+
+\begin{eqnarray}
+\phi^{n+1} =& [I - \mu_1 L_a(t^{n+1})]^{-1}[I - \mu_2 L_a(t^*)]^{-1} \times \notag \\
+            & \left([I + \mu_3 L_a(t^n)]\phi^n + 
+                   \Delta t [I + \mu_4 L_a(t^{n+\half})] S_a(t^{n+\half})\right). \label{eqn:TimeDepTGAUpdate}
+\end{eqnarray}
+
+\noindent
+where $t^*$ is the ``intermediate" time used in the TGA update. Hereafter, we
+use abbreviated superscripts on $a$, $L$, and $S$ to refer to their time 
+centerings.
+
+Using the identity (\ref{eqn:aLIdentity}) and multiplying the last two terms 
+by $a^n/a^n$ and $a^{n+\half}/a^{n+\half}$ respectively, we obtain the expression
+
+\begin{eqnarray}
+\phi^{n+1} =& [a^{n+1} I - \mu_1 L^{n+1}]^{-1}a^{n+1} 
+              [a^* I - \mu_2 L^*]^{-1}a^* \times \label{eqn:expandedTimeDepTGAUpdate} \\
+            & \left(\frac{1}{a^n} [a^n I + \mu_3 L^n]\phi^n + 
+                    \frac{\Delta t}{a^{n+\half}} [a^{n+\half} I + \mu_4 L^{n+\half}] 
+                                                 [\frac{S^{n+\half} - \phi^n (a^{n+1} - a^n)/\Delta t}{a^{n+\half}}]\right). \notag 
+\end{eqnarray}
+
+\noindent
+This expression is more complicated than (\ref{eqn:nonUnityTGAUpdate}) because
+the various factors of $a$ are evaluated at different times and thus do not 
+cancel.
+
+\subsubsection{Embedded boundary considerations}
+
+The same analysis can be carried out in the presence of irregular cells near 
+embedded boundaries, but since the volume fraction $\kappa$ is constant in 
+time, the same factors appear as in (\ref{eqn:nonUnityTGAUpdate}). In the 
+Chombo implementation of this algorithm, factors of $a$ and $L$ in the 
+numerator each include a factor of $\kappa$, but factors of $a$ in the 
+denominator do not, so we must take special care in computing $\phi^{n+1}$.
+
+To illustrate how these factors must be treated in Chombo, we include all 
+factors of $\kappa$ instead of accounting for cancellations.  In this 
+case the expression for $\phi^{n+1}$  within irregular cells with the 
+appropriate factors of $\kappa$ is
+
+\begin{eqnarray}
+\phi^{n+1} =& [\kappa a^{n+1} I - \mu_1 \kappa L^{n+1}]^{-1}\kappa a^{n+1} 
+              [\kappa a^* I - \mu_2 \kappa L^*]^{-1}\kappa a^* \times \label{eqn:expandedTimeDepTGAUpdateWithKappas} \\
+            & \left(\frac{1}{\kappa a^n} [\kappa a^n I + \mu_3 \kappa L^n]\phi^n + 
+                    \frac{\Delta t}{\kappa a^{n+\half}} [\kappa a^{n+\half} I + \mu_4 \kappa L^{n+\half}] 
+                                                 [\frac{S^{n+\half} - \phi^n (a^{n+1} - a^n)/\Delta t}{a^{n+\half}}]\right). \notag 
+\end{eqnarray}
+
+\noindent
+The factors of $\kappa$ in the denominator cancel with the factor, say, in 
+front of $a^*$. We can implement this cancellation by calling \verb diagonalScale  with a 
+\verb a_kappaWeighted=false  to indicate that $a^*$ should {\em not} be 
+multiplied by $\kappa$. Our final expression for $\phi^{n+1}$ for 
+operators with time-dependent coefficients in irregular cells is
+
+\begin{eqnarray}
+\phi^{n+1} =& [\kappa a^{n+1} I - \mu_1 \kappa L^{n+1}]^{-1}\kappa a^{n+1} 
+              [\kappa a^* I - \mu_2 \kappa L^*]^{-1} a^* \times \label{eqn:finalTimeDepTGAUpdate} \\
+            & \left(\frac{1}{a^n} [\kappa a^n I + \mu_3 \kappa L^n]\phi^n + 
+                    \frac{\Delta t}{a^{n+\half}} [\kappa a^{n+\half} I + \mu_4 \kappa L^{n+\half}] 
+                                                 [\frac{S^{n+\half} - \phi^n (a^{n+1} - a^n)/\Delta t}{a^{n+\half}}]\right). \notag 
+\end{eqnarray}
+
+\subsection{Conservative calculation of $L(\phi)$}
+After $\phi^{n+1}$ is computed, we obtain a conservative value for 
+$L(\phi)$ by calculating
+
+\begin{equation}
+L(\phi) = \frac{(a^{n+1} \phi^{n+1} - a^n \phi^n)}{\Delta t} - S.
+\end{equation}
+
+\subsection{Setting the time centering of a {\tt LevelTGAHelmOp}}
+(\ref{eqn:expandedTimeDepTGAUpdate}) is correct for any time-dependent entities
+$a(t)$ and $L(t)$, but we need a way to obtain these properly-centered values
+in practice. Since our algorithm is second-order accurate, we can compute 
+a time-centered value for $a^{n+\mu}$ or $L^{n+\mu}$ by interpolating linearly
+between the beginning-of-step values $a^n$, $L^n$ and their end-of-step values 
+$a^{n+1}$, $L^{n+1}$ {\em if we know their values at $t^{n+1}$ beforehand}. 
+The TGA algorithm sets the time centering of a {\tt LevelTGAHelmOp} by calling 
+the {\tt setTime} method:
+
+\begin{verbatim}
+virtual void setTime(Real a_oldTime, Real a_mu, Real a_dt)
+\end{verbatim}
+Here, \verb a_oldTime  is the beginning-of-step time $t^n$, \verb a_mu  is 
+the fraction of the time step that has elapsed, and \verb a_dt  is the 
+step size. With these three parameters, one can compute $t^{n+\mu}$ and can 
+interpolate $a$ or $L$ between $t^n$ and $t^{n+1}$ as needed. For example, 
+the time-interpolated value for $a$ at a fraction $\mu$ through the step is
+
+\begin{eqnarray}
+a^{n+\mu} &=& a^n + \mu \Delta t \left(\frac{a^{n+1} - a^n}{\Delta t}\right) \notag \\
+          &=& (1 - \mu) a^n + \mu a^{n+1}
+\end{eqnarray}
+
+\subsubsection*{Implementation details}
+
+Currently, the TGA solver assumes that a {\tt LevelTGAHelmOp} is time 
+independent unless otherwise specified. If you wish to create a time-dependent 
+subclass of {\tt LevelTGAHelmOp}, that subclass must call the single-argument
+{\tt LevelTGAHelmOp} constructor that specifies that it is time-dependent:
+
+\begin{verbatim}
+LevelTGAHelmOp(bool a_isTimeDependent)
+\end{verbatim}
+
+\noindent
+This allows the TGA solver to query the operator via its {\tt isTimeDependent} 
+method:
+
+\begin{verbatim}
+bool isTimeDependent() const
+\end{verbatim}
+
+\noindent
+Note that {\tt LevelTGAHelmOp::isTimeDependent} is {\em not} a virtual method--
+it simply returns the flag passed to the above constructor. The time dependence 
+of an operator object must be established at the time of its construction.
+
+Additionally, if the operator needs to interpolate any of its coefficients 
+over the time step, it should store the beginning-of-step and end-of-step 
+values for such coefficients and ensure that they are valid before the 
+TGA solve.
+

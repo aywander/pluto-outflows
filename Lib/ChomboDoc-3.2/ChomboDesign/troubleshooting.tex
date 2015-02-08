@@ -1,0 +1,21 @@
+
+\def\bi{\begin{itemize}}
+\def\ei{\end{itemize}}
+\def\I{\item}
+\begin{enumerate}
+
+\I {\tt error: 'H5Pset\_fapl\_mpio' was not declared in this scope}
+\bi
+ \I This is a compilation error.  The user is trying to build the parallel version of Chombo
+    but is not linking against an HDF5 build that has used {\tt --enable-parallel} when it 
+    was {\tt configure}d
+ \I Most Chombo users need access to both a serial and a parallel version of their HDF5 libraries.
+    These are distinguished in the Chombo makefiles as {\tt HDFINCFLAGS} and {\tt HDFMPIINCFLAGS}
+    (these values should be different).
+\ei
+ 
+
+
+\end{enumerate}
+
+

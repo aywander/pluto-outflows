@@ -1,0 +1,223 @@
+\subsection{Convergence Tests}
+We have a sphere geometry with a trigonometric correct answer.   
+$$
+\phi_{exact} = sin(Ax) sin(By) sin(Cz)
+$$
+where $A, B, C$ are given as  input parameters.
+The truncation error is defined by
+$$
+\tau = L(\phi) - L(\phi_{exact})
+$$
+The solution Error is defined by p
+$$
+E = \phi - \phi_{exact}
+$$
+The first truncation error test refines all irregular cells.
+The input file is in figure \ref{input1}.  The results are in figure \ref{results1}.
+This next truncation error test only refines the left half of the domain, forcing EBCF
+crossing.  The input file is in figure \ref{input2}  and the results
+are in figure \ref{results2}.
+The first solution error test refines all irregular cells.
+The input file is in figure \ref{input3}.  The results are in figure \ref{results3}.
+This next solution error test only refines the left half of the domain, forcing EBCF
+crossing.  The input file is in figure \ref{input4}  and the results
+are in figure \ref{results4}.
+
+\begin{figure}
+\begin{tiny}
+\begin{verbatim}
+mg_relax_type  = 1
+mg_num_smooths = 4
+mg_hang        = 1.0e-15
+mg_eps         = 1.0e-13
+mg_iter_max    = 40
+mg_num_cycles = 1
+testverbosity = 1
+do_error_output = 1
+eb_bc_type     = 3
+domain_bc_type = 2
+order_ebbc     = 2
+trig = 1.0 2.0 3.0
+alpha = 0.0
+beta  = 1.0
+max_level    = 1
+ref_ratio    = 2 2 2 2 2 
+n_cells      =  64 64 64
+block_factor = 8
+fill_ratio   = 0.7
+buffer_size  = 2
+max_grid_size = 16
+domain_length = 1.0 1.0 1.0
+which_geom = 5
+sphere_center = 0.5 0.5 0.5
+sphere_radius  = 0.2	
+\end{verbatim}
+\end{tiny}
+\caption{Input file for no eb-cf crossing truncation error test.}
+\label{input1}
+\end{figure}
+
+\begin{figure}
+\begin{tiny}
+\begin{verbatim}
+testverbosity = 1
+do_error_output = 1
+eb_bc_type     = 3
+domain_bc_type = 3
+order_ebbc     = 2
+trig = 1.3 2.2 3.1
+alpha = 0.0
+beta  = 1.0
+max_level    = 1
+ref_ratio    = 2 2 2 2 2 
+n_cells      = 32 32 32
+block_factor = 8
+fill_ratio   = 0.7
+buffer_size  = 2
+max_grid_size = 16
+domain_length = 1.0 1.0 1.0
+which_geom = 5
+sphere_center = 0.5 0.5 0.5
+sphere_radius  = 0.25	
+\end{verbatim}
+\end{tiny}
+\caption{Input file for no eb-cf crossing solution error test.}
+\label{input3}
+\end{figure}
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|} \hline
+D & N &  Coarse Error & Fine Error & Order\\
+\hline \hline 
+2 & $\infty$ &    	 6.707058e-02 & 3.404632e-02 & 9.781811e-01 \\ 
+2 & 1        &    	 1.185101e-03 & 3.083721e-04 & 1.942266e+00 \\ 
+2 & 2        &   	 3.369470e-03 & 1.180635e-03 & 1.512959e+00 \\ 
+3 & $\infty$ &    	 2.292944e-01 & 1.139643e-01 & 1.008619e+00 \\ 
+3 & 1        &    	 3.029558e-03 & 7.814879e-04 & 1.954812e+00 \\
+3 & 2        &   	 7.149217e-03 & 2.437989e-03 & 1.552094e+00 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Truncation error convergence rates without EBCF crossing.}
+\label{results1}
+\end{table}
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|} \hline
+D & N &  Coarse Error & Fine Error & Order\\
+\hline \hline 
+2 & $\infty$ &   2.576983e-03 & 6.804803e-04 & 1.921058e+00 \\  	  
+2 & 1        &   3.071990e-04 & 7.511675e-05 & 2.031967e+00 \\ 	  
+2 & 2        &   4.782005e-04 & 1.195937e-04 & 1.999475e+00 \\ 	  
+3 & $\infty$ &   2.710287e-03 & 7.082757e-04 & 1.936062e+00 \\ 	  
+3 & 1        &   2.589683e-04 & 5.907475e-05 & 2.132162e+00 \\ 	 
+3 & 2        &   3.864260e-04 & 9.288468e-05 & 2.056680e+00 \\	 
+\hline
+\end{tabular}
+\end{center}
+\caption{Solution error convergence rates without EBCF crossing.}
+\label{results3}
+\end{table}
+
+\begin{figure}
+\begin{tiny}
+\begin{verbatim}
+testverbosity = 1
+do_error_output = 1
+eb_bc_type     = 3
+domain_bc_type = 2
+order_ebbc     = 2
+trig = 1.0 2.0 3.0
+alpha = 0.0
+beta  = 1.0
+max_level    = 2
+ref_ratio    = 2 2 2 2 2 
+n_cells      =  32 32 32
+block_factor = 8
+fill_ratio   = 0.7
+buffer_size  = 2
+max_grid_size = 16
+domain_length = 1.0 1.0 1.0
+which_geom = 5
+sphere_center = 0.6 0.5 0.5
+sphere_radius  = 0.2
+which_tags = 3
+\end{verbatim}
+\end{tiny}
+\caption{Input file for eb-cf crossing truncation error test}
+\label{input2}
+\end{figure}
+
+\begin{figure}
+\begin{tiny}
+\begin{verbatim}
+mg_relax_type  = 1
+mg_num_smooths = 4
+mg_hang        = 1.0e-15
+mg_eps         = 1.0e-13
+mg_iter_max    = 40
+mg_num_cycles = 1
+testverbosity = 1
+do_error_output = 1
+eb_bc_type     = 3
+domain_bc_type = 3
+order_ebbc     = 2
+trig = 1.3 2.2 3.1
+alpha = 1.0
+beta  = 1.0
+max_level    = 2
+ref_ratio    = 2 2 2 2 2 
+n_cells      = 32 32 32
+block_factor = 8
+fill_ratio   = 0.7
+buffer_size  = 2
+max_grid_size = 16
+domain_length = 1.0 1.0 1.0
+which_geom = 5
+sphere_center = 0.6 0.5 0.5
+sphere_radius  = 0.15	
+which_tags = 3
+\end{verbatim}
+\end{tiny}
+\caption{Input file for eb-cf crossing solution error test.}
+\label{input4}
+\end{figure}
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|} \hline
+D & N &  Coarse Error & Fine Error & Order\\
+\hline \hline 
+2 & $\infty$ &  2.764243e+00 & 2.461739e+00 & 1.672068e-01 \\ 
+2 & 1        & 6.579673e-03 & 1.443258e-03 & 2.188686e+00 \\ 
+2 & 2        & 5.124644e-02 & 1.612249e-02 & 1.668377e+00 \\ 
+3 & $\infty$ & 6.636587e+00 & 6.990659e+00 & -7.498702e-02 \\ 
+3 & 1        & 1.584731e-02 & 4.300215e-03 & 1.881758e+00 \\ 
+3 & 2        & 8.827088e-02 & 4.149365e-02 & 1.089047e+00 \\ 
+\hline
+\end{tabular}
+\end{center}
+\caption{Truncation error convergence rates with EBCF crossing.}
+\label{results2}
+\end{table}
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|} \hline
+D & N &  Coarse Error & Fine Error & Order\\
+\hline \hline 
+2 & $\infty$ &    3.451869e-03 & 8.783769e-04 & 1.974465e+00 \\ 
+2 & 1        &    2.345537e-04 & 5.695633e-05 & 2.041990e+00 \\ 
+2 & 2        &    3.955198e-04 & 9.959345e-05 & 1.989627e+00 \\ 
+3 & $\infty$ &    5.601133e-03 & 1.528374e-03 & 1.873721e+00 \\ 
+3 & 1        &    2.655585e-04 & 6.042901e-05 & 2.135717e+00 \\ 
+3 & 2        &    4.058946e-04 & 9.549447e-05 & 2.087616e+00 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Solution error convergence rates with EBCF crossing.}
+\label{results4}
+\end{table}
+

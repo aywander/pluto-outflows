@@ -1,0 +1,71 @@
+\subsection{Class {\tt QuadCFInterp}}
+
+The class {\tt QuadCFInterp} interpolates data onto
+the ghost cells along the coarse-fine interface of a
+\verb/LevelData<FArrayBox>/, using the algorithm described in section
+\ref{sec:quadB}.  It uses one-sided  differencing in places where the
+stencil to do full centered differencing is partially covered by
+finer grids. The user interface of {\tt QuadCFInterp} is given as
+follows. 
+
+\begin{itemize}
+
+\item
+\begin{verbatim} 
+void define(const DisjointBoxLayout& a_fineBoxes,
+            const DisjointBoxLayout* a_coarBoxes,
+            Real a_dx, 
+            int a_refRatio,
+            int a_nComp,
+            const ProblemDomain& a_domf);
+
+void define(const DisjointBoxLayout& a_fineBoxes,
+            const DisjointBoxLayout* a_coarBoxes,
+            Real a_dx, 
+            int a_refRatio,
+            int a_nComp,
+            const Box& a_domf);
+\end{verbatim}
+Full define function. This makes all coarse-fine information and sets
+internal variables.
+\\ {\bf Arguments:} 
+  \begin{itemize}
+  \item
+  \verb/a_fineBoxes/ (not modified):
+  The grids at the current level.
+  \item
+  \verb/a_coarBoxes/ (not modified):
+  The grids for the next coarser level in the AMR hierarchy.
+  \item
+  \verb/a_dx/ (not modified):
+  The grid spacing at the current level.
+  \item
+  \verb/a_refRatio/ (not modified):
+  The refinement ratio between this level and the next coarser level in the
+  AMR hierarchy.
+  \item
+  \verb/a_nComp/ (not modified):
+  The number of components in the data to be interpolated.
+  \item \verb/a_domf/ (not modified):
+  The problem domain at the fine level.
+  \end{itemize}
+
+\item 
+\begin{verbatim} 
+void coarseFineInterp(LevelData<FArrayBox>& a_phif,
+                      const LevelData<FArrayBox>& a_phic) const;
+\end{verbatim}
+Coarse-fine interpolation operator.  Fills all the ghost cells on 
+all the faces of the \verb/LevelData<FArrayBox> a_phif/
+with values interpolated with \verb/a_phic/.
+\\ {\bf Arguments:} 
+  \begin{itemize}
+  \item
+  \verb/a_phif/ (modified):
+  The solution at the current level.
+  \item
+  \verb/a_phic/ (not modified):
+  The solution at the next coarser level in the AMR hierarchy.
+  \end{itemize}
+
+\end{itemize}

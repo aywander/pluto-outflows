@@ -1,0 +1,930 @@
+
+\section{Architecture Diagram}
+
+The {\tt AMRGodunov} code makes extensive use of the AMR
+time-dependent infrastructure contained in the Chombo libraries. A
+basic schematic of the class relationships between {\tt Chombo} and
+{\tt AMRGodunov} classes is depicted in Figure \ref{fig:AMRGod}. 
+Where appropriate, the particular implementation for a polytropic gas
+will be referenced.
+
+\begin{figure}
+\centerline{\epsfig{width=7.0in,figure=AMRGod.eps}}
+\caption{Software configuration diagram for the AMRGodunov code showing
+basic relationships between AMRGodunov classes and Chombo classes for
+the polytropic gas example.}
+\label{fig:AMRGod}
+\end{figure}
+
+
+
+\section{Data Design}
+The AMR unsplit hyperbolic (AMRGodunov) code makes extensive use
+of the Chombo C++ libraries.  The important data structures used
+in this application are all provided by Chombo, as are many of the
+utilities that facilitate implementations of block-structured
+adaptive algorithms.  For more detailed descriptions of these classes,
+see the Chombo documentation \cite{ChomboDesign}.
+
+\subsection{Global Data Structures}
+The important variables in the AMRGodunov code are in the conserved
+variable vector $\vec{U}$. These variables are contained in container
+classes provided by {\tt Chombo}.  
+
+\subsubsection{Chombo Container Classes}
+A logically rectangular region in space is defined by a {\tt Box}.
+Cell-centered data on an individual {\tt Box} is generally
+contained in an {\tt FArrayBox}.
+
+A set of disjoint {\tt Box}es (generally corresponding to all
+the grids at a single refinement level) is defined by a {\tt
+DisjointBoxLayout}.  Data on a {\tt DisjointBoxLayout} is generally
+contained in a {\tt LevelData}, which is a templated container class
+to facilitate computations on disjoint unions of rectangles.  
+
+All of these classes are further documented in the Chombo
+documentation \cite{ChomboDesign}.
+
+\subsubsection{Time-dependent AMR}
+The basic structure for the code is provided by the {\tt Chombo
+AMRTimeDependent} library.  The {\tt AMR} class manages the
+global recursive timestep, along with initialization of the hierarchy of
+grids and other functionality involving data on more than one level of
+the AMR grids.
+
+The {\tt AMRLevel} class manages data and functionality for a single
+AMR level, including the single-level advance.  The {\tt
+AMRLevelPolytropicGas} class is derived from the {\tt AMRLevel} class and 
+contains the functionality specific to the polytropic gas algorithm.  
+
+
+\subsection{Internal Software Data Structures}
+For the polytropic gas example, the {\tt AMRLevel}-derived class
+{\tt AMRLevelPolytropicGas} contains the primary data fields necessary to
+update the solution on one AMR level, in particular the old- and
+new-time conserved variable fields $(\vec{U}(t^\ell)$ and
+$\vec{U}(t^\ell  + \Delta t^\ell))$. 
+{\tt AMRLevelPolytropicGas} also contains a {\tt LevelGodunov} object as a
+member.
+The {\tt LevelGodunov} class contains the functionality necessary for
+updating the conserved variables on a single level by one timestep.
+{\tt LevelGodunov} contains as a member a {\tt PatchGodunov} object,
+which in turn contains a {\tt GodunovPhysics}-derived object.
+The {\tt GodunovPhysics}-derived class contains the physics-dependent part
+of of the algorithm; for the polytropic gas example, this is the {\tt
+PolytropicPhysics} class.
+
+\section{Class Hierarchy}
+
+For many hyperbolic conservation law applications, it is
+necessary only to implement the {\tt GodunovPhysics} and {\tt PhysIBC}
+interfaces for that application, leaving the remainder of the code unchanged.  
+The principal AMRGodunov classes follow.
+
+\begin{itemize}
+\item {\tt AMRLevel<name>}, the {\tt AMRLevel}-derived class
+        that is driven by the {\tt AMR} class.  This class is
+        application/problem-dependent but is included here to
+        document some of the data members and functions that
+        will probably be common to many applications.
+        This is where updates of $U$ due to the source terms,
+        $S$, need to be implemented.
+\item {\tt LevelGodunov}, a class owned by {\tt AMRLevel<name>}.
+        {\tt LevelGodunov} advances the solution on a level
+        and can exist outside the context of an AMR hierarchy.
+        This class makes possible Richardson extrapolation for
+        error estimation (not currently implemented).
+\item{\tt PatchGodunov}, a class that encapsulates the 
+        operations required to advance a solution on a single
+        patch/grid.  {\tt PatchGodunov} owns a pointer to 
+	a {\tt GodunovPhysics-}
+        derived class.   {\tt PatchGodunov} also owns a {\tt
+        GodunovUtilities} object.
+\item {\tt GodunovUtilities}, a class that handles operations
+  common to many Godunov applications, such as slope calculations,
+construction of PPM interpolants, limiters, artificial viscosity
+coefficients, and flattening. These operations are independent of the
+details of the physical system to which the method is being applied,
+although not all of them are generally applicable: for example,
+artificial viscosity can be computed only for those systems in which the
+primitive variables include a vector velocity, i.e., continuum-mechanical
+systems. 
+\item {\tt GodunovPhysics} is a base class that provides an interface
+  to the physics-dependent parts of the Godunov application.
+  For many hyperbolic conservation law applications, it is necessary only to
+  implement the {\tt GodunovPhysics} and {\tt PhysIBC} interfaces 
+  for that application, leaving the remainder of the code unchanged.
+\item {\tt PhysIBC}, is a base class that encapsulates 
+        initial conditions and flux-based boundary conditions.
+\end{itemize}
+
+\subsection{Class {\tt AMRLevel<name>} }
+
+{\tt AMRLevel<name>} is the {\tt AMRLevel}-derived class with 
+which the {\tt AMR} class will directly interact.  Its user
+interface is therefore constrained by the {\tt AMRLevel} 
+interface.  It is also an application/problem-dependent portion of
+the code, but there are important data members and functions that will
+probably be part of any implementation.  These are documented here.
+The important data members of an {\tt AMRLevel<name>}
+class are as follows:
+\begin{itemize}
+\item \begin{small} \begin{verbatim}
+LevelData<FArrayBox> m_UOld, m_UNew;
+\end{verbatim}\end{small}
+The conserved variables at old and new times.  Both need to be kept
+because subcycling in time requires temporal interpolation.
+
+\item \begin{small} \begin{verbatim}
+Real m_cfl, m_dx;
+\end{verbatim}\end{small}
+CFL number and grid spacing for this level.
+
+\item \begin{small} \begin{verbatim}
+FineInterp m_fineInterp;
+\end{verbatim}\end{small}
+Interpolation operator for use during regridding, which fills
+newly-refined regions that were previously only covered by coarser
+data.  
+
+\item \begin{small} \begin{verbatim}
+CoarseAverage m_coarse_average;
+\end{verbatim}\end{small}
+Averaging operator, which replaces data on coarser levels with
+the average of the data on this level where they coincide in space.
+\end{itemize}
+
+The {\tt AMRLevel<name>} implementation of {\tt AMRLevel}
+currently does the following for each of the important interface
+functions:
+\begin{itemize}
+\item \begin{small} \begin{verbatim}
+Real advance()
+\end{verbatim}\end{small}
+This function advances the conserved variables by one time step.  It
+calls the {\tt LevelGodunov::step} function to advance the hyperbolic
+portion of (\ref{eqn:hyperCons}).  If there are source terms, this is
+where the user can incorporate them in the advance of the conserved
+variables.  The time step returned by this function is stored in
+member data \verb/m_dtNew/.
+
+\item \begin{small} \begin{verbatim}
+void postTimeStep()
+\end{verbatim}\end{small}
+This function calls refluxing along the coarse-fine interface with the
+next finer level, and replaces the solution with an average of
+finer-level data in regions covered by the next finer level.  
+
+\item \begin{small} \begin{verbatim}
+void regrid(const Vector<Box>& a_newGrids)
+\end{verbatim}\end{small}
+This function changes the union of rectangles over which the data is
+defined.  Where the old and new sets of rectangles intersect, solution
+data is copied from the existing data on this level. In places where
+there was only data from the next coarser level, piecewise linear
+interpolation is used to fill in the data.  
+
+\item \begin{small} \begin{verbatim}
+void initialData()
+\end{verbatim}\end{small}
+In this function, the initial state is filled by calling
+the initial condition member data of \verb/m_patchGodunov/, namely
+\verb/getPhysIBC()->initialize()/.    
+
+\item \begin{small} \begin{verbatim}
+void computeDt()
+\end{verbatim}\end{small}
+This function returns the time step stored during
+the \verb/advance()/ call, \verb/m_dtNew/.
+
+\item \begin{small} \begin{verbatim}
+void computeInitialDt()
+\end{verbatim}\end{small}
+This function calculates the time step using the maximum wavespeed returned
+by a \verb/LevelGodunov::getMaxWaveSpeed/ call.  Given the maximum wavespeed,
+$w$, the initial time step multiplier, $K$, and the grid spacing at this
+level, $h$, then the initial time step, $\Delta t$, is given by:
+\begin{equation}
+\Delta t= K \frac{h}{w}.
+\end{equation}
+
+\item \begin{small} \begin{verbatim}
+DisjointBoxLayout loadBalance(const Vector<Box>& a_grids)
+\end{verbatim}\end{small}
+Calls the Chombo load balancer to create a load-balanced layout
+on the given boxes.  This is returned.
+\end{itemize}
+
+\subsection{Class {\tt LevelGodunov} }
+{\tt LevelGodunov} is a class owned by {\tt AMRLevel<name>}.
+{\tt LevelGodunov} advances the solution on a level and can exist outside
+the context of an AMR hierarchy.  This class makes possible Richardson
+extrapolation for error estimation.  The important functions of the public
+interface of {\tt LevelGodunov} are:
+\begin{itemize}
+\item \begin{small} \begin{verbatim}
+void define(const DisjointBoxLayout&    a_thisDisjointBoxLayout,
+            const DisjointBoxLayout&    a_coarserDisjointBoxLayout,
+            const ProblemDomain&        a_domain,
+            const int&                  a_refineCoarse,
+            const Real&                 a_dx,
+            const GodunovPhysics* const a_godunovFactory,
+            const int&                  a_normalPredOrder,
+            const bool&                 a_useFourthOrderSlopes,
+            const bool&                 a_usePrimLimiting,
+            const bool&                 a_useCharLimiting,
+            const bool&                 a_useFlattening,
+            const bool&                 a_useArtificialViscosity,
+            const Real&                 a_artificialViscosity,
+            const bool&                 a_hasCoarser,
+            const bool&                 a_hasFiner);
+\end{verbatim}\end{small}
+     Define the internal data structures.  On the coarsest level, an empty
+     DisjointBoxLayout is passed in for coarserDisjointBoxLayout.
+\begin{itemize}    
+\item \verb/a_thisDisjointBoxLayout, a_coarserDisjointBoxLayout/:
+     The layouts at this level and the next coarser level.  
+     For the coarsest level, an empty {\tt DisjointBoxLayout}
+     is passed in for \verb/coarserDisjointBoxLayout/.
+\vspace{-0.07in}
+\item \verb/a_domain/:  The problem domain on this level.
+\vspace{-0.07in}
+\item \verb/a_refineCoarse/:  The refinement ratio between
+     this level and the next coarser level.
+\vspace{-0.07in}
+\item \verb/a_dx/:  The grid spacing on this level.
+\vspace{-0.07in}
+\item \verb/a_godunovFactory/:  The factory for the problem specific physics
+        and analysis of the PDE being solved, e.g., characteristic analysis.
+        The \verb/GodunovPhysics/ class is described below.
+        Note:  this object is its own factory.
+\vspace{-0.07in}
+\item \verb/a_normalPredOrder/:  The order of the normal predictor used
+        during numerical integration.  This must have a value of 1 (PLM) or 2
+        (PPM).
+\vspace{-0.07in}
+\item \verb/a_useFourthOrderSlopes/:  If true, use a 4th-order slope
+        computation.  Otherwise use a 2nd-order slope computation.
+\vspace{-0.07in}
+\item \verb/a_usePrimLimiting/:  If true, do slope limiting on the primitive
+        variables.  Note:  Currently, simultaneous slope limiting of the
+        primitive and characteristic variables is not supported.
+\vspace{-0.07in}
+\item \verb/a_useCharLimiting/:  If true, do slope limiting on the
+        characteristic variables.  Note:  Currently, simultaneous slope
+        limiting of the primitive and characteristic variables is not
+        supported.
+\vspace{-0.07in}
+\item \verb/a_useFlattening/:  If true, do slope flattening.  Note:  This
+        requires the enabling of 4th-order slope computations and some form
+        of slope limiting.
+\vspace{-0.07in}
+\item \verb/a_useArtificialViscosity/:  If true, apply artificial viscosity.
+\vspace{-0.07in}
+\item \verb/a_artificialViscosity/:  The artificial viscosity coefficient used
+in applying artificial viscosity.
+\vspace{-0.07in}
+\item \verb/a_hasCoarser, a_hasFiner/:  This level has a coarser (or finer)
+        level.  These are used when coarser or finer levels are
+        needed or when data that exists between levels (e.g., flux registers)
+        is needed.
+\end{itemize}      
+
+\item \begin{small} \begin{verbatim}
+Real step(LevelData<FArrayBox>&       a_U,
+          LevelData<FArrayBox>&       a_flux[CH_SPACEDIM],
+          LevelFluxRegister&          a_finerFluxRegister,
+          LevelFluxRegister&          a_coarserFluxRegister,
+          const LevelData<FArrayBox>& a_S,
+          const LevelData<FArrayBox>& a_UCoarseOld,
+          const Real&                 a_TCoarseOld,
+          const LevelData<FArrayBox>& a_UCoarseNew,
+          const Real&                 a_TCoarseNew,
+          const Real&                 a_time,
+          const Real&                 a_dt);
+\end{verbatim}\end{small}
+Advance the solution at this timeStep for one time step.
+\begin{itemize}
+\item \verb/a_U/:  The current solution at this level, which will be
+advanced by \verb/a_dt/ to \verb/a_time/.
+\vspace{-0.07in}
+\item \verb/a_flux/: A \verb/SpaceDim/ array of face-centered
+  \verb/LevelData<FArrayBox>/s, which may be used to pass face-centered
+  data (such as fluxes) back and forth from the function.
+\vspace{-0.07in}
+\item \verb/a_finerFluxRegister, a_coarserFluxRegister/:  The flux
+registers between this level and the next coarser (or finer) levels. 
+\vspace{-0.07in}
+\item \verb/a_S/:  Source terms from the right-hand side of the quasilinear form of system
+of PDEs being solved (integrated) - $S'$ in equation (\ref{eqn:hyperPrim}).
+If there are no source terms, \verb/a_S/ should be null constructed and not
+defined (i.e., \verb/a_S/'s \verb/define()/ function should not called).
+\vspace{-0.07in}
+\item \verb/a_UCoarseOld, a_TCoarseOld/:  The solution at the
+next coarser level at the old time, \verb/a_TCoarseOld/.
+\vspace{-0.07in}
+\item \verb/a_UCoarseNew, a_TCoarseNew/:  The solution at the
+next coarser level at the new time, \verb/a_TCoarseNew/.
+\vspace{-0.07in}
+\item \verb/a_time/:  The time to which to advance the current
+solution.  This should be between \verb/a_TCoarseOld/ and \verb/a_TCoarseNew/.
+\vspace{-0.07in}
+\item \verb/a_dt/:  The time step at this level.
+\end{itemize}
+
+\item \begin{small} \begin{verbatim}
+Real getMaxWaveSpeed(const LevelData<FArrayBox>& a_U);
+\end{verbatim}\end{small}
+Return the maximum wave speed of the input \verb/a_U/ (the conserved variables)
+for purposes of limiting the time step.
+
+\item \begin{small} \begin{verbatim}
+GodunovPhysics* getGodunovPhysicsPtr();
+\end{verbatim}\end{small}
+Return a pointer to the \verb/GodunovPhysics/ object used by the \verb/PatchGodunov/
+member of this \verb/LevelGodunov/. 
+\end{itemize}
+
+\subsection{Class {\tt PatchGodunov}}
+The base class {\tt PatchGodunov} provides an interface to 
+{\tt LevelGodunov} for managing the update of a single patch using the
+unsplit second-order Godunov method described above. It provides a
+top-level implementation of the algorithm by calling member functions
+in the {\tt GodunovUtilities} class (which contains physics-independent 
+components that make up the algorithm) and by calling member functions
+of the object pointed to by \verb/a_gdnvPhysicsPtr/ (which contains
+physics-dependent functions).
+
+There are four types of grid variables that appear in the unsplit
+Godunov method in section \ref{sec:algorithm}: conserved variables,
+primitive variables, fluxes, and source terms, denoted by
+{\tt U}, {\tt W}, {\tt F}, and {\tt S}, respectively. It is often
+convenient to have the number of primitive variables and fluxes exceed
+the number of conserved variables.  Redundant primitive variable
+quantities are often carried that parameterize the equation of state 
+in order to avoid multiple calls to the equation-of-state function.
+Also, it is often convenient to split the fluxes for some variables
+into multiple components, e.g., dividing the momentum flux into
+advective and pressure terms.  The API given here provides the
+flexibility to support various possibilities.
+
+\vspace{0.1in}
+\noindent
+The following virtual functions are part of the public interface.  Some have
+default implementations that the user will not need to change for a variety
+of physical problems.
+
+\begin{itemize}
+\item \begin{small}\begin{verbatim}
+virtual void define(ProblemDomain&              a_domain,
+                    const Real&                 a_dx,
+                    const GodunovPhysics* const a_gdnvPhysicsPtr,
+                    const int&                  a_normalPredOrder,
+                    const bool&                 a_useFourthOrderSlopes,
+                    const bool&                 a_usePrimLimiting,
+                    const bool&                 a_useCharLimiting,
+                    const bool&                 a_useFlattenping,
+                    const bool&                 a_useArtificialViscosity,
+                    const Real&                 a_artificialViscosity);
+\end{verbatim}\end{small}
+Set the domain and grid spacing.
+\begin{itemize}
+\item \verb/a_domain/:  The problem domain index space.
+\vspace{-0.07in}
+\item \verb/a_dx/:  The grid spacing for this patch/grid.
+\vspace{-0.07in}
+\item \verb/a_gdnvPhysicsPtr/:  A pointer to the object that supplies all the
+physics associated with the problem being solved.
+\vspace{-0.07in}
+\item \verb/a_normalPredOrder/:  The order of the normal predictor used
+        during numerical integration.  This must have a value of 1 (PLM) or 2
+        (PPM).
+\vspace{-0.07in}
+\item \verb/a_useFourthOrderSlopes/:  If true, use a 4th-order slope
+        computation.  Otherwise use a 2nd-order slope computation.
+\vspace{-0.07in}
+\item \verb/a_usePrimLimiting/:  If true, do slope limiting on the primitive
+        variables.  Note:  Currently, simultaneous slope limiting of the
+        primitive and characteristic variables is not supported.
+\vspace{-0.07in}
+\item \verb/a_useCharLimiting/:  If true, do slope limiting on the
+        characteristic variables.  Note:  Currently, simultaneous slope
+        limiting of the primitive and characteristic variables is not
+        supported.
+\vspace{-0.07in}
+\item \verb/a_useFlattening/:  If true, do slope flattening.  Note:  This
+        requires the enabling of 4th-order slope computations and some form
+        of slope limiting.
+\vspace{-0.07in}
+\item \verb/a_useArtificialViscosity/:  If true, apply artificial viscosity.
+\vspace{-0.07in}
+\item \verb/a_artificialViscosity/:  The artificial viscosity coefficient used
+in applying artificial viscosity.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void setCurrentTime(const Time& a_time);
+\end{verbatim}\end{small}
+Set the current physical time of the problem.
+\begin{itemize}
+\item \verb/a_time/:  The current physical time of the problem.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void setCurrentBox(const Box& a_currentBox);
+\end{verbatim}\end{small}
+Set the box over which the conserved variables will be updated for this
+patch/grid.
+\begin{itemize}
+\item \verb/a_box/:  The box over which the conserved variables will be
+updated.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void updateState(FArrayBox&       a_U,
+                         FArrayBox        a_F[SPACEDIM],
+                         Real&            a_maxWaveSpeed,
+                         const FArrayBox& a_S,
+                         const Real&      a_dt,
+                         const Box&       a_box);
+\end{verbatim}\end{small}
+Update the conserved variables, return the fluxes used for this, and
+the maximum wave speed in the updated solution.
+\begin{itemize}
+\item \verb/a_U/:  The conserved variables to be updated.
+\vspace{-0.07in}
+\item \verb/a_F[]/:  The fluxes on each of the faces used to update the
+conserved variables (used for refluxing).
+\vspace{-0.07in}
+\item \verb/a_maxWaveSpeed/:  The maximum wave speed for this patch/grid.
+\vspace{-0.07in}
+\item \verb/a_S/:  Source terms from the right-hand side of the quasilinear form of system
+of PDEs being solved (integrated): $S'$ in equation (\ref{eqn:hyperPrim}).
+If there are no source terms, \verb/a_S/ should be null constructed and not
+defined (i.e., \verb/a_S/'s define() function should not called).
+\vspace{-0.07in}
+\item \verb/a_dt/:  The time step for this patch/grid.
+\vspace{-0.07in}
+\item \verb/a_box/:  The box to be used for the computation/update.
+\end{itemize}
+
+\item \begin{small} \begin{verbatim}
+GodunovPhysics* getGodunovPhysicsPtr();
+\end{verbatim}\end{small}
+Return a pointer to the \verb/GodunovPhysics/ object used by this object.
+
+\end{itemize}
+
+
+\subsection{Class {\tt GodunovPhysics}} 
+
+{\tt GodunovPhysics} is an interface class owned and used by {\tt PatchGodunov},
+through which a user specifies the physics of the problem.  
+Most methods of the {\tt GodunovPhysics} class are pure virtual.  The user
+is expected to create a subclass of {\tt GodunovPhysics} specific to the
+problem they are solving, and in that subclass implement all of these methods.
+ 
+{\bf IMPORTANT NOTE:} It is assumed that the characteristic analysis puts the
+smallest eigenvalue first and the largest eigenvalue last, and orders the
+characteristic variables accordingly.
+\begin{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void setPhysIBC(PhysIBC* a_bc);
+\end{verbatim}\end{small}
+Set the initial and boundary condition pointer used by the integrator for the
+current level.  This must be called for the class to be fully defined
+and usable.
+\begin{itemize}
+\item \verb/a_bc/:  The initial and boundary condition object for the current
+level.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual Real getMaxWaveSpeed(const FArrayBox& a_U,
+                             const Box&       a_box) = 0;
+\end{verbatim}\end{small}
+Compute the maximum wave speed of the state over the region.
+\begin{itemize}
+\item \verb/a_U/:  The conserved state.
+\vspace{-0.07in}
+\item \verb/a_box/:  The region over which to calculate the max wave speed.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual GodunovPhysics* new_godunovPhysics() const = 0;
+\end{verbatim}\end{small}
+Factory method.  Reproduce oneself and return a pointer to the new object.
+
+\item \begin{small}\begin{verbatim}
+virtual int numConserved() = 0;
+\end{verbatim}\end{small}
+Return the number of conserved variables being updated.  This may be less
+than the total number of conserved variables.
+
+\item \begin{small}\begin{verbatim}
+virtual Vector<string> stateNames() = 0;
+\end{verbatim}\end{small}
+Return the names of all the conserved variables.
+
+\item \begin{small}\begin{verbatim}
+virtual int numFluxes() = 0;
+\end{verbatim}\end{small}
+Return the number of flux variables.  This can be greater than the number
+of conserved variables if additional fluxes/face-centered quantities are
+computed.
+
+\item \begin{small}\begin{verbatim}
+virtual int numPrimitives() = 0;
+\end{verbatim}\end{small}
+Return the total number of primitive variables.  This may be greater than
+the number of conserved variables if derived/redundant quantities are
+also stored for convenience.
+
+\item \begin{small}\begin{verbatim}
+virtual void charAnalysis(FArrayBox&       a_dW,
+                          const FArrayBox& a_W,
+                          const int&       a_dir,
+                          const Box&       a_box) = 0;
+\end{verbatim}\end{small}
+Transform \verb/a_dW/ from primitive to characteristic variables.
+
+{\bf IMPORTANT NOTE:} It is assumed that the characteristic analysis puts the
+smallest eigenvalue first and the largest eigenvalue last, and orders the
+characteristic variables accordingly.
+\begin{itemize}
+\item \verb/a_dW/:
+On input, contains the increments of the primitive variables.
+On output, contains the increments in the characteristic variables.
+\vspace{-0.07in}
+\item \verb/a_W/:  The state in primitive variables.
+\vspace{-0.07in}
+\item \verb/a_dir/: Spatial direction.
+\vspace{-0.07in}
+\item \verb/a_box/:  The box over which the calculation is carried out.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void charSynthesis(FArrayBox&       a_dW,
+                           const FArrayBox& a_W,
+                           const int&       a_dir,
+                           const Box&       a_box) = 0;
+\end{verbatim}\end{small}
+Transform \verb/a_dW/ from characteristic to primitive variables.
+
+{\bf IMPORTANT NOTE:} It is assumed that the characteristic analysis puts the
+smallest eigenvalue first and the largest eigenvalue last, and orders the
+characteristic variables accordingly.
+\begin{itemize}
+\item \verb/a_dW/:
+ On input, contains the increments of the characteristic variables.
+ On output, contains the increments in the primitive variables.
+\vspace{-0.07in}
+\item \verb/a_W/:  The state in primitive variables.
+\vspace{-0.07in}
+\item \verb/a_dir/: Spatial direction.
+\vspace{-0.07in}
+\item \verb/a_box/:  The box over which the calculation is carried out.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void charValues(FArrayBox&       a_lambda,
+                        const FArrayBox& a_W,
+                        const int&       a_dir,
+                        const Box&       a_box) = 0;
+\end{verbatim}\end{small}
+Compute the characteristic values (eigenvalues).
+
+{\bf IMPORTANT NOTE:} It is assumed that the characteristic analysis puts the
+smallest eigenvalue first and the largest eigenvalue last, and orders the
+characteristic variables accordingly.
+\begin{itemize}
+\item \verb/a_lambda/:  Eigenvalues of \verb/a_W/.
+\vspace{-0.07in}
+\item \verb/a_W/:  The state in primitive variables.
+\vspace{-0.07in}
+\item \verb/a_dir/: Spatial direction.
+\vspace{-0.07in}
+\item \verb/a_box/:  The box over which the calculation is carried out.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void computeUpdate(FArrayBox&       a_dU,
+                           FluxBox&         a_F,
+                           const FArrayBox& a_U,
+                           const FluxBox&   a_WHalf,
+                           const bool&      a_useArtificialViscosity,
+                           const Real&      a_artificialViscosity,
+                           const Real&      a_currentTime,
+                           const Real&      a_dx,
+                           const Real&      a_dt,
+                           const Box&       a_box);
+\end{verbatim}\end{small}
+Compute the increment in the conserved variables from face variables.
+Compute dU = dt*dU/dt, the change in the conserved variables over
+the time step. The fluxes returned are suitable for use in refluxing.
+This has a default implementation but can be redefined as needed.
+\begin{itemize}
+\item \verb/a_dU/:  The update to the conserved variables.
+\vspace{-0.07in}
+\item \verb/a_F/:  The fluxes associate with \verb/a_dU/.
+\vspace{-0.07in}
+\item \verb/a_U/:  The initial conserved variable values.
+\vspace{-0.07in}
+\item \verb/a_WHalf/:  The extrapolated state in primitive variables at faces.
+\vspace{-0.07in}
+\item \verb/a_useArtificialViscosity/:  If true, apply artificial viscosity.
+\vspace{-0.07in}
+\item \verb/a_artificialViscosity/:  The artificial viscosity coefficient used
+in applying artificial viscosity.
+\vspace{-0.07in}
+\item \verb/a_currentTime/: The current simulation time.
+\vspace{-0.07in}
+\item \verb/a_dx/: The grid spacing for this patch/grid.
+\vspace{-0.07in}
+\item \verb/a_dt/:  The time step for this patch/grid.
+\vspace{-0.07in}
+\item \verb/a_box/:  The box over which the calculation is carried out.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void getFlux(FArrayBox&       a_flux,
+                     const FArrayBox& a_WHalf,
+                     const int&       a_dir,
+                     const Box&       a_box);
+\end{verbatim}\end{small}
+Compute the fluxes from primitive variables on a face.
+This has a default implementation which throws an error.  The method is
+here so that the default implementation of \verb/computeUpdate/ can use it
+and the user can supply it.  It has an implementation, so if the user
+redefines \verb/computeUpdate/, they aren't force to implement \verb/getFlux/, which
+is used only by the default implementation of \verb/computeUpdate/.
+\begin{itemize}
+\item \verb/a_flux/:  The output fluxes.
+\vspace{-0.07in}
+\item \verb/a_WHalf/:  The extrapolated state in primitive variables at faces.
+\vspace{-0.07in}
+\item \verb/a_dir/: Spatial direction.
+\vspace{-0.07in}
+\item \verb/a_box/:  The box over which the calculation is carried out.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void incrementSource(FArrayBox&       a_S,
+                             const FArrayBox& a_W,
+                             const Box&       a_box) = 0;
+\end{verbatim}\end{small}
+Add to (increment) the source terms given the current state.
+\begin{itemize}
+\item \verb/a_S/:  On input, \verb/a_S/ contains the current source terms from
+                   the right-hand side of the quasilinear form of system of PDEs being
+                   solved (integrated): $S'$ in equation (\ref{eqn:hyperPrim}).
+                   On output, \verb/a_S/ has had any additional source terms
+                   (based on the current state, \verb/a_W/) added to it.
+\vspace{-0.07in}
+\item \verb/a_W/:  The state in primitive variables.
+\vspace{-0.07in}
+\item \verb/a_box/:  The box over which the calculation is carried out.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void riemann(FArrayBox&       a_WStar,
+                     const FArrayBox& a_WLeft,
+                     const FArrayBox& a_WRight,
+                     const FArrayBox& a_W,
+                     const Real&      a_time,
+                     const int&       a_dir,
+                     const Box&       a_box) = 0;
+\end{verbatim}\end{small}
+Compute the solution to the Riemann problem on each \verb/a_dir/ face
+in \verb/a_box/.
+\begin{itemize}
+\item \verb/a_WStar/:  Riemann problem solution.
+\vspace{-0.07in}
+\item \verb/a_WLeft/:  Solution on the left side of the discontinuity.
+\vspace{-0.07in}
+\item \verb/a_WRight/:  Solution on the right side of the discontinuity.
+\vspace{-0.07in}
+\item \verb/a_W/:  The state in primitive variables.
+\vspace{-0.07in}
+\item \verb/a_time/: The solution time.
+\vspace{-0.07in}
+\item \verb/a_dir/: Spatial direction.
+\vspace{-0.07in}
+\item \verb/a_box/:  The box over which the calculation is carried out.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void postNormalPred(FArrayBox&       a_dWMinus,
+                            FArrayBox&       a_dWPlus,
+                            const FArrayBox& a_W,
+                            const Real&      a_dt,
+                            const Real&      a_dx,
+                            const int&       a_dir,
+                            const Box&       a_box) = 0;
+\end{verbatim}\end{small}
+Perform post-processing of values for normal predictor.  This is done,
+for example, to add any spatial derivatives that are not accounted for
+in the characteristic analysis, such as the Stone correction in MHD.
+Also, bounding the ranges of primitive variables must be done here. 
+\begin{itemize}
+\item \verb/a_dWMinus/:  Extrapolated solution on the low side of the cell.
+\vspace{-0.07in}
+\item \verb/a_dWPlus/:  Extrapolated solution on the high side of the cell.
+\vspace{-0.07in}
+\item \verb/a_W/:  Cell-centered solution value at the beginning of the 
+time step.
+\vspace{-0.07in}
+\item \verb/a_dt/:  The time step for this patch/grid.
+\vspace{-0.07in}
+\item \verb/a_dx/: The grid spacing for this patch/grid.
+\vspace{-0.07in}
+\item \verb/a_dir/: Spatial direction.
+\vspace{-0.07in}
+\item \verb/a_box/:  The box over which the calculation is carried out.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void quasilinearUpdate(FArrayBox&       a_AdWdx,
+                               const FArrayBox& a_wHalf,
+                               const FArrayBox& a_W,
+                               const Real&      a_scale,
+                               const int&       a_dir,
+                               const Box&       a_box) = 0;
+\end{verbatim}\end{small}
+Compute the partial update based on upwind differencing 
+to the primitive variables using derivatives in the \verb/a_dir/ direction,
+for example in equations (\ref{eqn:updateprim1}), (\ref{eqn:updateprim2-2D}),
+and (\ref{eqn:updateprim2-3D}).
+\begin{itemize}
+\item \verb/a_AdWdx/: On output, the upwind difference estimate of 
+$ \tau A_d \frac{\partial W}{\partial x_d}$.
+\vspace{-0.07in}
+\item \verb/a_wHalf/: Solution to the Riemann problem at adjacent cell
+faces in the $d$ direction.
+\vspace{-0.07in}
+\item \verb/a_W/:  Cell-centered primitive values that are being corrected. 
+\vspace{-0.07in}
+\item \verb/a_scale/: Scale factor $\tau$.  
+\vspace{-0.07in}
+\item \verb/a_dir/: Spatial direction.
+\vspace{-0.07in}
+\item \verb/a_box/:  The cell-centered box over which the calculation is
+carried out. 
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void consToPrim(FArrayBox&       a_W,
+                        const FArrayBox& a_U,
+                        const Box&       a_box) = 0;
+\end{verbatim}\end{small}
+Compute primitive variables from conserved variables.
+\begin{itemize}
+\item \verb/a_W/:  On output, the primitive variables.
+\vspace{-0.07in}
+\item \verb/a_U/:  The conserved variables.
+\vspace{-0.07in}
+\item \verb/a_box/:  The region over which the calculation is carried out.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual Interval velocityInterval() = 0;
+\end{verbatim}\end{small}
+Return the interval of component indices of the velocities within the
+primitive variables. Used for slope flattening (slope computation) and
+computing the divergence of the velocity (artificial viscosity).
+
+\item \begin{small}\begin{verbatim}
+virtual int pressureIndex() = 0;
+\end{verbatim}\end{small}
+Return the component index of the pressure within the primitive
+variables.  Used for slope flattening (slope computation).
+
+\item \begin{small}\begin{verbatim}
+virtual Real smallPressure() = 0;
+\end{verbatim}\end{small}
+Return a value that is used by slope flattening to limit (away from
+zero) the absolute value of a slope in the \verb/pressureIndex()/ component
+(slope computation).
+
+\item \begin{small}\begin{verbatim}
+virtual int bulkModulusIndex() = 0;
+\end{verbatim}\end{small}
+Return the component index within the primitive variables for the
+bulk modulus.  Used for slope flattening (slope computation) used
+as a normalization to measure shock strength.
+
+\end{itemize}
+
+
+\subsection{Class {\tt PhysIBC}} \label{sec:physIBC}
+
+{\tt PhysIBC} is an interface class owned and used by {\tt PatchGodunov},
+and through which a user specifies the initial and boundary of conditions
+of the particular problem.  These boundary conditions are 
+flux-based.  {\tt PhysIBC} contains as member data the 
+grid spacing (\verb/Real m_dx/) and the domain of computation
+(\verb/ProblemDomain m_domain/).  This object serves as its own factory.
+The important user functions of {\tt PhysIBC} are as follows.
+ 
+\begin{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void define(const ProblemDomain& a_domain
+                    const Real&          a_dx);
+\end{verbatim}\end{small}
+Define the internals of the class.
+\begin{itemize}
+\item \verb/a_domain/:  The problem domain.
+\vspace{-0.07in}
+\item \verb/a_dx/:  The grid spacing for this patch/grid.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual PhysIBC* new_physIBC() = 0;
+\end{verbatim}\end{small}
+This is a factory method.  It allocates and returns the pointer to a
+new {\tt PhysIBC} object. 
+
+\item \begin{small}\begin{verbatim}
+virtual void initialize(LevelData<FArrayBox>& a_U) = 0;
+\end{verbatim}\end{small}
+Fill the input with the initial conserved variable state of the problem.
+\begin{itemize}
+\item \verb/a_U/:  The conserved variables.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void primBC(FArrayBox&            a_WGdnv,
+                    const FArrayBox&      a_Wextrap,
+                    const FArrayBox&      a_W,
+                    const int&            a_dir,
+                    const Side::LoHiSide& a_side,
+                    const Real&           a_time) = 0;
+\end{verbatim}\end{small}
+Return the flux boundary condition on the boundary of
+the domain.
+\begin{itemize}
+\item \verb/a_WGdnv/:  The primitive variables over the face-centered
+box. The values in the array located along the boundary faces of the
+domain are replaced with boundary values.
+\vspace{-0.07in}
+\item \verb/a_Wextrap/:  The extrapolated values of the primitive variables
+to the \verb/a_side/ of the cells in direction \verb/a_dir/.
+This data is cell-centered.
+\vspace{-0.07in}
+\item \verb/a_W/:  The primitive variables at the start of the time step.
+This data is cell-centered.
+\vspace{-0.07in}
+\item \verb/a_dir, a_side/:  The normal direction and the side of the
+domain where the boundary condition fluxes are needed. 
+\vspace{-0.07in}
+\item \verb/a_time/:  The physical time of the problem --- for time-varying
+boundary conditions.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void setBdrySlopes(FArrayBox&       a_dW,
+                           const FArrayBox& a_W,
+                           const int&       a_dir,
+                           const Real&      a_time) = 0;
+\end{verbatim}\end{small}
+The boundary slopes are already set to one-sided difference approximations on
+entry.  If this function doesn't change them, they will be used for the slopes
+at the boundaries.
+\begin{itemize}
+\item \verb/a_dW/:  The slopes over the box.
+\vspace{-0.07in}
+\item \verb/a_W/:  The primitive variables at the start of the time step.
+\vspace{-0.07in}
+\item \verb/a_dir/:  The normal direction.
+\vspace{-0.07in}
+\item \verb/a_time/:  The physical time of the problem --- for time-varying
+boundary conditions.
+\end{itemize}
+
+\item \begin{small}\begin{verbatim}
+virtual void artViscBC(FArrayBox&       a_F,
+                       const FArrayBox& a_U,
+                       const FArrayBox& a_divVel,
+                       const int&       a_dir,
+                       const Real&      a_time) = 0;
+\end{verbatim}\end{small}
+Apply artificial viscosity to the fluxes of the conserved variables at the
+boundaries.
+\begin{itemize}
+\item \verb/a_F/:  The fluxes over the box.  The values in the array
+along the boundary faces of the domain are updated by applying the 
+artificial viscosity at the boundaries.
+\vspace{-0.07in}
+\item \verb/a_U/:  The conserved variables.
+\vspace{-0.07in}
+\item \verb/a_divVel/:  The face-centered divergence of the cell-centered velocity. 
+\vspace{-0.07in}
+\item \verb/a_dir/:  The normal direction.
+\vspace{-0.07in}
+\item \verb/a_time/:  The physical time of the problem --- for time-varying
+boundary conditions.
+\end{itemize}
+
+\end{itemize}

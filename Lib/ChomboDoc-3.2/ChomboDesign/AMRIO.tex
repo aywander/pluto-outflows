@@ -1,0 +1,109 @@
+\section{AMR I/O routines}
+
+\protect\verb|WriteAMRHierarchyHDF5| and  \protect\verb|ReadAMRHierarchyHDF5|
+are convenient global functions used in the AMR codes
+developed by ANAG.  There are three main reasons for their
+use: 
+
+\begin{enumerate}
+\item It relieves the user from having to learn about
+the HDF5 interface code.
+\item It places the data into a format that can subsequently
+be read successfully by the VisIt post-processing and visualization 
+tools.
+\item They are symmetric and can be used for efficient checkpoint
+file generation.
+\end{enumerate}
+
+
+\subsection{Function WriteAMRHierarchyHDF5}
+
+\begin{verbatim}
+void
+WriteAMRHierarchyHDF5(const string& filename, 
+                      const Vector<DisjointBoxLayout>& a_vectGrids, 
+                      const Vector<LevelData<FArrayBox>* >& a_vectData,
+                      const Vector<string>& a_vectNames,
+                      const Box& a_domain,                               
+                      const Real& a_dx,  
+                      const Real& a_dt,
+                      const Real& a_time,
+                      const Vector<int>& a_refRatio,
+                      const int& a_numLevels)
+\end{verbatim}
+
+Arguments:
+
+No arguments are modified.
+\begin{itemize}
+\item \verb|filename| :  file to output to.
+\item \verb|a_vectGrids| : grids at each level.
+\item \verb|a_vectData| :  data at each level.
+\item \verb|a_vectNames|:  names of variables.
+\item \verb|a_domain| :  domain at coarsest level.
+\item \verb|a_dx|     :  grid spacing at coarsest level.
+\item \verb|a_dt|     :  time step at coarsest level.
+\item \verb|a_time|     :  time.
+\item \verb|a_vectRatio| :  refinement ratio at all levels
+(ith entry is refinement ratio between levels i and i + 1).
+\item \verb|a_numLevels| :  number of levels to output.
+\end{itemize}
+
+\verb+filename+ is created if it doesn't already exist, and overwritten
+if it does exist.  \verb+a_vectGrids+ must match the grids that 
+\verb+a_vectData+ is defined over. \verb+a_vectNames+ are the names
+you wish to be associated with the components of the \verb+a_vectData+.
+\verb+a_domain+ is the covering domain box at the coarsest level.
+\verb+a_numLevels+ is the number of levels, starting at level 0 that
+the user wishes to be output.
+
+
+\subsection{Function ReadAMRHierarchyHDF5}
+
+\begin{verbatim}
+int
+ReadAMRHierarchyHDF5(const string& filename,
+                     Vector<DisjointBoxLayout>& a_vectGrids,
+                     Vector<LevelData<FArrayBox>* > & a_vectData,
+                     Vector<string>& a_vectNames, 
+                     Box& a_domain,
+                     Real& a_dx,          
+                     Real& a_dt,
+                     Real& a_time,                                         
+                     Vector<int>& a_refRatio,
+                     int& a_numLevels,
+                     const IntVect& ghostVector)
+\end{verbatim}
+
+Arguments:
+
+\begin{itemize}
+\item \verb|filename|  :  file to input from.
+\item \verb|a_vectGrids| : grids at each level.
+\item \verb|a_vectData| :  data at each level.
+\item \verb|a_vectNames|:  names of variables.
+\item \verb|a_domain| :  domain at coarsest level.
+\item \verb|a_dx|     :  grid spacing at coarsest level.
+\item \verb|a_dt|     :  time step at coarsest level.
+\item \verb|a_time|     :  time.
+\item \verb|a_vectRatio| :  refinement ratio at all levels.
+\item \verb|a_numLevels| :  number of levels to read.
+\item \verb|a_ghostVector| : IntVect used to define \verb|a_vectData|
+\end{itemize}
+
+return codes:
+
+\begin{verbatim}
+0: success
+-1: number of levels <= 0
+-2: number of components <= 0
+-3: error in readlevel function
+-4: file open failed
+\end{verbatim}
+
+the argument notes are the same as for \protect\verb|WriteAMRHierarchyHDF5|, with the
+addition of \verb+ghostVector+.  \verb+ghostVector+ is passed in the argument list
+and is used in the definition of the \verb+LevelData<FArrayBox>+ definition of \verb+a_vectData+.
+This was most useful for data moving between a simulation code and a post-processing
+code where the ghost cell requirements can be different.
+

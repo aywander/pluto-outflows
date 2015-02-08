@@ -1,0 +1,213 @@
+% -*- Mode: TeX; Modified: "Mon Oct 25 12:48:14 1999 by dbs"; -*- 
+
+%%% Document layout conventions
+
+\bibliographystyle{alpha}
+
+\oddsidemargin=.25in
+\evensidemargin=.25in
+\textwidth=6.0in
+\topmargin=-0.5in
+\textheight=8.5in
+
+%%% `captions.sty' overrides the default figure captions layout.
+%%% These variables are used in this style file.
+\setlength{\abovecaptionskip}{10pt}
+\setlength{\belowcaptionskip}{0pt}
+
+%%% force \subsubsection to be numbered and appear in the table of contents
+%%% in report style
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+%%%% In `article' style, remove the chapter number from section numbers and force a
+%%%% page break at the end of the table of contents.
+%%%% In `report' style, force \chapter to print ``Part'' instead of ``Chapter'' in headings.
+\ifx\chaptername\undefined
+\else
+  %report style
+  \renewcommand{\chaptername}{Part}
+  \renewcommand{\thesection}{\arabic{section}}  %%% Redefine section headings to leave out the chapter number.
+\fi
+
+%%% Macro, variable and command (re)definitions 
+
+\input epsf
+
+\def\ten#1#2{$#1 \cdot 10^{#2}$}
+\def\prt{\partial}
+\def\appx{\sim}
+\def\inorm#1{\| #1 \|_\infty}
+\def\L2norm#1{\| #1 \|_2}
+
+
+\let\realpar=\par%              %%%[NOTE: I don't know what this does. -dbs Apr99]
+
+%% To re-sort the new commands in emacs, put the region around the commands and do:
+%% M-x eval-expression (let ((sort-fold-case t)) (sort-lines nil (region-beginning) (region-end)))
+\newcommand{\amrlevelmg}{{\tt AMRLevelMG }} 
+\newcommand{\amrlevel}{{\tt AmrLevel }} 
+\newcommand{\amrpoisson}{{\tt AMRPoisson }} 
+\newcommand{\amrremesh}{{\tt MeshRefine }} 
+\newcommand{\amrsolver}{{\tt AMRSolver }} 
+\newcommand{\amr}{{\tt Amr }} 
+\newcommand{\AN}{[(U \cdot \nabla)U]^{n+\frac{1}{2}}}
+\newcommand{\arity}[1]{#1.\fnc{arity}{\relax}}
+\newcommand{\BaseFab}[1]{\ifmmode\mbox{\tt BaseFab<}#1\mbox{\tt>}\else{\tt BaseFab<$#1$>}\fi}
+\newcommand{\basefab}[1]{\ifmmode\mbox{\tt BaseFab<}#1\mbox{\tt>}\else{\tt BaseFab<$#1$>}\fi}
+\newcommand{\Beta}{\beta}
+\newcommand{\blbox}{{\tt Box }} 
+\newcommand{\boxarray}{{\tt  BoxArray }} 
+\newcommand{\boxghostbc}{{\tt BoxGhostBC }} 
+\newcommand{\boxlib}{{\tt BoxLib }} 
+\newcommand{\BoxLib}{\textsf{BoxLib}}
+\newcommand{\BranchNode}{{\tt BranchNode}}
+\newcommand{\cdh}{{\cal D_H}}
+\newcommand{\cd}{{\cal D}}
+\newcommand{\cfstencil}{{\tt CFStencil }} 
+\newcommand{\cg}{{\cal G}}
+\newcommand{\Chombo}{\textsf{Chombo}}
+\newcommand{\clh}{{\cal L_H}}
+\newcommand{\cl}{{\cal L}}
+\newcommand{\cph}{{\cal P_H}}
+\newcommand{\cpo}{{\cal P_O}}
+\newcommand{\del}{\nabla}
+\newcommand{\deriv}[2]{\mathop{\frac{\partial #1}{\partial #2}}}
+\newcommand{\display}[1]{\begin{itemize}\item[]#1\end{itemize}}
+\newcommand{\domainghostbc}{{\tt DomainGhostBC }} 
+\newcommand{\domain}[1]{#1.\fnc{domain}{\relax}}
+\newcommand{\Domain}[1]{\ifmmode\mbox{\tt Domain<}#1\mbox{\tt>}\else{\tt Domain<$#1$>}\fi}
+\newcommand{\dr}{\Delta r}
+\newcommand{\ds}{\displaystyle}
+\newcommand{\dth}{\Delta \theta}
+\newcommand{\dt}{\Delta t}
+\newcommand{\dx}{\Delta x}
+\newcommand{\dy}{\Delta y}
+\newcommand{\ebamrellip}{{\tt EBAMREllip }} 
+\newcommand{\ebamrlevelmg}{{\tt EBAMRLevelMG }} 
+\newcommand{\ebamrsolver}{{\tt EBAMRSolver }} 
+\newcommand{\ebcellfab}{{\tt EBCellFAB }} 
+\newcommand{\ebcfinterp}{{\tt EBCFInterp }} 
+\newcommand{\ebfacefab}{{\tt EBFaceFAB }} 
+\newcommand{\EBIS}{{\tt EBIndexSpace }}
+\newcommand{\ebis}{{\tt EBIndexSpace }}
+\newcommand{\eblevelcfstencil}{{\tt EBLevelCFStencil }} 
+\newcommand{\eblevelfluxregister}{{\tt EBLevelFluxRegister }} 
+\newcommand{\eblevelmg}{{\tt EBLevelMG }} 
+\newcommand{\eblevelop}{{\tt EBLevelOp }} 
+\newcommand{\eblevelsolver}{{\tt EBLevelSolver }} 
+\newcommand{\eblib}{{\tt EBLib }} 
+\newcommand{\ebmulticellfab}{{\tt EBMultiCellFAB }} 
+\newcommand{\ebmultifacefab}{{\tt EBMultiFaceFAB }} 
+\newcommand{\Edge}{{\tt Edge}}
+\newcommand{\eps}{\epsilon}
+\newcommand{\ES}{{\tt EdgeStencil }}
+\newcommand{\FabArray}[1]{\ifmmode\mbox{\tt FabArray<}#1\mbox{\tt>}\else{\tt FabArray<$#1$>}\fi}
+\newcommand{\fabarray}[1]{\ifmmode\mbox{\tt FabArray<}#1\mbox{\tt>}\else{\tt FabArray<$#1$>}\fi}
+\newcommand{\fab}{{\tt FArrayBox }} 
+\newcommand{\farraybox}{{\tt FArrayBox }} 
+\newcommand{\fluxregister}{{\tt FluxRegister }} 
+\newcommand{\fnc}[2]{\ifmmode\mbox{\tt#1(}#2\mbox{\tt)}\else{\tt#1(}$#2${\tt)}\fi}
+\newcommand{\fourth}{\frac{1}{4}}
+\newcommand{\grad}{\nabla}
+\newcommand{\gridcfstencil}{{\tt GridCFStencil }} 
+\newcommand{\gridfluxregister}{{\tt GridFluxRegister }} 
+\newcommand{\gridhoavecfstencil}{{\tt  GridHOAveCFStencil }} 
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\hexm}[2]{{$#1 \cdot 10^{-#2}$}}
+\newcommand{\highvofs}[2]{\mbox{\rm highVoFs(#1,#2)}} 
+\newcommand{\hoacfinterp}{{\tt HOACFInterp }} 
+\newcommand{\hoavecfstencil}{{\tt  HOAveCFStencil }} 
+\newcommand{\IEFab}[1]{\ifmmode\mbox{\tt IEFab<}#1\mbox{\tt>}\else{\tt IEFab<$#1$>}\fi}
+\newcommand{\iefab}{{\tt IEFab }} 
+\newcommand{\IG}{{\tt IrregGeom}}
+\newcommand{\ij   }{{i  ,j    }}
+\newcommand{\ijk  }{{i,j,k}}
+\newcommand{\ijkmh}{{i,j,k-\half}}
+\newcommand{\ijkmo}{{i,j,k-1}}
+\newcommand{\ijkph}{{i,j,k+\half}}
+\newcommand{\ijkpo}{{i,j,k+1}}
+\newcommand{\ijmh }{{i,j-\half  }}
+\newcommand{\ijmhk}{{i,j-\half,k}}
+\newcommand{\ijmho}{{r,i,j-\half}}
+\newcommand{\ijmht}{{\theta,i,j-\half}}
+\newcommand{\ijmok}{{i,j-1,k}}
+\newcommand{\ijo  }{{r,i  ,j  }}
+\newcommand{\ijp  }{{i  ,j+1  }}
+\newcommand{\ijphk}{{i,j+\half,k}}
+\newcommand{\ijpho}{{r,i,j+\half}}
+\newcommand{\ijpht}{{\theta,i,j+\half}}
+\newcommand{\ijpo }{{r,i  ,j+1}}
+\newcommand{\ijpok}{{i,j+1,k}}
+\newcommand{\ijpt }{{\theta,i  ,j+1}}
+\newcommand{\ijt  }{{\theta,i  ,j  }}
+\newcommand{\imhj }{{i-\half,j  }}
+\newcommand{\imhjk}{{i-\half,j,k}}
+\newcommand{\imhjo}{{r,i-\half,j}}
+\newcommand{\imhjt}{{\theta,i-\half,j}}
+\newcommand{\imojk}{{i-1,j,k}}
+\newcommand{\imojmok}{{i-1,j-1,k}}
+\newcommand{\imojpok}{{i-1,j+1,k}}
+\newcommand{\INFab}[1]{\ifmmode\mbox{\tt INFab<}#1\mbox{\tt>}\else{\tt INFab<$#1$>}\fi}
+\newcommand{\infab}{{\tt INFab }} 
+\newcommand{\intvectset}{{\tt IntVectSet }} 
+\newcommand{\intvect}{{\tt IntVect }} 
+\newcommand{\iphj }{{i+\half,j  }}
+\newcommand{\iphjk}{{i+\half,j,k}}
+\newcommand{\iphjo}{{r,i+\half,j}}
+\newcommand{\iphjt}{{\theta,i+\half,j}}
+\newcommand{\ipj  }{{i+1,j    }}
+\newcommand{\ipjo }{{r,i+1,j  }}
+\newcommand{\ipjp }{{i+1,j+1  }}
+\newcommand{\ipjpo}{{r,i+1,j+1}}
+\newcommand{\ipjpt}{{\theta,i+1,j+1}}
+\newcommand{\ipjt }{{\theta,i+1,j  }}
+\newcommand{\ipojk}{{i+1,j,k}}
+\newcommand{\ipojmok}{{i+1,j-1,k}}
+\newcommand{\ipojpok}{{i+1,j+1,k}}
+\newcommand{\lacute}{\mathopen{<}}
+\newcommand{\la}{\leftarrow}
+\newcommand{\LeafNode}{{\tt LeafNode}}
+\newcommand{\levelcfstencil}{{\tt LevelCFStencil }} 
+\newcommand{\levelfluxregister}{{\tt LevelFluxRegister }} 
+\newcommand{\levelhoavecfstencil}{{\tt  LevelHOAveCFStencil }} 
+\newcommand{\levelmg}{{\tt LevelMG }} 
+\newcommand{\levelopfactory}{{\tt LevelOpFactory }} 
+\newcommand{\levelop}{{\tt LevelOp }} 
+\newcommand{\levelsolver}{{\tt LevelSolver }} 
+\newcommand{\lowvofs}[2]{\mbox{\rm lowVoFs(#1,#2)}} 
+\newcommand{\meshrefine}{{\tt MeshRefine }} 
+\newcommand{\multifab}{{\tt MultiFab }} 
+\newcommand{\nmh}{{n - \half}}
+\newcommand{\Node}{{\tt Node}}
+\newcommand{\nph}{{n + \half}}
+\newcommand{\NS}{{\tt NodeStencil}}
+\newcommand{\onesidecfinterp}{{\tt OneSideCFInterp }} 
+\newcommand{\onesidepoiss}{{\tt OneSidePoiss }} 
+\newcommand{\oscfinterp}{{\tt OneSideCFInterp }} 
+\newcommand{\oscfstencil}{{\tt OneSideCFStencil }} 
+\newcommand{\pargraph}[1]{\par\noindent{\bf #1.}}
+\newcommand{\parmparse}{{\tt ParmParse }} 
+\newcommand{\Point}[1]{\ifmmode\mbox{\tt Point<}#1\mbox{\tt>}\else{\tt Point<$#1$>}\fi}
+\newcommand{\racute}{\mathclose{>}}
+\newcommand{\ra}{\rightarrow}
+\newcommand{\rdh}{{\rm D_H}}
+\newcommand{\rdo}{{\rm D_O}}
+\newcommand{\rd}{{\rm D}}
+\newcommand{\RectDomain}[1]{\ifmmode\mbox{\tt RectDomain<}#1\mbox{\tt>}\else{\tt RectDomain<$#1$>}\fi}
+\newcommand{\rgo}{{\rm G_O}}
+\newcommand{\rg}{{\rm G}}
+\newcommand{\rimo}{(R_{out}-R_{in})}
+\newcommand{\rlh}{{\rm L_H}}
+\newcommand{\rl}{{\rm L}}
+\newcommand{\romi}{(R_{out}-R_{in})}
+\newcommand{\rph}{{\rm P^H}}
+\newcommand{\rpo}{{\rm P^O}}
+\newcommand{\rp}{{\rm P}}
+\newcommand{\sign}[1]{\ifmmode\mbox{sign}(#1)\else sign(#1)\fi}
+\newcommand{\Tableofcontents}{\newpage\tableofcontents\newpage}
+\newcommand{\TreeNode}{{\tt TreeNode}}
+\newcommand{\Tree}{{\tt Tree}}
+\newcommand{\Vector}[1]{\ifmmode\mbox{\tt Vector<}#1\mbox{\tt>}\else{\tt Vector<#1>}\fi}
+\newcommand{\vu}{\vec u}
+\providecommand{\th}[1]{\ifmmode#1^{\mbox{th}}\else$#1^{\mbox{th}}$\fi}

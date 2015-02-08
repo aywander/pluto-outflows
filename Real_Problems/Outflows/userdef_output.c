@@ -62,8 +62,8 @@ void ComputeUserVar (const Data *d, Grid *grid)
 
     /* Speed */
     sp1 = vx1[k][j][i]; 
-    sp2 = SELECT(0, vx2[k][j][i], vx2[k][j][i]); 
-    sp3 = SELECT(0,            0, vx3[k][j][i]);
+    sp2 = vx2[k][j][i];
+    sp3 = vx3[k][j][i];
     spd[k][j][i] = VMAG(x1[i], x2[j], x3[k], sp1, sp2, sp3);
 
 #if USE_FOUR_VELOCITY == YES
@@ -110,6 +110,9 @@ void ChangeDumpVar ()
          SetDumpVar("vx2",  VTK_OUTPUT, YES);,
          SetDumpVar("vx3",  VTK_OUTPUT, YES););
 #endif
+  SetDumpVar("prs",  VTK_OUTPUT, YES);
+  SetDumpVar("tr1",  VTK_OUTPUT, YES);
+  SetDumpVar("tr2",  VTK_OUTPUT, YES);
   SetDumpVar("te",  VTK_OUTPUT, YES);
   SetDumpVar("spd",  VTK_OUTPUT, YES);
 
@@ -130,8 +133,12 @@ void ChangeDumpVar ()
          SetDumpVar("vx2",  FLT_OUTPUT, YES);,
          SetDumpVar("vx3",  FLT_OUTPUT, YES););
 #endif
+  SetDumpVar("prs",  FLT_OUTPUT, YES);
+  SetDumpVar("tr1",  FLT_OUTPUT, YES);
+  SetDumpVar("tr2",  FLT_OUTPUT, YES);
   SetDumpVar("te",  FLT_OUTPUT, YES);
   SetDumpVar("spd",  FLT_OUTPUT, YES);
+
 
   /* PNG output */
 #if USE_FOUR_VELOCITY
@@ -149,6 +156,9 @@ void ChangeDumpVar ()
          SetDumpVar("vx2",  PNG_OUTPUT, YES);,
          SetDumpVar("vx3",  PNG_OUTPUT, YES););
 #endif
+  SetDumpVar("prs",  PNG_OUTPUT, YES);
+  SetDumpVar("tr1",  PNG_OUTPUT, YES);
+  SetDumpVar("tr2",  PNG_OUTPUT, YES);
   SetDumpVar("te",  PNG_OUTPUT, YES);
   SetDumpVar("spd",  PNG_OUTPUT, YES);
 
@@ -163,7 +173,7 @@ void ChangeDumpVar ()
   image->max = image->min = 0.;
   image->logscale = 1;
 
-  /* pressure slice */
+  /* density slice */
   image = GetImage("prs");
 #if COMPONENTS > 2
   image->slice_plane = X13_PLANE;
@@ -171,6 +181,7 @@ void ChangeDumpVar ()
 #endif
   image->max = image->min = 0.;
   image->logscale = 1;
+
 
   /* first tracer slice */
 #if NTRACER > 0
@@ -195,6 +206,7 @@ void ChangeDumpVar ()
   image->min = 0.;
   image->logscale = 1;
 #endif
+
 
 }
 

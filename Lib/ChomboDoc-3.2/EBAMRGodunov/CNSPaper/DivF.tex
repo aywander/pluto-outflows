@@ -1,0 +1,117 @@
+\section{The Flux Divergence\label{sec:DivF}}
+
+We begin with the calculation of the flux divergence, which we need to 
+evolve the hyperbolic terms. The details of this procedure were given 
+originally in \cite{???}; we include them here for a self-contained 
+discussion. 
+
+\subsection{Stabilized conservative update}
+The discrete divergence theorem \refEq{discreteDivTheorem} gives us an 
+approximation of $\diverg{\vec{F}}$ on a VoF $\ib$:
+
+\begin{equation}
+(\diverg{\vec{F}})^C = \frac{1}{\kappa_\ib h}
+   \sum_{d=1}^D \left(\pm\alpha_{\ib\pm\half\eb^d}F^d_{\ib\pm\half\eb^d} + 
+                      \alpha_\ib^B\vec{F}_\ib^B\cdot\vec{n}_\ib\right) \label{eq:conservativeDivF}
+\end{equation}
+
+\noindent
+This approximation is conservative in the sense that the explicit finite 
+difference update $U^{n+1}_\ib = U^n_\ib - \dt (\diverg{\vec{F}})^C_\ib $ exactly 
+conserves each of the quantities in $U$ in a manner that is consistent with 
+the behavior of $\vec{F}$ at the boundary. %That is,
+%
+%\begin{equation}
+%\sum_{\ib\in\Gamma}\kappa_\ib U^{n+1}_\ib = 
+%   \sum_{\ib\in\Gamma}\kappa_\ib U^n_\ib - 
+%   \frac{\dt}{h}\sum_{\ib\pm\half\eb^d\in\partial\Gamma} 
+%      \alpha_{\ib\pm\half\eb^d}\vec{F}_{\ib\pm\half\eb^d}\cdot\vec{n}_{\ib\pm\half\eb^d}
+%\end{equation}
+%
+%\noindent
+%where $\Gamma$ is a collection of control volumes and $\partial\Gamma$ is 
+%the set of cell faces and boundary faces that compose the boundary of $\Gamma$.
+We have used the superscript $C$ in \refEq{conservativeDivF} to highlight
+this desireable property. Unfortunately, this approximation carries with it a
+severe CFL constraint on the time step on irregular cells:
+
+\begin{equation}
+\dt = \min \frac{h}{|\vec{v}_\ib|}\left(\kappa_\ib\right)^{\frac{1}{D}}. \label{eq:smallCellCFL}
+\end{equation}
+
+\noindent
+This coupling of the time step to the volume fraction on irregular cells is 
+known as the the small-cell problem for embedded boundary methods. An effective 
+way to avoid this problem is to update $U$ using a weighted average of 
+conservative and non-conservative approximations for $\diverg{\vec{F}}$, 
+denoted respectively by superscripts $C$ and $NC$:
+
+\begin{equation}
+U^{n+1}_\ib = U^n_\ib - \dt\left[\eta_\ib(\diverg{\vec{F}})^C_\ib +
+                                 (1 - \eta_\ib)(\diverg{\vec{F}})^{NC}_\ib\right] \label{eq:stableUpdate}
+\end{equation}
+
+\noindent
+where the stable, non-conservative approximation is the flux difference
+
+\begin{equation}
+(\diverg{\vec{F}})^{NC}_\ib = \frac{1}{h}\sum_{d=1}^D\pm F^d_{\ib\pm\half\eb_d} \label{eq:nonconservativeDivF}
+\end{equation}
+
+If the weight parameter $\eta_\ib$ is set to $\kappa_\ib$, then the 
+corresponding factor in the denominator of \refEq{conservativeDivF} is 
+cancelled and the CFL constraint is eased. However, this means that $U$ is 
+not updated conservatively, as it relies upon the non-conservative 
+approximation $(\diverg{\vec{F}})^{NC}$. We can obtain the conservation error, 
+$\delta M_\ib$ (the global change in the conserved quantities $U$), from the 
+difference in the updates between the conserved and non-conserved forms of 
+$\diverg{\vec{F}}$:
+
+\begin{equation}
+\delta M_\ib = -\kappa_\ib(1 - \eta_\ib)\left[(\diverg{\vec{F}}^C_\ib - \diverg{\vec{F}}^{NC}_\ib\right]
+\end{equation}
+
+\noindent
+Once the update has been performed on all VoFs, we distribute each $\delta M_\ib$ 
+amongst the set of its neighboring VoFs $N(\ib)$ to restore conservation:
+
+\begin{eqnarray}
+U^{n+1}_\jb \rightarrow U^{n+1}_\jb + w_{\ib,\jb}\delta M_\ib, \jb\in N(\ib)
+\end{eqnarray}
+
+\noindent
+where $w_{\ib,\jb}$ is a distribution function that conservatively partitions 
+the contributions to $\jb$ from $\ib$. One strategy that seems to 
+perform well for problems in gas dynamics involving shocks is to favor 
+neighboring VoFs with higher densities in order to minimize the effects of the 
+redistribution on the solution:
+
+\begin{equation}
+w_{\ib, \jb} = \frac{\rho_\jb^{NC}}{\sum_{\kb\in N(\ib)}\rho_\kb^{NC}\kappa_\kb}
+\end{equation}
+
+\noindent 
+where $\rho^{NC}_\ib = \rho^n_\ib - \dt(\diverg{\vec{F}})^{NC}_\ib$ is a 
+non-conservative estimate of the mass density at the new time.
+
+\subsection{Edge-centered fluxes}
+
+To compute $(\diverg{\vec{F}})^C$, we need a second-order accurate approximation 
+of $\vec{F}$ on the faces of a cell. For a VoF $\ib$,
+
+\begin{equation}
+F^{n+\half}_{\ib\pm\half\eb_d} = F(U^{n+\half}_{\ib\pm\half\eb_d}) \label{eq:edgeCenteredFluxes}
+\end{equation}
+
+\noindent
+where we use the upstream-centered Taylor expansion
+
+\begin{equation}
+U^{n+\half}_{\ib\pm\half\eb_d} = U^n_\ib + \frac{\dx}{2}\left(\ddxd{U}\right)^n_\ib + 
+                                 \frac{\dt}{2}\left(\ddt{U}\right)^n_\ib. \label{eq:edgeCenteredU}
+\end{equation}
+
+\noindent
+Here, $(\iddt{U})^n_\ib = L(U^n_\ib)$.
+
+\subsection{Inclusion of elliptic terms as sources}

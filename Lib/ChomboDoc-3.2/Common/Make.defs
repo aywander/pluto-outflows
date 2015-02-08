@@ -1,0 +1,3 @@
+LATEX = latex
+DVIPS = dvips
+BIBTEX = bibtex

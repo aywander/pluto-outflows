@@ -1,0 +1,25 @@
+\section{Introduction}
+
+This document is to briefly explain the workings of the EBAMRElliptic
+implementation.  First, the algorithm is explained.  Here we extend the
+AMR multigrid algorithm of Martin and  Cartwright \cite{MARTCART} to
+embedded boundaries using the results of Johansen and Colella
+\cite{JohansenColella1998}, \cite{HANKTHESIS}.
+Second, we document the implementation of the EBAMRElliptic software in
+detail, trying wherever possible to draw the connections from the
+software to the algorithm specification.  We shall describe the 
+algorithm in both two and three dimensions.
+
+We are going to present two examples.
+For both, we are given a bounded domain $\Omega$ and a charge density distribution
+$\rho$ which exists over all of $\Omega$ and we are given a
+ boundary condition for the solution is given on $\partial \Omega$.
+ We discretize the domain with a block-structured, adaptive mesh.
+
+In the first example,
+we solve Poisson's equation 
+\begin{equation}
+\nabla \cdot (\nabla \phi) = \rho
+\label{FISHY}
+\end{equation}
+for $\phi$.  In the second example, we present
