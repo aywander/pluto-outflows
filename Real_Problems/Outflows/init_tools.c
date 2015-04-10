@@ -113,10 +113,11 @@ void SetIniNormalization() {
   ini_cgs[PAR_OMDT] = NOZZLE_SELECT(1.,CONST_Msun/year);   ini_code[PAR_OMDT] = ini_cgs[PAR_OMDT]/NOZZLE_SELECT(1.,vn.mdot_norm);
   ini_cgs[PAR_OANG] = degrad;                              ini_code[PAR_OANG] = ini_cgs[PAR_OANG];
   ini_cgs[PAR_ORAD] = vn.l_norm;                           ini_code[PAR_ORAD] = ini_cgs[PAR_ORAD]/vn.l_norm;
-  ini_cgs[PAR_ODBH] = vn.l_norm;                           ini_code[PAR_ODBH] = ini_cgs[PAR_ODBH]/vn.l_norm;
   ini_cgs[PAR_ODIR] = degrad;                              ini_code[PAR_ODIR] = ini_cgs[PAR_ODIR];
   ini_cgs[PAR_OOMG] = degrad/(1.e6*year);                  ini_code[PAR_OOMG] = ini_cgs[PAR_OOMG]*vn.t_norm;
   ini_cgs[PAR_OPHI] = degrad;                              ini_code[PAR_OPHI] = ini_cgs[PAR_OPHI];
+  ini_cgs[PAR_ODBH] = vn.l_norm;                           ini_code[PAR_ODBH] = ini_cgs[PAR_ODBH]/vn.l_norm;
+  ini_cgs[PAR_OSPH] = vn.l_norm;                           ini_code[PAR_OSPH] = ini_cgs[PAR_OSPH]/vn.l_norm;
   ini_cgs[PAR_HRHO] = vn.dens_norm;                        ini_code[PAR_HRHO] = ini_cgs[PAR_HRHO]/vn.dens_norm;
   ini_cgs[PAR_HTMP] = 1;                                   ini_code[PAR_HTMP] = ini_cgs[PAR_HTMP]/vn.temp_norm;
   ini_cgs[PAR_HVBG] = DIMDIM3(1,1.e5);                     ini_code[PAR_HVBG] = ini_cgs[PAR_HVBG]/DIMDIM3(1,vn.v_norm);
@@ -148,26 +149,64 @@ void SetNozzleConeGeometry(){
   double small_angle = 1.e-12;
   double large = 1.e30;
 
-  nz.aph = g_inputParam[PAR_OANG]*ini_code[PAR_OANG];
+  /* Quantitites from input parameters */
+  nz.ang = g_inputParam[PAR_OANG]*ini_code[PAR_OANG];
   nz.rad = g_inputParam[PAR_ORAD]*ini_code[PAR_ORAD];
   nz.dir = g_inputParam[PAR_ODIR]*ini_code[PAR_ODIR];
   nz.dbh = g_inputParam[PAR_ODBH]*ini_code[PAR_ODBH];
   nz.omg = g_inputParam[PAR_OOMG]*ini_code[PAR_OOMG];
   nz.phi = g_inputParam[PAR_OPHI]*ini_code[PAR_OPHI];
-  nz.orig = g_domBeg[FLOWAXIS(IDIR,JDIR,KDIR)]; 
+  nz.sph = g_inputParam[PAR_OSPH]*ini_code[PAR_OSPH];
+  
+  /* Derived quantitites */
+
+#if INTERNAL_BOUNDARY == YES
+  nz.cbh = sqrt(nz.sph*nz.sph - nz.rad*nz.rad);
+  nz.orig = nz.cbh;
+#else
   nz.cbh = (nz.orig - nz.dbh)/cos(nz.dir) + nz.rad*tan(nz.dir);
-  if (nz.aph > small_angle) { 
+  nz.orig = g_domBeg[FLOWAXIS(IDIR,JDIR,KDIR)];
+#endif
+    
+  if (nz.ang > small_angle) { 
     nz.isfan = 1;
-    nz.area = 2.*CONST_PI*(1. - cos(nz.aph))*pow(nz.rad/sin(nz.aph),2);
-    nz.cone_height = nz.rad/tan(nz.aph);
+    nz.area = 2.*CONST_PI*(1. - cos(nz.ang))*pow(nz.rad/sin(nz.ang),2);
+
+    /* cone apex is only valid when cone is aligned with flow axis */
+    nz.cone_height = nz.rad/tan(nz.ang);
     nz.cone_apex = - (nz.cone_height - nz.orig);
   }
   else { 
     nz.isfan = 0; 
     nz.area = CONST_PI*nz.rad*nz.rad;
-    nz.cone_height = large;
-    nz.cone_apex = -large;
+    nz.cone_height = nz.cbh;
+    nz.cone_apex = -nz.cbh;
   }
+    
+
+    
+  /* Some consistency checks */
+    
+#if INTERNAL_BOUNDARY == YES
+    /* Currently we require the BH location to be at 0,0,0  and nz.dbh = 0*/
+
+    if (0 > nz.dbh || nz.dbh > 0) {
+        print1("Warning: If INTERNAL_BOUNDARY == YES, ODBH = 0. Setting nz.dbh to 0.");
+        nz.dbh = 0;
+    }
+    if (nz.sph < nz.rad) {
+        print1("Error: OSPH must be larger than ORAD");
+        QUIT_PLUTO(1);
+    }
+    /* This check is for avoiding the cone of the nozzle to be burried in the 
+     outflow boundary for half-galaxy simulations. */
+    if (acos(1 - ((nz.sph - nz.cbh)*(nz.sph - nz.cbh) + nz.rad*nz.rad)/
+        (2*nz.sph*nz.sph)) + nz.dir > CONST_PI/2) {
+        print1("Error: OSPH is too small. It must be at least...");
+        QUIT_PLUTO(1);
+        /* TODO: Calculate minimum OSPH */
+    }
+#endif
 
 }
 
@@ -219,9 +258,21 @@ void OutflowVelocity(double * out_primitives, double speed,
 
   double vx1, vx2, vx3;
   double cvx1, cvx2, cvx3;
+  int mirror_side = 0;
 
   if (nz.isfan) {
 
+#if INTERNAL_BOUNDARY == YES
+      /* If we're in the counter-nozzle region use mirror symmetric value of cx1p
+       NOTE, since we've rotated to flow-axis, the nozzle is cylindrically symmetric
+       and we don't have to use rotational symmetry. */
+      
+      if (FLOWAXIS(cx1p, cx2p, cx3p) < 0){
+          mirror_side = 1;
+          FLOWAXIS(cx1p, cx2p, cx3p) *= -1;
+      }
+#endif
+      
     FLOWAXIS(cx1p, cx2p, cx3p) -= nz.cone_apex;
 
     double sx1, sx2, sx3;
@@ -230,24 +281,45 @@ void OutflowVelocity(double * out_primitives, double speed,
     sx3 = SPH3(cx1p, cx2p, cx3p);
 
     double cur_vx1, cur_vx2, cur_vx3;
-    EXPAND(cur_vx1 = VSPH_1(sx1, sx2, sx3, speed, 0, 0);,
-           cur_vx2 = VSPH_2(sx1, sx2, sx3, speed, 0, 0);,
-           cur_vx3 = VSPH_3(sx1, sx2, sx3, speed, 0, 0););
-
-    EXPAND(cvx1 = VCART1(cx1p, cx2p, cx3p, cur_vx1, cur_vx2, cur_vx3);,
-           cvx2 = VCART2(cx1p, cx2p, cx3p, cur_vx1, cur_vx2, cur_vx3);,
-           cvx3 = VCART3(cx1p, cx2p, cx3p, cur_vx1, cur_vx2, cur_vx3););
+    cur_vx1 = VSPH_1(sx1, sx2, sx3, speed, 0, 0);
+    cur_vx2 = VSPH_2(sx1, sx2, sx3, speed, 0, 0);
+    cur_vx3 = VSPH_3(sx1, sx2, sx3, speed, 0, 0);
+      
+    cvx1 = VCART1(cx1p, cx2p, cx3p, cur_vx1, cur_vx2, cur_vx3);
+    cvx2 = VCART2(cx1p, cx2p, cx3p, cur_vx1, cur_vx2, cur_vx3);
+    cvx3 = VCART3(cx1p, cx2p, cx3p, cur_vx1, cur_vx2, cur_vx3);
 
     FLOWAXIS(cx1p, cx2p, cx3p) += nz.cone_apex;
+      
+#if INTERNAL_BOUNDARY == YES
+      /* Create mirror-symmetrically opposite velocity vector
+       and mirror back cell position */
+      
+      if (mirror_side){
+          FLOWAXIS(cx1p, cx2p, cx3p) *= -1;
+          FLOWAXIS(cvx1, cvx2, cvx3) *= -1;
+      }
 
+#endif
+      
   }
-  else {
+  else { // if nozzle is not fan
 
-    EXPAND(cvx1 = 0;,
-           cvx2 = 0;,
-           cvx3 = speed;);
-  }
+    cvx1 = 0; cvx2 = 0; cvx3 = 0;
+    FLOWAXIS(cvx1, cvx2, cvx3) = speed;
+      
+#if INTERNAL_BOUNDARY == YES
+      /* Create mirror-symmetrically opposite velocity vector */
+      
+      if (FLOWAXIS(cx1p, cx2p, cx3p) < 0){
+          FLOWAXIS(cvx1, cvx2, cvx3) *= -1;
 
+      }
+      
+#endif
+  } // if nozzle is fan
+
+  /* Rotate vector back */
   double cvx1p, cvx2p, cvx3p; 
   RotateNozzle2Grid(cvx1, cvx2, cvx3, &cvx1p, &cvx2p, &cvx3p);
 
@@ -492,7 +564,7 @@ int CloudCubePixel(int * el, const double x1,
  *
  * \param [out] el  array of size 3 holding cube coordinates 
  * \param [in] x1   current zone x1 coordinates (any geometry)
- * \param [in] x2   current zone x2 coordinates (any geometry)
+ * \param [in] x2   current zone x2 coor    dinates (any geometry)
  * \param [in] x3   current zone x3 coordinates (any geometry)
  *
  * Calculate pixel coordinates (here el[]) in fractal cube 
@@ -570,7 +642,7 @@ void ReadFractalData()
   /* Read cloud data from external file */
   if (!once01) {
     InputDataSet("./grid_in.out", get_var);
-    InputDataRead("./clouds.dbl", CUBE_ENDIANNESS);
+    InputDataRead("./input.flt", CUBE_ENDIANNESS);
     once01 = 1;
   }
 
@@ -1220,8 +1292,10 @@ int CloudPrimitives(double* cloud,
 
       /* Calculate cloud primitives so that we can get temperature */
 
+#if CLOUD_VELOCITY
       /* Cloud velocity */
       CloudVelocity(cloud, x1, x2, x3);
+#endif
 
       /* Cloud pressure
        * Underpressure the clouds slightly, so that they 
@@ -1291,7 +1365,7 @@ int RotateGrid2Nozzle(
     double const cx1, double const cx2, double const cx3,
     double* cx1p, double* cx2p, double* cx3p){
 /*
- * This function assumes 3D (cartesian) coor-
+ * This function assumes 3D cartesian coor-
  * dinates. First rotates according to any precession 
  * through phi + omg*t. Then translates a point by dbh.
  * Then rotates grid around y-axis by angle dir so that
@@ -1345,10 +1419,19 @@ int RotateGrid2Nozzle(
   pre = nz.phi + nz.omg*g_time;
 
   /* The transformations */
-  // Signs for nz.dbh and nz.cbh translations may be the wrong way around.
-  *cx1p =  (cx1*cos(pre) - cx2*sin(pre))*cos(nz.dir) - sin(nz.dir)*(cx3 - nz.dbh);
-  *cx2p =   cx2*cos(pre) + cx1*sin(pre);
-  *cx3p =  (cx1*cos(pre) - cx2*sin(pre))*sin(nz.dir) + nz.dbh + cos(nz.dir)*(cx3 - nz.dbh);
+  // Sign for nz.dbh translations may be the wrong way around.
+  
+  SELECT(*cx1p = cx1;,
+         *cx1p = cx1*cos(nz.dir) - sin(nz.dir)*(cx2 - nz.dbh);,
+         *cx1p = (cx1*cos(pre) - cx2*sin(pre))*cos(nz.dir) - sin(nz.dir)*(cx3 - nz.dbh););
+
+  SELECT(*cx2p = cx2;,
+         *cx2p = cx1*sin(nz.dir) + nz.dbh + cos(nz.dir)*(cx2 - nz.dbh);,
+         *cx2p = cx2*cos(pre) + cx1*sin(pre););
+         
+  SELECT(*cx3p = cx3;,
+         *cx3p = cx3;,
+         *cx3p = (cx1*cos(pre) - cx2*sin(pre))*sin(nz.dir) + nz.dbh + cos(nz.dir)*(cx3 - nz.dbh););
 
   return 0;
 }
@@ -1367,9 +1450,17 @@ int RotateNozzle2Grid(
   double pre;
   pre = nz.phi + nz.omg*g_time;
 
-  *cx1p =  cx2*sin(pre) + cos(pre)*(cx1*cos(nz.dir) + sin(nz.dir)*(cx3 + nz.dbh));
-  *cx2p =  cx2*cos(pre) - sin(pre)*(cx1*cos(nz.dir) + sin(nz.dir)*(cx3 + nz.dbh));
-  *cx3p = -(cx1*sin(nz.dir)) - nz.dbh + cos(nz.dir)*(cx3 + nz.dbh);
+  SELECT(*cx1p = cx1;,
+         *cx1p = cx1*cos(nz.dir) + sin(nz.dir)*(cx2 + nz.dbh);,
+         *cx1p = cx2*sin(pre) + cos(pre)*(cx1*cos(nz.dir) + sin(nz.dir)*(cx3 + nz.dbh)););
+    
+  SELECT(*cx2p = cx2;,
+         *cx2p = -(cx1*sin(nz.dir)) - nz.dbh + cos(nz.dir)*(cx2 + nz.dbh);,
+         *cx2p = cx2*cos(pre) - sin(pre)*(cx1*cos(nz.dir) + sin(nz.dir)*(cx3 + nz.dbh)););
+    
+  SELECT(*cx3p = cx3;,
+         *cx3p = cx3;,
+         *cx3p = -(cx1*sin(nz.dir)) - nz.dbh + cos(nz.dir)*(cx3 + nz.dbh););
 
   return 0;
 }
@@ -1390,7 +1481,7 @@ int InNozzleRegion(double const x1, double const x2, double const x3){
  * axis. The apex and tilt rotation axis are also not 
  * necessarily at the same point. 
  *    If the half opening angle
- * aph == 0, the ice-cream becomes a bullet.
+ * ang == 0, the ice-cream becomes a bullet.
  *
  ************************************************** */
 
@@ -1400,9 +1491,16 @@ int InNozzleRegion(double const x1, double const x2, double const x3){
   cx2 = CART2(x1, x2, x3);
   cx3 = CART3(x1, x2, x3);
 
-  /* Rotate and shift cartesian coords so that base of cone is at (0,0,0) */
+  /* Rotate and shift cartesian coords so that base of cone is at (0,0,0) 
+     This is the same regardless if we are using internal boundary or not. 
+     But for internal boundary, we're including a mirrored component. 
+     Inclusion of the mirror component with fabs must occur after rotation
+     but before translation. */
   double cx1p, cx2p, cx3p;
   RotateGrid2Nozzle(cx1, cx2, cx3, &cx1p, &cx2p, &cx3p);
+#if INTERNAL_BOUNDARY
+    FLOWAXIS(cx1p, cx2p, cx3p) = fabs(FLOWAXIS(cx1p, cx2p, cx3p));
+#endif
   FLOWAXIS(cx1p, cx2p, cx3p) -= nz.dbh + nz.cbh;
 
   /* Turn into cylindrical coords */
@@ -1410,23 +1508,114 @@ int InNozzleRegion(double const x1, double const x2, double const x3){
   cr = CYL1(cx1p, cx2p, cx3p);
   cz = CYL2(cx1p, cx2p, cx3p);
 
-  /* Hemispherical cap height */
+  /* Spherical cap height */
   double cap_hgt;
+#if INTERNAL_BOUNDARY == YES && HEMISPHERICAL_CAP == NO
+    cap_hgt = sqrt(nz.sph*nz.sph - cr*cr) - nz.cbh;
+#else
   cap_hgt = sqrt(nz.rad*nz.rad - cr*cr);
+#endif
 
-  int incone;
+  int innozzle;
 
   /* Condition for Bullet */
-  incone = cz < cap_hgt;
+  innozzle = cz < cap_hgt;
 
   /* Condition for ice-cream cone */
   if (nz.isfan) { 
-    incone = incone && (cr < (cz + nz.cone_height)*tan(nz.aph));
+    innozzle = innozzle && (cr < (cz + nz.cone_height)*tan(nz.ang));
   }
+    
 
-  return incone;
+  return innozzle;
 
 }
+
+
+#if INTERNAL_BOUNDARY == YES
+/* ************************************************ */
+int InNozzleSphere(double const x1, double const x2, double const x3){
+/*
+ * Returns 1 if r is in sphere containinng nozzle.
+ * Only for INTERNAL_BOUNDARY YES
+ * Sphere is assumed to be at (0,0,0) and has a radius
+ * of ODBH. The base of the nozzle has a radius of ORAD.
+ ************************************************** */
+    
+    /* Grid point in cartesian coordinates */
+    double cx1, cx2, cx3;
+    cx1 = CART1(x1, x2, x3);
+    cx2 = CART2(x1, x2, x3);
+    cx3 = CART3(x1, x2, x3);
+    
+    /* Rotate cartesian coords so that base of nozzle cone is at (0,0,0) */
+    double cx1p, cx2p, cx3p;
+    RotateGrid2Nozzle(cx1, cx2, cx3, &cx1p, &cx2p, &cx3p);
+    
+    /* Turn into spherical coords */
+    double sr;
+    sr = SPH1(cx1p, cx2p, cx3p);
+    
+    int insphere;
+    insphere = (sr < nz.sph);
+    
+    return insphere;
+    
+}
+#endif
+
+
+#if INTERNAL_BOUNDARY == YES
+/* ************************************************ */
+int SphereIntersectsDomain(Grid *grid){
+/*
+ * Returns 1 if sphere intersects local domain.
+ * Only for INTERNAL_BOUNDARY YES
+ *
+ * grid is the pointer to the grid struct of the local domain.
+ *
+ * Sphere is assumed to be at (0,0,0) and has a radius
+ * of ODBH. The base of the nozzle has a radius of ORAD.
+ ************************************************** */
+    
+
+    /* The local domain limits */
+    double x1i, x1f, x2i, x2f, x3i, x3f, r;
+    
+    /* Location of center of sphere - currently this is hardcoded here */
+    double s1, s2, s3;
+    s1 = s2 = s3 = 0;
+    
+    x1i = grid[IDIR].xi;
+    x1f = grid[IDIR].xf;
+    x2i = grid[JDIR].xi;
+    x2f = grid[JDIR].xf;
+    x3i = grid[KDIR].xi;
+    x3f = grid[KDIR].xf;
+    r = nz.sph;
+    
+    /* Check first whether the center of the sphere
+     is in the extended (by r) domain box or
+     the center of the sphere lies in any
+     of the eight rounded corners */
+    
+    if ((x1i - r < s1 && s1 < x1f + r &&
+         x2i - r < s2 && s2 < x2f + r &&
+         x3i - r < s3 && s3 < x3f + r) ||
+        ((x1i*x1i + x2i*x2i + x3i*x3i < r*r && x1i > s1 && x2i > s2 && x3i > s3) ||
+         (x1i*x1i + x2i*x2i + x3f*x3f < r*r && x1i > s1 && x2i > s2 && x3f < s3) ||
+         (x1i*x1i + x2f*x2f + x3f*x3f < r*r && x1i > s1 && x2f < s2 && x3f < s3) ||
+         (x1i*x1i + x2f*x2f + x3i*x3i < r*r && x1i > s1 && x2f < s2 && x3i > s3) ||
+         (x1f*x1f + x2i*x2i + x3i*x3i < r*r && x1f < s1 && x2i > s2 && x3i > s3) ||
+         (x1f*x1f + x2i*x2i + x3f*x3f < r*r && x1f < s1 && x2i > s2 && x3f < s3) ||
+         (x1f*x1f + x2f*x2f + x3i*x3i < r*r && x1f < s1 && x2f < s2 && x3i > s3) ||
+         (x1f*x1f + x2f*x2f + x3f*x3f < r*r && x1f < s1 && x2f < s2 && x3f < s3))) {
+            return 1;
+    }
+    else return 0;
+}
+#endif
+
 
 
 /* ************************************************ */
@@ -1461,14 +1650,17 @@ double Lorentz2Vel(const double lorentz)
 /* ************************************************ */
 double Profile(const double x1, const double x2, const double x3)
 /*! 
-  * 1/cosh smoothing function
+  * Some smoothing function, e.g., 1/cosh
   *
  ************************************************** */
 {
 
   if (1) { return 1.0; }
-  else {
+  /* NOTE: Currently we don't use a smoothing profile.
+   This won't work well with internal boundaries anyway. */
 
+  else {
+      
   /* Steepness of cosh profile */
   int n = 14;
 

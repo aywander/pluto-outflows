@@ -40,7 +40,7 @@ typedef struct {
 } VarNorm;
 
 typedef struct {
-  double aph;               // Half opening angle.
+  double ang;               // Half opening angle.
   double rad;               // Radius of cone.
   double dir;               // Angle direction of cone.
   double dbh;               // Location of rotation axis (BH) relative to (0,0,0).
@@ -49,6 +49,7 @@ typedef struct {
                             // Mathematically always positive.
   double omg;               // Precession angular velocity.
   double phi;               // Precession starting angle.
+  double sph;               // Radius of spherical region if INTERNAL_BOUNDARY = YES
   double orig;              // Height of beginning of domain as measured 
                             // from the origin along flowaxis.
                             // = g_domBeg[FLOWAXIS(IDIR,JDIR,KDIR)];.
@@ -60,8 +61,8 @@ typedef struct {
                             // for a cone whose apex is on the flow axis.
                             // Can be used for a cone after RotateGrid2Nozzle transform.
                             // Can be positive or negative.
-  int isfan;                // Is the nozzle a fan (conical) or bullet-shaped (parallel).
-  int fill[19];             // Useless, just to make the struct a power of 2.
+  int isfan;                // Is the nozzle a fan (conical) or bullet-shaped (parallel)
+  int fill[3];             // Useless, just to make the struct a power of 2.
 } Nozzle;
 
 
@@ -72,24 +73,24 @@ extern double ini_code[32];
 extern Nozzle nozzle;
 
 void OutflowPrimitives(double* out_primitives, 
-    const double x1, const double x2, const double x3);
+                       const double x1, const double x2, const double x3);
 
 void OutflowVelocity(double * out_primitives, double speed,
     const double x1, const double x2, const double x3);
 
 void JetPrimitives(double* jet_primitives,
-    const double x1, const double x2, const double x3);
+                   const double x1, const double x2, const double x3);
 
 void UfoPrimitives(double* ufo_primitives, 
-    const double x1, const double x2, const double x3);
+                   const double x1, const double x2, const double x3);
 
 
 void HotHaloPrimitives(double* halo, 
-    const double x1, const double x2, const double x3);
+                       const double x1, const double x2, const double x3);
 
 int CloudCubePixel(int* el, const double x1,
-    const double x2,
-    const double x3);
+                   const double x2,
+                   const double x3);
 
 void ReadFractalData();
 
@@ -97,15 +98,18 @@ void GetFractalData(double* cloud,
     const double x1, const double x2, const double x3);
 
 void CloudApodize(double* cloud, 
-    const double x1, const double x2, const double x3);
+                  const double x1, const double x2, const double x3);
 
 int CloudExtract(double* cloud,
-    const double* halo, 
-    const int* pixel, 
-    const double x1, const double x2, const double x3);
+                 const double* halo,
+                 const int* pixel,
+                 const double x1, const double x2, const double x3);
 
 int CloudPrimitives(double* cloud,
-    const double x1, const double x2, const double x3);
+                    const double x1, const double x2, const double x3);
+
+void CloudVelocity(double* cloud,
+                   const double x1, const double x2, const double x3);
 
 int WarmTcrit(double* const warm);
 
@@ -116,16 +120,18 @@ void SetIniNormalization();
 void SetNozzleConeGeometry();
 
 void PrintInitData01(const double* ufo_primitives,
-                            const double* halo_primitives);
+                     const double* halo_primitives);
 
 int InNozzleRegion(const double x1, const double x2, const double x3);
 
+int InNozzleSphere(const double x1, const double x2, const double x3);
 
-int RotateGrid2Nozzle(
-    double const cx1, double const cx2, double const cx3,
-    double* cx1p, double* cx2p, double* cx3p);
+int SphereIntersectsDomain(Grid *grid);
 
-int RotateNozzle2Grid(
-    double const cx1, double const cx2, double const cx3,
-    double* cx1p, double* cx2p, double* cx3p);
+
+int RotateGrid2Nozzle(double const cx1, double const cx2, double const cx3,
+                      double* cx1p, double* cx2p, double* cx3p);
+
+int RotateNozzle2Grid(double const cx1, double const cx2, double const cx3,
+                      double* cx1p, double* cx2p, double* cx3p);
 

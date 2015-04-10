@@ -80,11 +80,22 @@ void Init (double *v, double x1, double x2, double x3)
 
   /* Initialize nozzle if we're in hemisphere around 
    * nozzle inlet region, otherwise halo */
+    
+#if INTERNAL_BOUNDARY == YES
+  if (InNozzleSphere(x1, x2, x3)) {
+    HotHaloPrimitives(halo_primitives, x1, x2, x3);
+      for (nv = 0; nv < NVAR; ++nv) {
+          v[nv] = halo_primitives[nv];
+          v[0] = 10.;
+      }
+  }
+#endif
+ 
   if (InNozzleRegion(x1, x2, x3)){
 
     OutflowPrimitives(out_primitives, x1, x2, x3);
     HotHaloPrimitives(halo_primitives, x1, x2, x3);
-
+    
     for (nv = 0; nv < NVAR; ++nv){
       v[nv] = halo_primitives[nv] + 
         (out_primitives[nv] - halo_primitives[nv])*Profile(x1, x2, x3);
@@ -212,29 +223,49 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
     /* This is only performed if INTERNAL_BOUNDARY == YES
      * in definitions.h */
 
-    /* Test whether domain partly contains wind region 
+    /* Test whether domain partly contains nozzle region
      * Put surfaces to InNozzleRegion test */
-    BOX_SURF_LOOP(box,k,j,i, if (InNozzleRegion(x1[i], x2[j], x3[k])) {inr = 1; break;} );
+    //BOX_SURF_LOOP(box,k,j,i, if (InNozzleRegion(x1[i], x2[j], x3[k])) {inr = 1; break;} );
 
     /* Only then do a domain loop */
-    if (inr){
-
+    if (SphereIntersectsDomain(grid)){
+        
       TOT_LOOP(k,j,i){
+          
+        if (InNozzleSphere(x1[i], x2[j], x3[k])){
+            
+          if (InNozzleRegion(x1[i], x2[j], x3[k])){
 
-        if (InNozzleRegion(x1[i], x2[j], x3[k])){
+            OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k]);
 
-          OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k]);
-
-          for (nv = 0; nv < NVAR; ++nv){
-            vc = d->Vc[nv][k][j][i];
-            d->Vc[nv][k][j][i] = vc + (out_primitives[nv] - vc)*
-                                 Profile(x1[i], x2[j], x3[k]);
+            for (nv = 0; nv < NVAR; ++nv){
+              vc = d->Vc[nv][k][j][i];
+              d->Vc[nv][k][j][i] = vc + (out_primitives[nv] - vc)*
+                                   Profile(x1[i], x2[j], x3[k]);
+            }
+              
           }
+            
+          else {
+              
+            HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
+              
+            for (nv = 0; nv < NVAR; ++nv){
+                d->Vc[nv][k][j][i] = halo_primitives[nv];
+                d->Vc[0][k][j][i] = 10.;
+            }
+              
+          } // InNozzleRegion
+            
           d->flag[k][j][i] |= FLAG_INTERNAL_BOUNDARY;
-        }
-      }
-    }
-  }
+            
+        } // InNozzleSphere
+          
+      } // TOT_LOOP
+        
+    } // SphereIntersectsDomain
+      
+  } // side == 0
 
   if (side == FLOWAXIS(X2_BEG, X3_BEG, X1_BEG)){
     if (box->vpos == CENTER) {
@@ -316,6 +347,8 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
     }
   }
 
+    
+  /* This side is where the nozzle is located and the outflow emerges */
   if (side == FLOWAXIS(X1_BEG, X2_BEG, X3_BEG)){
     if (box->vpos == CENTER) {
       BOX_LOOP(box,k,j,i){  

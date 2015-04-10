@@ -61,9 +61,10 @@ void ComputeUserVar (const Data *d, Grid *grid)
     te[k][j][i] = TempNrEOS(rho[k][j][i], prs[k][j][i], mu);
 
     /* Speed */
-    sp1 = vx1[k][j][i]; 
-    sp2 = vx2[k][j][i];
-    sp3 = vx3[k][j][i];
+    sp3 = 0; sp2 = 0; sp1 = 0;
+    EXPAND(sp1 = vx1[k][j][i];,
+           sp2 = vx2[k][j][i];,
+           sp3 = vx3[k][j][i];);
     spd[k][j][i] = VMAG(x1[i], x2[j], x3[k], sp1, sp2, sp3);
 
 #if USE_FOUR_VELOCITY == YES
@@ -112,7 +113,9 @@ void ChangeDumpVar ()
 #endif
   SetDumpVar("prs",  VTK_OUTPUT, YES);
   SetDumpVar("tr1",  VTK_OUTPUT, YES);
+#if CLOUDS == YES
   SetDumpVar("tr2",  VTK_OUTPUT, YES);
+#endif
   SetDumpVar("te",  VTK_OUTPUT, YES);
   SetDumpVar("spd",  VTK_OUTPUT, YES);
 
@@ -135,7 +138,9 @@ void ChangeDumpVar ()
 #endif
   SetDumpVar("prs",  FLT_OUTPUT, YES);
   SetDumpVar("tr1",  FLT_OUTPUT, YES);
+#if CLOUDS == YES
   SetDumpVar("tr2",  FLT_OUTPUT, YES);
+#endif
   SetDumpVar("te",  FLT_OUTPUT, YES);
   SetDumpVar("spd",  FLT_OUTPUT, YES);
 
@@ -158,7 +163,9 @@ void ChangeDumpVar ()
 #endif
   SetDumpVar("prs",  PNG_OUTPUT, YES);
   SetDumpVar("tr1",  PNG_OUTPUT, YES);
+#if CLOUDS == YES
   SetDumpVar("tr2",  PNG_OUTPUT, YES);
+#endif
   SetDumpVar("te",  PNG_OUTPUT, YES);
   SetDumpVar("spd",  PNG_OUTPUT, YES);
 
@@ -195,6 +202,7 @@ void ChangeDumpVar ()
   image->logscale = 1;
 #endif
 
+#if CLOUDS
   /* second tracer slice */
 #if NTRACER > 1
   image = GetImage("tr2");
@@ -205,6 +213,7 @@ void ChangeDumpVar ()
   image->max = 1.;
   image->min = 0.;
   image->logscale = 1;
+#endif
 #endif
 
 

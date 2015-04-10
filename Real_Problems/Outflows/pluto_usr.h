@@ -25,6 +25,8 @@
 #define NOZZLE_JET      1
 #define NOZZLE_UFO      2
 
+
+
 /* Clouds */
 /* Use a grid_in.out file to specify dimensions of cube 
  * Input files are rho.dbl, vx1.dbl, vx2.dbl, vx3.dbl, etc*/
@@ -145,6 +147,17 @@
 #define NOZZLE NOZZLE_JET
 #endif
 
+/* Use a hemispherical cap?
+ * By default, if INTERNAL_BOUNDARY is off, a hemispherical
+ * cap is used, and this cannot be overridden. However, in the
+ * case of INTERNAL_BOUNDARY == YES, there is the choice of
+ * whether to use a hemispherical cap to buffer the jet inlet,
+ * or just use the spherical section above the cone from the
+ * NozzleSphere as a buffer. */
+#ifndef HEMISPHERICAL_CAP
+#define HEMISPHERICAL_CAP YES
+#endif
+
 /* Clouds */
 /* NO for no clouds */
 /* A faire
@@ -156,6 +169,7 @@
 #define CLOUDS NO
 #endif
 
+/* Use an external cloud velocity cube? */
 #ifndef CLOUD_VELOCITY
 #define CLOUD_VELOCITY NO
 #endif
