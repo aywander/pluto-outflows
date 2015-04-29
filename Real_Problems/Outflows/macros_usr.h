@@ -32,11 +32,12 @@
 #define SGNB(a,b) ( ((a) - (b) < 0) ? -1 : (((a) - (b) > 0) ? 1 : 0) )
 
 /* Heaviside function */
-#define HS(a)    ( ((a) < 0) ? 0 : (((a) > 0) ? 1 : 0) )
-#define HSB(a,b) ( ((a) - (b) < 0) ? 0 : (((a) - (b) > 0) ? 1 : 0) )
-//#define HS(a) 0.5*(1 + SGN(a))
-//#define HSB(a, b) 0.5*(1 + SGN(a, b))
+#define HS(a)    ( ((a) > 0) ? 1 : 0 )
+#define HSB(a,b) ( ((a) - (b) > 0) ? 1 : 0 )
 
+/*! Return the number with the larger absolute value. */
+#define ABS_MAX(a,b)  (fabs(a) > fabs(b) ? (a) : (b)) 
+                         
 /* Select between nozzle type, a: jet, b: ufo. */
 #if NOZZLE == NOZZLE_JET
   #define NOZZLE_SELECT(a,b) a

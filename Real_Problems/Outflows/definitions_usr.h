@@ -2,12 +2,15 @@
 
 #define NOZZLE               NOZZLE_JET
 
+#define HEMISPHERICAL_CAP    YES
+
 #define CLOUDS               YES
-#define CLOUD_VELOCITY       NO
+#define CLOUD_VELOCITY       YES
 #define CLOUD_TCRIT          3.0e4
 #define CLOUD_EXTRACT        NONE
 #define CLOUD_DISTR          CD_TURB_ISOTH_HYDROSTATIC
 #define CLOUD_SCALE          CS_WRAD
+#define CLOUD_VEL_DISTR      CV_KEPLERIAN_FRAC
 
 #define GRAV_POTENTIAL       DOUBLE_ISO
 
@@ -18,6 +21,15 @@
 #define MU_CALC              MU_CONST
 
 #define CCL_OK               TRUE
+
+
+#define CLOUD_X1MIN         -1.9
+#define CLOUD_X1MAX          1.9
+#define CLOUD_X2MIN         -1.9
+#define CLOUD_X2MAX          1.9
+#define CLOUD_X3MIN          0.015
+#define CLOUD_X3MAX          3.9
+
 
 /* -- user-defined symbolic constants -- */
 /* These are just here as a backup. This #if should never evaluate to True. */

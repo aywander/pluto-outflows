@@ -21,6 +21,8 @@ double HermiteInterpolate(double y0, double y1,
                           double fc, double tension, 
                           double bias);
 
-int sgn(double val);
+void x3u_3d_extrapol(double ***a, int kb, int i, int j, int k, Grid *grid);
+
+void x2l_3d_extrapol (double ***a, int jb, int i, int j, int k, Grid *grid);
 
 #endif

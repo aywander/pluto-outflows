@@ -83,7 +83,11 @@ void CoolingSource (const Data *d, double dt, Time_Step *Dts, Grid *GXYZ)
      if (d->flag[k][j][i] & FLAG_INTERNAL_BOUNDARY) continue;
     #endif
     if (d->flag[k][j][i] & FLAG_SPLIT_CELL) continue;
-    
+   
+   /* DM (12/1/2015): Shut off cooling at the Jet plasma */
+     if (d->Vc[TRC][k][j][i] != 0.0)  continue;
+       
+ 
   /* ----------------------------------------------
       Compute temperature and internal energy from
       density, pressure and concentrations.

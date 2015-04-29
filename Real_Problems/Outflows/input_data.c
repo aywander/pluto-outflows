@@ -73,6 +73,30 @@ static double *id_x3; /**< Array of point coordinates of the x3 input grid. */
 static double ***Vin[ID_MAX_NVAR]; /**< An array of 3D data values containing the
                                         initial data file variables. */
 
+
+
+/* This function shifts a coordinate by a multiple of the input cube width */
+/* AYW, adpated from DM -- */
+double shift_idx(double x, const double xmin, const double xmax, 
+    const double id_x_beg, const double id_x_end) {
+
+  if (x < id_x_beg || x > id_x_end ) {  
+    if (x > xmin && x < xmax) {
+
+      double delta, deltax, intpart, fractpart;
+      delta = xmax - xmin;
+      deltax = x - (x < id_x_beg ? id_x_beg : id_x_end);
+      fractpart = modf(deltax / delta, &intpart);
+      x -= (intpart + 1.0) * delta;
+    }
+
+    return x;
+  }
+}
+
+/* -- AYW */
+
+
 /* ********************************************************************* */
 void InputDataSet (char *grid_fname, int *get_var)
 /*!
@@ -183,14 +207,19 @@ void InputDataSet (char *grid_fname, int *get_var)
   if (id_nx2 == 1) id_x2[0] = 0.0;
   if (id_nx3 == 1) id_x3[0] = 0.0;
  
-   /* AYW -- 2013-04-19 12:08 JST 
-   * Store read data extents in global arrays */
-  g_idBoxBeg[IDIR] = id_x1[0]; g_idBoxEnd[IDIR] = id_x1[id_nx1-1];
-  g_idBoxBeg[JDIR] = id_x2[0]; g_idBoxEnd[JDIR] = id_x2[id_nx2-1];
-  g_idBoxBeg[KDIR] = id_x3[0]; g_idBoxEnd[KDIR] = id_x3[id_nx3-1];
+  /* AYW -- 2013-04-19 12:08 JST 
+  * Store read data extents in global arrays */
+  // g_idBoxBeg[IDIR] = id_x1[0]; g_idBoxEnd[IDIR] = id_x1[id_nx1-1];
+  // g_idBoxBeg[JDIR] = id_x2[0]; g_idBoxEnd[JDIR] = id_x2[id_nx2-1];
+  // g_idBoxBeg[KDIR] = id_x3[0]; g_idBoxEnd[KDIR] = id_x3[id_nx3-1];
   g_idnx1 = id_nx1; g_idnx2 = id_nx2; g_idnx3 = id_nx3; 
   /* -- AYW */
 
+  /* DM -- */
+  g_idBoxBeg[IDIR] = CLOUD_X1MIN; g_idBoxEnd[IDIR] = CLOUD_X1MAX;
+  g_idBoxBeg[JDIR] = CLOUD_X2MIN; g_idBoxEnd[JDIR] = CLOUD_X2MAX;
+  g_idBoxBeg[KDIR] = CLOUD_X3MIN; g_idBoxEnd[KDIR] = CLOUD_X3MAX;
+  /* -- DM */
 
   print1 ("  Input grid extension:  x1 = [%12.3e, %12.3e] (%d points)\n",
              id_x1[0], id_x1[id_nx1-1], id_nx1);
@@ -491,6 +520,8 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
       Limit to input grid edge otherwise.                                */
 /* --------------------------------------------------------------------- */
    
+/* DM -- */
+  /*
   D_EXPAND(if      (x1 < id_x1[0])         x1 = id_x1[0];
            else if (x1 > id_x1[id_nx1-1]) x1 = id_x1[id_nx1-1];  ,
            
@@ -499,6 +530,57 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
            
            if      (x3 < id_x3[0])         x3 = id_x3[0];
            else if (x3 > id_x3[id_nx3-1]) x3 = id_x3[id_nx3-1]; )
+  */
+
+
+/* DM 23 Feb, 2015: Check if PLUTO grid point is outside input grid. 
+If yes, then check if PLUTO grid is outside maximum zone of clouds 
+defined in definitions_usr.h. If no, then fold PLUTO grid back on 
+to appropriate location in input grid, assuming periodic BC.
+
+XL, XR are domain limits of input grid
+
+if x < XL
+|-----------|------------|--------------|
+      x     XL           XR
+      -------------->
+x'= x + (int((x - XL) / Delta) + 1) * Delta , Delta = XR - XL
+
+if x > XR
+|-----------|------------|--------------|
+            XL           XR        x
+                    <--------------        
+
+x'= x - (int((x - XR) / Delta) + 1) * Delta
+
+Rationale: Translate input grid by n steps such that PLUTO grid point 
+falls within translated input grid limits, i.e. 
+
+XR' = XR + n * Delta , 
+n = int((x - XR) / Delta) + 1
+New x' = XR - (XR' - x) = x - n * Delta
+
+Same for lower boundary, results in a difference in sign. 
+
+TODO: Currently, if PLUTO grid is larger than max domain for clouds defined 
+in definitions_usr.h then PLUTO grid coordinate is given value eq to boundary 
+value of input grid.
+
+*/
+
+/* DM -- */
+  D_EXPAND(x1 = shift_idx(x1, CLOUD_X1MIN, CLOUD_X1MAX, id_x1[0], id_x1[id_nx1-1]);,
+           x2 = shift_idx(x2, CLOUD_X2MIN, CLOUD_X2MAX, id_x2[0], id_x2[id_nx2-1]);,
+           x3 = shift_idx(x3, CLOUD_X3MIN, CLOUD_X3MAX, id_x3[0], id_x3[id_nx3-1]);
+  );
+
+/* -- DM */
+
+
+
+
+
+
 
 /* --------------------------------------------------------------------- */
 /*! - Use table lookup by binary search to  find the indices 
@@ -635,6 +717,8 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
 
 
 }
+
+
 
 /* ********************************************************************* */
 void InputDataFree (void)

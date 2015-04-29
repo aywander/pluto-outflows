@@ -1,4 +1,4 @@
-OBJ       += nrEOS.o abundances.o init_tools.o
+OBJ       += idealEOS.o abundances.o init_tools.o
 OBJ       += interpolation.o
 OBJ       += rGravTable.o rGravHeader.o
 OBJ       += rHotTable.o
@@ -6,7 +6,7 @@ OBJ       += rMuTable.o
 OBJ       += bst.o ccl_get.o ccl_iterate.o ccl_parse.o ccl_release.o ccl_reset.o
 #OBJ       += PLUTOAMR.o
 HEADERS   += definitions_usr.h pluto_usr.h macros_usr.h
-HEADERS   += nrEOS.h abundances.h init_tools.h
+HEADERS   += idealEOS.h abundances.h init_tools.h
 HEADERS   += interpolation.h
 HEADERS   += rGravTable.h
 HEADERS   += rHotTable.h

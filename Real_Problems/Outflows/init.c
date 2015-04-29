@@ -86,7 +86,7 @@ void Init (double *v, double x1, double x2, double x3)
     HotHaloPrimitives(halo_primitives, x1, x2, x3);
       for (nv = 0; nv < NVAR; ++nv) {
           v[nv] = halo_primitives[nv];
-          v[0] = 10.;
+          //v[0] = 10.;
       }
   }
 #endif
@@ -98,7 +98,7 @@ void Init (double *v, double x1, double x2, double x3)
     
     for (nv = 0; nv < NVAR; ++nv){
       v[nv] = halo_primitives[nv] + 
-        (out_primitives[nv] - halo_primitives[nv])*Profile(x1, x2, x3);
+        (out_primitives[nv] - halo_primitives[nv])*Profile_cap(x1, x2, x3);
     }
   }
 
@@ -206,6 +206,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
   double vc;
   double out_primitives[NVAR], halo_primitives[NVAR];
   double mirror[NVAR];
+  double vx1, vx2, vx3, vmag;
   int inr = 0;
 
   /* These are the geometrical central points */
@@ -252,7 +253,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
               
             for (nv = 0; nv < NVAR; ++nv){
                 d->Vc[nv][k][j][i] = halo_primitives[nv];
-                d->Vc[0][k][j][i] = 10.;
+                //d->Vc[0][k][j][i] = 10.;
             }
               
           } // InNozzleRegion
@@ -275,9 +276,22 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
         HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
 
         /* fill array */
-        for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv]; 
+        /* Set outflow (zero grad) if cell outside boundary has some velocity, 
+         * else set to Hot halo. */
+        int side_index = FLOWAXIS(JBEG, KBEG, IBEG);
+        vx1 = d->Vc[VX1][k][j][side_index];
+        vx2 = d->Vc[VX2][k][j][side_index];
+        vx3 = d->Vc[VX3][k][j][side_index];
+        vmag = VMAG(x1[i], x2[j], x3[k], vx1, vx2, vx3);
 
+        if (vmag > 0) {
+          for (nv = 0; nv <NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][side_index];
         }
+        else {
+          for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv];
+        }
+
+      }
     }else if (box->vpos == X1FACE){
       BOX_LOOP(box,k,j,i){  }
     }else if (box->vpos == X2FACE){
@@ -295,7 +309,17 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
         HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
 
         /* fill array */
-        for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv]; 
+        vx1 = d->Vc[VX1][k][j][IEND];
+        vx2 = d->Vc[VX2][k][j][IEND];
+        vx3 = d->Vc[VX3][k][j][IEND];
+        vmag = VMAG(x1[i], x2[j], x3[k], vx1, vx2, vx3);
+
+        if (vmag > 0) {
+          for (nv = 0; nv <NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][IEND];
+        }
+        else {
+          for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv];
+        }
 
       }
     }else if (box->vpos == X1FACE){
@@ -317,6 +341,22 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
         /* fill array */
         for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv]; 
 
+        /* fill array */
+        /* Set outflow (zero grad) if cell outside boundary has some velocity, 
+         * else set to Hot halo. */
+        int side_index = FLOWAXIS(KBEG, IBEG, JBEG);
+        vx1 = d->Vc[VX1][k][j][side_index];
+        vx2 = d->Vc[VX2][k][j][side_index];
+        vx3 = d->Vc[VX3][k][j][side_index];
+        vmag = VMAG(x1[i], x2[j], x3[k], vx1, vx2, vx3);
+
+        if (vmag > 0) {
+          for (nv = 0; nv <NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][side_index];
+        }
+        else {
+          for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv];
+        }
+
       }
     }else if (box->vpos == X1FACE){
       BOX_LOOP(box,k,j,i){  }
@@ -335,8 +375,20 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
         HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
 
         /* fill array */
+        /* Set outflow (zero grad) if cell outside boundary has some velocity, 
+         * else set to Hot halo. */
+        vx1 = d->Vc[VX1][k][j][JEND];
+        vx2 = d->Vc[VX2][k][j][JEND];
+        vx3 = d->Vc[VX3][k][j][JEND];
+        vmag = VMAG(x1[i], x2[j], x3[k], vx1, vx2, vx3);
 
-        for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv]; 
+        if (vmag > 0) {
+          for (nv = 0; nv <NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][JEND];
+        }
+        else {
+          for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv];
+        }
+
       }
     }else if (box->vpos == X1FACE){
       BOX_LOOP(box,k,j,i){  }
@@ -348,7 +400,8 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
   }
 
     
-  /* This side is where the nozzle is located and the outflow emerges */
+  /* This side is where the nozzle is located and the outflow emerges, 
+   * unless internal boundary is set. */
   if (side == FLOWAXIS(X1_BEG, X2_BEG, X3_BEG)){
     if (box->vpos == CENTER) {
       BOX_LOOP(box,k,j,i){  
@@ -398,7 +451,19 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
         HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
 
         /* fill array */
-        for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv]; 
+        /* Set outflow (zero grad) if cell outside boundary has some velocity, 
+         * else set to Hot halo. */
+        vx1 = d->Vc[VX1][k][j][JEND];
+        vx2 = d->Vc[VX2][k][j][JEND];
+        vx3 = d->Vc[VX3][k][j][JEND];
+        vmag = VMAG(x1[i], x2[j], x3[k], vx1, vx2, vx3);
+
+        if (vmag > 0) {
+          for (nv = 0; nv <NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][JEND];
+        }
+        else {
+          for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv];
+        }
 
       }
     }else if (box->vpos == X1FACE){

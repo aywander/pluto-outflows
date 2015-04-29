@@ -56,7 +56,7 @@ int hunter(const double arr[], const int narr, const double val){
 
   while (dprod < 0){
     /* Calculate single cell shift direction */
-    shift = sgn(ldelta);
+    shift = SGN(ldelta);
 
     /* New indices */
     il += shift; 
@@ -159,15 +159,66 @@ double HermiteInterpolate(double y0, double y1,
   return ( a0*y1 + a1*m0 + a2*m1 + a3*y2 );
 }
 
-int sgn(double val){
-  /* The signum function */
 
-  if (val > 0) return 1;
+/* ************************************************************* */
+void x3u_3d_extrapol(double ***a, int kb, int i, int j, int k, Grid *grid)
+/*
+ *
+ * Quadratic extrapolation in the upper boundary of X3
+ *
+ *************************************************************** */
+{
+  double *x1, *x2, *x3;
+  double y0, y1, y2, z0, z1, z2;
 
-  else if (val < 0) return -1;
+  x1 = grid[IDIR].xgc;
+  x2 = grid[JDIR].xgc;
+  x3 = grid[KDIR].xgc;
 
-  else return 0;
+  y0 = a[kb][j][i];
+  y1 = a[kb-1][j][i];
+  y2 = a[kb-2][j][i];
+
+  z0 = x3[kb];
+  z1 = x3[kb-1];
+  z2 = x3[kb-2];
+
+  a[k][j][i] = y0 + (y1 - y0) / (z1 - z0) * (x3[k] - z0) + 
+               ((y2 - y1) / (z2 - z1) / (z2 - z0) - 
+                (y1 - y0) / (z1 - z0) / (z2 - z0)) * 
+               (x3[k] - z0) * (x3[k] - z1);
+
+  }
+
+
+
+/* ************************************************************* */
+void x2l_3d_extrapol (double ***a, int jb, int i, int j, int k, Grid *grid)
+/*
+ *
+ * Quadratic extrapolation in the lower boundary of X2
+ *
+ *************************************************************** */
+{
+  double *x1, *x2, *x3;
+  double y0, y1, y2, z0, z1, z2;
+
+  x1 = grid[IDIR].xgc;
+  x2 = grid[JDIR].xgc;
+  x3 = grid[KDIR].xgc;
+
+  y0 = a[k][jb][i];
+  y1 = a[k][jb+1][i];
+  y2 = a[k][jb+2][i];
+
+  z0 = x2[jb];
+  z1 = x2[jb+1];
+  z2 = x2[jb+2];
+
+  a[k][j][i] = y0 + (y1 - y0) / (z1 - z0) * (x3[k] - z0) + 
+               ((y2 - y1) / (z2 - z1) / (z2 - z0) - 
+                (y1 - y0) / (z1 - z0) / (z2 - z0)) * 
+               (x3[k] - z0) * (x3[k] - z1);
+
 }
-
-
 

@@ -5,13 +5,15 @@
 #ifdef GRAV_TABLE
 
 double *gr_rad, *gr_phi, *gr_vec;
+double *gr_phiderv;
 int gr_ndata;
 
 int rGravData(){
   /*
    * This routine reads the data from a gravity file. The data should be a
-   * two-column file in code units. Columns are radius and potential or gravitational
-   * acceleration, depending on whether GRAV_USE_POTENTIAL is YES or NO.
+   * two-column file in code units. Columns are radius and potential and dphi/dr
+   * or gravitational acceleration, depending on whether GRAV_USE_POTENTIAL is 
+   * YES or NO.
    *
    * The values of these are filled into the global arrays gr_rad, gr_phi and gr_vec, which
    * are used throughout the code.
@@ -41,6 +43,7 @@ int rGravData(){
   gr_rad = ARRAY_1D(gr_ndata, double);
 #if BODY_FORCE == POTENTIAL
   gr_phi = ARRAY_1D(gr_ndata, double);
+  gr_phiderv = ARRAY_1D(gr_ndata, double);
 #else
   gr_vec = ARRAY_1D(gr_ndata, double);
 #endif
@@ -51,6 +54,7 @@ int rGravData(){
     fscanf(f, "%le ", &gr_rad[i]);
 #if BODY_FORCE == POTENTIAL
     fscanf(f, "%le ", &gr_phi[i]);
+    fscanf(f, "%le ", &gr_phiderv[i]);
 #else
     fscanf(f, "%le ", &gr_vec[i]);
 #endif

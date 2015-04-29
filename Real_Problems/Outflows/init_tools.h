@@ -5,6 +5,8 @@ double Vel2Lorentz(const double vel);
 
 double Profile(const double x1, const double x2, const double x3);
 
+double Profile_cap(const double x1, const double x2, const double x3);
+
 /* Regarding the fill arrays:
  *
  * For 64 bit linux system (typically)
@@ -108,7 +110,7 @@ int CloudExtract(double* cloud,
 int CloudPrimitives(double* cloud,
                     const double x1, const double x2, const double x3);
 
-void CloudVelocity(double* cloud,
+void CloudVelocity(double* cloud, double* halo,
                    const double x1, const double x2, const double x3);
 
 int WarmTcrit(double* const warm);

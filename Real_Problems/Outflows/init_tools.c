@@ -16,7 +16,7 @@
 #include "init_tools.h"
 #include "rGravTable.h"
 #include "rHotTable.h"
-#include "nrEOS.h"
+#include "idealEOS.h"
 #include "abundances.h"
 #include "interpolation.h"
 
@@ -509,14 +509,14 @@ void HotHaloPrimitives(double * halo,
    * without gravity (else clause).*/
 
   halo[RHO] = g_inputParam[PAR_HRHO]*ini_code[PAR_HRHO];
-  halo[PRS] = PresNrEOS(halo[RHO], g_inputParam[PAR_HTMP]*ini_code[PAR_HTMP], MU_NORM);
+  halo[PRS] = PresIdealEOS(halo[RHO], g_inputParam[PAR_HTMP]*ini_code[PAR_HTMP], MU_NORM);
 
 
   /* Default is flat */
 #else
 
   halo[RHO] = g_inputParam[PAR_HRHO]*ini_code[PAR_HRHO];
-  halo[PRS] = PresNrEOS(halo[RHO], g_inputParam[PAR_HTMP]*ini_code[PAR_HTMP], MU_NORM);
+  halo[PRS] = PresIdealEOS(halo[RHO], g_inputParam[PAR_HTMP]*ini_code[PAR_HTMP], MU_NORM);
 
 #endif
 
@@ -564,7 +564,7 @@ int CloudCubePixel(int * el, const double x1,
  *
  * \param [out] el  array of size 3 holding cube coordinates 
  * \param [in] x1   current zone x1 coordinates (any geometry)
- * \param [in] x2   current zone x2 coor    dinates (any geometry)
+ * \param [in] x2   current zone x2 coordinates (any geometry)
  * \param [in] x3   current zone x3 coordinates (any geometry)
  *
  * Calculate pixel coordinates (here el[]) in fractal cube 
@@ -626,15 +626,21 @@ void ReadFractalData()
  **************************************************************** */
 {
 
-  int get_var[] = {RHO, -1};
-#if CLOUD_VELOCITY
+#if CLOUD_VELOCITY && ((CLOUD_VEL_DISTR == CV_KEPLERIAN_FRAC) || (CLOUD_VEL_DISTR == CV_VIRIAL_FRAC))
+
 #define ID_MAX_NVAR (1 + COMPONENTS + 1)
-  int get_var[ID_MAX_NVAR]
+
+  int get_var[ID_MAX_NVAR];
   get_var[0] = RHO;
-  EXPAND(get_var[1] = VX1;
-         get_var[2] = VX2;
+  EXPAND(get_var[1] = VX1;,
+         get_var[2] = VX2;,
          get_var[3] = VX3;);
   get_var[ID_MAX_NVAR-1] = -1;
+
+#else
+
+  int get_var[] = {RHO, -1};
+
 #endif
 
   static int once01 = 0;
@@ -670,6 +676,12 @@ void GetFractalData(double* cloud, const double x1, const double x2, const doubl
   y = CART2(x1, x2, x3);
   z = CART3(x1, x2, x3);
   InputDataInterpolate(cloud, x, y, z);
+
+  /* Assume input cloud velocities to be in km/s.
+   * Convert to code units here */
+  EXPAND(cloud[VX1] *= 1.e5 / vn.v_norm;, 
+         cloud[VX2] *= 1.e5 / vn.v_norm;, 
+         cloud[VX3] *= 1.e5 / vn.v_norm;)
 
 }
 #endif
@@ -750,7 +762,7 @@ void CloudApodize(double* cloud, const double x1, const double x2, const double 
   mu = MeanMolecularWeight(cloud);
   // Problem here, because we have neither cloud[PRS] yet nor 
   // a reference pressure in this routine
-  wtemp_av = TempNrEOS(wrho, cloud[PRS], mu)*vn.temp_norm;
+  wtemp_av = TempIdealEOS(wrho, cloud[PRS], mu)*vn.temp_norm;
   csound2  = CONST_kB*wtemp_av/(mu*CONST_amu);
   sigma_g2 = wtrb*wtrb + csound2;
   wrad_cgs = sqrt(9.*sigma_g2/(4.*CONST_PI*CONST_G*wrho_cgs));
@@ -761,7 +773,7 @@ void CloudApodize(double* cloud, const double x1, const double x2, const double 
   mu = MeanMolecularWeight(cloud);
   // Problem here, because we have neither cloud[PRS] yet nor
   // a reference pressure in this routine
-  wtemp_av = TempNrEOS(wrho, cloud[PRS], mu)*vn.temp_norm;
+  wtemp_av = TempIdealEOS(wrho, cloud[PRS], mu)*vn.temp_norm;
   csound2  = CONST_kB*wtemp_av/(mu*CONST_amu);
   wtrb_cgs = sqrt(sigma_g2 - csound2);
   // But ok, because we have sigma_g2 already.
@@ -826,7 +838,7 @@ void CloudApodize(double* cloud, const double x1, const double x2, const double 
   mu = MeanMolecularWeight(cloud);
   // Problem here, because we have neither cloud[PRS] yet nor 
   // a reference pressure in this routine
-  wtemp_av = TempNrEOS(wrho, cloud[PRS], mu)*vn.temp_norm;
+  wtemp_av = TempIdealEOS(wrho, cloud[PRS], mu)*vn.temp_norm;
   csound2  = CONST_kB*wtemp_av/(mu*CONST_amu);
   sigma_g2 = wtrb*wtrb + csound2;
   wrad_cgs = sqrt(9.*sigma_g2/(4.*CONST_PI*CONST_G*wrho_cgs));
@@ -837,7 +849,7 @@ void CloudApodize(double* cloud, const double x1, const double x2, const double 
   mu = MeanMolecularWeight(cloud);
   // Problem here, because we have neither cloud[PRS] yet nor
   // a reference pressure in this routine
-  wtemp_av = TempNrEOS(wrho, cloud[PRS], mu)*vn.temp_norm;
+  wtemp_av = TempIdealEOS(wrho, cloud[PRS], mu)*vn.temp_norm;
   csound2  = CONST_kB*wtemp_av/(mu*CONST_amu);
   wtrb_cgs = sqrt(sigma_g2 - csound2);
   // But ok, because we have sigma_g2 already.
@@ -869,9 +881,13 @@ void CloudApodize(double* cloud, const double x1, const double x2, const double 
 
   /* Now, the same for the cylindrical radius */
   il = hunter(gr_rad, gr_ndata, r_cyl);
-  r1 = gr_rad[il]; r2 = gr_rad[il+1];
+  r1 = gr_rad[il];
+  r2 = gr_rad[il+1];
   frac = (r_cyl - r1)/(r2 - r1);
-  y0 = gr_phi[il-1]; y1 = gr_phi[il]; y2 = gr_phi[il+1]; y3 = gr_phi[il+2];
+  y0 = gr_phi[il-1]; 
+  y1 = gr_phi[il]; 
+  y2 = gr_phi[il+1]; 
+  y3 = gr_phi[il+2];
   phi_cyl = CubicCatmullRomInterpolate(y0, y1, y2, y3, frac);
 
   /* The profile */
@@ -1135,9 +1151,9 @@ int CloudExtract(double* cloud,
 #endif
 
 
-#if CLOUDS
+#if CLOUD_VELOCITY
 /* ************************************************************** */
-void CloudVelocity(double* cloud,
+void CloudVelocity(double* cloud, double* halo, 
                    const double x1, const double x2, const double x3)
 /*!
  * This function fills in the cloud velocity for the clouds primitives
@@ -1155,12 +1171,6 @@ void CloudVelocity(double* cloud,
 {
 
   double vel, scrh;
-
-#if !CLOUD_VELOCITY
-  EXPAND(cloud[VX1] = 0;,
-         cloud[VX2] = 0;,
-         cloud[VX3] = 0;);
-#endif
 
 #if CLOUD_VEL_DISTR == CV_UNIFORM 
   EXPAND(cloud[VX1] += CV_VALUE;,
@@ -1200,33 +1210,65 @@ void CloudVelocity(double* cloud,
   double vpol1, vpol2, vpol3;
   double xpol1, xpol2, xpol3;
 
-  /* Convert coordinates and velocity vectors to polerical */
+  int il;
+  double r_cyl, r1, r2, frac, y0, y1, y2, y3, phiderv_cyl;
 
-  EXPAND(xpol1 = POL1(x1, x2, x3),
-         xpol2 = POL2(x1, x2, x3),
-         xpol3 = POL3(x1, x2, x3));
+  /* Convert coordinates and velocity vectors to polar */
+  EXPAND(xpol1 = POL1(x1, x2, x3);,
+         xpol2 = POL2(x1, x2, x3);,
+         xpol3 = POL3(x1, x2, x3););
 
   v1 = cloud[VX1]; v2 = cloud[VX2]; v3 = cloud[VX3];
 
-  EXPAND(vpol1 = VPOL1(x1, x2, x3, v1, v2, v3),
-         vpol2 = VPOL2(x1, x2, x3, v1, v2, v3),
-         vpol3 = VPOL3(x1, x2, x3, v1, v2, v3));
+  EXPAND(vpol1 = VPOL1(x1, x2, x3, v1, v2, v3);,
+         vpol2 = VPOL2(x1, x2, x3, v1, v2, v3);,
+         vpol3 = VPOL3(x1, x2, x3, v1, v2, v3););
   
   /* Apply change to radial component */
-  vpol2 += CV_VALUE;
+  //vpol2 += CV_VALUE;
+
+  /* Set mean vphi to keplerian: vphi = wrot * sqrt(rdphi / dr) */
+
+  /* cycldrical radius */
+  r_cyl = CYL1(x1, x2, x3);
+ 
+  /* Find cell left index to interpolate at */
+  il = hunter(gr_rad, gr_ndata, r_cyl);
+
+  /* Find fraction of radius within cell */
+  r1 = gr_rad[il];
+  r2 = gr_rad[il+1];
+  frac = (r_cyl - r1)/(r2 - r1);
+
+  /* Interpolate */
+  y0 = gr_phiderv[il-1]; 
+  y1 = gr_phiderv[il];
+  y2 = gr_phiderv[il+1];
+  y3 = gr_phiderv[il+2];
+  phiderv_cyl = CubicCatmullRomInterpolate(y0, y1, y2, y3, frac);
+
+  /* The angular velocity */
+  vpol2 += g_inputParam[PAR_WROT]*sqrt(r_cyl * phiderv_cyl);
 
   /* Convert velocity vectors back to the current coordinate system */
-  EXPAND(v1 = VPOL_1(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3),
-         v2 = VPOL_2(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3),
-         v3 = VPOL_3(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3));
+  EXPAND(v1 = VPOL_1(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3);,
+         v2 = VPOL_2(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3);,
+         v3 = VPOL_3(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3););
 
-  cloud[VX1] = v1; cloud[VX2] = v2; cloud[VX3] = v3;
+  EXPAND(cloud[VX1] = v1;, cloud[VX2] = v2;, cloud[VX3] = v3;);
 
 
 #elif CLOUD_VEL_DISTR == CV_VIRIAL_FRAC
   /* Not yet programmed */
 #endif
 
+  /* Restrict cloud velocity to a fraction of halo sound speed */
+  double cs_frac = 0.8;
+  double cs = sqrt(SoundSpeed2IdealEOS(halo[RHO], halo[PRS]));
+  double cs_lim = cs_frac*cs;
+  EXPAND(cloud[VX1] = ABS_MIN(cs_lim, cloud[VX1]);,
+         cloud[VX2] = ABS_MIN(cs_lim, cloud[VX2]);,
+         cloud[VX3] = ABS_MIN(cs_lim, cloud[VX3]););
 
 #if USE_FOUR_VELOCITY == YES
       vel = VMAG(x1, x2, x3, cloud[VX1], cloud[VX2], cloud[VX3]);
@@ -1292,9 +1334,13 @@ int CloudPrimitives(double* cloud,
 
       /* Calculate cloud primitives so that we can get temperature */
 
-#if CLOUD_VELOCITY
       /* Cloud velocity */
-      CloudVelocity(cloud, x1, x2, x3);
+#if CLOUD_VELOCITY
+      CloudVelocity(cloud, halo, x1, x2, x3);
+#else
+      EXPAND(cloud[VX1] = 0;,
+             cloud[VX2] = 0;,
+             cloud[VX3] = 0;);
 #endif
 
       /* Cloud pressure
@@ -1340,7 +1386,7 @@ int WarmTcrit(double * const warm)
 
   /* Warm phase temperature */
   mu = MeanMolecularWeight(warm);
-  wtemp = TempNrEOS(warm[RHO], warm[PRS], mu)*vn.temp_norm;
+  wtemp = TempIdealEOS(warm[RHO], warm[PRS], mu)*vn.temp_norm;
 
 
   /* Only a cloud pixel if wtemp is below critical temperature
@@ -1677,7 +1723,37 @@ double Profile(const double x1, const double x2, const double x3)
   cz = CYL2(cx1p, cx2p, cx3p);
 
   /* Return smoothing factor */
-  return 1.0/cosh(pow(cr/nz.rad, n));
+  return 1.0 / cosh(pow(cr / nz.rad, n));
   }
+}
+
+
+/* ************************************************ */
+double Profile_cap(const double x1, const double x2, const double x3)
+/*! 
+  * 1/cosh smoothing function
+  *
+ ************************************************** */
+{
+  /* Steepness of cosh profile */
+  int n = 5.;
+  int prof;
+
+  /* Grid point in cartesian coordinates */
+  double cx1, cx2, cx3, cx1p, cx2p, cx3p;
+  cx1 = CART1(x1, x2, x3);
+  cx2 = CART2(x1, x2, x3);
+  cx3 = CART3(x1, x2, x3);
+
+  /* Rotate cartesian coords and turn into cylindrical coords */
+  double cr, cz;
+  RotateGrid2Nozzle(cx1, cx2, cx3, &cx1p, &cx2p, &cx3p);
+
+  /* TODO: Assumes origin at 0,0,0. Need to fix */
+  cr = SPH1(cx1p, cx2p, cx3p);
+
+  /* Return smoothing factor */
+  return 1.0 / cosh(pow(cr / nz.rad, n));
+  return prof;
 }
 

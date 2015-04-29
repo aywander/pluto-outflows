@@ -1,6 +1,6 @@
 #include "pluto.h"
 #include "pluto_usr.h"
-#include "nrEOS.h"
+#include "idealEOS.h"
 
 /* ************************************************ 
   Quick routines to get a specific variable
@@ -16,39 +16,52 @@
 
 
 /* ************************************************ */
-double PresNrEOS(const double dens, const double temp, const double mu) {
+double PresIdealEOS(const double dens, const double temp, const double mu) {
 /*!
  * Return pressure from density and temperature
  * in code units
  *
  ************************************************** */
 
-    return dens*temp/mu;
+    return dens * temp / mu;
 }
 
 
 
 /* ************************************************ */
-double TempNrEOS(const double dens, const double pres, const double mu) {
+double TempIdealEOS(const double dens, const double pres, const double mu) {
 /* !
  * Return temperature from density and pressure
  * in code units
  *
  ************************************************** */
 
-    return pres/dens*mu;
+    return pres / dens * mu;
 }
 
 
 /* ************************************************ */
-double DensNrEOS(const double pres, const double temp, const double mu) {
+double DensIdealEOS(const double pres, const double temp, const double mu) {
 /* !
  * Return density from pressure and temperature
  * in code units
  *
  ************************************************** */
 
-    return pres/temp*mu;
+    return pres / temp * mu;
+}
+
+
+
+/* ************************************************ */
+double SoundSpeed2IdealEOS(const double pres, const double dens) {
+/* !
+ * Return Adiabatic Sound speed  from pressure and temperature
+ * in code units
+ *
+ ************************************************** */
+
+    return g_gamma * pres / dens;
 }
 
 

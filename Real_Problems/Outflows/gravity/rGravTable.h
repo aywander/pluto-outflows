@@ -11,6 +11,7 @@ void readGravTable();
 
 /* global variables*/
 extern double *gr_rad, *gr_phi, *gr_vec;
+extern double *gr_phiderv;
 extern double potential[NPOTVAR];
 extern int gr_ndata;
 

@@ -1,6 +1,6 @@
 #include "pluto.h"
 #include "pluto_usr.h"
-#include "nrEOS.h"
+#include "idealEOS.h"
 #include "abundances.h"
 
 /* *************************************************************** */
@@ -58,7 +58,7 @@ void ComputeUserVar (const Data *d, Grid *grid)
     /* Temperature */
     for (nv = 0; nv < NVAR; nv++) dummy[nv] = d->Vc[nv][k][j][i];
     mu = MeanMolecularWeight(dummy);
-    te[k][j][i] = TempNrEOS(rho[k][j][i], prs[k][j][i], mu);
+    te[k][j][i] = TempIdealEOS(rho[k][j][i], prs[k][j][i], mu);
 
     /* Speed */
     sp3 = 0; sp2 = 0; sp1 = 0;
