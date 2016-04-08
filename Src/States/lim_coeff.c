@@ -1,8 +1,10 @@
-#include"pluto.h"
+#include "pluto.h"
 
 static double **ap, **am;
 
-void MAKE_LIM_COEFF (Grid *grid);
+// AYW -- no ;
+void MAKE_LIM_COEFF (Grid *grid)
+//void MAKE_LIM_COEFF (Grid *grid);
 {
 
   if (ap == NULL){ 

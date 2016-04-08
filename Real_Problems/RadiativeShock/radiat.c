@@ -1,36 +1,31 @@
 #include "pluto.h"
 /* AYW -- 2013-01-08 23:05 JST 
- * To get MeanMolecularWeight function */
+ * Custom headers.
+ * abundances.h: to get 
+ * MeanMolecularWeight function
+ * rMuTable.h :To use tabular MU */
+#include "pluto_usr.h"
 #include "abundances.h"
+#if MU_CALC == MU_TABLE
+#include "read_mu_table.h"
+#endif
 /* -- AYW */
-#define frac_Z   1.e-3   /*   = N(Z) / N(H), fractional number density of metals (Z)
-                                with respect to hydrogen (H) */ 
-#define frac_He  0.082   /*   = N(Z) / N(H), fractional number density of helium (He)
-                                with respect to hydrogen (H) */ 
-#define A_Z      30.0    /*   mean atomic weight of heavy elements  */
-#define A_He     4.004   /*   atomic weight of Helium  */
-#define A_H      1.008   /*   atomic weight of Hydrogen  */
 
+#define frac_Z   1.e-3   /* = N(Z) / N(H), fractional number density of 
+                              metals (Z) with respect to hydrogen (H) */ 
+#define frac_He  0.082   /* = N(Z) / N(H), fractional number density of 
+                              helium (He) with respect to hydrogen (H) */ 
 /* ***************************************************************** */
-void Radiat (real *v, real *rhs)
-/*
- *
- * NAME
- *
- *   Radiat
- *
- *
- * PURPOSE
- *
+void Radiat (double *v, double *rhs)
+/*!
  *   Provide r.h.s. for tabulated cooling.
  * 
- *
  ******************************************************************* */
 {
   int    klo, khi, kmid;
-  real   mu, T, Tmid, scrh, dT;
   static int ntab;
-  static real *L_tab, *T_tab, E_cost;
+  double  mu, T, Tmid, scrh, dT, prs;
+  static double *L_tab, *T_tab, E_cost;
   
   FILE *fcool;
 
@@ -42,7 +37,7 @@ void Radiat (real *v, real *rhs)
     print1 (" > Reading table from disk...\n");
     fcool = fopen("cooltable.dat","r");
     if (fcool == NULL){
-      print1 ("! cooltable.dat does not exists\n");
+      print1 ("! Radiat: cooltable.dat could not be found.\n");
       QUIT_PLUTO(1);
     }
     L_tab = ARRAY_1D(20000, double);
@@ -53,25 +48,30 @@ void Radiat (real *v, real *rhs)
                                        L_tab + ntab)!=EOF) {
       ntab++;
     }
-    E_cost    = g_unitLength/g_unitDensity/pow(g_unitVelocity, 3.0);
+    E_cost = UNIT_LENGTH/UNIT_DENSITY/pow(UNIT_VELOCITY, 3.0);
   }
 
 /* ---------------------------------------------
-            Get temperature 
+            Get pressure and temperature 
    --------------------------------------------- */
 
-  if (v[PRS] < 0.0) v[PRS] = g_smallPressure;
+  prs = v[RHOE]*(g_gamma-1.0);
+  if (prs < 0.0) {
+    prs     = g_smallPressure;
+    v[RHOE] = prs/(g_gamma - 1.0);
+  }
+
   mu  = MeanMolecularWeight(v);
-  T   = v[PRS]/v[RHO]*KELVIN*mu;
+  T   = prs/v[RHO]*KELVIN*mu;
 
   if (T != T){
-    printf (" ! Nan found in radiat \n");
-    printf (" ! rho = %12.6e, pr = %12.6e\n",v[RHO], v[PRS]);
+    print1 (" ! Nan found in radiat \n");
+    print1 (" ! rho = %12.6e, prs = %12.6e\n",v[RHO], prs);
     QUIT_PLUTO(1);
   }
 
   if (T < g_minCoolingTemp) { 
-    rhs[PRS] = 0.0;
+    rhs[RHOE] = 0.0;
     return;
   }
 
@@ -97,16 +97,17 @@ void Radiat (real *v, real *rhs)
     }
   }
 
-  dT      = T_tab[khi] - T_tab[klo];
-  scrh    = L_tab[klo]*(T_tab[khi] - T)/dT + L_tab[khi]*(T - T_tab[klo])/dT;
-  rhs[PRS] = -(g_gamma - 1.0)*scrh*v[RHO]*v[RHO];
-  rhs[PRS] *= E_cost*g_unitDensity*g_unitDensity/(CONST_mp*CONST_mp);
-  
+  dT       = T_tab[khi] - T_tab[klo];
+  scrh     = L_tab[klo]*(T_tab[khi] - T)/dT + L_tab[khi]*(T - T_tab[klo])/dT;
+  rhs[RHOE] = -scrh*v[RHO]*v[RHO];
+  /* AYW -- */
+  //rhs[RHOE] *= E_cost*UNIT_DENSITY*UNIT_DENSITY/(CONST_mp*CONST_mp);
+  rhs[RHOE] *= E_cost*UNIT_DENSITY*UNIT_DENSITY/(CONST_amu*mu*CONST_amu*mu);
+  /* -- AYW */
 }
 #undef T_MIN
-
 /* ******************************************************************* */
-double MeanMolecularWeight (real *V)
+double MeanMolecularWeight (double *V)
 /*
  *
  *
@@ -118,11 +119,45 @@ double MeanMolecularWeight (real *V)
    * When no cooling is available there is a MeanMolecularWeight
    * function in abundances.c.
    * */
-  //return (0.5);
-    return (0.6165);
-  //return  ( (A_H + frac_He*A_He + frac_Z*A_Z) /
-  //          (2.0 + frac_He + 2.0*frac_Z - 0.0));
-  /* --AYW */
+
+#if MU_CALC == MU_TABLE
+
+  int il;
+  double por, r1, r2, frac;
+  double y0, y1, y2, y3;
+
+  if (mu_por == NULL){
+    rMuTable()
+  }
+
+  /* Value of T/mu in cgs */
+  por = V[PRS]/V[RHO]*KELVIN
+
+  /* Find cell left index to interpolate at */
+  il = hunter(mu_rad, mu_ndata, por);
+
+  /* Linear fractional location of por in cell */
+  r1 = mu_por[il];
+  r2 = mu_por[il+1];
+  frac = (r - r1)/(r2 - r1);
+
+  /* Mu interpolation */
+  y0 = mu_mu[il-1];
+  y1 = mu_mu[il];
+  y2 = mu_mu[il+1];
+  y3 = mu_mu[il+2];
+  return CubicCatmullRomInterpolate(y0, y1, y2, y3, frac);
+
+#elif MU_CALC == MU_FRACTIONS
+
+  return  ( (A_H + frac_He*A_He + frac_Z*A_Z) /
+            (2.0 + frac_He + 2.0*frac_Z - 0.0));
+
+#else
+
+  return (MU_NORM);
+
+#endif
 
 }
 

@@ -1,41 +1,33 @@
 /* -- Own definitions choices -- */
 
-#define NOZZLE               NOZZLE_JET
+#define NOZZLE                   NOZZLE_UFO
+#define NOZZLE_CAP               YES
 
-#define HEMISPHERICAL_CAP    YES
-
-#define CLOUDS               YES
-#define CLOUD_VELOCITY       YES
-#define CLOUD_TCRIT          3.0e4
-#define CLOUD_EXTRACT        NONE
-#define CLOUD_DISTR          CD_TURB_ISOTH_HYDROSTATIC
-#define CLOUD_SCALE          CS_WRAD
-#define CLOUD_VEL_DISTR      CV_KEPLERIAN_FRAC
-
-#define GRAV_POTENTIAL       DOUBLE_ISO
-
-#define HOT_DISTR            HOT_EXT_DATA
-
-#define JD_MODE              JD_GRAD
-
-#define MU_CALC              MU_CONST
-
-#define CCL_OK               TRUE
+#define ACCRETION                YES
+#define ACCRETION_OUTPUT         YES
+#define ACCRETION_OUTPUT_RATE    0.15318627450980393
+#define SIC_METHOD               SIC_HYBRID
+#define SID_METHOD               SID_REGIONS
+#define SINK_METHOD              SINK_FREEFLOW
 
 
-#define CLOUD_X1MIN         -1.9
-#define CLOUD_X1MAX          1.9
-#define CLOUD_X2MIN         -1.9
-#define CLOUD_X2MAX          1.9
-#define CLOUD_X3MIN          0.015
-#define CLOUD_X3MAX          3.9
+#define GRAV_POTENTIAL           GRAV_DOUBLE_ISOTHERMAL
+
+#define CLOUDS                   NO
+#define CLOUD_REPEAT	         NO
+#define CLOUDS_MULTI   	         NO
+
+//#define CLOUD_DENSITY            CD_KEPLERIAN
+//#define CLOUD_VELOCITY           CV_KEPLERIAN
+//#define CLOUD_SCALE              CS_VELOCITY_DISPERSION
+
+#define MU_CALC                  MU_ANALYTIC
+
+/* --- Not usually changed ---- */
+#define CLOUD_TCRIT              3.0e4
+#define CLOUD_MUCRIT             0.6212407755077543
+#define CLOUD_EXTRACT            NONE
+#define JD_MODE                  JD_GRAD
+#define BH_POT_SMOOTH            4.0
 
 
-/* -- user-defined symbolic constants -- */
-/* These are just here as a backup. This #if should never evaluate to True. */
-#if !(defined UNIT_DENSITY) || !(defined UNIT_DENSITY) || !(defined UNIT_DENSITY)
-#define MU_NORM           0.6165
-#define UNIT_DENSITY      (CONST_amu)*(MU_NORM)
-#define UNIT_LENGTH       1.e3*(CONST_pc)
-#define UNIT_VELOCITY     CONST_c
-#endif

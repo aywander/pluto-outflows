@@ -122,9 +122,9 @@ class DefineProblem(object):
         intlist = ['FLAT','LINEAR','LimO3','WENO3','PARABOLIC']
         tmslist = ['EULER','RK2','RK3','HANCOCK','CHARACTERISTIC_TRACING']
         dislist = ['YES','NO']
-        ntrlist = ['%d'%n for n in range(5)]
-        udplist = ['%d'%n for n in range(32)]
-        udclist = ['%d'%n for n in range(32)]
+        ntrlist = ['%d'%n for n in range(10)]
+        udplist = ['%d'%n for n in range(100)]
+        udclist = ['%d'%n for n in range(100)]
 
         self.options = [phylist, dimlist, comlist, geolist, bfolist,
                         coolist, intlist, tmslist,

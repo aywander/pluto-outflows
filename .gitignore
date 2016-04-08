@@ -3,3 +3,5 @@
 **/*.pyc
 Doxygen
 .svn
+Lab/
+.idea/

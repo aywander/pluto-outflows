@@ -48,7 +48,9 @@ void ParseCmdLineArgs (int argc, char *argv[], char *ini_file,
    maxtime default - 0 means no limit set*/
   cmd->maxtime = 0 ;
   /* --AYW */
-
+  
+  /* DM 10Aug15: initialise only */
+  cmd->init_only = NO;
 
   cmd->nproc[IDIR] = -1; /* means autodecomp will be used */
   cmd->nproc[JDIR] = -1;
@@ -203,6 +205,9 @@ void ParseCmdLineArgs (int argc, char *argv[], char *ini_file,
         }
       }
 
+    }else if (!strcmp(argv[i],"-init-only")){//--DM 10Aug15: Initialise only---//
+	cmd->init_only = YES;
+
     }else if (!strcmp(argv[i],"--help")){
 
       PrintUsage();
@@ -291,5 +296,9 @@ void PrintUsage()
   printf (" -maxtime t\n");
   printf ("    Stop calculations after time t.\n");
   /* -- AYW */
+  printf (" -init-only \n");
+  printf ("    Initialise input only and stop after Zeroth data dump.\n");
+
+  
 
 }

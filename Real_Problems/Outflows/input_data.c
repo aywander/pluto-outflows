@@ -8,7 +8,7 @@
   The geometry and dimensions of the input grid can be different from 
   the actual grid employed by PLUTO, as long as the coordinate geometry
   transformation has been implemented.
-  The input grid and data files should employ the same format and 
+  The input grid and data fild_x1es should employ the same format and 
   conventions employed by PLUTO. 
   
   - Gridfile: coordinates should be written using the PLUTO 4.0 grid format.
@@ -32,22 +32,24 @@
   \date   Aug 27, 2012
 */
 /* ///////////////////////////////////////////////////////////////////// */
-#include"pluto.h"
+#include "pluto.h"
 /* AYW -- 2012-11-15 15:35 JST
  * Reduce to reduce memory requirements. Need one extra for the -1 
  * after the last variable ID in get_var.
  * 2,   if   only rho
  * 3-5, if   rho, vx1{, vx2, vx3}
  */
-//#define ID_MAX_NVAR 256 
-#define ID_MAX_NVAR (1 + (CLOUD_VELOCITY ? COMPONENTS : 0) + 1)
+//#define ID_MAX_NVAR 256
+#define ID_MAX_NVAR (1 + (CLOUD_VELOCITY != NONE ? COMPONENTS : 0) + 1)
 /* -- AYW */
 
 /* AYW -- 2012-11-29 12:20 JST
  * To use my geometry macros */
 #include "pluto_usr.h"
 #include "init_tools.h"
-/* -- AYW*/
+#include "definitions_usr.h"
+
+/* -- AYW */
 
 /* AYW -- 2012-11-29 12:20 JST
  * To store input data extents */
@@ -74,9 +76,8 @@ static double ***Vin[ID_MAX_NVAR]; /**< An array of 3D data values containing th
                                         initial data file variables. */
 
 
-
-/* This function shifts a coordinate by a multiple of the input cube width */
-/* AYW, adpated from DM -- */
+/* This function shifts a coordinate by a multiple of the input cube width
+   DM 11Aug15: Fixed bug. */
 double shift_idx(double x, const double xmin, const double xmax, 
     const double id_x_beg, const double id_x_end) {
 
@@ -84,17 +85,21 @@ double shift_idx(double x, const double xmin, const double xmax,
     if (x > xmin && x < xmax) {
 
       double delta, deltax, intpart, fractpart;
-      delta = xmax - xmin;
+      delta = id_x_end - id_x_beg;
       deltax = x - (x < id_x_beg ? id_x_beg : id_x_end);
-      fractpart = modf(deltax / delta, &intpart);
-      x -= (intpart + 1.0) * delta;
+      fractpart = modf(fabs(deltax) / delta, &intpart);
+      x = (x < id_x_beg ? x + (intpart + 1.0) * delta : x - (intpart + 1.0) * delta);
     }
 
-    return x;
-  }
+    if (x < xmin) x = xmin;
+    if (x > xmax) x = xmax;
+  } 
+
+   return x;
+
 }
 
-/* -- AYW */
+//--DM--//
 
 
 /* ********************************************************************* */
@@ -120,7 +125,9 @@ void InputDataSet (char *grid_fname, int *get_var)
   fpos_t file_pos;
   FILE *fp;
 
+#if CLOUDS_MULTI != YES  
   print1 ("> Input data:\n\n");
+#endif
 
 /* --------------------------------------------------------------------- */
 /*! - Scan grid data file and try to determine the grid geometry 
@@ -155,9 +162,11 @@ void InputDataSet (char *grid_fname, int *get_var)
     print1 ("! InputDataSet: unknown geometry\n");
     QUIT_PLUTO(1);
   }
-    
+  
+#if CLOUDS_MULTI != YES  
   print1 ("  Input grid file:       %s\n", grid_fname);
   print1 ("  Input grid geometry:   %s\n", sub_str);
+#endif
 
 /* --------------------------------------------------------------------- */
 /*! - Move file pointer until the first line that does not
@@ -207,27 +216,29 @@ void InputDataSet (char *grid_fname, int *get_var)
   if (id_nx2 == 1) id_x2[0] = 0.0;
   if (id_nx3 == 1) id_x3[0] = 0.0;
  
-  /* AYW -- 2013-04-19 12:08 JST 
-  * Store read data extents in global arrays */
-  // g_idBoxBeg[IDIR] = id_x1[0]; g_idBoxEnd[IDIR] = id_x1[id_nx1-1];
-  // g_idBoxBeg[JDIR] = id_x2[0]; g_idBoxEnd[JDIR] = id_x2[id_nx2-1];
-  // g_idBoxBeg[KDIR] = id_x3[0]; g_idBoxEnd[KDIR] = id_x3[id_nx3-1];
+   /* AYW -- 2013-04-19 12:08 JST 
+   * Store read data extents in global arrays */
+ // g_idBoxBeg[IDIR] = id_x1[0]; g_idBoxEnd[IDIR] = id_x1[id_nx1-1];
+ // g_idBoxBeg[JDIR] = id_x2[0]; g_idBoxEnd[JDIR] = id_x2[id_nx2-1];
+ // g_idBoxBeg[KDIR] = id_x3[0]; g_idBoxEnd[KDIR] = id_x3[id_nx3-1];
   g_idnx1 = id_nx1; g_idnx2 = id_nx2; g_idnx3 = id_nx3; 
   /* -- AYW */
 
   /* DM -- */
-  g_idBoxBeg[IDIR] = CLOUD_X1MIN; g_idBoxEnd[IDIR] = CLOUD_X1MAX;
-  g_idBoxBeg[JDIR] = CLOUD_X2MIN; g_idBoxEnd[JDIR] = CLOUD_X2MAX;
-  g_idBoxBeg[KDIR] = CLOUD_X3MIN; g_idBoxEnd[KDIR] = CLOUD_X3MAX;
+  g_idBoxBeg[IDIR] = PAR_WX1L; g_idBoxEnd[IDIR] = PAR_WX1H;
+  g_idBoxBeg[JDIR] = PAR_WX2L; g_idBoxEnd[JDIR] = PAR_WX2H;
+  g_idBoxBeg[KDIR] = PAR_WX3L; g_idBoxEnd[KDIR] = PAR_WX3H;
   /* -- DM */
 
+
+#if CLOUDS_MULTI != YES  
   print1 ("  Input grid extension:  x1 = [%12.3e, %12.3e] (%d points)\n",
              id_x1[0], id_x1[id_nx1-1], id_nx1);
   print1 ("\t\t\t x2 = [%12.3e, %12.3e] (%d points)\n",
              id_x2[0], id_x2[id_nx2-1], id_nx2);
   print1 ("\t\t\t x3 = [%12.3e, %12.3e] (%d points)\n",
              id_x3[0], id_x3[id_nx3-1], id_nx3);
-
+#endif
   
 /* --------------------------------------------------------------------- */
 /*! - Find out how many and which variables we have to read (:id_nvar 
@@ -245,7 +256,10 @@ void InputDataSet (char *grid_fname, int *get_var)
       break;
     }
   }
+
+#if CLOUDS_MULTI != YES  
   print1 ("  Number of variables:   %d\n",id_nvar);
+#endif
 
   /* AYW -- 2014-06-03 20:08 JST
    * Store number of variables and indices in global variables */
@@ -289,8 +303,10 @@ void InputDataRead (char *data_fname, char *endianity)
     swap_endian = YES;
   }
   
+  #if CLOUDS_MULTI != YES  
   print1 ("  Input data file:       %s (endianity: %s) \n", 
            data_fname, endianity);
+  #endif
   
 /* ------------------------------------------------------
     Get data type from file extensions (dbl or flt).
@@ -300,10 +316,14 @@ void InputDataRead (char *data_fname, char *endianity)
   for (i = 0; i < 3; i++) ext[i] = data_fname[dcount-3+i];
 
   if (!strcmp(ext,"dbl")){
+#if CLOUDS_MULTI != YES  
     print1 ("  Precision:             (double)\n");
+#endif
     dsize = sizeof(double);
   } else if (!strcmp(ext,"flt")) {
-    print1 ("  Precision:\t\t  (single)\n");
+#if CLOUDS_MULTI != YES  
+    print1 ("  Precision:             (single)\n");
+#endif
     dsize = sizeof(float);
   } else {
     print1 ("! InputDataRead: unsupported data type '%s'\n",ext);
@@ -316,13 +336,14 @@ void InputDataRead (char *data_fname, char *endianity)
 
   fp = fopen(data_fname, "rb");
   if (fp == NULL){
-    print1 ("! InputDataRead: file %s does not exist\n");
+    print1 ("! InputDataRead: file %s does not exist\n",data_fname);
     QUIT_PLUTO(1);
   }
   for (nv = 0; nv < id_nvar; nv++){
     if (Vin[nv] == NULL) Vin[nv] = ARRAY_3D(id_nx3, id_nx2, id_nx1, double);
 
     dcount  = 1;
+
 
     if (dsize == sizeof(double)){
       for (k = 0; k < id_nx3; k++){ 
@@ -348,8 +369,12 @@ void InputDataRead (char *data_fname, char *endianity)
       }}}
     }
   }
+
   fclose(fp);
+
+#if CLOUDS_MULTI != YES  
   print1 ("\n");
+#endif
 }
 
 /* ********************************************************************* */
@@ -379,12 +404,15 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
   int do_vel = 0;
   /* -- AYW */
 
+ double deltax2,deltax3,deltax1,fractpart,intpart;
 
 
+
+// TODO: Actually do this check
 /* --------------------------------------------------------------------- */
 /*! - Convert PLUTO coordinates to input grid geometry if necessary.     */
 /* AYW --  2012-11-15 15:48 JST
- * Could use my genereic macros for coordinates here.
+ * Could use my generic macros for coordinates here.
  * Good check as to whether they're correct.
  * -- AYW */
 /* --------------------------------------------------------------------- */
@@ -392,148 +420,138 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
 
 /* AYW -- 2012-11-29 12:33 JST
  * My version. */
-//   if (id_geom == GEOMETRY) {  
+   if (id_geom == GEOMETRY) {
+     /* same coordinate system: nothing to do */
+   }
+
+   else if (id_geom == CYLINDRICAL) {
+     double R, z, phi;
+     R   = CYL1(x1, x2, x3);
+     phi = CYL2(x1, x2, x3);
+     z   = x3;
+     x1 = R; x2 = z; x3 = phi;
+   }
+
+   else if (id_geom == POLAR) {
+     double R, phi, z;
+     R   = POL1(x1, x2, x3);
+     phi = POL2(x1, x2, x3);
+     z   = POL3(x1, x2, x3);
+     x1 = R; x2 = phi; x3 = z;
+   }
+
+   else if (id_geom == SPHERICAL){
+     double R, theta, phi;
+     R     = SPH1(x1, x2, x3);
+     theta = SPH2(x1, x2, x3);
+     phi   = SPH3(x1, x2, x3);
+     x1 = R; x2 = theta; x3 = phi;
+   }
+
+   else{
+     print1 ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
+     QUIT_PLUTO(1);
+   }
+/* -- AYW */
+
+//
+//  #if GEOMETRY == CARTESIAN
+//   if (id_geom == GEOMETRY) {
+//
 //     /* same coordinate system: nothing to do */
-//   }
 //
-//   else if (id_geom == CYLINDRICAL) {  
+//   }else if (id_geom == CYLINDRICAL) {
 //     double R, z, phi;
-//     R   = CYL1(x1, x2, x3);
-//     z   = CYL2(x1, x2, x3);
-//     phi = CYL3(x1, x2, x3);
+//     R   = sqrt(x1*x1 + x2*x2);
+//     phi = atan2(x2,x1);
+//     if (phi < 0.0) phi += 2.0*CONST_PI;
+//     z   = x3;
+//
 //     x1 = R; x2 = z; x3 = phi;
-//   }
-//
-//   else if (id_geom == POLAR) {  
+//   }else if (id_geom == POLAR) {
 //     double R, phi, z;
-//     R   = POL1(x1, x2, x3);
-//     phi = POL2(x1, x2, x3);
-//     z   = POL3(x1, x2, x3);
+//     R   = sqrt(x1*x1 + x2*x2);
+//     phi = atan2(x2,x1);
+//     if (phi < 0.0) phi += 2.0*CONST_PI;
+//     z   = x3;
+//
 //     x1 = R; x2 = phi; x3 = z;
-//   }
+//   }else if (id_geom == SPHERICAL){
+//     double r, theta, phi;
+//     r     = D_EXPAND(x1*x1, + x2*x2, + x3*x3);
+//     r     = sqrt(r);
+//     theta = acos(x3/r);
+//     phi   = atan2(x2,x1);
+//     if (phi   < 0.0) phi   += 2.0*CONST_PI;
+//     if (theta < 0.0) theta += 2.0*CONST_PI;
 //
-//   else if (id_geom == SPHERICAL){
-//     double R, theta, phi;
-//     R     = SPH1(x1, x2, x3);
-//     theta = SPH2(x1, x2, x3);
-//     z     = SPH3(x1, x2, x3);
-//     x1 = R; x2 = theta; x3 = phi;
-//   }
-//
-//   else{
+//     x1 = r; x2 = theta; x3 = phi;
+//   }else{
 //     print1 ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
 //     QUIT_PLUTO(1);
 //   }
-/* -- AYW */
-
-
-  #if GEOMETRY == CARTESIAN
-   if (id_geom == GEOMETRY) {  
-
-     /* same coordinate system: nothing to do */
-     
-   }else if (id_geom == CYLINDRICAL) {  
-     double R, z, phi;
-     R   = sqrt(x1*x1 + x2*x2);
-     phi = atan2(x2,x1);
-     if (phi < 0.0) phi += 2.0*CONST_PI;
-     z   = x3;
-
-     x1 = R; x2 = z; x3 = phi;
-   }else if (id_geom == POLAR) {  
-     double R, phi, z;
-     R   = sqrt(x1*x1 + x2*x2);
-     phi = atan2(x2,x1);
-     if (phi < 0.0) phi += 2.0*CONST_PI;
-     z   = x3;
-
-     x1 = R; x2 = phi; x3 = z;
-   }else if (id_geom == SPHERICAL){
-     double r, theta, phi;
-     r     = D_EXPAND(x1*x1, + x2*x2, + x3*x3);
-     r     = sqrt(r);
-     theta = acos(x3/r);
-     phi   = atan2(x2,x1);
-     if (phi   < 0.0) phi   += 2.0*CONST_PI;
-     if (theta < 0.0) theta += 2.0*CONST_PI;
-     
-     x1 = r; x2 = theta; x3 = phi;
-   }else{
-     print1 ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
-     QUIT_PLUTO(1);
-   }
-  #elif GEOMETRY == CYLINDRICAL
-   if (id_geom == GEOMETRY) {  
-
-     /* same coordinate system: nothing to do */
-     
-   }else if (id_geom == SPHERICAL) {  
-     double r, theta, phi;
-     r     = D_EXPAND(x1*x1, + x2*x2, + 0.0);
-     r     = sqrt(r);
-     theta = acos(x2/r);
-     phi   = 0.0;
-     if (theta < 0.0) theta += 2.0*CONST_PI;
-     
-     x1 = r; x2 = theta; x3 = phi;
-   }else{
-     print1 ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
-     QUIT_PLUTO(1);
-   }
-  #elif GEOMETRY == POLAR
-   if (id_geom == GEOMETRY) {  
-
-     /* same coordinate system: nothing to do */
-     
-   }else if (id_geom == CARTESIAN) {  
-     double x, y, z;
-     x = x1*cos(x2);
-     y = x1*sin(x2);
-     z = x3;
-     
-     x1 = x; x2 = y; x3 = z;
-   }else{
-     print1 ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
-     QUIT_PLUTO(1);
-   }   
-  #elif GEOMETRY == SPHERICAL
-   if (id_geom == GEOMETRY) {  
-
-     /* same coordinate system: nothing to do */
-     
-
-   }else if (id_geom == CARTESIAN) {  
-     double x, y, z;
-     x = x1*sin(x2)*cos(x3);
-     y = x1*sin(x2)*sin(x3);
-     z = x1*cos(x2);
-     
-     x1 = x; x2 = y; x3 = z;
-   }else{
-     print1 ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
-     QUIT_PLUTO(1);
-   }   
-  #endif
+//  #elif GEOMETRY == CYLINDRICAL
+//   if (id_geom == GEOMETRY) {
+//
+//     /* same coordinate system: nothing to do */
+//
+//   }else if (id_geom == SPHERICAL) {
+//     double r, theta, phi;
+//     r     = D_EXPAND(x1*x1, + x2*x2, + 0.0);
+//     r     = sqrt(r);
+//     theta = acos(x2/r);
+//     phi   = 0.0;
+//     if (theta < 0.0) theta += 2.0*CONST_PI;
+//
+//     x1 = r; x2 = theta; x3 = phi;
+//   }else{
+//     print1 ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
+//     QUIT_PLUTO(1);
+//   }
+//  #elif GEOMETRY == POLAR
+//   if (id_geom == GEOMETRY) {
+//
+//     /* same coordinate system: nothing to do */
+//
+//   }else if (id_geom == CARTESIAN) {
+//     double x, y, z;
+//     x = x1*cos(x2);
+//     y = x1*sin(x2);
+//     z = x3;
+//
+//     x1 = x; x2 = y; x3 = z;
+//   }else{
+//     print1 ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
+//     QUIT_PLUTO(1);
+//   }
+//  #elif GEOMETRY == SPHERICAL
+//   if (id_geom == GEOMETRY) {
+//
+//     /* same coordinate system: nothing to do */
+//
+//
+//   }else if (id_geom == CARTESIAN) {
+//     double x, y, z;
+//     x = x1*sin(x2)*cos(x3);
+//     y = x1*sin(x2)*sin(x3);
+//     z = x1*cos(x2);
+//
+//     x1 = x; x2 = y; x3 = z;
+//   }else{
+//     print1 ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
+//     QUIT_PLUTO(1);
+//   }
+//  #endif
 
 /* --------------------------------------------------------------------- */
 /*! - Make sure point (x1,x2,x3) does not fall outside input grid range. 
       Limit to input grid edge otherwise.                                */
 /* --------------------------------------------------------------------- */
-   
-/* DM -- */
-  /*
-  D_EXPAND(if      (x1 < id_x1[0])         x1 = id_x1[0];
-           else if (x1 > id_x1[id_nx1-1]) x1 = id_x1[id_nx1-1];  ,
-           
-           if      (x2 < id_x2[0])         x2 = id_x2[0];
-           else if (x2 > id_x2[id_nx2-1]) x2 = id_x2[id_nx2-1];  ,
-           
-           if      (x3 < id_x3[0])         x3 = id_x3[0];
-           else if (x3 > id_x3[id_nx3-1]) x3 = id_x3[id_nx3-1]; )
-  */
+  
 
-
-/* DM 23 Feb, 2015: Check if PLUTO grid point is outside input grid. 
+#if (CLOUD_REPEAT == YES)
+/*
+ DM 23 feb, 2015: Check if PLUTO grid point is outside input grid. 
 If yes, then check if PLUTO grid is outside maximum zone of clouds 
 defined in definitions_usr.h. If no, then fold PLUTO grid back on 
 to appropriate location in input grid, assuming periodic BC.
@@ -544,42 +562,42 @@ if x < XL
 |-----------|------------|--------------|
       x     XL           XR
       -------------->
-x'= x + (int((x - XL) / Delta) + 1) * Delta , Delta = XR - XL
+x' = x + (int((x - xL) / Delta) + 1) * Delta , Delta = XR - XL
 
 if x > XR
 |-----------|------------|--------------|
             XL           XR        x
                     <--------------        
-
-x'= x - (int((x - XR) / Delta) + 1) * Delta
+x' = x - (int((x - xR) / Delta) + 1) * Delta
 
 Rationale: Translate input grid by n steps such that PLUTO grid point 
-falls within translated input grid limits, i.e. 
-
-XR' = XR + n * Delta , 
-n = int((x - XR) / Delta) + 1
+falls within translated input grid limits 
+i.e. XR' = XR + n * Delta, n = int((x - XR) / Delta) + 1
 New x' = XR - (XR' - x) = x - n * Delta
 
 Same for lower boundary, results in a difference in sign. 
 
-TODO: Currently, if PLUTO grid is larger than max domain for clouds defined 
-in definitions_usr.h then PLUTO grid coordinate is given value eq to boundary 
-value of input grid.
-
+*** To fix: if PLUTO grid is larger than max domain defined in definitions_usr.h
+then PLUTO grid is given value eq to boundary value of input grid.
 */
 
 /* DM -- */
-  D_EXPAND(x1 = shift_idx(x1, CLOUD_X1MIN, CLOUD_X1MAX, id_x1[0], id_x1[id_nx1-1]);,
-           x2 = shift_idx(x2, CLOUD_X2MIN, CLOUD_X2MAX, id_x2[0], id_x2[id_nx2-1]);,
-           x3 = shift_idx(x3, CLOUD_X3MIN, CLOUD_X3MAX, id_x3[0], id_x3[id_nx3-1]);
-  );
-
+  D_EXPAND(x1 = shift_idx(x1, g_inputParam[PAR_WX1L], g_inputParam[PAR_WX1H], id_x1[0], id_x1[id_nx1 - 1]);,
+           x2 = shift_idx(x2, g_inputParam[PAR_WX2L], g_inputParam[PAR_WX2H], id_x2[0], id_x2[id_nx2 - 1]);,
+           x3 = shift_idx(x3, g_inputParam[PAR_WX3L], g_inputParam[PAR_WX3H], id_x3[0], id_x3[id_nx3 - 1]););
 /* -- DM */
-
-
-
-
-
+ 
+#else
+  /* Default PLUTO */
+  D_EXPAND(if      (x1 < id_x1[0])         x1 = id_x1[0];
+           else if (x1 > id_x1[id_nx1-1]) x1 = id_x1[id_nx1-1];  ,
+           
+           if      (x2 < id_x2[0])         x2 = id_x2[0];
+           else if (x2 > id_x2[id_nx2-1]) x2 = id_x2[id_nx2-1];  ,
+           
+           if      (x3 < id_x3[0])         x3 = id_x3[0];
+           else if (x3 > id_x3[id_nx3-1]) x3 = id_x3[id_nx3-1]; )
+#endif
 
 
 /* --------------------------------------------------------------------- */
@@ -704,21 +722,12 @@ value of input grid.
      QUIT_PLUTO(1);
    }   
 
-/* Assume the input data is not using four-velocity. */
-#if USE_FOUR_VELOCITY == YES
-   vel = VMAG(x1, x2, x3, vs[VX1], vs[VX2], vs[VX3]);
-   lorentz = Vel2Lorentz(vel);
-   EXPAND(vs[VX1] *= lorentz;,
-          vs[VX2] *= lorentz;,
-          vs[VX3] *= lorentz;);
-#endif
+
   }
   /* -- AYW */
 
 
 }
-
-
 
 /* ********************************************************************* */
 void InputDataFree (void)
@@ -729,9 +738,21 @@ void InputDataFree (void)
 {
   int nv;
   for (nv = 0; nv < id_nvar; nv++){
-    free ((char *) Vin[nv][0][0]);    
+   /* free ((char *) Vin[nv][0][0]);    
     free ((char *) Vin[nv][0]);
     free ((char *) Vin[nv]);
+   */
+ 
+  printf("inputdata free \n");
+
+  printf("test again: %lf %d \n",Vin[RHO][10][10][10],id_nvar);
+  // FreeArray3D(Vin[nv]);
+  free ((char *) Vin[nv][0][0]);
+printf(" r 1\n");
+  free ((char *) Vin[nv][0]);
+printf(" r 2\n");
+  free ((char *) Vin[nv]);
+  printf("done once \n");
   }
 }
 

@@ -1,6 +1,5 @@
-#include "pluto.h"
-#include "pluto_usr.h"
 #include "abundances.h"
+#include "init_tools.h"
 
 #if COOLING == NO
 
@@ -23,45 +22,50 @@ double MeanMolecularWeight (real *V)
  *
  ********************************************************************* */
 {
- #if MU_CALC == MU_TABLE
+#if MU_CALC == MU_TABLE
 
-  int il;
-  double por, r1, r2, frac;
-  double y0, y1, y2, y3;
+    int il;
+    double por;
 
-  if (mu_por == NULL){
-    rMuTable()
-  }
+    if (mu_por == NULL) {
+        ReadMuTable();
+    }
 
-  /* Value of T/mu in cgs */
-  por = V[PRS]/V[RHO]*KELVIN
+    /* Value of p/rho in code units */
+    por = V[PRS] / V[RHO];
 
-  /* Find cell left index to interpolate at */
-  il = hunter(mu_rad, mu_ndata, por);
+    /* Interpolate */
+    return InterpolationWrapper(mu_por, mu_mu, mu_ndata, por);
 
-  /* Linear fractional location of por in cell */
-  r1 = mu_por[il];
-  r2 = mu_por[il+1];
-  frac = (r - r1)/(r2 - r1);
-
-  /* Mu interpolation */
-  y0 = mu_mu[il-1];
-  y1 = mu_mu[il];
-  y2 = mu_mu[il+1];
-  y3 = mu_mu[il+2];
-  return CubicCatmullRomInterpolate(y0, y1, y2, y3, frac);
 
 #elif MU_CALC == MU_FRACTIONS
 
-  return  ( (A_H + frac_He*A_He + frac_Z*A_Z) /
-            (2.0 + frac_He + 2.0*frac_Z - 0.0));
+    return  ( (A_H + frac_He*A_He + frac_Z*A_Z) /
+                  (2.0 + frac_He + 2.0*frac_Z - 0.0));
+
+#elif MU_CALC == MU_ANALYTIC
+
+    /* Value of log10(p/rho) in cgs units */
+    double por;
+    por = log10(V[PRS] / V[RHO] * vn.pres_norm / vn.dens_norm);
+
+    static double a = 11.48648535;
+    static double w = 0.62276904;
+    static double m = 1.25;
+    double tanh_factor;
+
+    tanh_factor = tanh((por - a) / w);
+    return 0.5 * (MU_NORM + m) + 0.5 * tanh_factor * (MU_NORM - m);
+
+#elif MU_CALC == MU_CONST
+
+    return (MU_NORM);
 
 #else
 
-  return (MU_NORM);
+    return (MU_NORM);
 
 #endif
-
 
 }
 

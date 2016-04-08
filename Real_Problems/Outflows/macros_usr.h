@@ -32,17 +32,16 @@
 #define SGNB(a,b) ( ((a) - (b) < 0) ? -1 : (((a) - (b) > 0) ? 1 : 0) )
 
 /* Heaviside function */
-#define HS(a)    ( ((a) > 0) ? 1 : 0 )
-#define HSB(a,b) ( ((a) - (b) > 0) ? 1 : 0 )
+#define HS(a)    ( ((a) < 0) ? 0 : (((a) > 0) ? 1 : 0) )
+#define HSB(a,b) ( ((a) - (b) < 0) ? 0 : (((a) - (b) > 0) ? 1 : 0) )
+//#define HS(a) 0.5*(1 + SGN(a))
+//#define HSB(a, b) 0.5*(1 + SGN(a, b))
 
-/*! Return the number with the larger absolute value. */
-#define ABS_MAX(a,b)  (fabs(a) > fabs(b) ? (a) : (b)) 
-                         
 /* Select between nozzle type, a: jet, b: ufo. */
 #if NOZZLE == NOZZLE_JET
-  #define NOZZLE_SELECT(a,b) a
+  #define NOZZLE_SELECT(a, b) a
 #elif NOZZLE == NOZZLE_UFO
-  #define NOZZLE_SELECT(a,b) b
+  #define NOZZLE_SELECT(a, b) b
 #endif
 
 
@@ -98,8 +97,8 @@
 #define D_ZERO_POL3(c)  D_SELECT(0, 0, c)
 
 #define C_ZERO1(a) a
-#define C_ZERO2(b) D_SELECT(0, b, b)
-#define C_ZERO3(c) D_SELECT(0, 0, c)
+#define C_ZERO2(b) SELECT(0, b, b)
+#define C_ZERO3(c) SELECT(0, 0, c)
 
 #if GEOMETRY == CARTESIAN
 #define D_ZERO1(a) D_ZERO_CART1(a)
@@ -272,38 +271,30 @@
 
 /* CARTESIAN -- SPHERICAL */
 /* Assume theta = pi/2 in 1D. Azimuthal angle phi and poloidal angle theta don't exist in 2D and 1D 
- * and cannot be derived, because the axes are differently aligned. Assume also that phi = 0 in 2D alignemnt. */
+ * and cannot be derived, because the axes are differently aligned. Assume also that phi = 0 in 2D alignment.
+ * Assumes theta is measured from x2 in 2D */
 #define CART2SPH1(x1, x2, x3) ( sqrt((x1)*(x1) + (x2)*(x2) + (x3)*(x3)) )
-#define CART2SPH2(x1, x2, x3) ( acos((D_SELECT(x3, x2, x3))/(CART2SPH1(x1, x2, x3))) ) // Assumes theta is measured from x2 in 2D
-//#define CART2SPH2(x1, x2, x3) ( acos((D_SELECT(x3, x1, x3))/(CART2SPH1(x1, x2, x3))) ) // Assumes theta is measured from x1 in 2D
+#define CART2SPH2(x1, x2, x3) ( acos((D_SELECT(x3, x2, x3))/(CART2SPH1(x1, x2, x3))) )
 #define CART2SPH3(x1, x2, x3) ( D_SELECT(0, CONST_PI*HS(-(x1)), 2*CONST_PI*HS(-(x2)) +\
     (SGN(x2))*acos((x1)/(CART2CYL1(x1, x2, x3)))) )
 #define SPH2CART1(x1, x2, x3) ( (SPH2POL1(x1, x2, x3))*cos(x3) )
 #define SPH2CART2(x1, x2, x3) ( D_SELECT(\
-      SPH2POL1(x1, x2, x3)*sin(x3),\
-      SPH2CYL2(x1, x2, x3),\
-      SPH2POL1(x1, x2, x3)*sin(x3)) )
+                                     SPH2POL1(x1, x2, x3)*sin(x3),\
+                                     SPH2CYL2(x1, x2, x3),\
+                                     SPH2POL1(x1, x2, x3)*sin(x3)) )
 #define SPH2CART3(x1, x2, x3) ( SPH2CYL2(x1, x2, x3) )
 
-//#define VCART2SPH1(x1, x2, x3, v1, v2, v3) ( ((x1)*(v1) + (x2)*(v2) + (x3)*(v3))/(CART2SPH1(x1, x2, x3)) )
-#define VCART2SPH1(x1, x2, x3, v1, v2, v3) ( SELECT(\
-      sin(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-      sin(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) +\
-      cos(CART2SPH2(x1, x2, x3))*(v3), \
-      cos(CART2SPH2(x1, x2, x3))*(v1) - sin(CART2SPH2(x1, x2, x3))*(v2), \
-      sin(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-      sin(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) +\
-      cos(CART2SPH2(x1, x2, x3))*(v3) \
-      ) ) // assuming theta from x1 axis in 2D
-//#define VCART2SPH2(x1, x2, x3, v1, v2, v3) ( SELECT(\
-//      (cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-//       cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
-//       sin(CART2SPH2(x1, x2, x3))*(v3))/(CART2SPH1(x1, x2, x3) ),\
-//      (cos(CART2SPH2(x1, x2, x3))*(v1) + sin(CART2SPH2(x1, x2, x3))*(v2))/(CART2SPH1(x1, x2, x3) ),\
-//      (cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-//       cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
-//       sin(CART2SPH2(x1, x2, x3))*(v3))/(CART2SPH1(x1, x2, x3) ) ) \
-//    )
+#define VCART2SPH1(x1, x2, x3, v1, v2, v3) ( ((x1)*(v1) + (x2)*(v2) + (x3)*(v3))/(CART2SPH1(x1, x2, x3)) )
+//#define VCART2SPH1(x1, x2, x3, v1, v2, v3) ( SELECT(\
+//      sin(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
+//      sin(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) +\
+//      cos(CART2SPH2(x1, x2, x3))*(v3), \
+//      sin(CART2SPH2(x1, x2, x3))*(v1) + cos(CART2SPH2(x1, x2, x3))*(v2), \
+//      sin(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
+//      sin(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) +\
+//      cos(CART2SPH2(x1, x2, x3))*(v3) \
+//      ) ) // assuming theta from x2 axis in 2D
+
 #define VCART2SPH2(x1, x2, x3, v1, v2, v3) ( SELECT(\
       cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
       cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
@@ -313,15 +304,6 @@
       cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
       sin(CART2SPH2(x1, x2, x3))*(v3) \
     ) ) // without /r and  assuming theta from x2 axis in 2D
-//#define VCART2SPH2(x1, x2, x3, v1, v2, v3) ( SELECT(\
-//      cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-//      cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
-//      sin(CART2SPH2(x1, x2, x3))*(v3),\
-//      -sin(CART2SPH2(x1, x2, x3))*(v1) + cos(CART2SPH2(x1, x2, x3))*(v2),\
-//      cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-//      cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
-//      sin(CART2SPH2(x1, x2, x3))*(v3) ) \
-//    ) // without /r and  assuming theta from x1 axis in 2D
 
 //#define VCART2SPH3(x1, x2, x3, v1, v2, v3) ( (-sin(CART2SPH3(x1, x2, x3))*(v1) + cos(CART2SPH3(x1, x2, x3))*(v2))/\
 //    (CART2POL1(x1, x2, x3)) )
@@ -606,7 +588,6 @@
 #endif
 
 
-
 /* WARNING, The following macros output a comma separated list. 
  * The commas are not preserved down to higher macro layers. */
 #define ARGCART(x1, x2, x3) CART1(x1, x2, x3), CART2(x1, x2, x3), CART3(x1, x2, x3)
@@ -697,25 +678,26 @@
     #define FLOWAXIS3(a, b) a
   #endif
 #endif
+#define ARG_FLOWAXIS(a, b) FLOWAXIS1(a, b), FLOWAXIS2(a, b), FLOWAXIS3(a, b)
 
 
 /* GEOMETRY and dimension dependent dimensions of a dimension. 
  * a is output if dimension is non-dimensional (an angle)
  * b        -               has dimensions of length   
  * */
-#define DIMDIM1(a, b) b
+#define GEOM_UNITS1(a, b) b
 #if   GEOMETRY == SPHERICAL
-  #define DIMDIM2(a, b) a
-  #define DIMDIM3(a, b) a
+  #define GEOM_UNITS2(a, b) a
+  #define GEOM_UNITS3(a, b) a
 #elif GEOMETRY == POLAR
-  #define DIMDIM2(a, b) a
-  #define DIMDIM3(a, b) b
+  #define GEOM_UNITS2(a, b) a
+  #define GEOM_UNITS3(a, b) b
 #elif GEOMETRY == CARTESIAN
-  #define DIMDIM2(a, b) a
-  #define DIMDIM3(a, b) b
+  #define GEOM_UNITS2(a, b) b
+  #define GEOM_UNITS3(a, b) b
 #elif GEOMETRY == CYLINDRICAL
-  #define DIMDIM2(a, b) b
-  #define DIMDIM3(a, b) a
+  #define GEOM_UNITS2(a, b) b
+  #define GEOM_UNITS3(a, b) a
 #endif
 
 
@@ -757,6 +739,197 @@ ITDOM_LOOP(IBEG,k,j,i) {command} ITDOM_LOOP(IEND,k,j,i) {command}
  for ((B)->dk = ((k=(B)->kb) <= (B)->ke ? 1:-1); k != (B)->ke+(B)->dk; k += (B)->dk)\
  for ((B)->dj = ((j=(B)->jb) <= (B)->je ? 1:-1); j != (B)->je+(B)->dj; j += (B)->dj)\
  {command}
+
+
+
+#if COMPONENTS == 1
+#define ARG_EXPAND(a,b,c) a
+#endif
+
+#if COMPONENTS == 2
+#define ARG_EXPAND(a,b,c) a, b
+#endif
+
+#if COMPONENTS == 3
+#define ARG_EXPAND(a,b,c) a, b, c
+#endif
+
+#if DIMENSIONS == 1
+#define ARG_D_EXPAND(a,b,c)  a
+#endif
+
+#if DIMENSIONS == 2
+#define ARG_D_EXPAND(a,b,c) a, b
+#endif
+
+#if DIMENSIONS == 3
+#define ARG_D_EXPAND(a,b,c) a, b, c
+#endif
+
+
+
+/* Weighted prolongation, restriction, Laplacian and averaging macros */
+// TODO: Add prologation
+// TODO: Add Laplacian
+// TODO: Probably don't need W_AVERAGE, but leaving as reference for LAPLACIAN or related macros
+
+#if DIMENSIONS == 1
+
+#define W_AVERAGE(q, k, j, i)  ( (q[k][j][i+1]) + (q[k][j][i-1]) + 2 * (q[k][j][i]) ) / 4.
+
+#define RESTRICT(q, k, j, i) ( (q[k][j][i+1]) + (q[k][j][i-1]) + 2 * (q[k][j][i]) ) / 4.
+
+#define BURY(q, k, j, i) ( (q[k][j][i+1]) + (q[k][j][i-1]) ) / 2.
+
+#define C_BURY(q, k, j, i, n) ( (q[k][j][i+1][n]) + (q[k][j][i-1][n]) ) / 2.
+
+
+#elif DIMENSIONS == 2
+
+#define W_AVERAGE(q, k, j, i)  ( (q[k][j][i+1]) + (q[k][j][i-1]) + \
+                                 (q[k][j+1][i]) + (q[k][j-1][i]) + \
+                                 2 * (q[k][j][i]) ) / 6.
+
+#define RESTRICT(q, k, j, i) ( 2 * ( (q[k][j][i+1]) + (q[k][j][i-1]) + \
+                                     (q[k][j+1][i]) + (q[k][j-1][i]) ) + \
+                               (q[k][j+1][i+1]) + (q[k][j+1][i-1]) + \
+                               (q[k][j-1][i+1]) + (q[k][j-1][i-1]) + \
+                               4 * (q[k][j][i]) ) / 16.
+
+#define BURY(q, k, j, i) ( 2 * ( (q[k][j][i+1]) + (q[k][j][i-1]) + \
+                                 (q[k][j+1][i]) + (q[k][j-1][i]) ) + \
+                               (q[k][j+1][i+1]) + (q[k][j+1][i-1]) + \
+                               (q[k][j-1][i+1]) + (q[k][j-1][i-1]) ) / 12.
+
+#define C_BURY(q, k, j, i, n) ( 2 * ( (q[k][j][i+1][n]) + (q[k][j][i-1][n]) + \
+                                      (q[k][j+1][i][n]) + (q[k][j-1][i][n]) ) + \
+                                  (q[k][j+1][i+1][n]) + (q[k][j+1][i-1][n]) + \
+                                  (q[k][j-1][i+1][n]) + (q[k][j-1][i-1][n]) ) / 12.
+
+
+#elif DIMENSIONS == 3
+
+#define W_AVERAGE(q, k, j, i)  ( (q[k][j][i+1]) + (q[k][j][i-1]) + \
+                                 (q[k][j+1][i]) + (q[k][j-1][i]) + \
+                                 (q[k+1][j][i]) + (q[k-1][j][i]) + \
+                                 2 * (q[k][j][i]) ) / 8.
+
+#define RESTRICT(q, k, j, i) ( 4 * ( (q[k][j][i+1]) + (q[k][j][i-1]) + \
+                                     (q[k][j+1][i]) + (q[k][j-1][i]) + \
+                                     (q[k+1][j][i]) + (q[k-1][j][i]) ) + \
+                               2 * ( (q[k][j+1][i+1]) + (q[k][j+1][i-1]) + \
+                                     (q[k][j-1][i+1]) + (q[k][j-1][i-1]) + \
+                                     (q[k+1][j][i+1]) + (q[k+1][j][i-1]) + \
+                                     (q[k-1][j][i+1]) + (q[k-1][j][i-1]) + \
+                                     (q[k+1][j+1][i]) + (q[k+1][j-1][i]) + \
+                                     (q[k-1][j+1][i]) + (q[k-1][j-1][i]) ) + \
+                                   (q[k+1][j+1][i+1]) + (q[k+1][j+1][i-1]) + \
+                                   (q[k+1][j-1][i+1]) + (q[k+1][j-1][i-1]) + \
+                                   (q[k-1][j+1][i+1]) + (q[k-1][j+1][i-1]) + \
+                                   (q[k-1][j-1][i+1]) + (q[k-1][j-1][i-1]) + \
+                                     8 * (q[k][j][i]) ) / 64.
+
+
+#define BURY(q, k, j, i) ( 4 * ( (q[k][j][i+1]) + (q[k][j][i-1]) + \
+                                 (q[k][j+1][i]) + (q[k][j-1][i]) + \
+                                 (q[k+1][j][i]) + (q[k-1][j][i]) ) + \
+                           2 * ( (q[k][j+1][i+1]) + (q[k][j+1][i-1]) + \
+                                 (q[k][j-1][i+1]) + (q[k][j-1][i-1]) + \
+                                 (q[k+1][j][i+1]) + (q[k+1][j][i-1]) + \
+                                 (q[k-1][j][i+1]) + (q[k-1][j][i-1]) + \
+                                 (q[k+1][j+1][i]) + (q[k+1][j-1][i]) + \
+                                 (q[k-1][j+1][i]) + (q[k-1][j-1][i]) ) + \
+                               (q[k+1][j+1][i+1]) + (q[k+1][j+1][i-1]) + \
+                               (q[k+1][j-1][i+1]) + (q[k+1][j-1][i-1]) + \
+                               (q[k-1][j+1][i+1]) + (q[k-1][j+1][i-1]) + \
+                               (q[k-1][j-1][i+1]) + (q[k-1][j-1][i-1]) ) / 56.
+
+#define C_BURY(q, k, j, i, n) ( 4 * ( (q[k][j][i+1][n]) + (q[k][j][i-1][n]) + \
+                                      (q[k][j+1][i][n]) + (q[k][j-1][i][n]) + \
+                                      (q[k+1][j][i][n]) + (q[k-1][j][i][n]) ) + \
+                                2 * ( (q[k][j+1][i+1][n]) + (q[k][j+1][i-1][n]) + \
+                                      (q[k][j-1][i+1][n]) + (q[k][j-1][i-1][n]) + \
+                                      (q[k+1][j][i+1][n]) + (q[k+1][j][i-1][n]) + \
+                                      (q[k-1][j][i+1][n]) + (q[k-1][j][i-1][n]) + \
+                                      (q[k+1][j+1][i][n]) + (q[k+1][j-1][i][n]) + \
+                                      (q[k-1][j+1][i][n]) + (q[k-1][j-1][i][n]) ) + \
+                                    (q[k+1][j+1][i+1][n]) + (q[k+1][j+1][i-1][n]) + \
+                                    (q[k+1][j-1][i+1][n]) + (q[k+1][j-1][i-1][n]) + \
+                                    (q[k-1][j+1][i+1][n]) + (q[k-1][j+1][i-1][n]) + \
+                                    (q[k-1][j-1][i+1][n]) + (q[k-1][j-1][i-1][n]) ) / 56.
+
+
+
+#endif
+
+
+
+/* Spherical inner inflow boundary conditions */
+
+#if DIMENSIONS == 1
+
+#if GEOMETRY == CARTESIAN
+
+#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i) ( HS(x) * (q[k][j][i+1]) + HS(-x) * (q[k][j][i-1]) )
+
+#elif (GEOMETRY == POLAR) || (GEOMETRY == CARTESIAN)
+
+#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i)
+
+#elif GEOMETRY == SPHERICAL
+
+#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i)
+
+#endif // Geometry
+
+
+#elif DIMENSIONS == 2
+
+#if GEOMETRY == CARTESIAN
+
+#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i) \
+( 4 * ( HS(x)  * (x)  * (q[k][j][i+1]) + HS(y)  * (y)  * (q[k][j+1][i]) + \
+        HS(-x) * (-x) * (q[k][j][i-1]) + HS(-y) * (-y) * (q[k][j-1][i]) ) / \
+      ( HS(x) * (x) + HS(y) * (y) + HS(-x) * (-x) + HS(-y) * (-y) ) + \
+      ( HS(x)  * HS(y)  * (q[k][j+1][i+1]) + HS(-x) * HS(y)  * (q[k][j+1][i-1]) + \
+        HS(x)  * HS(-y) * (q[k][j-1][i+1]) + HS(-x) * HS(-y) * (q[k][j-1][i-1]) ) ) / 5.
+
+#elif (GEOMETRY == POLAR) || (GEOMETRY == CARTESIAN)
+
+#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i)
+
+#elif GEOMETRY == SPHERICAL
+
+#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i)
+
+#endif // Geometry
+
+
+#elif DIMENSIONS == 3
+
+#if GEOMETRY == CARTESIAN
+
+#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i) \
+( 4 * ( HS(x)  * (x)  * (q[k][j][i+1]) + HS(y)  * (y)  * (q[k][j+1][i]) + \
+        HS(-x) * (-x) * (q[k][j][i-1]) + HS(-y) * (-y) * (q[k][j-1][i]) ) / \
+      ( HS(x) * (x) + HS(y) * (y) + HS(-x) * (-x) + HS(-y) * (-y) ) + \
+      ( HS(x)  * HS(y)  * (q[k][j+1][i+1]) + HS(-x) * HS(y)  * (q[k][j+1][i-1]) + \
+        HS(x)  * HS(-y) * (q[k][j-1][i+1]) + HS(-x) * HS(-y) * (q[k][j-1][i-1]) ) ) / 5.
+
+
+#elif (GEOMETRY == POLAR) || (GEOMETRY == CARTESIAN)
+
+#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i)
+
+#elif GEOMETRY == SPHERICAL
+
+#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i)
+
+#endif // Geometry
+
+#endif // Dimensions
+
+
 
 
 

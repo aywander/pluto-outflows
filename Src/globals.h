@@ -130,9 +130,17 @@ double g_domEnd[3];  /**< Upper limits of the computational domain. */
 /* g_inputParam is an array containing the user-defined
    parameters     */
 
-double g_inputParam[32]; /**< Array containing the user-defined parameters. 
+/* AYW -- Need more userdef parameters */
+//double g_inputParam[32];
+double g_inputParam[USER_DEF_PARAMETERS]; /**< Array containing the user-defined parameters.
                               The index names of this array are defined in
                               definitions.h through the python interface. */
+/* -- AYW */
+
+/* AYW -- add last timestep as global variable. (actually not used - but kept as it might be useful) */
+int g_lastStep;
+/* -- AYW */
+
 #ifdef CH_SPACEDIM
  double glm_ch_max, glm_ch_max_loc, g_coeff_dl_min; 
         /**< Variables used by Chombo to compute glm_ch. They must be 

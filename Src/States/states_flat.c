@@ -21,7 +21,10 @@ void States (const State_1D *state, int beg, int end, Grid *grid)
   int nv, i;
 
   #if TIME_STEPPING != EULER
-   #error FLAT Reconstruction must be used with EULER integration only
+  // AYW -- bug
+  print1("error FLAT Reconstruction must be used with EULER integration only")
+  QUIT_PLUTO(1)
+  //#error FLAT Reconstruction must be used with EULER integration only
   #endif
   
   for (i = beg; i <= end; i++) {

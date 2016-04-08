@@ -14,9 +14,14 @@
 #include "pluto.h"
 #include "pluto_usr.h"
 #include "init_tools.h"
-#include "rGravTable.h"
+#include "read_grav_table.h"
 #include "interpolation.h"
-
+#include "abundances.h"
+#include "accretion.h"
+#include "clouds.h"
+#include "grid_geometry.h"
+#include "hot_halo.h"
+#include "outflow.h"
 
 
 /* ********************************************************************* */
@@ -48,102 +53,115 @@ void Init (double *v, double x1, double x2, double x3)
  *********************************************************************** */
 {
 
-  int nv;
-  double halo_primitives[NVAR], out_primitives[NVAR];
+    int nv;
+    double halo_primitives[NVAR], out_primitives[NVAR];
 #if CLOUDS
-  double cloud_primitives[NVAR];
+    double cloud_primitives[NVAR];
 #endif
-  static int once01 = 0;
+    static int once01 = 0;
 
 
-  /* Some things that only need to be done once */
-  if (!once01){
+    /* Some things that only need to be done once */
+    if (!once01) {
 
-    /* Initialize base normalization struct */
-    SetBaseNormalization();
+        /* Initialize base normalization struct */
+        SetBaseNormalization();
 
-    /* Set normalization factors for input parameters */
-    SetIniNormalization();
+        /* Set normalization factors for input parameters */
+        SetIniNormalization();
 
-    /* Set outflow geometry struct with parameters of cone */
-    SetNozzleConeGeometry();
+        /* Set outflow geometry struct with parameters of cone */
+        SetNozzleGeometry();
 
-    /* Print some data */
-    OutflowPrimitives(out_primitives, 0, 0, 0);
-    HotHaloPrimitives(halo_primitives, 0, 0, 0);
-    PrintInitData01(out_primitives, halo_primitives);
+#if ACCRETION == YES
+        /* Set outflow geometry struct with parameters of cone */
+        SetAccretionPhysics();
+#endif
 
-    /* Done once now */
-    once01 = 1;
-  }
+        double dx;
+        dx = FLOWAXIS((g_domEnd[IDIR] - g_domBeg[IDIR]) / NX1;,
+                      (g_domEnd[JDIR] - g_domBeg[JDIR]) / NX2;,
+                      (g_domEnd[KDIR] - g_domBeg[KDIR]) / NX3;);
+
+        /* Print some data */
+        OutflowPrimitives(out_primitives, ARG_FLOWAXIS(dx, 0), 0);
+        HotHaloPrimitives(halo_primitives, ARG_FLOWAXIS(dx, 0));
+        PrintInitData01(out_primitives, halo_primitives);
+
+        /* Done once now */
+        once01 = 1;
+    }
 
 
-  /* Initialize nozzle if we're in hemisphere around 
-   * nozzle inlet region, otherwise halo */
-    
+    /* Initialize nozzle if we're in hemisphere around
+     * nozzle inlet region, otherwise halo */
+
+     if (InNozzleRegion(x1, x2, x3) || InNozzleCap(x1, x2, x3)) {
+
+        OutflowPrimitives(out_primitives, x1, x2, x3, 0);
+        HotHaloPrimitives(halo_primitives, x1, x2, x3);
+
+        for (nv = 0; nv < NVAR; ++nv) {
+            v[nv] = halo_primitives[nv] +
+                    (out_primitives[nv] - halo_primitives[nv]) * Profile(x1, x2, x3);
+        }
+    }
+
 #if INTERNAL_BOUNDARY == YES
-  if (InNozzleSphere(x1, x2, x3)) {
-    HotHaloPrimitives(halo_primitives, x1, x2, x3);
-      for (nv = 0; nv < NVAR; ++nv) {
-          v[nv] = halo_primitives[nv];
-          //v[0] = 10.;
-      }
-  }
+    else if (InFlankRegion(x1, x2, x3)) {
+
+        HotHaloPrimitives(halo_primitives, x1, x2, x3);
+
+        for (nv = 0; nv < NVAR; ++nv) {
+            v[nv] = halo_primitives[nv];
+        }
+    }
 #endif
- 
-  if (InNozzleRegion(x1, x2, x3)){
 
-    OutflowPrimitives(out_primitives, x1, x2, x3);
-    HotHaloPrimitives(halo_primitives, x1, x2, x3);
-    
-    for (nv = 0; nv < NVAR; ++nv){
-      v[nv] = halo_primitives[nv] + 
-        (out_primitives[nv] - halo_primitives[nv])*Profile_cap(x1, x2, x3);
-    }
-  }
+        /* Initialize halo. Hot, and warm, if included */
+    else {
 
-  /* Initialize halo. Hot, and warm, if included */
-  else{
+        /* First get primitives array for hot halo */
+        HotHaloPrimitives(halo_primitives, x1, x2, x3);
 
-    /* First get primitives array for hot halo */
-    HotHaloPrimitives(halo_primitives, x1, x2, x3);
+#if CLOUDS && CLOUDS_MULTI == NO
 
-#if CLOUDS
-
-    /* If we're in the domain of the clouds cube */
-    if (CloudPrimitives(cloud_primitives, x1, x2, x3)){
-      for (nv = 0; nv < NVAR; ++nv) v[nv] = cloud_primitives[nv];
-    }
-    /* If not a cloud pixel then use hot halo primitives*/
-    else{
-      for (nv = 0; nv < NVAR; ++nv) v[nv] = halo_primitives[nv];
-    }
+        /* If we're in the domain of the clouds cube */
+        if (CloudPrimitives(cloud_primitives, x1, x2, x3)){
+          for (nv = 0; nv < NVAR; ++nv) v[nv] = cloud_primitives[nv];
+        }
+        /* If not a cloud pixel then use hot halo primitives*/
+        else{
+          for (nv = 0; nv < NVAR; ++nv) v[nv] = halo_primitives[nv];
+        }
 
 #else
 
-    /* Hot halo */
-    for (nv = 0; nv < NVAR; ++nv) v[nv] = halo_primitives[nv];
+        /* Hot halo */
+        for (nv = 0; nv < NVAR; ++nv) v[nv] = halo_primitives[nv];
 #endif
 
-  }
+    }
 
 #if COOLING
-  g_minCoolingTemp = 1.e4;
-  g_maxCoolingRate = 0.9;
+    g_minCoolingTemp = 1.e4;
+    g_maxCoolingRate = 0.1;
 #endif
 
 #if PHYSICS == MHD || PHYSICS == RMHD
 
-   v[BX1] = 0.0;
-   v[BX2] = 0.0;
-   v[BX3] = 0.0;
+    v[BX1] = 0.0;
+    v[BX2] = 0.0;
+    v[BX3] = 0.0;
 
-   v[AX1] = 0.0;
-   v[AX2] = 0.0;
-   v[AX3] = 0.0;
+    v[AX1] = 0.0;
+    v[AX2] = 0.0;
+    v[AX3] = 0.0;
 
 #endif
+
 }
+
 
 
 /* ********************************************************************* */
@@ -157,7 +175,21 @@ void Analysis (const Data *d, Grid *grid)
  *********************************************************************** */
 {
 
+    /* Accretion */
+
+#if ACCRETION == YES
+    SphericalAccretion(d, grid);
+
+#if ACCRETION_OUTPUT == YES
+    SphericalAccretionOutput();
+#endif
+
+#endif
+
+
 }
+
+
 #if PHYSICS == MHD
 /* ********************************************************************* */
 void BackgroundField (double x1, double x2, double x3, double *B0)
@@ -201,279 +233,258 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
  *
  *********************************************************************** */
 {
-  int   i, j, k, iv, nv;
-  double  *x1, *x2, *x3;
-  double vc;
-  double out_primitives[NVAR], halo_primitives[NVAR];
-  double mirror[NVAR];
-  double vx1, vx2, vx3, vmag;
-  int inr = 0;
+    int i, j, k, nv;
+    double *x1, *x2, *x3;
+    double vc;
+    double out_primitives[NVAR], halo_primitives[NVAR], result[NVAR], mirror[NVAR];
+    static int touch = 0;
+#if ACCRETION == YES
+    double ****Vc_new;
+#endif
 
-  /* These are the geometrical central points */
-  //x1 = grid[IDIR].x;
-  //x2 = grid[JDIR].x;
-  //x3 = grid[KDIR].x;
+    /* These are the geometrical central points */
+    x1 = grid[IDIR].x;
+    x2 = grid[JDIR].x;
+    x3 = grid[KDIR].x;
 
-  /* These are the volumetric central points */
-  x1 = grid[IDIR].xgc;
-  x2 = grid[JDIR].xgc;
-  x3 = grid[KDIR].xgc;
+#if INTERNAL_BOUNDARY == YES
+    if (side == 0) {    /* -- check solution inside domain -- */
 
-  if (side == 0) {    /* -- check solution inside domain -- */
+        if (SphereIntersectsDomain(grid, nz.sph)) {
 
-    /* This is only performed if INTERNAL_BOUNDARY == YES
-     * in definitions.h */
+#if ACCRETION == YES
+            /* Create buffer array for internal sink region solution */
+            Vc_new = ARRAY_4D(NVAR, NX3_TOT, NX2_TOT, NX1_TOT, double);
+#endif
 
-    /* Test whether domain partly contains nozzle region
-     * Put surfaces to InNozzleRegion test */
-    //BOX_SURF_LOOP(box,k,j,i, if (InNozzleRegion(x1[i], x2[j], x3[k])) {inr = 1; break;} );
+            TOT_LOOP(k, j, i) {
 
-    /* Only then do a domain loop */
-    if (SphereIntersectsDomain(grid)){
-        
-      TOT_LOOP(k,j,i){
-          
-        if (InNozzleSphere(x1[i], x2[j], x3[k])){
-            
-          if (InNozzleRegion(x1[i], x2[j], x3[k])){
+                        if (InNozzleRegion(x1[i], x2[j], x3[k])) {
 
-            OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k]);
+#if ACCRETION == YES
+                            OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k], ac.accr_rate);
+#else
+                            OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k], 0);
+#endif
 
-            for (nv = 0; nv < NVAR; ++nv){
-              vc = d->Vc[nv][k][j][i];
-              d->Vc[nv][k][j][i] = vc + (out_primitives[nv] - vc)*
-                                   Profile(x1[i], x2[j], x3[k]);
-            }
-              
-          }
-            
-          else {
-              
-            HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
-              
-            for (nv = 0; nv < NVAR; ++nv){
-                d->Vc[nv][k][j][i] = halo_primitives[nv];
-                //d->Vc[0][k][j][i] = 10.;
-            }
-              
-          } // InNozzleRegion
-            
-          d->flag[k][j][i] |= FLAG_INTERNAL_BOUNDARY;
-            
-        } // InNozzleSphere
-          
-      } // TOT_LOOP
-        
-    } // SphereIntersectsDomain
-      
-  } // side == 0
+                            for (nv = 0; nv < NVAR; ++nv) {
+                                vc = d->Vc[nv][k][j][i];
+                                d->Vc[nv][k][j][i] = vc + (out_primitives[nv] - vc) *
+                                                          Profile(x1[i], x2[j], x3[k]);
+                            }
 
-  if (side == FLOWAXIS(X2_BEG, X3_BEG, X1_BEG)){
-    if (box->vpos == CENTER) {
-      BOX_LOOP(box,k,j,i){  
+                            d->flag[k][j][i] |= FLAG_INTERNAL_BOUNDARY;
 
-        /* Get primitives array for hot halo*/
-        HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
+                        } // InNozzleRegion
 
-        /* fill array */
-        /* Set outflow (zero grad) if cell outside boundary has some velocity, 
-         * else set to Hot halo. */
-        int side_index = FLOWAXIS(JBEG, KBEG, IBEG);
-        vx1 = d->Vc[VX1][k][j][side_index];
-        vx2 = d->Vc[VX2][k][j][side_index];
-        vx3 = d->Vc[VX3][k][j][side_index];
-        vmag = VMAG(x1[i], x2[j], x3[k], vx1, vx2, vx3);
 
-        if (vmag > 0) {
-          for (nv = 0; nv <NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][side_index];
+#if ACCRETION == YES
+                        else if (InSinkRegion(x1[i], x2[j], x3[k])) {
+
+#if SINK_METHOD == SINK_FREEFLOW
+
+                            SphericalFreeflowInternalBoundary(d->Vc, i, j, k, x1, x2, x3, result);
+
+#elif SINK_METHOD == SINK_VACUUM
+
+                            VacuumInternalBoundary(result);
+
+#elif SINK_METHOD == SINK_BONDI
+
+                            BondiFlowInternalBoundary(x1[i], x2[j], x3[k], result);
+
+#elif SINK_METHOD == SINK_FEDERRATH
+
+                           /* Remove mass according to Federrath's sink particle method */
+
+#endif
+
+                            /* Copy results to temporary solution array */
+                            for (nv = 0; nv < NVAR; ++nv) Vc_new[nv][k][j][i] = result[nv];
+
+                            d->flag[k][j][i] |= FLAG_INTERNAL_BOUNDARY;
+
+                        } // InSinkRegion
+
+#else
+                        else if (InFlankRegion(x1[i], x2[j], x3[k])){
+
+                            HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
+
+                            for (nv = 0; nv < NVAR; ++nv) {
+                                d->Vc[nv][k][j][i] = halo_primitives[nv];
+                            }
+                            d->flag[k][j][i] |= FLAG_INTERNAL_BOUNDARY;
+
+                        } // InFlankRegion
+#endif
+
+                    } // TOT_LOOP
+
+#if ACCRETION == YES
+
+            /* Copy solution over in case of using Spherical inward free-flowing broundary conditions */
+            TOT_LOOP(k, j, i) {
+
+                        if (InSinkRegion(x1[i], x2[j], x3[k])) {
+                            for (nv = 0; nv < NVAR; ++nv) {
+                                d->Vc[nv][k][j][i] = Vc_new[nv][k][j][i];
+                            }
+                        }
+
+                    } // Update TOT_LOOP
+
+            FreeArray4D((void *) Vc_new);
+#endif
+
+        } // SphereIntersectsDomain
+
+    } // side == 0
+
+#endif
+
+    if (side == FLOWAXIS(X2_BEG, X3_BEG, X1_BEG)) {
+        if (box->vpos == CENTER) {
+            BOX_LOOP(box, k, j, i) {
+
+                        HaloOuterBoundary(side, d, i, j, k, x1[i], x2[j], x3[k], &touch);
+
+                    }
+        } else if (box->vpos == X1FACE) {
+            BOX_LOOP(box, k, j, i) { }
+        } else if (box->vpos == X2FACE) {
+            BOX_LOOP(box, k, j, i) { }
+        } else if (box->vpos == X3FACE) {
+            BOX_LOOP(box, k, j, i) { }
         }
-        else {
-          for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv];
-        }
-
-      }
-    }else if (box->vpos == X1FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X2FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X3FACE){
-      BOX_LOOP(box,k,j,i){  }
     }
-  }
 
-  if (side == X1_END){  /* -- X1_END boundary -- */
-    if (box->vpos == CENTER) {
-      BOX_LOOP(box,k,j,i){ 
+    if (side == X1_END) {  /* -- X1_END boundary -- */
+        if (box->vpos == CENTER) {
+            BOX_LOOP(box, k, j, i) {
 
-        /* Get primitives array for hot halo*/
-        HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
+                        HaloOuterBoundary(side, d, i, j, k, x1[i], x2[j], x3[k], &touch);
 
-        /* fill array */
-        vx1 = d->Vc[VX1][k][j][IEND];
-        vx2 = d->Vc[VX2][k][j][IEND];
-        vx3 = d->Vc[VX3][k][j][IEND];
-        vmag = VMAG(x1[i], x2[j], x3[k], vx1, vx2, vx3);
-
-        if (vmag > 0) {
-          for (nv = 0; nv <NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][IEND];
+                    }
+        } else if (box->vpos == X1FACE) {
+            BOX_LOOP(box, k, j, i) { }
+        } else if (box->vpos == X2FACE) {
+            BOX_LOOP(box, k, j, i) { }
+        } else if (box->vpos == X3FACE) {
+            BOX_LOOP(box, k, j, i) { }
         }
-        else {
-          for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv];
-        }
-
-      }
-    }else if (box->vpos == X1FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X2FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X3FACE){
-      BOX_LOOP(box,k,j,i){  }
     }
-  }
 
-  if (side == FLOWAXIS(X3_BEG, X1_BEG, X2_BEG)){
-    if (box->vpos == CENTER) {
-      BOX_LOOP(box,k,j,i){  
 
-        /* Get primitives array for hot halo*/
-        HotHaloPrimitives(halo_primitives,x1[i], x2[j], x3[k]);
+    if (side == FLOWAXIS(X3_BEG, X1_BEG, X2_BEG)) {
+        if (box->vpos == CENTER) {
+            BOX_LOOP(box, k, j, i) {
 
-        /* fill array */
-        for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv]; 
+                        HaloOuterBoundary(side, d, i, j, k, x1[i], x2[j], x3[k], &touch);
 
-        /* fill array */
-        /* Set outflow (zero grad) if cell outside boundary has some velocity, 
-         * else set to Hot halo. */
-        int side_index = FLOWAXIS(KBEG, IBEG, JBEG);
-        vx1 = d->Vc[VX1][k][j][side_index];
-        vx2 = d->Vc[VX2][k][j][side_index];
-        vx3 = d->Vc[VX3][k][j][side_index];
-        vmag = VMAG(x1[i], x2[j], x3[k], vx1, vx2, vx3);
-
-        if (vmag > 0) {
-          for (nv = 0; nv <NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][side_index];
+                    }
+        } else if (box->vpos == X1FACE) {
+            BOX_LOOP(box, k, j, i) { }
+        } else if (box->vpos == X2FACE) {
+            BOX_LOOP(box, k, j, i) { }
+        } else if (box->vpos == X3FACE) {
+            BOX_LOOP(box, k, j, i) { }
         }
-        else {
-          for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv];
-        }
-
-      }
-    }else if (box->vpos == X1FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X2FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X3FACE){
-      BOX_LOOP(box,k,j,i){  }
     }
-  }
 
-  if (side == X2_END){  /* -- X2_END boundary -- */
-    if (box->vpos == CENTER) {
-      BOX_LOOP(box,k,j,i){  
 
-        /* Get primitives array for hot halo*/
-        HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
+    if (side == X2_END) {  /* -- X2_END boundary -- */
+        if (box->vpos == CENTER) {
+            BOX_LOOP(box, k, j, i) {
 
-        /* fill array */
-        /* Set outflow (zero grad) if cell outside boundary has some velocity, 
-         * else set to Hot halo. */
-        vx1 = d->Vc[VX1][k][j][JEND];
-        vx2 = d->Vc[VX2][k][j][JEND];
-        vx3 = d->Vc[VX3][k][j][JEND];
-        vmag = VMAG(x1[i], x2[j], x3[k], vx1, vx2, vx3);
+                        HaloOuterBoundary(side, d, i, j, k, x1[i], x2[j], x3[k], &touch);
 
-        if (vmag > 0) {
-          for (nv = 0; nv <NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][JEND];
+                    }
+        } else if (box->vpos == X1FACE) {
+            BOX_LOOP(box, k, j, i) { }
+        } else if (box->vpos == X2FACE) {
+            BOX_LOOP(box, k, j, i) { }
+        } else if (box->vpos == X3FACE) {
+            BOX_LOOP(box, k, j, i) { }
         }
-        else {
-          for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv];
-        }
-
-      }
-    }else if (box->vpos == X1FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X2FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X3FACE){
-      BOX_LOOP(box,k,j,i){  }
     }
-  }
 
-    
-  /* This side is where the nozzle is located and the outflow emerges, 
-   * unless internal boundary is set. */
-  if (side == FLOWAXIS(X1_BEG, X2_BEG, X3_BEG)){
-    if (box->vpos == CENTER) {
-      BOX_LOOP(box,k,j,i){  
 
-        /* Reflective boundary */
-        for (nv = 0; nv < NVAR; ++nv) {
-          mirror[nv] = d->Vc[nv]
-            FLOWAXIS([k][j][2*IBEG - i - 1],
-                [k][2*JBEG - j - 1][i],
-                [2*KBEG - k - 1][j][i]);
+    /* This side is where the nozzle is located and the outflow emerges,
+     * unless internal boundary is set. */
+    if (side == FLOWAXIS(X1_BEG, X2_BEG, X3_BEG)) {
+        if (box->vpos == CENTER) {
+            BOX_LOOP(box, k, j, i) {
+
+                        /* If we're doing a full galaxy simulation,
+                           as opposed to a half-galaxy simulation,
+                           treat just like other _BEG boundaries    */
+
+                        if (FLOWAXIS(g_domBeg[IDIR], g_domBeg[JDIR], g_domBeg[KDIR]) < 0.) {
+
+                            HaloOuterBoundary(side, d, i, j, k, x1[i], x2[j], x3[k], &touch);
+
+                        } // full galaxy
+
+                        else { // half galaxy
+
+                            /* Reflective boundary */
+                            for (nv = 0; nv < NVAR; ++nv) {
+                                mirror[nv] = d->Vc[nv]
+                                FLOWAXIS([k][j][2 * IBEG - i - 1],
+                                         [k][2 * JBEG - j - 1][i],
+                                         [2 * KBEG - k - 1][j][i]);
+                            }
+
+                            mirror[FLOWAXIS(VX1, VX2, VX3)] *= -1.0;
+
+                            if (InNozzleRegion(x1[i], x2[j], x3[k])) {
+
+#if ACCRETION == YES
+                                OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k], ac.accr_rate);
+#else
+                                OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k], 0);
+#endif
+
+                                for (nv = 0; nv < NVAR; ++nv) {
+                                    d->Vc[nv][k][j][i] = mirror[nv] + (out_primitives[nv] - mirror[nv]) *
+                                                                      Profile(x1[i], x2[j], x3[k]);
+                                }
+
+                            }
+                            else {
+                                for (nv = 0; nv < NVAR; ++nv) {
+                                    d->Vc[nv][k][j][i] = mirror[nv];
+                                }
+                            }
+
+                        } // half galaxy
+
+                    } // BOX_LOOP
+        } else if (box->vpos == X1FACE) {
+            BOX_LOOP(box, k, j, i) { }
+        } else if (box->vpos == X2FACE) {
+            BOX_LOOP(box, k, j, i) { }
+        } else if (box->vpos == X3FACE) {
+            BOX_LOOP(box, k, j, i) { }
         }
-
-        mirror[FLOWAXIS(VX1, VX2, VX3)] *= -1.0;
-
-        if (InNozzleRegion(x1[i], x2[j], x3[k])){
-
-          OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k]);
-
-          /* Profiled nozzle inlet */
-          for (nv = 0; nv < NVAR; ++nv){
-            d->Vc[nv][k][j][i] = mirror[nv] + (out_primitives[nv] - mirror[nv])*
-              Profile(x1[i], x2[j], x3[k]);
-          }
-
-        }
-        else {
-          for (nv = 0; nv < NVAR; ++nv){
-            d->Vc[nv][k][j][i] = mirror[nv];
-          }
-        }
-
-      }
-    }else if (box->vpos == X1FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X2FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X3FACE){
-      BOX_LOOP(box,k,j,i){  }
     }
-  }
 
-  if (side == X3_END){  /* -- X3_END boundary -- */
-    if (box->vpos == CENTER) {
-      BOX_LOOP(box,k,j,i){  
+    if (side == X3_END) {  /* -- X3_END boundary -- */
+        if (box->vpos == CENTER) {
+            BOX_LOOP(box, k, j, i) {
 
-        /* Get primitives array for hot halo*/
-        HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
+                        HaloOuterBoundary(side, d, i, j, k, x1[i], x2[j], x3[k], &touch);
 
-        /* fill array */
-        /* Set outflow (zero grad) if cell outside boundary has some velocity, 
-         * else set to Hot halo. */
-        vx1 = d->Vc[VX1][k][j][JEND];
-        vx2 = d->Vc[VX2][k][j][JEND];
-        vx3 = d->Vc[VX3][k][j][JEND];
-        vmag = VMAG(x1[i], x2[j], x3[k], vx1, vx2, vx3);
-
-        if (vmag > 0) {
-          for (nv = 0; nv <NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][JEND];
+                    }
+        } else if (box->vpos == X1FACE) {
+            BOX_LOOP(box, k, j, i) { }
+        } else if (box->vpos == X2FACE) {
+            BOX_LOOP(box, k, j, i) { }
+        } else if (box->vpos == X3FACE) {
+            BOX_LOOP(box, k, j, i) { }
         }
-        else {
-          for (nv = 0; nv < NVAR; ++nv)  d->Vc[nv][k][j][i] = halo_primitives[nv];
-        }
-
-      }
-    }else if (box->vpos == X1FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X2FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X3FACE){
-      BOX_LOOP(box,k,j,i){  }
     }
-  }
 }
 
 
@@ -494,64 +505,57 @@ void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
  *********************************************************************** */
 {
 
-  double r, a, rho0, gr, unit_time, inv_unit_G;
-  double fc, y0, y1, y2, y3, r1, r2; 
-  double grc1, grc2, grc3;
-  int il;
+    /* Common variables */
+    double r,  gr;
 
-#if GRAV_POTENTIAL == HERNQUIST
+    /* Hernquist potential */
+#if GRAV_POTENTIAL == GRAV_HERNQUIST
 
-  gr = -2.*CONST_PI*CONST_G*inv_unit_G*rho0*a/pow((1. + r/a),2);
+    double a, rho0;
+    r = SPH1(x1, x2, x3);
+    a = g_inputParam[PAR_HRAD] * ini_code[PAR_HRAD];
+    rho0 = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
 
+    gr = -2. * CONST_PI * CONST_G / vn.newton_norm * rho0 * a / pow((1. + r / a), 2);
+
+
+    /* Gravity Table */
 #elif defined GRAV_TABLE
-  r = SPH1(x1, x2, x3);
 
-  /* Find cell left index to interpolate at */
-  il = hunter(gr_rad, gr_ndata, r);
-
-  /* Linear fractional location of r in cell */
-  r1 = gr_rad[il];
-  r2 = gr_rad[il+1];
-  fc = (r - r1)/(r2 - r1);
-
-  /* Do acceleration interpolation */
-  y0 = gr_vec[il-1];
-  y1 = gr_vec[il];
-  y2 = gr_vec[il+1];
-  y3 = gr_vec[il+2];
-  gr = -CubicCatmullRomInterpolate(y0, y1, y2, y3, fc);
+    r = SPH1(x1, x2, x3);
+    gr = -InterpolationWrapper(gr_rad, gr_vec, gr_ndata, r);
 
 
-  /* Flat thermodynamic profile but gravity is on.
-   * The potential, thus, is a parabola */
-#elif GRAV_POTENTIAL == HOMOG
+    /* Flat thermodynamic profile but gravity is on.
+     * The potential, thus, is a parabola */
+#elif GRAV_POTENTIAL == GRAV_HOMOGENEOUS
 
-  r = SPH1(x1, x2, x3);
+    r = SPH1(x1, x2, x3);
 
-  unit_time = UNIT_LENGTH/UNIT_VELOCITY;
-  inv_unit_G = unit_time*unit_time*UNIT_DENSITY;
+    gr = -4 * CONST_PI * CONST_G / vn.newton_norm * g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO] * r;
 
-  gr = -4*CONST_PI*CONST_G*inv_unit_G*g_inputParam[PAR_HRHO]*r;
+    /* No gravity */
 
+#endif
 
-  /* No gravity */
-#else
+    /* Add potential of point mass at center */
+#if ACCRETION == YES
 
-  gr = 0.0;
+    double mbh_ini = g_inputParam[PAR_AMBH] * ini_code[PAR_AMBH];
+    gr += CONST_G * (ac.mbh - mbh_ini) / (vn.newton_norm * r * r);
 
 #endif
 
 
-  double sx1, sx2, sx3;
-  sx1 = SPH1(x1, x2, x3);
-  sx2 = SPH2(x1, x2, x3);
-  sx3 = SPH3(x1, x2, x3);
+    double sx1, sx2, sx3;
+    sx1 = SPH1(x1, x2, x3);
+    sx2 = SPH2(x1, x2, x3);
+    sx3 = SPH3(x1, x2, x3);
 
-  /* Gravity pointing to (0,0,0) - possibly reconsider */
-  g[IDIR] = VSPH_1(sx1, sx2, sx3, gr, 0, 0);
-  g[JDIR] = VSPH_2(sx1, sx2, sx3, gr, 0, 0);
-  g[KDIR] = VSPH_3(sx1, sx2, sx3, gr, 0, 0);
-
+    /* Gravity pointing to (0,0,0) - possibly reconsider */
+    g[IDIR] = VSPH_1(sx1, sx2, sx3, gr, 0, 0);
+    g[JDIR] = VSPH_2(sx1, sx2, sx3, gr, 0, 0);
+    g[KDIR] = VSPH_3(sx1, sx2, sx3, gr, 0, 0);
 
 }
 
@@ -569,58 +573,49 @@ double BodyForcePotential(double x1, double x2, double x3)
  *********************************************************************** */
 {
 
+    /* Common variables */
+    double r, pot;
 
-  double r, a, rho0, gr, unit_time, inv_unit_G;
-  double fc, y0, y1, y2, y3, r1, r2; 
-  int il;
+    /* Hernquist potential */
+#if GRAV_POTENTIAL == GRAV_HERNQUIST
 
-#if GRAV_POTENTIAL == HERNQUIST
-  r = SPH1(x1, x2, x3);
-  a = g_inputParam[PAR_HRAD]*ini_code[PAR_HRAD];
-  rho0 = g_inputParam[PAR_HRHO]*ini_code[PAR_HRHO];
-  unit_time = UNIT_LENGTH/UNIT_VELOCITY;
-  inv_unit_G = unit_time*unit_time*UNIT_DENSITY;
+    double a, rho0;
 
-  return = 2.*CONST_PI*CONST_G*inv_unit_G*rho0*a*a/(1. + r/a);
+    r = SPH1(x1, x2, x3);
+    a = g_inputParam[PAR_HRAD] * ini_code[PAR_HRAD];
+    rho0 = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
 
+    pot = 2. * CONST_PI * CONST_G / vn.newton_norm * rho0 * a * a / (1. + r / a);
+
+
+    /* Gravity table */
 #elif defined GRAV_TABLE
-  r = SPH1(x1, x2, x3);
 
-  /* Find cell left index to interpolate at */
-  il = hunter(gr_rad, gr_ndata, r);
+    double fc, y0, y1, y2, y3, r1, r2;
 
-  /* Linear fractional location of r in cell */
-  r1 = gr_rad[il];
-  r2 = gr_rad[il+1];
-  fc = (r - r1)/(r2 - r1);
-
-  /* Do potential interpolation */
-  y0 = gr_phi[il-1];
-  y1 = gr_phi[il];
-  y2 = gr_phi[il+1];
-  y3 = gr_phi[il+2];
-
-  return CubicCatmullRomInterpolate(y0, y1, y2, y3, fc);
+    r = SPH1(x1, x2, x3);
+    pot = InterpolationWrapper(gr_rad, gr_phi, gr_ndata, r);
 
 
-  /* Flat thermodynamic profile but gravity is on.
-   * The potential, thus, is a parabola */
-#elif GRAV_POTENTIAL == HOMOG
-  r = SPH1(x1, x2, x3);
+    /* Flat thermodynamic profile but gravity is on.
+     * The potential, thus, is a parabola */
+#elif GRAV_POTENTIAL == GRAV_HOMOGENEOUS
 
-  unit_time = UNIT_LENGTH/UNIT_VELOCITY;
-  inv_unit_G = unit_time*unit_time*UNIT_DENSITY;
-
-  return 2*CONST_PI*CONST_G*inv_unit_G*g_inputParam[PAR_HRHO]*ini_code[PAR_HRHO]*r*r;
-
-
-  /* No gravity */
-#else
-
-  return 0;
+    r = SPH1(x1, x2, x3);
+    pot = 2 * CONST_PI * CONST_G / vn.newton_norm * g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO] * r * r;
 
 #endif
 
+
+    /* Add potential of point mass at center */
+#if ACCRETION == YES
+
+    double mbh_ini = g_inputParam[PAR_AMBH] * ini_code[PAR_AMBH];
+    pot -= CONST_G * (ac.mbh - mbh_ini) / (vn.newton_norm * r);
+
+#endif
+
+    return pot;
 
 }
 

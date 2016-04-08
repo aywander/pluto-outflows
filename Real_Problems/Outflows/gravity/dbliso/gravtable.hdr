@@ -1,9 +1,0 @@
-# r             dens byn        pres byn        psi tot         dpsi/dr tot     
-#(kpc)          (mu amu cm ^-3) (cm^-1 c^2)     (c^2)           (c^2 kpc^-1)    
-5
-kappa = 2
-lambda = 10
-rd = 3.5
-rho_hot = 1.0
-thot = 12000000.0
-10001 5

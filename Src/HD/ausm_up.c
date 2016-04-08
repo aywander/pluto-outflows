@@ -1,7 +1,9 @@
-#include"pluto.h"
+#include "pluto.h"
 
 /* ********************************************************************** */
-void AUSMp_Solver (const State_1D *state, real *cmax, Grid *grid)
+// AYW does not conform to Riemann_Solver call signature
+void AUSMp_Solver (const State_1D *state, int beg, int end, real *cmax, Grid *grid)
+//void AUSMp_Solver (const State_1D *state, real *cmax, Grid *grid)
 /*
  *
  * PURPOSE
@@ -19,7 +21,9 @@ void AUSMp_Solver (const State_1D *state, real *cmax, Grid *grid)
  *
  ************************************************************************ */
 {
-  int  i, nv, beg, end;
+  // AYW -- remove beg and end from definitions here.
+  int  i, nv;
+  //int  i, nv, beg, end;
   real aL, asL2, asL, atL,  phiL[NFLX];
   real aR, asR2, asR, atR,  phiR[NFLX];
   real ML, Mp1L, Mp2L, Mm2L, Mp4L, Pp5L;
@@ -74,7 +78,9 @@ void AUSMp_Solver (const State_1D *state, real *cmax, Grid *grid)
     asL2  = aL*aL/(g_gamma - 1.0) + 0.5*asL2;
     asL2 *= 2.0*(g_gamma - 1.0)/(g_gamma + 1.0);
 
-    asR2  = EXPAND(vR[VX1]*vR[VX1], + vR[VX2]*vR[VX2], + vR[VX3]*vR[VZ);
+    // AYW Missing ]
+    asR2  = EXPAND(vR[VX1]*vR[VX1], + vR[VX2]*vR[VX2], + vR[VX3]*vR[VZ]);
+    //asR2  = EXPAND(vR[VX1]*vR[VX1], + vR[VX2]*vR[VX2], + vR[VX3]*vR[VZ);
     asR2  = aR*aR/(g_gamma - 1.0) + 0.5*asR2;
     asR2 *= 2.0*(g_gamma - 1.0)/(g_gamma + 1.0);
 

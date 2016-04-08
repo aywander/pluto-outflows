@@ -20,11 +20,12 @@ typedef struct CMD_LINE {
   int nproc[3];  /* -- user supplied number of processors -- */
   int show_dec; /* -- show domain decomposition ? -- */
   int xres; /* -- change the resolution via command line -- */
+  /* -- DM 10Aug15: flag for initialise only --*/
+  int init_only;
   /* AYW -- 2014-11-14 01:07 JST */
   float maxtime;
-  int fill[15]; /* useless, it makes the struct a power of 2 */ 
+  int fill[14]; /* useless, it makes the struct a power of 2 */ 
   //int fill; /* useless, it makes the struct a power of 2 */ 
-  /* -- AYW */
 } Cmd_Line;
    
 /* ********************************************************************* */
@@ -271,9 +272,12 @@ typedef struct INPUT{
   double  tstop;
   double  first_dt;
   double  anl_dt;          /* time step increment for ANALYSIS */
-  double  aux[32];         /* we keep aux inside this structure, 
+  /* AYW -- Increase number of aux parameters */
+  //double  aux[32];         /* we keep aux inside this structure,
+  double  aux[USER_DEF_PARAMETERS];         /* we keep aux inside this structure,
                               since in parallel execution it has
                               to be comunicated to all processors  */
+  /* -- AYW */
 } Input;
 
 typedef struct RUNTIME{

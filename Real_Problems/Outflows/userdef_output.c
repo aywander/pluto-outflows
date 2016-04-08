@@ -15,7 +15,7 @@ void ComputeUserVar (const Data *d, Grid *grid)
  *
  ***************************************************************** */
 {
-  int i, j, k, nv;  
+  int i, j, k, nv;
   double ***te, ***spd;
   double ***prs, ***rho, ***vx1, ***vx2, ***vx3, dummy[NVAR];
   double mu, sp1, sp2, sp3;
@@ -26,8 +26,8 @@ void ComputeUserVar (const Data *d, Grid *grid)
 #endif
 
   /* New variables - names must exist under uservar */
-  te   = GetUserVar("te");
-  spd  = GetUserVar("spd");
+  te = GetUserVar("te");
+  spd = GetUserVar("spd");
 
 /* Change to v instead of u = lorentz v */
 #if USE_FOUR_VELOCITY == YES
@@ -52,8 +52,8 @@ void ComputeUserVar (const Data *d, Grid *grid)
   x1 = grid[IDIR].xgc;
   x2 = grid[JDIR].xgc;
   x3 = grid[KDIR].xgc;
-  
-  DOM_LOOP(k,j,i){
+
+  DOM_LOOP(k, j, i) {
 
     /* Temperature */
     for (nv = 0; nv < NVAR; nv++) dummy[nv] = d->Vc[nv][k][j][i];
@@ -61,24 +61,30 @@ void ComputeUserVar (const Data *d, Grid *grid)
     te[k][j][i] = TempIdealEOS(rho[k][j][i], prs[k][j][i], mu);
 
     /* Speed */
-    sp3 = 0; sp2 = 0; sp1 = 0;
+    sp1 = sp2 = sp3 = 0;
     EXPAND(sp1 = vx1[k][j][i];,
            sp2 = vx2[k][j][i];,
            sp3 = vx3[k][j][i];);
     spd[k][j][i] = VMAG(x1[i], x2[j], x3[k], sp1, sp2, sp3);
 
 #if USE_FOUR_VELOCITY == YES
-    /* spd at this point is gamma * v. Solve for v. Then get gamma. 
-     * c=1 if USE_FOUR_VELOCITY = YES. 
-     * speed = Gamma * vel */
+    /* speed at this point is gamma * vel.
+     * Solve for vel. Then get gamma.
+     * Note, c=1 if USE_FOUR_VELOCITY = YES. */
     speed = spd[k][j][i];
-    vel = 1./(1./(speed*speed) + 1.);
-    lorentz = speed/vel;
+    if (speed > 0){
+        vel = speed / sqrt(1 + speed * speed);
+        lorentz = speed / vel;
+    }
+    else{
+        vel = 0.;
+        lorentz = 1.;
+    }
 
     spd[k][j][i] = vel;
-    EXPAND(v1[k][j][i] = sp1/lorentz;,
-           v2[k][j][i] = sp2/lorentz;,
-           v3[k][j][i] = sp3/lorentz;);
+    EXPAND(v1[k][j][i] = sp1 / lorentz;,
+           v2[k][j][i] = sp2 / lorentz;,
+           v3[k][j][i] = sp3 / lorentz;);
 #endif
 
   }
@@ -90,7 +96,7 @@ void ChangeDumpVar ()
  *
  * 
  *************************************************************** */
-{ 
+{
   Image *image;
 
   /* HDF5 output cannot be controlled yet. Everything is output.*/
