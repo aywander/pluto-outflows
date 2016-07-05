@@ -29,11 +29,9 @@
 
 /* Signum function */
 #define SGN(a)    ( ((a) < 0) ? -1 : (((a) > 0) ? 1 : 0) )
-#define SGNB(a,b) ( ((a) - (b) < 0) ? -1 : (((a) - (b) > 0) ? 1 : 0) )
 
 /* Heaviside function */
 #define HS(a)    ( ((a) > 0) ? 1 : 0 )
-#define HSB(a,b) ( ((a) - (b) > 0) ? 1 : 0 )
 
 /* Select between nozzle type, a: jet, b: ufo. */
 #if NOZZLE == NOZZLE_JET

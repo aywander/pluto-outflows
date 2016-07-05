@@ -6,10 +6,9 @@ project(PLUTO)
 # Set these
 
 set(PLUTO_SOURCE_DIR            /Users/ayw/dev/PLUTO)
-set(SETUP_DIR                   ${PLUTO_SOURCE_DIR}/Real_Problems/Outflows)
-set(SOURCE_DIR                  ${PLUTO_SOURCE_DIR}/Src)
+set(PROBLEM                     Outflows)
 
-set(WITH_PARALLEL               OFF)
+set(WITH_PARALLEL               ON)
 set(WITH_PNG                    OFF)
 set(WITH_HDF5                   OFF)
 set(WITH_ASYNC_IO               OFF)
@@ -17,7 +16,7 @@ set(WITH_CHOMBO                 OFF)
 
 set(WITH_PHYSICS                HD)
 set(WITH_GEOMETRY               CARTESIAN)
-set(WITH_BODY_FORCE             POTENTIAL)
+set(WITH_BODY_FORCE             NONE)
 set(WITH_COOLING                TABULATED)
 set(WITH_INTERPOLATION          PARABOLIC)
 set(WITH_TIME_STEPPING          RK3)
@@ -28,7 +27,7 @@ set(WITH_SHEARING_BOX           OFF)
 set(WITH_RESISTIVITY            OFF)
 set(WITH_FD                     OFF)
 
-#/* -- physics dependent declarations -- */
+# -- physics dependent declarations --
 
 set(WITH_EOS                    IDEAL)
 set(WITH_THERMAL_CONDUCTION     OFF)
@@ -42,10 +41,17 @@ set(WITH_GLM                    OFF)
 # Main bit
 
 
+
+# Directoiries
+
+set(PROBLEM_DIR  ${PLUTO_SOURCE_DIR}/Real_Problems/${PROBLEM})
+set(SOURCE_DIR   ${PLUTO_SOURCE_DIR}/Src)
+
+
 # Included in all cases
 
 set(INCLUDE_DIRECTORIES
-        ${SETUP_DIR}
+        ${PROBLEM_DIR}
         ${SOURCE_DIR}
         ${SOURCE_DIR}/States
         ${SOURCE_DIR}/Math_Tools
@@ -59,47 +65,106 @@ set(LINK_LIBRARIES z)
 
 
 
-set(SOURCE_FILES
-        ${SETUP_DIR}/accretion.c
-        ${SETUP_DIR}/accretion.h
-        ${SETUP_DIR}/clouds.c
-        ${SETUP_DIR}/clouds.h
-        ${SETUP_DIR}/cmd_line_opt.c
-        ${SETUP_DIR}/definitions.h
-        ${SETUP_DIR}/definitions_usr.h
-        ${SETUP_DIR}/grid_geometry.c
-        ${SETUP_DIR}/grid_geometry.h
-        ${SETUP_DIR}/hot_halo.c
-        ${SETUP_DIR}/hot_halo.h
-        ${SETUP_DIR}/idealEOS.c
-        ${SETUP_DIR}/idealEOS.h
-        ${SETUP_DIR}/init.c
-        ${SETUP_DIR}/init_tools.c
-        ${SETUP_DIR}/init_tools.h
-        ${SETUP_DIR}/input_data.c
-        ${SETUP_DIR}/interpolation.c
-        ${SETUP_DIR}/interpolation.h
-        ${SETUP_DIR}/jet_domain.c
-        ${SETUP_DIR}/local_make
-        ${SETUP_DIR}/macros_usr.h
-        ${SETUP_DIR}/main.c
-        ${SETUP_DIR}/makefile
-        #${SETUP_DIR}/mappers3D.c
-        ${SETUP_DIR}/multicloud_init.c
-        ${SETUP_DIR}/multicloud_init.h
-        ${SETUP_DIR}/outflow.c
-        ${SETUP_DIR}/outflow.h
-        ${SETUP_DIR}/pluto_usr.h
-        ${SETUP_DIR}/read_grav_table.c
-        ${SETUP_DIR}/read_grav_table.h
-        ${SETUP_DIR}/read_hot_table.c
-        ${SETUP_DIR}/read_hot_table.h
-        ${SETUP_DIR}/read_mu_table.c
-        ${SETUP_DIR}/read_mu_table.h
-        ${SETUP_DIR}/set_grid.c                         # Overwritten
-        ${SETUP_DIR}/startup.c
-        ${SETUP_DIR}/userdef_output.c
+# Setup-dependent files
 
+set(SOURCE_FILES
+        ${PROBLEM_DIR}/definitions.h
+        ${PROBLEM_DIR}/definitions_usr.h
+        ${PROBLEM_DIR}/init.c
+        )
+
+
+
+# Problem source files in problem directory
+# NOTE: Module dependent overwritten data can be found
+#       in the Module/Physics dependent part below.
+
+if (PROBLEM STREQUAL Outflows)
+
+    # New files
+    set(SOURCE_FILES  ${SOURCE_FILES}
+            ${PROBLEM_DIR}/accretion.c
+            ${PROBLEM_DIR}/accretion.h
+            ${PROBLEM_DIR}/clouds.c
+            ${PROBLEM_DIR}/clouds.h
+            ${PROBLEM_DIR}/grid_geometry.c
+            ${PROBLEM_DIR}/grid_geometry.h
+            ${PROBLEM_DIR}/hot_halo.c
+            ${PROBLEM_DIR}/hot_halo.h
+            ${PROBLEM_DIR}/idealEOS.c
+            ${PROBLEM_DIR}/idealEOS.h
+            ${PROBLEM_DIR}/init_tools.c
+            ${PROBLEM_DIR}/init_tools.h
+            ${PROBLEM_DIR}/interpolation.c
+            ${PROBLEM_DIR}/interpolation.h
+            ${PROBLEM_DIR}/jet_domain.c
+            ${PROBLEM_DIR}/macros_usr.h
+            ${PROBLEM_DIR}/multicloud_init.c
+            ${PROBLEM_DIR}/multicloud_init.h
+            ${PROBLEM_DIR}/outflow.c
+            ${PROBLEM_DIR}/outflow.h
+            ${PROBLEM_DIR}/pluto_usr.h
+            ${PROBLEM_DIR}/random.c
+            ${PROBLEM_DIR}/random.h
+            ${PROBLEM_DIR}/read_grav_table.c
+            ${PROBLEM_DIR}/read_grav_table.h
+            ${PROBLEM_DIR}/read_hot_table.c
+            ${PROBLEM_DIR}/read_hot_table.h
+            ${PROBLEM_DIR}/read_mu_table.c
+            ${PROBLEM_DIR}/read_mu_table.h
+            ${PROBLEM_DIR}/supernovae.c
+            ${PROBLEM_DIR}/supernovae.h
+            )
+
+    # Overwritten files
+    set(SOURCE_FILES  ${SOURCE_FILES}
+            ${PROBLEM_DIR}/cmd_line_opt.c
+            ${PROBLEM_DIR}/input_data.c
+            ${PROBLEM_DIR}/main.c
+            ${PROBLEM_DIR}/makefile
+            #${PROBLEM_DIR}/mappers3D.c
+            ${PROBLEM_DIR}/set_grid.c
+            ${PROBLEM_DIR}/startup.c
+            ${PROBLEM_DIR}/userdef_output.c
+            )
+
+
+elseif (PROBLEM STREQUAL SupernovaFeedback)
+
+    # New files
+    set(SOURCE_FILES  ${SOURCE_FILES}
+            )
+
+    # Overwritten files
+    set(SOURCE_FILES  ${SOURCE_FILES}
+            )
+
+
+elseif (PROBLEM STREQUAL RadiativeShock)
+
+    # New files
+    set(SOURCE_FILES  ${SOURCE_FILES}
+            ${PROBLEM_DIR}/abundances.c
+            ${PROBLEM_DIR}/abundances.h
+            ${PROBLEM_DIR}/init_tools.c
+            ${PROBLEM_DIR}/init_tools.h
+            ${PROBLEM_DIR}/interpolation.c
+            ${PROBLEM_DIR}/interpolation.h
+            ${PROBLEM_DIR}/pluto_usr.h
+            )
+
+    #Overwritten files
+    set(SOURCE_FILES  ${SOURCE_FILES}
+            ${PROBLEM_DIR}/init.c
+            )
+
+endif()
+
+
+
+# Files under SRC. Used for all problems
+
+set(SOURCE_FILES  ${SOURCE_FILES}
         ${SOURCE_DIR}/adv_flux.c
         ${SOURCE_DIR}/arrays.c
         ${SOURCE_DIR}/bin_io.c
@@ -173,7 +238,7 @@ set(SOURCE_FILES
 
 
 
-# Setup dependent part
+# Module/Physics dependent part
 
 # Make flags options
 
@@ -427,8 +492,8 @@ if (WITH_COOLING STREQUAL H2_COOL)
 elseif (WITH_COOLING STREQUAL TABULATED)
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Cooling/Tab)
     set(SOURCE_FILES ${SOURCE_FILES}
-            ${SETUP_DIR}/cooling_source.c
-            ${SETUP_DIR}/radiat.c
+            ${PROBLEM_DIR}/cooling_source.c
+            ${PROBLEM_DIR}/radiat.c
             ${SOURCE_DIR}/cooling_ode_solver.c
             ${SOURCE_DIR}/Cooling/Tab/cooling.h
             #${SOURCE_DIR}/Cooling/Tab/extract.c
@@ -471,8 +536,8 @@ elseif (WITH_COOLING STREQUAL SNEQ)
 
 else ()
     set(SOURCE_FILES ${SOURCE_FILES}
-            ${SETUP_DIR}/abundances.c
-            ${SETUP_DIR}/abundances.h)
+            ${PROBLEM_DIR}/abundances.c
+            ${PROBLEM_DIR}/abundances.h)
 
 endif ()
 
@@ -527,19 +592,15 @@ if ((WITH_TIME_STEPPING STREQUAL RK2) OR (WITH_TIME_STEPPING STREQUAL RK3))
             ${SOURCE_DIR}/Time_Stepping/rk_update.c
             )
 
-elseif (WITH_TIME_STEPPING STREQUAL CHAR_TRACING)
+elseif (WITH_TIME_STEPPING STREQUAL CHARACTERISTIC_TRACING)
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${SOURCE_DIR}/States/char_tracing.c
+            ${SOURCE_DIR}/Time_Stepping/ctu_update.c
             )
 
 elseif (WITH_TIME_STEPPING STREQUAL HANCOCK)
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${SOURCE_DIR}/States/hancock.c
-            )
-endif()
-
-if (WITH_CTU)
-    set(SOURCE_FILES  ${SOURCE_FILES}
             ${SOURCE_DIR}/Time_Stepping/ctu_update.c
             )
 endif()

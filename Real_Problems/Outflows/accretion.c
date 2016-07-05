@@ -8,6 +8,7 @@
 #include "grid_geometry.h"
 #include "idealEOS.h"
 #include "outflow.h"
+#include "init_tools.h"
 
 
 /* Global struct for accretion */
@@ -19,8 +20,12 @@ void SetAccretionPhysics() {
 /*
  * Set values for the accretion structure
  *
+ * SetAccretionPhysics is only called once
+ * at the beginning of initialization.
+ *
  ************************************************** */
 
+    // TODO: Some of these quantities need to be uptdated after restart.
 
     /* Quantities from input parameters */
     ac.rad = g_inputParam[PAR_ARAD] * ini_code[PAR_ARAD];
@@ -29,12 +34,8 @@ void SetAccretionPhysics() {
     ac.snk = g_inputParam[PAR_ASNK] * ini_code[PAR_ASNK];
 
     /* Bondi Accretion parameters */
-    ac.rho_acc = g_smallDensity;
-    ac.prs_acc = g_smallPressure;
-    ac.snd_acc = sqrt(g_gamma * g_smallPressure / g_smallDensity);
-    ac.accr_rate_bondi = BondiAccretionRate(ac.mbh, ac.rho_acc, ac.snd_acc);
-
-    // TODO: Some of these quantities need to be uptdated after restart.
+    double snd_acc = sqrt(g_gamma * g_smallPressure / g_smallDensity);
+    ac.accr_rate_bondi = BondiAccretionRate(ac.mbh, g_smallDensity, snd_acc);
 
     /* Eddington rate */
     ac.edd = EddingtonLuminosity(ac.mbh);
@@ -47,6 +48,21 @@ void SetAccretionPhysics() {
 
     /* Number of cells in the spherical surface of radius ac.rad is
      * calculated in Analysis analysis */
+
+
+    /* Set deboost to 1 to trigger reference value calculations in
+     * SetNozzleGeometry and SetOutflowState (used only in FEEDBACK_CYCLE mode) */
+    ac.deboost = 1;
+
+    /* Set outflow geometry struct with parameters of cone */
+    SetNozzleGeometry(&(ac.nzi));
+
+    /* Set outflow physics */
+    SetOutflowState(&(ac.osi));
+
+    /* Initial value deboosting factor for outflow (used only in FEEDBACK_CYCLE mode) */
+    ac.deboost = 0;
+
 }
 
 /* ************************************************ */
@@ -114,19 +130,22 @@ void SphericalAccretion(const Data *d, Grid *grid) {
  *
  ************************************************** */
 
-    /* Accretion */
 
+    /* Accretion - General variables */
     int i, j, k;
     double rho, vs1;
     double vx1, vx2, vx3;
     double *x1, *x2, *x3;
     double accr, accr_rate = 0;
-
-#if SINK_METHOD == SINK_BONDI
     int gcount = 0, lcount = 0;
-    double rho_acc = 0, snd_acc = 0, prs, prs_acc = 0;
+
+    /* For Bondi accretion */
+#if MEASURE_BONDI_ACCRETION == YES
+    double prs, snd;
+    double rho_acc = 0, snd_acc = 0, prs_acc = 0;
     double tmp_far, snd_far;
 #endif
+
 
 
     /* Measure accretion rate through a spherical surface defined by ac->rad (ARAD) */
@@ -181,20 +200,36 @@ void SphericalAccretion(const Data *d, Grid *grid) {
                         vs1 = fabs(MIN(vs1, 0));
 
                         accr = rho * vs1 * area_per_cell;
+
+                        /* Count twice in hybrid mode */
 #if SIC_METHOD == SIC_HYBRID
                         if (sicr && sicc) accr *= 2;
 #endif
+
                         accr_rate += accr;
 
 
-#if SINK_METHOD == SINK_BONDI
                         /* Bondi accretion parameters */
-                        rho_acc += rho;
+#if MEASURE_BONDI_ACCRETION == YES
                         prs = d->Vc[PRS][k][j][i];
+                        snd = sqrt(g_gamma * prs / rho);
+
+#if SIC_METHOD == SIC_HYBRID
+                        if (sicr && sicc) {
+                            rho *= 2;
+                            prs *= 2;
+                            snd *= 2;
+                        }
+#endif  // SIC_HYBRID
+                        rho_acc += rho;
                         prs_acc += prs;
-                        snd_acc += sqrt(g_gamma * prs / rho);
+                        snd_acc += snd;
+
+#endif  // MEASURE_BONDI_ACCRETION
+
+
+                        /* Count the number of cells actually found */
                         lcount++;
-#endif
 
                     } // if sicr || sicc
 
@@ -203,7 +238,14 @@ void SphericalAccretion(const Data *d, Grid *grid) {
         /* Averaging in HYBRID mode */
 #if SIC_METHOD == SIC_HYBRID
         accr_rate /= 2;
+
+#if MEASURE_BONDI_ACCRETION == YES
+        rho_acc /= 2;
+        prs_acc /= 2;
+        snd_acc /= 2;
 #endif
+
+#endif // SIC_HYBRID
 
     }
 
@@ -215,54 +257,106 @@ void SphericalAccretion(const Data *d, Grid *grid) {
 #ifdef PARALLEL
     MPI_Allreduce(&accr_rate, &ac.accr_rate, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
-#if SINK_METHOD == SINK_BONDI
-
+#if MEASURE_BONDI_ACCRETION == YES
     /* MPI reduce Bondi accretion parameters */
     MPI_Allreduce(&lcount, &gcount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(&rho_acc, &ac.rho_acc, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(&prs_acc, &ac.prs_acc, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(&snd_acc, &ac.snd_acc, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&rho_acc, &rho_acc_av, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&prs_acc, &prs_acc_av, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&snd_acc, &snd_acc_av, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
-    ac.rho_acc /= gcount;
-    ac.prs_acc /= gcount;
-    ac.snd_acc /= gcount;
+    rho_acc_av /= gcount;
+    prs_acc_av /= gcount;
+    snd_acc_av /= gcount;
 #endif
 
-    MPI_Barrier(MPI_COMM_WORLD);
 
 #else // If not parallel
 
     ac.accr_rate = accr_rate;
 
-#if SINK_METHOD == SINK_BONDI
-
-    // TODO: Do we need all these in the structure?
-    ac.rho_acc = rho_acc / lcount;
-    ac.prs_acc = prs_acc / lcount;
-    ac.snd_acc = snd_acc / lcount;
-
+#if MEASURE_BONDI_ACCRETION == YES
+    rho_acc_av = rho_acc / lcount;
+    prs_acc_av = prs_acc / lcount;
+    snd_acc_av = snd_acc / lcount;
 #endif
 
 #endif // ifdef PARALLEL
 
     /* Bondi accretion rate - calculate before increasing BH mass */
-#if SINK_METHOD == SINK_BONDI
+#if MEASURE_BONDI_ACCRETION == YES
 
     /* Bondi rate rewritten relating far-away density to density and sound speed in accretion region. */
     tmp_far = g_inputParam[PAR_HTMP] * ini_cgs[PAR_HTMP];
     snd_far = sqrt(g_gamma * CONST_kB * tmp_far / (MU_NORM * CONST_amu)) / vn.v_norm;
-    ac.accr_rate_bondi = BondiAccretionRateLocal(ac.mbh, ac.rho_acc, ac.snd_acc, snd_far);
+    ac.accr_rate_bondi = BondiAccretionRateLocal(ac.mbh, rho_acc_av, snd_acc_av, snd_far);
 
 #endif
 
     /* Increase BH mass by measured accretion rate * dt */
-    ac.mbh += ac.accr_rate * g_dt;
+    ac.mbh += ac.accr_rate * g_dt * (1. - ac.eff);
 
     /* Update Eddington luminosity - calculate after increasing BH mass */
     ac.edd = EddingtonLuminosity(ac.mbh);
 
 
 }
+
+
+
+
+/*********************************************************************** */
+void FederrathAccretion(const Data *d, Grid *grid) {
+/*!
+ * Driver routine for removing mass in gas around central BH
+ * according to Federrath accretion.
+ *
+ *********************************************************************** */
+
+    /* Accretion - General variables */
+    int i, j, k;
+    double *x1, *x2, *x3;
+    double *dV1, *dV2, *dV3;
+    double accr, accr_rate = 0;
+    double result[NVAR];
+
+    if (SphereIntersectsDomain(grid, ac.snk)){
+
+        /* These are the geometrical central points */
+        x1 = grid[IDIR].x;
+        x2 = grid[JDIR].x;
+        x3 = grid[KDIR].x;
+
+        /* These are cell volumes */
+        dV1 = grid[IDIR].dV;
+        dV2 = grid[JDIR].dV;
+        dV3 = grid[KDIR].dV;
+
+
+        DOM_LOOP(k, j, i) {
+                    /* Remove mass according to Federrath's sink particle method */
+                    accr = FederrathSinkInternalBoundary(d->Vc, i, j, k, x1, x2, x3, dV1, dV2, dV3, result);
+                    accr /= g_dt;
+                    accr_rate += accr;
+                }
+
+    }
+
+    /* MPI reductions and analysis */
+
+#ifdef PARALLEL
+        MPI_Allreduce(&accr_rate, &ac.accr_rate, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+#else
+        ac.accr_rate = accr_rate;
+#endif
+
+    /* Increase BH mass by measured accretion rate * dt */
+    ac.mbh += ac.accr_rate * g_dt * (1. - ac.eff);
+
+    /* Update Eddington luminosity - calculate after increasing BH mass */
+    ac.edd = EddingtonLuminosity(ac.mbh);
+
+}
+
 
 
 /*********************************************************************** */
@@ -278,7 +372,6 @@ void SphericalAccretionOutput() {
         FILE *fp_acc;
         static double next_output = -1;
         double accr_rate_msun_yr;
-        double accr_rate_bondi_msun_yr;
 
         dir = GetOutputDir();
         sprintf (fname, "%s/accretion_rate.dat", dir);
@@ -303,7 +396,7 @@ void SphericalAccretionOutput() {
                 fclose(fp_acc);
             }
 
-            /* Append if next output step has been reacehd */
+            /* Append if next output step has been reached */
             if (g_time > next_output) fp_acc = fopen(fname, "a");
 
         }
@@ -314,7 +407,10 @@ void SphericalAccretionOutput() {
             /* Accretion rate in cgs */
             accr_rate_msun_yr = ac.accr_rate * vn.mdot_norm / (CONST_Msun / (CONST_ly / CONST_c));
 
-#if SINK_METHOD == SINK_BONDI
+#if MEASURE_BONDI_ACCRETION == YES
+
+            double accr_rate_bondi_msun_yr;
+
             accr_rate_bondi_msun_yr = ac.accr_rate_bondi * vn.mdot_norm / (CONST_Msun / (CONST_ly / CONST_c));
             fprintf(fp_acc, "%12.6e  %12.6e  %12.6e %12.6e %12.6e \n", g_time * vn.t_norm / (CONST_ly / CONST_c),
                     g_dt * vn.t_norm / (CONST_ly / CONST_c), accr_rate_msun_yr, accr_rate_bondi_msun_yr,
@@ -588,4 +684,138 @@ void VacuumInternalBoundary(double *result) {
     result[PRS] = g_smallPressure;
 
 }
+
+
+/* ************************************************ */
+double JeansResolvedDensity(const double *prim){
+/*!
+ * Return the difference between the cell density and maximum density
+ * obtained from the criterion that the Jeans length should be resolved
+ * within the sink region is satisfied.
+ *
+ ************************************************** */
+
+    double c2 = SoundSpeed2IdealEOS(prim[RHO], prim[PRS]);
+
+    return CONST_PI * c2 * vn.newton_norm / (ac.snk * ac.snk * CONST_G);
+
+}
+
+
+/* ************************************************ */
+double FederrathSinkInternalBoundary(const double ****Vc, int i, int j, int k, const double *x1, const double *x2,
+                                     const double *x3, const double *dV1, const double *dV2, const double *dV3,
+                                     double *result) {
+/*!
+ * Remove delta_mass in cells so as to satisfy the Jeans criterion
+ * that the Jeans length should be
+ * resolved by at least 5 cells.
+ *
+ ************************************************** */
+
+
+    /* Accretion - General variables */
+    int iv;
+    double xi, xj, xk;
+    double vx1, vx2, vx3;
+    double vsph;
+    double cell_vol, delta_rho, delta_mass;
+
+    xi = x1[i];
+    xj = x2[j];
+    xk = x3[k];
+
+    /* Default is that nothing is changed */
+    for (iv = 0; iv < NVAR; iv++) result[iv] = Vc[iv][k][j][i];
+
+    /* Check whether velocity is pointing inward toward sink
+     * currently fixed at (0, 0, 0) */
+    EXPAND(vx1 = result[VX1];,
+           vx2 = result[VX2];,
+           vx3 = result[VX3];);
+    vsph = VSPH1(xi, xj, xk, vx1, vx2, vx3);
+    if (vsph > 0) return 0;
+
+    /* Jeans density criterion */
+    delta_rho = result[RHO] - JeansResolvedDensity(result);
+    if (delta_rho < 0) return 0;
+
+    /* Accreted Mass */
+    cell_vol = dV1[i] * dV2[j] * dV3[k];
+    delta_mass = delta_rho * cell_vol;
+
+    /* Check whether gas mass is gravitationally bound */
+    if (!(GravitationallyBound(result, delta_mass, cell_vol, xi, xj, xk))) return 0;
+
+    /* Remove mass */
+    result[RHO] -= delta_mass / cell_vol;
+
+    return delta_mass;
+
+}
+
+
+/* ************************************************ */
+double VirialParameter(const double * prim, const double mass,
+                       const double x1, const double x2, const double x3){
+/*!
+ * Compute the virial parameter 2 * Ekin / |Epot| (Federrath & Klessen 2012, eq. 16)
+ * of gas in a cell relative to a stationary point (sink particle motion = 0).
+ *
+ ************************************************** */
+
+    EXPAND(double vx1 = prim[VX1];,
+           double vx2 = prim[VX2];,
+           double vx3 = prim[VX3];);
+
+    double vmag = VMAG(x1, x2, x3, vx1, vx2, vx3);
+    double sph1 = SPH1(x1, x2, x3);
+    double rho = prim[RHO];
+
+    double ekin = 0.5 * rho * vmag * vmag;
+    double epot = CONST_G * mass * rho / (sph1 * vn.newton_norm);
+
+    return 2 * ekin / epot;
+
+}
+
+
+/* ************************************************ */
+double GravitationallyBound(const double *prim, const double mass, const double vol,
+                            const double x1, const double x2, const double x3){
+/*!
+ * Check whether mass element mass is gravitationally bound.
+ * Velocity is relative to a stationary sink at (0, 0, 0).
+ * E_pot + Ekin + Eth + Emag > 0;
+ *
+ ************************************************** */
+
+    EXPAND(double vx1 = prim[VX1];,
+           double vx2 = prim[VX2];,
+           double vx3 = prim[VX3];);
+
+    double vmag = VMAG(x1, x2, x3, vx1, vx2, vx3);
+    double sph1 = SPH1(x1, x2, x3);
+    double rho = prim[RHO];
+    double prs = prim[PRS];
+
+    double ekin = 0.5 * mass * vmag * vmag;
+    double epot = - CONST_G * mass * ac.mbh / (sph1 * vn.newton_norm);
+    double eth = 1. / (g_gamma - 1.) * prs * vol;
+
+#if PHYSICS == MHD || PHYSICS == RMHD
+    EXPAND(double bx1 = prim[BX1];,
+           double bx2 = prim[BX2];,
+           double bx3 = prim[BX3];);
+    double bmag = VMAG(x1, x2, x3, bx1, bx2, bx3);
+    double emag = 1. / (8. * CONST_PI) * bmag * bmag * vol
+#else
+    double emag = 0;
+#endif
+
+    return (epot + ekin + eth + emag < 0);
+
+}
+
+
 

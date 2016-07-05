@@ -54,7 +54,7 @@ double DensIdealEOS(const double pres, const double temp, const double mu) {
 
 
 /* ************************************************ */
-double SoundSpeed2IdealEOS(const double pres, const double dens) {
+double SoundSpeed2IdealEOS(const double dens, const double pres) {
 /* !
  * Return Adiabatic Sound speed  from pressure and temperature
  * in code units

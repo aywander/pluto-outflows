@@ -202,7 +202,7 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
 
 #elif CLOUD_DENSITY == CD_HOMOGENEOUS
     /* Homogeneous halo density, but with gravity */
-    dens = g_inputParam[PAR_WRHO];
+    dens = g_inputParam[PAR_WRHO] * ini_code[PAR_WRHO];
 
 #else
     /* Homogeneous halo, gravity off. */
@@ -311,6 +311,7 @@ int CloudExtract(double *cloud,
 
 #else
     is_cloud = 1;
+    fdratio = cloud[RHO] / halo[RHO];
 
     if (!once01) {
         print1("> Cloud extraction: No special cloud extraction.\n\n");
@@ -607,16 +608,13 @@ int WarmTcrit(double *const warm)
     fputs("Error: CLOUD_MUCRIT not defined.\n", stderr); QUIT_PLUTO(1);
 #endif
 
-    /* Warm phase temperature */
-    wtemp = TempIdealEOS(warm[RHO], warm[PRS], CLOUD_MUCRIT) * vn.temp_norm;
-
 #ifndef CLOUD_TCRIT
     fputs("Error: CLOUD_TCRIT not defined.\n", stderr); QUIT_PLUTO(1);
 #endif
 
     /* Only a cloud pixel if wtemp is below critical temperature
      * of thermal instability */
-    if (warm[RHO] / warm[PRS] > CLOUD_TCRIT / CLOUD_MUCRIT / KELVIN) return 0;
+    if (warm[PRS] / warm[RHO] > CLOUD_TCRIT / CLOUD_MUCRIT / KELVIN) return 0;
     else return 1;
 
 }

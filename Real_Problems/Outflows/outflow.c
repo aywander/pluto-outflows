@@ -7,12 +7,19 @@
 #include "outflow.h"
 #include "grid_geometry.h"
 #include "hot_halo.h"
+#include "accretion.h"
+#include "init_tools.h"
+#include "idealEOS.h"
 
 /* Global struct for nozzle */
 Nozzle nz;
 
+/* Global struct for outflow parameters */
+OutflowState os;
+
+
 /* ************************************************ */
-void SetNozzleGeometry() {
+void SetNozzleGeometry(Nozzle * noz) {
 /*
  * Set outflow geometry struct with parameters of cone
  *
@@ -35,55 +42,84 @@ void SetNozzleGeometry() {
  *
  ************************************************** */
 
+    double ang, rad, sph, dir, dbh, omg, phi;
+    double cbh, orig, area, cone_height, cone_apex, isfan;
+
     double small_angle = 1.e-12;
     double large = 1.e30;
 
+    /* First determine if we are dealing with a cone or a paralle nozzle */
+    ang = g_inputParam[PAR_OANG] * ini_code[PAR_OANG];
+    if (ang > small_angle) isfan = 1;
+    else isfan = 0;
+
+
+#if ACCRETION == YES && FEEDBACK_CYCLE == YES
+
+    /* Accretion struct must be initialized beforehand */
+
+    /* The angle and radius (ORAD) as input parameter defines the maximum angle */
+    if (g_time == 0 && ac.deboost == 1) {
+
+        /* Quantities from input parameters */
+        rad = g_inputParam[PAR_ORAD] * ini_code[PAR_ORAD];
+    }
+    else {
+
+        /* Reduction of radius */
+        rad = sin(ang) * sqrt( ac.nzi.area * ac.deboost / (2. * CONST_PI * (1. - cos(ang))) ) ;
+    }
+
+#else
+
     /* Quantities from input parameters */
-    nz.ang = g_inputParam[PAR_OANG] * ini_code[PAR_OANG];
-    nz.rad = g_inputParam[PAR_ORAD] * ini_code[PAR_ORAD];
-    nz.dir = g_inputParam[PAR_ODIR] * ini_code[PAR_ODIR];
-    nz.dbh = g_inputParam[PAR_ODBH] * ini_code[PAR_ODBH];
-    nz.omg = g_inputParam[PAR_OOMG] * ini_code[PAR_OOMG];
-    nz.phi = g_inputParam[PAR_OPHI] * ini_code[PAR_OPHI];
-    nz.sph = g_inputParam[PAR_OSPH] * ini_code[PAR_OSPH];
+    rad = g_inputParam[PAR_ORAD] * ini_code[PAR_ORAD];
+
+#endif   // whether ACCRETION and FEEDBACK_CYCLE
+
+    /* Quantities from input parameters */
+    ang = g_inputParam[PAR_OANG] * ini_code[PAR_OANG];
+    sph = g_inputParam[PAR_OSPH] * ini_code[PAR_OSPH];
+    dir = g_inputParam[PAR_ODIR] * ini_code[PAR_ODIR];
+    dbh = g_inputParam[PAR_ODBH] * ini_code[PAR_ODBH];
+    omg = g_inputParam[PAR_OOMG] * ini_code[PAR_OOMG];
+    phi = g_inputParam[PAR_OPHI] * ini_code[PAR_OPHI];
 
     /* Derived quantitites */
 
 #if INTERNAL_BOUNDARY == YES
-    nz.cbh = sqrt(nz.sph * nz.sph - nz.rad * nz.rad);
-    nz.orig = nz.cbh;
+    cbh = sqrt(sph * sph - rad * rad);
+    orig = cbh;
 #else
-    nz.cbh = (nz.orig - nz.dbh) / cos(nz.dir) + nz.rad * tan(nz.dir);
-    nz.orig = g_domBeg[FLOWAXIS(IDIR, JDIR, KDIR)];
+    cbh = (orig - dbh) / cos(dir) + rad * tan(dir);
+    orig = g_domBeg[FLOWAXIS(IDIR, JDIR, KDIR)];
 #endif
 
-    if (nz.ang > small_angle) {
-        nz.isfan = 1;
-        nz.area = 2. * CONST_PI * (1. - cos(nz.ang)) * pow(nz.rad / sin(nz.ang), 2);
+    if (isfan) {
+        area = 2. * CONST_PI * (1. - cos(ang)) * pow(rad / sin(ang), 2);
 
         /* cone apex is only valid when cone is aligned with flow axis */
-        nz.cone_height = nz.rad / tan(nz.ang);
-        nz.cone_apex = nz.orig - nz.cone_height;
+        cone_height = rad / tan(ang);
+        cone_apex = orig - cone_height;
     }
     else {
-        nz.isfan = 0;
-        nz.area = CONST_PI * nz.rad * nz.rad;
+        area = CONST_PI * rad * rad;
 
-        nz.cone_height = large;
-        nz.cone_apex = -large;
+        cone_height = large;
+        cone_apex = -large;
     }
 
 
     /* Some consistency checks */
 
 #if INTERNAL_BOUNDARY == YES
-    /* Currently we require the BH location to be at 0,0,0  and nz.dbh = 0*/
+    /* Currently we require the BH location to be at 0,0,0  and noz.dbh = 0*/
 
-    if (0 > nz.dbh || nz.dbh > 0) {
-        print1("Warning: If INTERNAL_BOUNDARY == YES, ODBH = 0. Setting nz.dbh to 0.");
-        nz.dbh = 0;
+    if (0 > dbh || dbh > 0) {
+        print1("Warning: If INTERNAL_BOUNDARY == YES, ODBH = 0. Setting noz.dbh to 0.");
+        dbh = 0;
     }
-    if (nz.sph < nz.rad) {
+    if (sph < rad) {
         print1("Error: OSPH must be larger than ORAD");
         QUIT_PLUTO(1);
     }
@@ -91,20 +127,342 @@ void SetNozzleGeometry() {
      outflow boundary for half-galaxy simulations. */
     if (FLOWAXIS(g_domBeg[IDIR], g_domBeg[JDIR], g_domBeg[KDIR]) >= 0.) {
 
-        if (acos(1 - ((nz.sph - nz.cbh) * (nz.sph - nz.cbh) + nz.rad * nz.rad) /
-                     (2 * nz.sph * nz.sph)) + nz.dir > CONST_PI / 2) {
+        if (acos(1 - ((sph - cbh) * (sph - cbh) + rad * rad) /
+                     (2 * sph * sph)) + dir > CONST_PI / 2) {
             print1("Error: OSPH is too small. It must be at least...");
             QUIT_PLUTO(1);
             /* TODO: Calculate minimum OSPH */
         }
     }
-#endif
+#endif // INTERNAL_BOUNDARY
+
+
+    noz->ang = ang;
+    noz->rad = rad;
+    noz->sph = sph;
+    noz->dir = dir;
+    noz->dbh = dbh;
+    noz->omg = omg;
+    noz->phi = phi;
+    noz->cbh = cbh;
+    noz->orig = orig;
+    noz->area = area;
+    noz->cone_height = cone_height;
+    noz->cone_apex = cone_apex;
+    noz->isfan = isfan;
+}
+
+
+/* ************************************************ */
+void SetOutflowState(OutflowState *ofs) {
+/*
+ * Set outflow state.
+ * Set outflow primitives/parameters structs.
+ *
+ ************************************************** */
+
+    // TODO: Make sure OutflowPrimitives is not called in a DOM/TOT_LOOP
+    // TODO: Change g_inputParam[PAR_OPOW] -> nz.pow, etc, everywhere in code.
+
+    // TODO: Some of these quantities need to be uptdated after restart.
+
+    NOZZLE_SELECT(SetJetState(ofs), SetUfoState(ofs));
 
 }
 
+
 /* ************************************************ */
-void OutflowPrimitives(double *out_primitives, const double x1, const double x2, const double x3,
-                       const double accr_rate) {
+void SetJetState(OutflowState *ofs) {
+/*
+ * Set outflow state.
+ * Set outflow primitives/parameters structs.
+ *
+ ************************************************** */
+
+
+    double power, chi, lorentz;
+    double speed, dens, pres, gmm1;
+
+    /* The parameters from ini, and normalize them */
+    chi = g_inputParam[PAR_OMDT] * ini_code[PAR_OMDT];
+    lorentz = g_inputParam[PAR_OSPD] * ini_code[PAR_OSPD];
+
+
+    // TODO: Test accretion cycle
+#if ACCRETION == YES && FEEDBACK_CYCLE == YES
+
+    /* AGN power from accretion rate */
+    power = ac.eff * ac.accr_rate * CONST_c * CONST_c / vn.pot_norm;
+
+    /* Hot phase pressure */
+    double hrho = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
+    double htmp = g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP];
+    double hprs = PresIdealEOS(hrho, htmp, MU_NORM);
+
+    /* Maximum thermal pressure of AGN outflow */
+    speed = Lorentz2Speed(lorentz);
+    gmm1 = g_gamma / (g_gamma - 1.);
+    pres = power / (gmm1 * lorentz * lorentz * speed * ac.nzi.area);
+
+    /* This is for initialization of reference outflow state struct
+     * in SetAccretionPhysics, contained within ac struct */
+    if (g_time == 0 && ac.deboost == 1) {
+        power = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
+        speed = Lorentz2Speed(lorentz);
+        gmm1 = g_gamma / (g_gamma - 1.);
+        pres = power / (gmm1 * lorentz * lorentz * speed * nz.area * (1. + (lorentz - 1.) / lorentz * chi));
+        dens = chi * gmm1 * pres;
+    }
+
+    /* If insufficient power for pressure equilibrium, shut off AGN */
+    else if ((pres < hprs) || (g_time == 0 )) {
+        ac.deboost = 0;
+        dens = g_smallDensity;
+        pres = g_smallPressure;
+        lorentz = 0;
+        chi = 0;
+        power = 0;
+    }
+
+        /* If sufficient power, AGN is on */
+    else {
+
+        /* Set pressure, density, and speed, adjusting parameters such that
+         * pressure is be at least ambient pressure, hprs. */
+
+        /* If sufficient power ... */
+        pres = power / (gmm1 * lorentz * lorentz * speed * ac.nzi.area * (1. + (lorentz - 1.) / lorentz * chi));
+        dens = chi * gmm1 * pres;
+
+        /* ...but if insufficient heat with default Ekin, reduce (deboost) ...? */
+        if (pres < hprs) {
+
+            /* Ensure pressure equilibrium */
+            pres = hprs;
+
+#if FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_0
+
+            /* Deboost area only. Density stays the same. */
+
+            ac.deboost = power / (gmm1 * pres * lorentz * lorentz * speed * ac.nzi.area *
+                         (1. + (lorentz - 1.) / lorentz * chi));
+
+#elif FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_1
+
+            /* Deboost chi. Density decreases accordingly. */
+
+            ac.deboost = (power / (gmm1 * pres * ac.nzi.area * speed * lorentz * lorentz) - 1) /
+                         ((lorentz - 1) / lorentz * chi)
+
+            dens *= ac.deboost
+
+#elif FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_2
+
+            /* Deboost area and chi.  */
+
+            ac.deboost = (sqrt(1 + 4 * power * chi * (lorentz - 1) /
+                         (gmm1 * pres * ac.nzi.area * speed * lorentz * lorentz * lorentz)) - 1) /
+                         (2 * chi * (lorentz - 1) / lorentz)
+
+            dens *= ac.deboost;
+
+#elif FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_3
+
+            /* Deboost speed
+             *
+             * The expression for this is too complicated.
+             * */
+
+            print1("Error in SetJetState for Feedback cycle FBC_DEBOOST_MODE3 not supported.");
+            QUIT_PLUTO(1);
+
+#endif  // FCB_DEBOOST_MODE
+
+        } // Sufficient power for heat to ensure pressure equilibrium, i.e., need to deboost?
+
+    } // Is AGN on or off (sufficient power to ensure pressure equilibrium ?)
+
+#else  // if not ACCRETION && FEEDBACK_CYCLE
+
+    power = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
+    speed = Lorentz2Speed(lorentz);
+    gmm1 = g_gamma / (g_gamma - 1.);
+    pres = power / (gmm1 * lorentz * lorentz * speed * nz.area * (1. + (lorentz - 1.) / lorentz * chi));
+    dens = chi * gmm1 * pres;
+
+#endif  // whether ACCRETION && FEEDBACK_CYCLE
+
+    ofs->pow = power;
+    ofs->mdt = chi;
+    ofs->spd = lorentz;
+    ofs->rho = dens;
+    ofs->prs = pres;
+    ofs->eth = gmm1 * pres * speed * nz.area * lorentz * lorentz;
+    ofs->kin = (lorentz - 1.) * lorentz * speed * nz.area * dens * CONST_c * CONST_c / (vn.v_norm * vn.v_norm);
+
+}
+
+
+/* ************************************************ */
+void SetUfoState(OutflowState *ofs) {
+/*
+ * Set outflow state.
+ * Set the outflow primitives/parameters struct.
+ * Calculate primitives from input parameters
+ * power, angle, speed, mdot, and radius and width.
+ *
+ ************************************************** */
+
+    double power, speed, mdot;
+    double heat, dens, pres;
+
+    /* Input parameters, normalized in code units*/
+
+    speed = g_inputParam[PAR_OSPD] * ini_code[PAR_OSPD];
+    mdot = g_inputParam[PAR_OMDT] * ini_code[PAR_OMDT];
+
+    // TODO: Test accretion cycle
+#if ACCRETION == YES && FEEDBACK_CYCLE == YES
+
+    /* AGN power from accretion rate */
+    power = ac.eff * ac.accr_rate * CONST_c * CONST_c / vn.pot_norm;
+
+    /* Hot phase pressure */
+    double hrho = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
+    double htmp = g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP];
+    double hprs = PresIdealEOS(hrho, htmp, MU_NORM);
+
+    /* Thermal pressure of AGN outflow */
+    /* Note, accretion struct must be initialized beforehand */
+    pres = power * (g_gamma - 1) / (g_gamma * ac.nzi.area * speed);
+
+    /* This is for initialization of reference outflow state struct
+     * in SetAccretionPhysics, contained within ac struct */
+    if (g_time == 0 && ac.deboost == 1) {
+        power = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
+        heat = power - 0.5 * mdot * speed * speed;
+        pres = heat * (g_gamma - 1) / (g_gamma * nz.area * speed);
+        dens = mdot / (nz.area * speed);
+
+    }
+
+    /* If insufficient power for pressure equilibrium, shut off AGN */
+    else if ((pres < hprs) || (g_time == 0)) {
+        ac.deboost = 0;
+        dens = g_smallDensity;
+        pres = g_smallPressure;
+        speed = 0;
+        mdot = 0;
+        power = 0;
+    }
+
+    /* If sufficient power, AGN is on */
+    else {
+
+        /* Set pressure, density, and speed, adjusting parameters such that
+         * pressure is be at least ambient pressure, hprs. */
+
+        /* If sufficient power ... */
+        heat = power - 0.5 * mdot * speed * speed;
+        pres = heat * (g_gamma - 1) / (g_gamma * ac.nzi.area * speed);
+        dens = mdot / (ac.nzi.area * speed);
+
+        /* ...but if insufficient heat with default Ekin, reduce (deboost) mdot and speed and area */
+        if (pres < hprs) {
+
+            /* Ensure pressure equilibrium */
+            pres = hprs;
+
+#if FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_0
+
+            /* Adjust only area. The deboost factor simply reduces area, and thus increases the density. */
+
+            ac.deboost = (g_gamma - 1) / gamma * (power - 0.5 * mdot * speed * speed) / (pres * nz.area * speed);
+
+            /* boost density */
+            dens /= ac.deboost;
+
+#elif FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_1
+
+            /* Adjust only mdot. The deboost factor simply reduces mdot, and thus the density. */
+
+            ac.deboost = ( power - pres * nz.area * speed * g_gamma / (g_gamma - 1) ) / ( 0.5 * mdot * speed * speed );
+
+            /* deboost mdot and density */
+            mdot *= ac.deboost;
+            dens *= ac.deboost;
+
+
+#elif FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_2
+
+            /* Adjust only area and mdot. The deboost factor is chosen such that the density remains constant:
+             *
+             *   mdot_db = mdot * deboost
+             *   area_db = area * deboost
+             *
+             * */
+
+            ac.deboost = power / ( pres * nz.area * speed * g_gamma / (g_gamma - 1) + 0.5 * mdot * speed * speed );
+
+            /* deboost mdot */
+            mdot *= ac.deboost;
+
+#elif FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_3
+
+            /* Adjust speed, area, and mdot. The deboost factor is chosen such that the density remains constant:
+             *
+             *   mdot_db = mdot * deboost
+             *   speed_db = speed * √deboost
+             *   area_db = area * √deboost
+             *
+             * */
+
+            /* deboost should be 0 < deboost < 1 */
+            double a = g_gamma * nz.area * pres * speed;
+            double b = 2 * mdot * power * speed * speed;
+            ac.deboost = (-a + sqrt(a * a + b * (1 - 2 * g_gamma + g_gamma * g_gamma))) /
+                         (mdot * speed * speed * (g_gamma - 1));
+
+            /* Deboost speed and mdot */
+            speed *= sqrt(ac.deboost);
+            mdot *= ac.deboost;
+
+            /* Note that if sufficient heat with default Ekin, the increased pres is just used.
+             * Speed and mdot two are effectively upper limits of what can be achieved */
+
+#endif  // FBC_DEBOOST_MODE
+
+        } // Sufficient power for heat to ensure pressure equilibrium, i.e., need to deboost?
+
+    } // Is AGN on or off (sufficient power to ensure pressure equilibrium ?)
+
+
+
+#else   // if not ACCRETION and FEEDBACK_CYCLE
+
+    power = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
+    heat = power - 0.5 * mdot * speed * speed;
+
+    pres = heat * (g_gamma - 1) / (g_gamma * nz.area * speed);
+    dens = mdot / (nz.area * speed);
+
+#endif  // if ACCRETION and FEEDBACK_CYCLE
+
+
+    /* Fill outflow struct */
+    ofs->pow = power;
+    ofs->mdt = mdot;
+    ofs->rho = dens;
+    ofs->prs = pres;
+    ofs->spd = speed;
+    ofs->eth = pres * g_gamma / (g_gamma - 1);
+    ofs->kin = 0.5 * dens * speed * speed;
+
+}
+
+
+/* ************************************************ */
+void OutflowPrimitives(double *out_primitives, const double x1, const double x2, const double x3) {
 /*
  * Runs the relevant primitives function for nozzle flow.
  *
@@ -114,9 +472,17 @@ void OutflowPrimitives(double *out_primitives, const double x1, const double x2,
  *
  ************************************************** */
 
-    /* Get primitives array depending on outflow type */
-    NOZZLE_SELECT(JetPrimitives(out_primitives, x1, x2, x3, accr_rate),
-                  UfoPrimitives(out_primitives, x1, x2, x3, accr_rate));
+
+    /* Set primitives array */
+    out_primitives[RHO] = os.rho;
+    out_primitives[PRS] = os.prs;
+    out_primitives[TRC] = 1.0;
+#if CLOUDS
+    out_primitives[TRC + 1] = 0.0;
+#endif
+    OutflowVelocity(out_primitives, os.spd, x1, x2, x3);
+
+    return;
 
 }
 
@@ -134,7 +500,6 @@ void OutflowVelocity(double *out_primitives, double speed,
 
     /* Work in spherical. The velocity vectors are radial along the cone.
      * The cone apex is not necessarily the precession axis or the coordinate origin. */
-
 
     /* Grid point in cartesian coordinates */
     double cx1, cx2, cx3;
@@ -235,101 +600,6 @@ void OutflowVelocity(double *out_primitives, double speed,
     return;
 }
 
-/* ************************************************ */
-void JetPrimitives(double *jet_primitives, const double x1, const double x2, const double x3, const double accr_rate) {
-/*
- * Returns the array of primitives for jet parameters
- * power, chi, and lorentz, where
- * chi = (gmm-1)rho_j c^2/gmm p_j
- * The power is in erg / s
- * and the radius is in kpc
- *
- * NOTE:
- *  - combine this with UfoPrimities into
- *    OutflowPrimitives. Might not need NOZZLE_SELECT
- *    anymore.
- ************************************************** */
-
-    double power, chi, lorentz;
-
-    /* The parameters from ini, and normalize them */
-    power = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
-    chi = g_inputParam[PAR_OMDT] * ini_code[PAR_OMDT];
-    lorentz = g_inputParam[PAR_OSPD] * ini_code[PAR_OSPD];
-
-    /* Some derived quantities */
-    double vel, dens, pres, gmm1;
-    vel = Lorentz2Vel(lorentz);
-    gmm1 = g_gamma / (g_gamma - 1.);
-    pres = power / (gmm1 * lorentz * lorentz * vel * nz.area *
-                    (1. + (lorentz - 1.) / lorentz * chi));
-    dens = chi * gmm1 * pres;
-
-    /* Set primitives array */
-    jet_primitives[RHO] = dens;
-    jet_primitives[PRS] = pres;
-    jet_primitives[TRC] = 1.0;
-#if CLOUDS
-    jet_primitives[TRC + 1] = 0.0;
-#endif
-    OutflowVelocity(jet_primitives, vel, x1, x2, x3);
-
-    return;
-}
-
-/* ************************************************ */
-void UfoPrimitives(double *ufo_primitives, const double x1, const double x2, const double x3, const double accr_rate) {
-/*
- * Returns the array of primitives for ufo parameters
- * power, angle, speed, mdot, and radius and width
- *
- ************************************************** */
-
-    double power, speed, mdot;
-    double heat, dens, pres;
-
-    /* Input parameters, normalized in code units*/
-
-#if ACCRETION
-//    power = ac.eff * accr_rate * CONST_c * CONST_c * vn.pot_norm;
-    power = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
-#else
-    power = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
-#endif
-    speed = g_inputParam[PAR_OSPD] * ini_code[PAR_OSPD];
-    mdot = g_inputParam[PAR_OMDT] * ini_code[PAR_OMDT];
-
-
-    /* Derived quantities */
-
-    heat = power - 0.5 * mdot * speed * speed > 0;
-    if (heat > 0) {
-        pres = (power - 0.5 * mdot * speed * speed) * (g_gamma - 1) / (g_gamma * nz.area * speed);
-        dens = mdot / (nz.area * speed);
-        OutflowVelocity(ufo_primitives, speed, x1, x2, x3);
-    }
-    else{
-        double halo[NVAR];
-        HotHaloPrimitives(halo, x1, x2, x3);
-//        dens = halo[RHO];
-//        pres = halo[PRS];
-        pres = g_smallPressure;
-        dens = g_smallDensity;
-        EXPAND(ufo_primitives[VX1] = 0;,
-               ufo_primitives[VX2] = 0;,
-               ufo_primitives[VX3] = 0;);
-    }
-
-    /* Set primitives array */
-    ufo_primitives[RHO] = dens;
-    ufo_primitives[PRS] = pres;
-    ufo_primitives[TRC] = 1.0;
-#if CLOUDS
-    ufo_primitives[TRC + 1] = 0.0;
-#endif
-
-    return;
-}
 
 /* ************************************************ */
 int InNozzleCap(const double x1, const double x2, const double x3) {

@@ -2,6 +2,7 @@
 // Created by Alexander Y. Wagner on 4/6/16.
 //
 
+#include "supernovae.h"
 #include "pluto.h"
 #include "pluto_usr.h"
 #include "grid_geometry.h"
@@ -111,10 +112,11 @@ int RotateNozzle2Grid(
     return 0;
 }
 
+
 /* ************************************************ */
 int SphereSurfaceIntersectsNCells(const double dx1, const double dx2, const double dx3, const double r) {
-/* Returns the expected number of cells intersected by the
- * SphereIntersectsCell routine in SC_CORNERS mode.
+/* Returns the approximate expected number of cells intersected by the
+ * SphereIntersectsCell routine in SIC_METHOD modes.
  *
  * Sphere is assumed to be at (0,0,0) and has a radius
  * of rad.
@@ -162,12 +164,14 @@ int SphereSurfaceIntersectsNCells(const double dx1, const double dx2, const doub
 
 }
 
+
 /* ************************************************ */
 int SphereSurfaceIntersectsCellByRadius(const double x1, const double x2, const double x3,
                                         const double dV1, const double dV2, const double dV3,
                                         const double r) {
 /*
- * Returns 1 if sphere intersects a cartesian cell local domain.
+ * Returns 1 if sphere surface intersects a cartesian cell.
+ * An effective radius range is used.
  * Currently only for Cartesian and cylindrical case,
  * but other geometries are not difficult
  *
@@ -200,12 +204,14 @@ int SphereSurfaceIntersectsCellByRadius(const double x1, const double x2, const 
 
 }
 
+
 /* ************************************************ */
 int SphereSurfaceIntersectsCellByCorners(const double x1, const double x2, const double x3,
                                          const double dx1, const double dx2, const double dx3,
                                          const double r) {
 /*
  * Returns 1 if sphere intersects a cartesian cell local domain.
+ * The entire cartesian cell is considered.
  * Currently only for Cartesian and cylindrical case,
  * but other geometries are not difficult
  *
@@ -551,4 +557,31 @@ int BoxIntersectsDomain(struct GRID *grid,
     if (SGN(b3i - x3f) == SGN(b3f - x3i) && SGN(b3i - x3f) != 0) return 0;
 
     return 1;
+}
+
+/* ****************************************************** */
+double FindDxMax(const Grid *grid) {
+/*!
+ *   Find largest cell width in local grid
+ *
+ * ****************************************************** */
+
+    double dxmax[DIMENSIONS], scrh;
+    double dx_max = 0;
+
+    for (int idim = 0; idim < DIMENSIONS; idim++) dxmax[idim] = 0;
+
+    int k, j, i;
+    DOM_LOOP(k, j, i) {
+
+                        EXPAND(scrh = Length_1(i, j, k, grid); dxmax[IDIR] = MAX(dxmax[IDIR], scrh);,
+                               scrh = Length_2(i, j, k, grid); dxmax[JDIR] = MAX(dxmax[JDIR], scrh);,
+                               scrh = Length_3(i, j, k, grid); dxmax[KDIR] = MAX(dxmax[KDIR], scrh);
+                        );
+
+                    }
+
+    for (int idim = 1; idim < DIMENSIONS; idim++) dx_max = MAX(dx_max, dxmax[idim]);
+
+    return dx_max;
 }

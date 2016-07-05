@@ -28,21 +28,34 @@ typedef struct {
                               // Can be used for a cone after RotateGrid2Nozzle transform.
                               // Can be positive or negative.
     int isfan;                // Is the nozzle a fan (conical) or bullet-shaped (parallel)
-    int fill[15];             // Useless, just to make the struct a power of 2.
 } Nozzle;
 
 extern Nozzle nz;
 
-void SetNozzleGeometry();
+/* Structure for outflow state parameters. All are kept in code units. */
+typedef struct {
+    double pow;               // Power of outflow as given by input parameter
+    double mdt;               // Mass related parameter of outflow as given by input parameter
+    double spd;               // Speed related parameter of outflow as given by input parameter
+    double prs;               // Pressure as calculated from pow, mdt, and speed
+    double rho;               // Density as calculated from pow, mdt, and speed
+    double eth;               // Enthalpy inj. rate as calculated from pow, mdt, and speed
+    double kin;               // Initial kinetic energy inj. rate as calculated from pow, mdt, and speed
+} OutflowState;
 
-void OutflowPrimitives(double *out_primitives, const double x1, const double x2, const double x3,
-                       const double accr_rate);
+extern OutflowState os;
+
+void SetNozzleGeometry(Nozzle *noz);
+
+void OutflowPrimitives(double *out_primitives, const double x1, const double x2, const double x3);
 
 void OutflowVelocity(double *out_primitives, double speed, const double x1, const double x2, const double x3);
 
-void JetPrimitives(double *jet_primitives, const double x1, const double x2, const double x3, const double accr_rate);
+void SetOutflowState(OutflowState *ofs);
 
-void UfoPrimitives(double *ufo_primitives, const double x1, const double x2, const double x3, const double accr_rate);
+void SetJetState(OutflowState *ofs);
+
+void SetUfoState(OutflowState *ofs);
 
 int InNozzleCap(const double x1, const double x2, const double x3);
 

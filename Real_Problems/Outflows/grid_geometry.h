@@ -30,6 +30,8 @@ int BoxIntersectsDomain(struct GRID *grid,
                         const double x2i, const double x2f,
                         const double x3i, const double x3f);
 
+double FindDxMax(const Grid *grid);
+
 #include "init_tools.h"
 
 #endif //PLUTO_GRID_GEOMETRY_H

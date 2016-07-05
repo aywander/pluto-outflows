@@ -7,6 +7,7 @@
   for problem configuration.
   It is automatically searched for by the makefile.
 
+
   \author A. Mignone (mignone@ph.unito.it)
   \date   Sepy 10, 2012
 */
@@ -22,6 +23,7 @@
 #include "grid_geometry.h"
 #include "hot_halo.h"
 #include "outflow.h"
+#include "supernovae.h"
 
 
 /* ********************************************************************* */
@@ -70,13 +72,19 @@ void Init (double *v, double x1, double x2, double x3)
         /* Set normalization factors for input parameters */
         SetIniNormalization();
 
-        /* Set outflow geometry struct with parameters of cone */
-        SetNozzleGeometry();
-
 #if ACCRETION == YES
         /* Set outflow geometry struct with parameters of cone */
         SetAccretionPhysics();
 #endif
+
+
+#if NOZZLE != NONE
+        /* Set outflow geometry struct with parameters of cone */
+        SetNozzleGeometry(&nz);
+
+        /* Set struct of outflow parameters and state variables */
+        SetOutflowState(&os);
+
 
         double dx;
         dx = FLOWAXIS((g_domEnd[IDIR] - g_domBeg[IDIR]) / NX1;,
@@ -84,28 +92,41 @@ void Init (double *v, double x1, double x2, double x3)
                       (g_domEnd[KDIR] - g_domBeg[KDIR]) / NX3;);
 
         /* Print some data */
-        OutflowPrimitives(out_primitives, ARG_FLOWAXIS(dx, 0), 0);
+        OutflowPrimitives(out_primitives, ARG_FLOWAXIS(dx, 0));
         HotHaloPrimitives(halo_primitives, ARG_FLOWAXIS(dx, 0));
         PrintInitData01(out_primitives, halo_primitives);
+
+#endif
+
+#if SUPERNOVAE == YES
+
+        /* Set Supernova physics */
+        SetSupernovaePhysics();
+
+#endif
 
         /* Done once now */
         once01 = 1;
     }
 
 
+#if NOZZLE != NONE
+
     /* Initialize nozzle if we're in hemisphere around
      * nozzle inlet region, otherwise halo */
 
      if (InNozzleRegion(x1, x2, x3) || InNozzleCap(x1, x2, x3)) {
 
-        OutflowPrimitives(out_primitives, x1, x2, x3, 0);
-        HotHaloPrimitives(halo_primitives, x1, x2, x3);
+         OutflowPrimitives(out_primitives, x1, x2, x3);
+         HotHaloPrimitives(halo_primitives, x1, x2, x3);
 
-        for (nv = 0; nv < NVAR; ++nv) {
-            v[nv] = halo_primitives[nv] +
-                    (out_primitives[nv] - halo_primitives[nv]) * Profile(x1, x2, x3);
-        }
-    }
+         for (nv = 0; nv < NVAR; ++nv) {
+             v[nv] = halo_primitives[nv] +
+                     (out_primitives[nv] - halo_primitives[nv]) * Profile(x1, x2, x3);
+         }
+     }
+
+#endif
 
 #if INTERNAL_BOUNDARY == YES
     else if (InFlankRegion(x1, x2, x3)) {
@@ -178,13 +199,21 @@ void Analysis (const Data *d, Grid *grid)
     /* Accretion */
 
 #if ACCRETION == YES
+
+#if SINK_METHOD == SINK_FEDERRATH
+    FederrathAccretion(d, grid);
+
+#else
     SphericalAccretion(d, grid);
+
+#endif
 
 #if ACCRETION_OUTPUT == YES
     SphericalAccretionOutput();
-#endif
 
 #endif
+
+#endif // if ACCRETION == YES
 
 
 }
@@ -209,6 +238,7 @@ void BackgroundField (double x1, double x2, double x3, double *B0)
    B0[2] = 0.0;
 }
 #endif
+
 
 /* ********************************************************************* */
 void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid) 
@@ -235,11 +265,14 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 {
     int i, j, k, nv;
     double *x1, *x2, *x3;
+    double *dV1, *dV2, *dV3;
     double vc;
     double out_primitives[NVAR], halo_primitives[NVAR], result[NVAR], mirror[NVAR];
+    double * prim_buffer = mirror;
     static int touch = 0;
 #if ACCRETION == YES
     double ****Vc_new;
+    double accr, accr_rate = 0;
 #endif
 
     /* These are the geometrical central points */
@@ -247,25 +280,69 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
     x2 = grid[JDIR].x;
     x3 = grid[KDIR].x;
 
+    /* These are cell volumes */
+    dV1 = grid[IDIR].dV;
+    dV2 = grid[JDIR].dV;
+    dV3 = grid[KDIR].dV;
+
+
+
+
 #if INTERNAL_BOUNDARY == YES
     if (side == 0) {    /* -- check solution inside domain -- */
 
+
+
+#if SUPERNOVAE
+
+        /* Determine number and locations of SN to explode for this timestep */
+        StrewSupernovae();
+
+        if (sn.num_dt > 0) {
+
+            /* Find maximum cell size in this domain to determine injection radius. */
+            /* This might be better done in initalize.c, and saved in the grid struct.
+             * Although it may change every timestep if AMR is used? */
+            // TODO: put this into initialize (overwrite initialize.c)
+            double dx_max = FindDxMax(grid);
+            double sn_inj = SUPERNOVA_RCELLS * dx_max;
+
+            TOT_LOOP(k, j, i) {
+
+                        /* Inject supernova energy cellwise */
+                        for (nv = 0; nv < NVAR; ++nv) result[nv] = d->Vc[nv][k][j][i] ;
+                        InjectSupernovae(result, x1[i], x2[j], x3[k], sn_inj);
+                        for (nv = 0; nv < NVAR; ++nv) d->Vc[nv][k][j][i] = result[nv];
+                    }
+        }
+
+#endif   // If SUPERNOVAE
+
+
+
+        /* Accretion and Nozzle */
+
+        /* Note - this condition prevents interprocessor communications.
+         * It is not strictly necessary. */
+        // TODO: Consider removing this condition
         if (SphereIntersectsDomain(grid, nz.sph)) {
 
+            // TODO: Separate ACCRETION from NOZZLE (if possible)
 #if ACCRETION == YES
             /* Create buffer array for internal sink region solution */
             Vc_new = ARRAY_4D(NVAR, NX3_TOT, NX2_TOT, NX1_TOT, double);
 #endif
 
+
             TOT_LOOP(k, j, i) {
 
+
+#if NOZZLE == NONE
+                        if (0)
+#else
                         if (InNozzleRegion(x1[i], x2[j], x3[k])) {
 
-#if ACCRETION == YES
-                            OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k], ac.accr_rate);
-#else
-                            OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k], 0);
-#endif
+                            OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k]);
 
                             for (nv = 0; nv < NVAR; ++nv) {
                                 vc = d->Vc[nv][k][j][i];
@@ -276,38 +353,43 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
                             d->flag[k][j][i] |= FLAG_INTERNAL_BOUNDARY;
 
                         } // InNozzleRegion
+#endif   // If NOZZLE
 
 
 #if ACCRETION == YES
-                        else if (InSinkRegion(x1[i], x2[j], x3[k])) {
+                            else if (InSinkRegion(x1[i], x2[j], x3[k])) {
 
 #if SINK_METHOD == SINK_FREEFLOW
 
-                            SphericalFreeflowInternalBoundary(d->Vc, i, j, k, x1, x2, x3, result);
+                                /* Apply free flow internal boundary conditions */
+                                SphericalFreeflowInternalBoundary(d->Vc, i, j, k, x1, x2, x3, result);
 
 #elif SINK_METHOD == SINK_VACUUM
 
-                            VacuumInternalBoundary(result);
+                                /* Apply Vacuum internal boundary conditions */
+                                VacuumInternalBoundary(result);
 
 #elif SINK_METHOD == SINK_BONDI
 
-                            BondiFlowInternalBoundary(x1[i], x2[j], x3[k], result);
+                                /* Apply Bondi flow solution */
+                                BondiFlowInternalBoundary(x1[i], x2[j], x3[k], result);
 
 #elif SINK_METHOD == SINK_FEDERRATH
 
-                           /* Remove mass according to Federrath's sink particle method */
+                                /* Remove mass according to Federrath's sink particle method */
+                                FederrathSinkInternalBoundary(d->Vc, i, j, k, x1, x2, x3, dV1, dV2, dV3, result);
 
-#endif
+#endif  // SINK_METHOD
 
-                            /* Copy results to temporary solution array */
-                            for (nv = 0; nv < NVAR; ++nv) Vc_new[nv][k][j][i] = result[nv];
+                                /* Copy results to temporary solution array */
+                                for (nv = 0; nv < NVAR; ++nv) Vc_new[nv][k][j][i] = result[nv];
 
-                            d->flag[k][j][i] |= FLAG_INTERNAL_BOUNDARY;
+                                d->flag[k][j][i] |= FLAG_INTERNAL_BOUNDARY;
 
-                        } // InSinkRegion
+                            } // InSinkRegion
 
-#else
-                        else if (InFlankRegion(x1[i], x2[j], x3[k])){
+#else  // If no ACCRETION
+                        else if (InFlankRegion(x1[i], x2[j], x3[k])) {
 
                             HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
 
@@ -317,13 +399,14 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
                             d->flag[k][j][i] |= FLAG_INTERNAL_BOUNDARY;
 
                         } // InFlankRegion
-#endif
+#endif // If ACCRETION
+
 
                     } // TOT_LOOP
 
 #if ACCRETION == YES
 
-            /* Copy solution over in case of using Spherical inward free-flowing broundary conditions */
+            /* Copy solution over to Vc array */
             TOT_LOOP(k, j, i) {
 
                         if (InSinkRegion(x1[i], x2[j], x3[k])) {
@@ -334,14 +417,18 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
                     } // Update TOT_LOOP
 
+
             FreeArray4D((void *) Vc_new);
-#endif
+
+#endif   // If Accretion
 
         } // SphereIntersectsDomain
 
+
     } // side == 0
 
-#endif
+#endif   // If INTERNAL_BOUNDARY
+
 
     if (side == FLOWAXIS(X2_BEG, X3_BEG, X1_BEG)) {
         if (box->vpos == CENTER) {
@@ -438,13 +525,15 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
                             mirror[FLOWAXIS(VX1, VX2, VX3)] *= -1.0;
 
+#if NOZZLE == NONE
+                            for (nv = 0; nv < NVAR; ++nv) {
+                                    d->Vc[nv][k][j][i] = mirror[nv];
+                                }
+#else
+
                             if (InNozzleRegion(x1[i], x2[j], x3[k])) {
 
-#if ACCRETION == YES
-                                OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k], ac.accr_rate);
-#else
-                                OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k], 0);
-#endif
+                                OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k]);
 
                                 for (nv = 0; nv < NVAR; ++nv) {
                                     d->Vc[nv][k][j][i] = mirror[nv] + (out_primitives[nv] - mirror[nv]) *
@@ -457,6 +546,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
                                     d->Vc[nv][k][j][i] = mirror[nv];
                                 }
                             }
+#endif
 
                         } // half galaxy
 

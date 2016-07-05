@@ -1,9 +1,9 @@
 #ifndef init_tools_h
 #define init_tools_h
 
-double Lorentz2Vel(const double lorentz);
+double Lorentz2Speed(const double lorentz);
 
-double Vel2Lorentz(const double vel);
+double Speed2Lorentz(const double vel);
 
 
 /* Regarding the fill arrays:

@@ -39,12 +39,22 @@
 
 /* Sink */
 /* SINK_METHOD values */
-// TODO: Not yet programmed
 #define SINK_VACUUM 1
 #define SINK_FREEFLOW 2
 #define SINK_BONDI 3
 #define SINK_FEDERRATH 4
 
+/* Feedback Cycle */
+/* Feedback cycle modes */
+/* FBC_DEBOOST_MODE values. */
+#define FBC_DEBOOST_MODE_0  0
+#define FBC_DEBOOST_MODE_1  1
+#define FBC_DEBOOST_MODE_2  2
+#define FBC_DEBOOST_MODE_3  3
+
+/* Supernovae */
+/* SUPERNOVAE implementations */
+// TODO: Implement different SN methods
 
 /* Clouds */
 /* Use a grid_in.out file to specify dimensions of cube 
@@ -201,7 +211,56 @@
 #define SINK_METHOD SINK_FREEFLOW
 #endif
 
+/* Measure Bondi Accretion? */
+#ifndef MEASURE_BONDI_ACCRETION
+#define MEASURE_BONDI_ACCRETION  NO
+#endif
+#if SINK_METHOD == SINK_BONDI
+#define MEASURE_BONDI_ACCRETION  YES
+#endif
+#if SINK_METHOD == SINK_FEDERRATH
+#undef MEASURE_BONDI_ACCRETION
+#define MEASURE_BONDI_ACCRETION  NO
+#endif
 
+
+
+/* Feedback Cycle */
+
+/* Switch */
+
+#ifndef FEEDBACK_CYCLE
+#define FEEDBACK_CYCLE FALSE
+#endif
+
+/* Feedback cycle modes */
+
+#ifndef FBC_DEBOOST_MODE
+#define FBC_DEBOOST_MODE FBC_DEBOOST_MODE_1
+#endif
+
+
+/* Supernovae */
+
+#ifndef NSTARS_MAX
+#define NSTARS_MAX 1000
+#endif
+
+#ifndef SUPERNOVAE
+#define SUPERNOVAE NO
+#endif
+
+#if SUPERNOVAE == YES
+
+#ifndef SUPERNOVA_ENERGY
+#define SUPERNOVA_ENERGY  1.e51
+#endif
+
+#ifndef SUPERNOVA_RCELLS
+#define SUPERNOVA_RCELLS  3
+#endif
+
+#endif
 
 
 /* Clouds */
@@ -238,6 +297,10 @@
 /* A critical temperature for thermal instability (K) */
 #ifndef CLOUD_TCRIT
 #define CLOUD_TCRIT 3.e4
+#endif
+
+#ifndef CLOUD_MUCRIT
+#define CLOUD_MUCRIT  0.6212407755077543
 #endif
 
 /* Use setup that can place multiple individual clouds into the grid */

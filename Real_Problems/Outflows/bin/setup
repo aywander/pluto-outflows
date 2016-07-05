@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# This script prepares the build directory for the 
+# particular setup to be compiled.
+
+
+usage()
+{
+  echo "Usage: setup <setup name>"
+}
+
+
+if [[ $# -gt 1 ]]; then
+  echo "Error, too many arguments. Only one allowed."
+  usage
+  exit 1
+
+elif [[ ! "$1" ]]; then
+  echo "Error, no setup name provided."
+  usage
+  exit 1
+
+elif [[ -e "pluto.ini" ]]; then
+  echo "Please clean the links in the build directory first with bin/clean_setup"
+  exit 1
+
+elif [[ !(-e "$1") ]]; then
+  for i in $(find setup/$1/*); do 
+    echo "creating link for $i"
+    ln -s $i
+  done
+fi
+

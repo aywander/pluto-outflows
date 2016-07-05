@@ -11,14 +11,14 @@
   \date   Aug 16, 2012
 */
 /* ///////////////////////////////////////////////////////////////////// */
+
 #include "pluto.h"
 #include "pluto_usr.h"
-#include "definitions_usr.h"
-#include "interpolation.h"
-#include "init_tools.h"
-#include "read_grav_table.h"
+
+#if CLOUDS_MULTI == YES
 #include "read_hot_table.h"
 #include "multicloud_init.h"
+#endif
 
 
 /* ********************************************************************* */
@@ -42,6 +42,8 @@ void Startup(Data *d, Grid *G)
     double scrh;
     struct GRID *GX, *GY, *GZ;
 
+
+#if CLOUDS_MULTI == YES
     double *x1cld, *x2cld, *x3cld, *v1cld, *v2cld, *v3cld;
     int *cldnum;
     char **cldfile_list, temp[100];
@@ -53,9 +55,9 @@ void Startup(Data *d, Grid *G)
     double x1cl, x1ch, x2cl, x2ch, x3cl, x3ch, delx1cin, delx2cin, delx3cin;
     int ibeg, iend, jbeg, jend, kbeg, kend;
 
-
     Gin = (struct InGrid *) malloc(sizeof(struct InGrid));
     //cld=(struct cld_domain) malloc(sizeof(struct cld_domain));
+#endif
 
 
     GX = G;
@@ -204,9 +206,11 @@ void Startup(Data *d, Grid *G)
         }
     }
 
+#if CLOUDS_MULTI == YES
+
     oncefilelist = 0;
     oncecloudlist = 0;
-#if CLOUDS_MULTI == YES
+
     // Read cloud input data file list //
     if (oncecloudlist == 0) {
         FILE *fp_cldfilelist;
@@ -446,7 +450,9 @@ void Startup(Data *d, Grid *G)
   }}
 */
 
+#if CLOUDS_MULTI == YES
     free((struct InGrid *) Gin);
+#endif
 
 }
 

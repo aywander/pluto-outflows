@@ -53,8 +53,10 @@ void PrintInitData01(const double *out_primitives,
 void SetBaseNormalization() {
 /*
  * Sets initializes VarNorm struct with derived normalizations
- * eint_norm is the (mass) specific internal energy [erg/g].
  * Gives cgs units upon multiplication form code units.
+ *
+ * Note that pot_norm is also the (mass) specific energy density [erg / g],
+ * eint_norm is the energy [erg], and pres_norm is energy density [erg / cm^-3]
  *
  **************************************************************** */
 
@@ -69,7 +71,7 @@ void SetBaseNormalization() {
     vn.pres_norm = vn.dens_norm * vn.v_norm * vn.v_norm;
     vn.power_norm = vn.pres_norm * vn.v_norm * vn.area_norm;
     vn.eflux_norm = vn.pres_norm * vn.v_norm;
-    vn.eint_norm = vn.pres_norm / vn.dens_norm;
+    vn.eint_norm = vn.pres_norm * vn.l_norm * vn.l_norm * vn.l_norm;
     vn.mdot_norm = vn.dens_norm * pow(vn.l_norm, 3) / vn.t_norm;
     vn.newton_norm = 1. / (vn.t_norm * vn.t_norm * vn.dens_norm);
     vn.pot_norm = vn.v_norm * vn.v_norm;
@@ -133,6 +135,10 @@ void SetIniNormalization() {
     ini_cgs[PAR_WVAN] = 1.e5;
     ini_cgs[PAR_SGAV] = 1.e5;
     ini_cgs[PAR_NCLD] = 1;
+    ini_cgs[PAR_SPOW] = 1;
+    ini_cgs[PAR_SDUR] = 1.e6 * year;
+    ini_cgs[PAR_SRAD] = vn.l_norm;
+    ini_cgs[PAR_SHGT] = vn.l_norm;
     ini_cgs[PAR_LOMX] = 1;
     ini_cgs[PAR_LCMX] = 1;
 
@@ -173,6 +179,10 @@ void SetIniNormalization() {
     ini_code[PAR_WVAN] = ini_cgs[PAR_WVAN] / vn.v_norm;
     ini_code[PAR_SGAV] = ini_cgs[PAR_SGAV] / vn.v_norm;
     ini_code[PAR_NCLD] = ini_cgs[PAR_NCLD];
+    ini_code[PAR_SPOW] = ini_cgs[PAR_SPOW] / vn.power_norm;
+    ini_code[PAR_SDUR] = ini_cgs[PAR_SDUR] / vn.t_norm;
+    ini_code[PAR_SRAD] = ini_cgs[PAR_SRAD] / vn.l_norm;
+    ini_code[PAR_SHGT] = ini_cgs[PAR_SHGT] / vn.l_norm;
     ini_code[PAR_LOMX] = ini_cgs[PAR_LOMX];
     ini_code[PAR_LCMX] = ini_cgs[PAR_LCMX];
 
@@ -228,7 +238,7 @@ void SetIniNormalization() {
 
 
 /* ************************************************ */
-double Vel2Lorentz(const double vel)
+double Speed2Lorentz(const double vel)
 /*!
  * Return Lorentz factor from Lorentz factor
  *
@@ -244,14 +254,14 @@ double Vel2Lorentz(const double vel)
 
 
 /* ************************************************ */
-double Lorentz2Vel(const double lorentz)
+double Lorentz2Speed(const double lorentz)
 /*!
  * Return velocity from Lorentz factor
  *
  ************************************************** */
 {
     double clight;
-    clight = CONST_c / UNIT_VELOCITY;
+    clight = CONST_c / vn.v_norm;
     return sqrt(1. - 1. / (lorentz * lorentz)) * clight;
 }
 

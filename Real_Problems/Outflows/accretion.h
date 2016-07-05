@@ -6,6 +6,7 @@
 #define PLUTO_ACCRETION_H
 
 #include "init_tools.h"
+#include "outflow.h"
 
 /* Structure for accretion physics. All are kept in code units. */
 typedef struct {
@@ -14,12 +15,13 @@ typedef struct {
     double edd;               // Eddington power
     double eff;               // Fraction of accretion rate going into outflow
     double snk;               // Sink radius
-    double accr_rate;         // Accretion rate (global)
     double area;              // Area of surface
-    double rho_acc;           // denisty far away
-    double prs_acc;           // pressure far away
-    double snd_acc;           // sound speed far away
-    double accr_rate_bondi;   // sound speed far away
+    double accr_rate;         // Mass accretion rate (global)
+    double accr_rate_bondi;   // Bondi accretion rate
+    double deboost;           // Deboost factor for outflow
+    Nozzle nzi;               // Initial nozzle parameters
+    OutflowState osi;         // Initial outflow state parameters
+
 } Accretion;
 
 extern Accretion ac;
@@ -34,6 +36,9 @@ void SphericalFreeflow(double *prims, double ****VC, const double *x1, const dou
 
 void SphericalFreeflowInternalBoundary(const double ****Vc, int i, int j, int k, const double *x1, const double *x2,
                                        const double *x3, double *result);
+
+void FederrathAccretion(const Data *d, Grid *grid);
+
 
 double BondiAccretionRate(const double mbh, const double rho_far, const double snd_far);
 
@@ -53,5 +58,19 @@ double EddingtonLuminosity(const double mbh);
 void SphericalAccretion(const Data *d, Grid *grid);
 
 void SphericalAccretionOutput();
+
+
+
+double VirialParameter(const double * prim, const double mass,
+                       const double x1, const double x2, const double x3);
+
+double GravitationallyBound(const double *prim, const double mass, const double vol,
+                            const double x1, const double x2, const double x3);
+
+double JeansResolvedDensity(const double *prim);
+
+double FederrathSinkInternalBoundary(const double ****Vc, int i, int j, int k, const double *x1, const double *x2,
+                                     const double *x3, const double *dV1, const double *dV2, const double *dV3,
+                                     double *result);
 
 #endif //PLUTO_ACCRETION_H

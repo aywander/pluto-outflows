@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# This script cleans the build directory of the current setup. 
+
+for i in $(find . -type l); do 
+  echo "removing link $i"
+  rm $i
+done
+
+
