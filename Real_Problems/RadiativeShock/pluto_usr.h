@@ -1,15 +1,24 @@
-/* COOLING_OFIT <int>
- * COOLING_NFIT <int>
- * Advanced power-law cooling parameters for direct integration of internal energy equation. 
- * By using POWER_LAW cooling and setting these we can use
- *  - piece-wise power-law fits to a cooling curve: COOLING_OFIT = 1
- *    which is a fit to log Lambda(log T/Tcrit)
- *  - piece-wise polynomial fits to a cooling curve: COOLING_OFIT > 1
- *    which is a fit to 1./Lambda(log T/Tcrit)
- * The two cases are treated separately in cooling.c, PowerLawCooling. 
- * COOLING_PL_NFIT is the number of piecewise segments. */
+#ifndef PLUTO_USR_H
+#define PLUTO_USR_H
+
+/* Shock initialization methods -- SHOCK_INIT_MODE */
+#define SI_IMPULSIVE    0
+#define SI_WALL         1
+
+/* Shock initial condition calculations -- SHOCK_COND_MODE */
+#define SC_UPSTREAM     0
+#define SC_SHOCK_TE     1
+
+/* MU_CALC values. Methods of calculating the mean molecular mass. */
+#define MU_CONST        0
+#define MU_TABLE        1
+#define MU_ANALYTIC     2
+#define MU_FRACTIONS    3
+#define MU_FNAME "mutable.dat"
 
 
-/* Include user definitions here (last) */
+/* Include user definitions and user macros here (last) */
 #include "definitions_usr.h"
+#include "macros_usr.h"
 
+#endif

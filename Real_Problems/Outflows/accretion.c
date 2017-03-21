@@ -143,6 +143,7 @@ void SphericalAccretion(const Data *d, Grid *grid) {
 #if MEASURE_BONDI_ACCRETION == YES
     double prs, snd;
     double rho_acc = 0, snd_acc = 0, prs_acc = 0;
+    double rho_acc_av, snd_acc_av, prs_acc_av;
     double tmp_far, snd_far;
 #endif
 
@@ -210,6 +211,10 @@ void SphericalAccretion(const Data *d, Grid *grid) {
 
 
                         /* Bondi accretion parameters */
+                        /* In principle, the bondi rate is not to be measured here, but
+                         * at the Bondi radius. Need to write another SphereSurfaceIntersects
+                         * condition for r = r_bondi, and calculate Bondi parameters there. */
+                        // TODO: Calculate Bondi accretion with values at Bondi radius
 #if MEASURE_BONDI_ACCRETION == YES
                         prs = d->Vc[PRS][k][j][i];
                         snd = sqrt(g_gamma * prs / rho);

@@ -8,7 +8,7 @@
 #define  TIME_STEPPING           RK3
 #define  DIMENSIONAL_SPLITTING   YES
 #define  NTRACER                 2
-#define  USER_DEF_PARAMETERS     43
+#define  USER_DEF_PARAMETERS     44
 #define  USER_DEF_CONSTANTS      4
 
 /* -- physics dependent declarations -- */
@@ -42,35 +42,36 @@
 #define  PAR_HVX3                18
 #define  PAR_HVRD                19
 #define  PAR_HRAD                20
-#define  PAR_WRHO                21
-#define  PAR_WTRB                22
-#define  PAR_WRAD                23
-#define  PAR_WROT                24
-#define  PAR_WX1L                25
-#define  PAR_WX1H                26
-#define  PAR_WX2L                27
-#define  PAR_WX2H                28
-#define  PAR_WX3L                29
-#define  PAR_WX3H                30
-#define  PAR_WVRD                31
-#define  PAR_WVPL                32
-#define  PAR_WVPP                33
-#define  PAR_WVAN                34
-#define  PAR_SGAV                35
-#define  PAR_NCLD                36
-#define  PAR_SPOW                37
-#define  PAR_SDUR                38
-#define  PAR_SRAD                39
-#define  PAR_SHGT                40
-#define  PAR_LOMX                41
-#define  PAR_LCMX                42
+#define  PAR_MGAL                21
+#define  PAR_WRHO                22
+#define  PAR_WTRB                23
+#define  PAR_WRAD                24
+#define  PAR_WROT                25
+#define  PAR_WX1L                26
+#define  PAR_WX1H                27
+#define  PAR_WX2L                28
+#define  PAR_WX2H                29
+#define  PAR_WX3L                30
+#define  PAR_WX3H                31
+#define  PAR_WVRD                32
+#define  PAR_WVPL                33
+#define  PAR_WVPP                34
+#define  PAR_WVAN                35
+#define  PAR_SGAV                36
+#define  PAR_NCLD                37
+#define  PAR_SPOW                38
+#define  PAR_SDUR                39
+#define  PAR_SRAD                40
+#define  PAR_SHGT                41
+#define  PAR_LOMX                42
+#define  PAR_LCMX                43
 
 /* -- user-defined symbolic constants -- */
 
 #define  MU_NORM                 0.60364
-#define  UNIT_DENSITY            CONST_amu * MU_NORM
-#define  UNIT_LENGTH             1.e3 * CONST_pc
-#define  UNIT_VELOCITY           CONST_c
+#define  UNIT_DENSITY            (CONST_amu * MU_NORM)
+#define  UNIT_LENGTH             (1.e3 * CONST_pc)
+#define  UNIT_VELOCITY           (CONST_c)
 
 /* -- supplementary constants (user editable) -- */ 
 

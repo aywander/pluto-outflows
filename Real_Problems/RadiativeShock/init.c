@@ -11,10 +11,11 @@
   \date   Sepy 10, 2012
 */
 /* ///////////////////////////////////////////////////////////////////// */
+#include <assert.h>
 #include "pluto.h"
 #include "pluto_usr.h"
 #include "init_tools.h"
-#include "abundances.h"
+#include "shock.h"
 
 /* ********************************************************************* */
 void Init (double *v, double x1, double x2, double x3)
@@ -45,74 +46,57 @@ void Init (double *v, double x1, double x2, double x3)
  *********************************************************************** */
 {
 
-  /* Density normalization */
-  real mu = MeanMolecularWeight(v);
-  g_unitDensity = CONST_amu*mu;
+  static int once0 = 0;
 
-  /* Upstream Mach number and temperature
-     This determines velocity normalization
-     which is the value of the upstream velocity */
-  double mach = g_inputParam[PAR_MACH];
-  double temp1_cgs = g_inputParam[PAR_TEMP];
-  double csound_cgs = sqrt(g_gamma*CONST_kB*temp1_cgs/(CONST_amu*mu));
-  g_unitVelocity = csound_cgs*mach;
-
-  /* Upstream vector */
-  double v1[NVAR];
-  v1[RHO] = g_inputParam[PAR_RHO1];
-  EXPAND(v1[VX1] = 1.0;,
-         v1[VX2] = 0.0;,
-         v1[VX3] = 0.0;);
-  v1[PRS] = v1[RHO]*temp1_cgs/mu/KELVIN;
+  /* Some initializations */
+  if (!once0) {
+    SetBaseNormalization();
+    SetIniNormalization();
+  }
 
 
-  /* Shock speed */
-  double v_sh = sqrt(EXPAND(v1[VX1]*v1[VX1], +v1[VX2]*v1[VX2], +v1[VX3]*v1[VX3]));
+  // TODO: Allow variable mu upstream and downstream
+  double mu = MU_NORM;
 
-  /* Get immediate postshock and downstream vectors */
-  double v2[NVAR], vs[NVAR];
-  double temp2, temp_sh;
-  RankineHugoniotJump(v1, vs, &temp_sh, 0);
-  RankineHugoniotJump(v1, v2, &temp2,   1);
+  /* Input parameters */
+  double mach = g_inputParam[PAR_MACH] * ini_code[PAR_MACH];
+  double spd = g_inputParam[PAR_SSPD] * ini_code[PAR_SSPD];
+  double rho = g_inputParam[PAR_DENS] * ini_code[PAR_DENS];
+  double te = g_inputParam[PAR_TEMP] * ini_code[PAR_TEMP];
+  double bprp = g_inputParam[PAR_BPRP] * ini_code[PAR_BPRP];
+  double bpar = g_inputParam[PAR_BPAR] * ini_code[PAR_BPAR];
+  double shock_loc = g_inputParam[PAR_SLOC] * ini_code[PAR_SLOC];
+  double minCoolingTemp = g_inputParam[PAR_TMIN];
 
-  /* Balance rho v*v + p on either side */
-  double v_cdl = sqrt(EXPAND(v2[VX1]*v1[VX1], +v2[VX2]*v1[VX2], +v2[VX3]*v1[VX3]));
-  v2[PRS] = v1[PRS] + v1[RHO]*v_sh*v_sh + v2[RHO]*v_cdl*v_cdl;
- 
-  /* Length normalization is cooling length. Need downstream vector 
-   * for this so do it here. Assume cooling rate length of a 
-   * power-law:
-       L(T) = lambda0*(T/g_minCoolingTemp)^alpha
-     The values for alpha and lamdbda0 just come from a linear fit to the 
-     cooltable.dat data between T = 3*10^4 and 1*10^8 K. See cool_fit_pow.py
-   */
-  double alpha = -0.37988772;
-  double lambda0 = 1.044886865e-22;
+  /* Some derived parameters. Fill shock structure struct.
+   * mach is always the distant upstream mach number. */
+  double csound;
 
-  /* maxCoolingRate of 0.37 appears to be a good choice for using the 
-   * direct integration method (PowerLaw). The results then best agree
-   * with those of the Runge Kutta integration. The direct method is about 
-   * 1.5 times faster, though, using 30 fitting intervals. */
-  g_minCoolingTemp = 1.e4;
-  g_maxCoolingRate = 0.37;
-
-  g_unitLength = v_sh*g_unitVelocity*CONST_kB*temp_sh*KELVIN/
-    ((g_gamma-1.)*vs[RHO]*lambda0*pow(temp_sh*KELVIN/g_minCoolingTemp, alpha));
+  // TODO: Do MHD jumps (May not be possible analytically for this mode)
 
 
-  /* Location of shock center */
-  double xc = g_domBeg[IDIR] + 0.2*(g_domEnd[IDIR] - g_domBeg[IDIR]);
+#if SHOCK_COND_MODE == SC_UPSTREAM
 
-  /* Impulsive shock generation setup. */
-  int iv;
-  if (x1 < xc){
-    for (iv=0; iv<NVAR; ++iv) v[iv] = v1[iv];
-   }
-  else{
-    for (iv=0; iv<NVAR; ++iv) v[iv] = v2[iv];
-   }
+  csound = sqrt(g_gamma * te / mu);
+  if (mach <= 0) mach = spd / csound;
 
-  #if PHYSICS == MHD || PHYSICS == RMHD
+
+  sh.s0.rho = rho;
+  sh.s0.u = mach * csound;
+  sh.s0.te = te;
+  sh.s0.mu = mu;
+  sh.s0.bprp = bprp;
+  sh.s0.bpar = bpar;
+
+  sh.sp.rho = sh.s0.rho;
+  sh.sp.u = sh.s0.u;
+  sh.sp.te = sh.s0.te;
+  sh.sp.mu = sh.s0.mu;
+  sh.sp.bprp = sh.s0.bprp;
+  sh.sp.bpar = sh.s0.bpar;
+
+  // TODO: Do MHD jumps
+#if PHYSICS == MHD || PHYSICS == RMHD
 
    v[BX1] = 0.0;
    v[BX2] = 0.0;
@@ -121,16 +105,118 @@ void Init (double *v, double x1, double x2, double x3)
    v[AX1] = 0.0;
    v[AX2] = 0.0;
    v[AX3] = 0.0;
+#endif
 
-  #endif
+  sh.s1.rho = sh.s0.rho * rho_jump(mach);
+  sh.s1.u = sh.s0.u / rho_jump(mach);
+  sh.s1.te = sh.s0.te * te_jump(mach);
+  sh.s1.mu = sh.s0.mu;
+
+  sh.sd.te = minCoolingTemp < 0 ? sh.s0.te : minCoolingTemp / KELVIN;
+  sh.sd.rho = sh.s0.rho * rho_jump_cdl(mach, sh.s0.te, sh.sd.te);
+  sh.sd.u = sh.s0.u / rho_jump_cdl(mach, sh.s0.te, sh.sd.te);
+  sh.sd.mu = sh.s0.mu;
+
+#elif SHOCK_COND_MODE == SC_SHOCK_TE
+
+  if (mach <= 0) {
+    mach = mach_from_te1(spd, te, mu);
+  }
+
+  if (mach <= 1) {
+    print1("Solution unphysical: Mach number <= 1.");
+    QUIT_PLUTO(1);
+  }
+
+  sh.s0.rho = rho;
+  sh.s0.te = te / te_jump(mach);
+  csound = sqrt(g_gamma * sh.s0.te / mu);
+  sh.s0.u = mach * csound;
+  sh.s0.mu = mu;
+  sh.s0.bprp = bprp;
+  sh.s0.bpar = bpar;
+
+  sh.sp.rho = sh.s0.rho;
+  sh.sp.u = sh.s0.u;
+  sh.sp.te = sh.s0.te;
+  sh.sp.mu = sh.s0.mu;
+  sh.sp.bprp = sh.s0.bprp;
+  sh.sp.bpar = sh.s0.bpar;
+
+  // TODO: Do MHD jumps
+#if PHYSICS == MHD || PHYSICS == RMHD
+
+   v[BX1] = 0.0;
+   v[BX2] = 0.0;
+   v[BX3] = 0.0;
+
+   v[AX1] = 0.0;
+   v[AX2] = 0.0;
+   v[AX3] = 0.0;
+#endif
+
+  sh.s1.rho = sh.s0.rho * rho_jump(mach);
+  sh.s1.u = sh.s0.u / rho_jump(mach);
+  sh.s1.te = te;
+  sh.s1.mu = sh.s0.mu;
+
+  sh.sd.te = minCoolingTemp < 0 ? sh.s0.te : minCoolingTemp / KELVIN;
+  sh.sd.rho = sh.s0.rho * rho_jump_cdl(mach, sh.s0.te, sh.sd.te);
+  sh.sd.u = sh.s0.u / rho_jump_cdl(mach, sh.s0.te, sh.sd.te);
+  sh.sd.mu = sh.s0.mu;
+
+#endif
+
+#if SHOCK_INIT_MODE == SI_IMPULSIVE
+
+  // TODO: Generalize to 3D
+  /* Location of shock center */
+  double xc = g_domBeg[IDIR] + shock_loc * (g_domEnd[IDIR] - g_domBeg[IDIR]);
+
+  /* Impulsive shock generation setup. Upstream is right in order to use -x1jet. */
+  if (x1 < xc){
+    v[RHO] = sh.s0.rho;
+    v[VX1] = sh.s0.u;
+    v[PRS] = sh.s0.rho * sh.s0.te / sh.s0.mu;
+  }
+
+  else {
+    v[RHO] = sh.sd.rho;
+    v[VX1] = sh.sd.u;
+    v[PRS] = sh.sd.rho * sh.sd.te / sh.sd.mu;
+  }
+
+
+#elif SHOCK_INIT_MODE == SI_WALL
+
+  v[RHO] = sh.s0.rho;
+  v[VX1] = sh.s0.u - sh.s1.u;
+  v[PRS] = sh.s0.rho * sh.s0.te / sh.s0.mu;
+
+#endif
+
+
+  /* Cooling integration constraints */
+  /* Remember, there is a hack in cooling_source.c that prevents upstream gas from cooling */
+  g_minCoolingTemp = minCoolingTemp < 0 ? sh.s0.te * KELVIN : minCoolingTemp;
+  g_maxCoolingRate = 0.1;
+
+  /* Print the initial conditions */
+  if (!once0) {
+    PrintInitData01();
+    once0 = 1;
+  }
+
 }
+
+
 /* ********************************************************************* */
 void Analysis (const Data *d, Grid *grid)
 /*! 
  *  Perform runtime data analysis.
  *
  * \param [in] d the PLUTO Data structure
- * \param [in] grid   pointer to array of Grid structures  
+ * \param [in] grid   pointer to array of Grid structures
  *
  *********************************************************************** */
 {
@@ -140,7 +226,7 @@ void Analysis (const Data *d, Grid *grid)
 /* ********************************************************************* */
 void BackgroundField (double x1, double x2, double x3, double *B0)
 /*!
- * Define the component of a static, curl-free background 
+ * Define the component of a static, curl-free background
  * magnetic field.
  *
  * \param [in] x1  position in the 1st coordinate direction \f$x_1\f$
@@ -157,19 +243,19 @@ void BackgroundField (double x1, double x2, double x3, double *B0)
 #endif
 
 /* ********************************************************************* */
-void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid) 
+void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 /*! 
  *  Assign user-defined boundary conditions.
  *
  * \param [in,out] d  pointer to the PLUTO data structure containing
  *                    cell-centered primitive quantities (d->Vc) and 
- *                    staggered magnetic fields (d->Vs, when used) to 
+ *                    staggered magnetic fields (d->Vs, when used) to
  *                    be filled.
  * \param [in] box    pointer to a RBox structure containing the lower
  *                    and upper indices of the ghost zone-centers/nodes
  *                    or edges at which data values should be assigned.
  * \param [in] side   specifies the boundary side where ghost zones need
- *                    to be filled. It can assume the following 
+ *                    to be filled. It can assume the following
  *                    pre-definite values: X1_BEG, X1_END,
  *                                         X2_BEG, X2_END, 
  *                                         X3_BEG, X3_END.

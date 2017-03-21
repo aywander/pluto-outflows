@@ -48,7 +48,7 @@ void SetNozzleGeometry(Nozzle * noz) {
     double small_angle = 1.e-12;
     double large = 1.e30;
 
-    /* First determine if we are dealing with a cone or a paralle nozzle */
+    /* First determine if we are dealing with a cone or a parallel nozzle */
     ang = g_inputParam[PAR_OANG] * ini_code[PAR_OANG];
     if (ang > small_angle) isfan = 1;
     else isfan = 0;

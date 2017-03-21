@@ -1,2 +1,3 @@
-OBJ       += init_tools.o abundances.o interpolation.o
-HEADERS   += init_tools.h abundances.h interpolation.h
+HEADERS   += definitions_usr.h macros_usr.h pluto_usr.h
+OBJ       += abundances.o init_tools.o interpolation.o read_mu_table.o shock.o
+HEADERS   += abundances.h init_tools.h interpolation.h read_mu_table.h shock.h

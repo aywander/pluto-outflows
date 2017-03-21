@@ -1,1 +1,1 @@
-setup/starburst/README.txt
+setup/Accretion/README.txt

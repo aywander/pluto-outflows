@@ -156,13 +156,6 @@
 #endif
 
 
-/* MU_NORM . A default value for constant mean 
- * molecular weight. From Mappings model of an ionized ISM with 
- * Asplund 2005 abundances, this is approximately 0.6156. */
-#ifndef MU_NORM
-#define MU_NORM 0.6165
-#endif
-
 #ifndef NOZZLE
 #define NOZZLE NOZZLE_JET
 #endif
@@ -222,6 +215,7 @@
 #undef MEASURE_BONDI_ACCRETION
 #define MEASURE_BONDI_ACCRETION  NO
 #endif
+
 
 
 

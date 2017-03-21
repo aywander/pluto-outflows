@@ -23,4 +23,8 @@ double HermiteInterpolate(double y0, double y1,
 
 int sgn(double val);
 
+int locate(double *,double, int);
+
+double InterpolationWrapper(const double arg_arr[], const double val_arr[], const int narr, const double arg);
+
 #endif

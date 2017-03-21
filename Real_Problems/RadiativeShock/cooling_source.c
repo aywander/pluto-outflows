@@ -33,6 +33,12 @@
 */
 /* ///////////////////////////////////////////////////////////////////// */
 #include "pluto.h"
+#include "shock.h"
+
+/* AYW -- */
+#include "pluto_usr.h"
+/* -- AYW */
+
 
 /* ********************************************************************* */
 void CoolingSource (const Data *d, double dt, Time_Step *Dts, Grid *GXYZ)
@@ -83,12 +89,22 @@ void CoolingSource (const Data *d, double dt, Time_Step *Dts, Grid *GXYZ)
      if (d->flag[k][j][i] & FLAG_INTERNAL_BOUNDARY) continue;
     #endif
     if (d->flag[k][j][i] & FLAG_SPLIT_CELL) continue;
-   
 
-  /* ----------------------------------------------
-      Compute temperature and internal energy from
-      density, pressure and concentrations.
-     ---------------------------------------------- */
+    /* AYW --
+     * Do not cool if velocity is the upstream velocity
+     * */
+    double minCoolingTemp = g_inputParam[PAR_TMIN];
+#if SHOCK_INIT_MODE == SI_WALL
+    if (!(minCoolingTemp < 0) && (fabs(d->Vc[VX1][k][j][i] - (sh.s0.u - sh.s1.u)) < 1.e-4)) continue;
+#else
+    if (!(minCoolingTemp < 0) && (fabs(d->Vc[VX1][k][j][i] - sh.s0.u) < 1.e-4)) continue;
+#endif
+    /* -- AYW */
+
+      /* ----------------------------------------------
+          Compute temperature and internal energy from
+          density, pressure and concentrations.
+         ---------------------------------------------- */
     
     VAR_LOOP(nv) v0[nv] = v1[nv] = d->Vc[nv][k][j][i];
     prs = v0[PRS];
@@ -112,7 +128,7 @@ void CoolingSource (const Data *d, double dt, Time_Step *Dts, Grid *GXYZ)
       QUIT_PLUTO(1);
     }
 
-  /* -------------------------------------------
+/* -------------------------------------------
       Get estimated time step based on 
       the max rate of the reaction network.
      ------------------------------------------- */

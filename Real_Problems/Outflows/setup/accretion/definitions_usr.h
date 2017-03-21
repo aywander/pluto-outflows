@@ -8,21 +8,21 @@
 #define ACCRETION_OUTPUT_RATE       0.15318627450980393
 #define SIC_METHOD                  SIC_HYBRID
 #define SID_METHOD                  SID_REGIONS
-#define SINK_METHOD                 SINK_FEDERRATH
+#define SINK_METHOD                 SINK_FREEFLOW
 #define MEASURE_BONDI_ACCRETION     YES
 #define FEEDBACK_CYCLE              YES
 #define FBC_DEBOOST_MODE            FBC_DEBOOST_MODE_3
 
-#define SUPERNOVAE                  YES
-#define SUPERNOVA_ENERGY            1.e52
+#define SUPERNOVAE                  NO
+#define SUPERNOVA_ENERGY            1.e51
 
-#define GRAV_POTENTIAL              DOUBLE_ISOTHERMAL
+#define GRAV_POTENTIAL              GRAV_HERNQUIST
 
-#define CLOUDS                      NO
+#define CLOUDS                      YES
 #define CLOUD_REPEAT	              NO
 #define CLOUDS_MULTI   	            NO
 
-//#define CLOUD_DENSITY               CD_KEPLERIAN
+#define CLOUD_DENSITY               CD_KEPLERIAN
 //#define CLOUD_VELOCITY              CV_KEPLERIAN
 //#define CLOUD_SCALE                 CS_VELOCITY_DISPERSION
 

@@ -14,7 +14,6 @@
 #include "pluto.h"
 #include "pluto_usr.h"
 #include "init_tools.h"
-#include "multicloud_init.h"
 #include "abundances.h"
 
 /* Global struct and arrays for normalization */
@@ -119,6 +118,7 @@ void SetIniNormalization() {
     ini_cgs[PAR_HVX3] = GEOM_UNITS3(1, 1.e5);
     ini_cgs[PAR_HVRD] = 1.e5;
     ini_cgs[PAR_HRAD] = vn.l_norm;
+    ini_cgs[PAR_MGAL] = CONST_Msun;
     ini_cgs[PAR_WRHO] = vn.dens_norm;
     ini_cgs[PAR_WTRB] = 1.e5;
     ini_cgs[PAR_WRAD] = vn.l_norm;
@@ -163,6 +163,7 @@ void SetIniNormalization() {
     ini_code[PAR_HVX3] = ini_cgs[PAR_HVX3] / GEOM_UNITS3(1, vn.v_norm);
     ini_code[PAR_HVRD] = ini_cgs[PAR_HVRD] / vn.v_norm;
     ini_code[PAR_HRAD] = ini_cgs[PAR_HRAD] / vn.l_norm;
+    ini_code[PAR_MGAL] = ini_cgs[PAR_MGAL] / vn.m_norm;
     ini_code[PAR_WRHO] = ini_cgs[PAR_WRHO] / vn.dens_norm;
     ini_code[PAR_WTRB] = ini_cgs[PAR_WTRB] / vn.v_norm;
     ini_code[PAR_WRAD] = ini_cgs[PAR_WRAD] / vn.l_norm;
@@ -197,44 +198,6 @@ void SetIniNormalization() {
     return;
 
 }
-
-
-#if CLOUDS
-
-#endif
-
-
-#if CLOUDS
-
-#endif
-
-
-#if CLOUDS == YES || CLOUDS_MULTI == YES
-
-#endif
-
-
-#if CLOUDS == YES || CLOUDS_MULTI == YES
-
-#endif
-
-
-#if CLOUDS == YES
-
-#endif
-
-# if CLOUDS == YES
-
-#endif
-
-#if CLOUDS == YES
-
-#endif
-
-
-#if CLOUDS == YES || CLOUDS_MULTI == YES
-
-#endif
 
 
 /* ************************************************ */

@@ -22,6 +22,8 @@ void Radiat (double *v, double *rhs)
     static int ntab;
     double mu, T, Tmid, scrh, dT, prs;
     static double *L_tab, *T_tab, E_cost;
+    // TODO: Subtract cooling rate at g_minCoolingTemp
+
 
     FILE *fcool;
 

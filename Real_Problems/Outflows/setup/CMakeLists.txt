@@ -6,7 +6,6 @@ project(PLUTO)
 # Set these
 
 set(PLUTO_SOURCE_DIR            /Users/ayw/dev/PLUTO)
-set(PROBLEM_TYPE                Real)
 set(PROBLEM                     Outflows)
 
 set(WITH_PARALLEL               OFF)
@@ -45,7 +44,7 @@ set(WITH_GLM                    OFF)
 
 # Directoiries
 
-set(PROBLEM_DIR  ${PLUTO_SOURCE_DIR}/${PROBLEM_TYPE}_Problems/${PROBLEM})
+set(PROBLEM_DIR  ${PLUTO_SOURCE_DIR}/Real_Problems/${PROBLEM})
 set(SOURCE_DIR   ${PLUTO_SOURCE_DIR}/Src)
 
 
@@ -66,20 +65,14 @@ set(LINK_LIBRARIES z)
 
 
 
-# Setup-dependent / Problem-type dependent files
+# Setup-dependent files
 
 set(SOURCE_FILES
         ${PROBLEM_DIR}/definitions.h
+        ${PROBLEM_DIR}/definitions_usr.h
         ${PROBLEM_DIR}/init.c
         )
 
-if (PROBLEM_TYPE STREQUAL Real)
-        set(SOURCE_FILES  ${SOURCE_FILES}
-                ${PROBLEM_DIR}/definitions_usr.h
-                ${PROBLEM_DIR}/macros_usr.h
-                ${PROBLEM_DIR}/pluto_usr.h
-                )
-endif()
 
 
 # Problem source files in problem directory
@@ -104,10 +97,13 @@ if (PROBLEM STREQUAL Outflows)
             ${PROBLEM_DIR}/init_tools.h
             ${PROBLEM_DIR}/interpolation.c
             ${PROBLEM_DIR}/interpolation.h
+            ${PROBLEM_DIR}/jet_domain.c
+            ${PROBLEM_DIR}/macros_usr.h
             ${PROBLEM_DIR}/multicloud_init.c
             ${PROBLEM_DIR}/multicloud_init.h
             ${PROBLEM_DIR}/outflow.c
             ${PROBLEM_DIR}/outflow.h
+            ${PROBLEM_DIR}/pluto_usr.h
             ${PROBLEM_DIR}/random.c
             ${PROBLEM_DIR}/random.h
             ${PROBLEM_DIR}/read_grav_table.c
@@ -124,8 +120,8 @@ if (PROBLEM STREQUAL Outflows)
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${PROBLEM_DIR}/cmd_line_opt.c
             ${PROBLEM_DIR}/input_data.c
-            ${PROBLEM_DIR}/jet_domain.c
             ${PROBLEM_DIR}/main.c
+            ${PROBLEM_DIR}/makefile
             #${PROBLEM_DIR}/mappers3D.c
             ${PROBLEM_DIR}/set_grid.c
             ${PROBLEM_DIR}/startup.c
@@ -148,46 +144,17 @@ elseif (PROBLEM STREQUAL RadiativeShock)
 
     # New files
     set(SOURCE_FILES  ${SOURCE_FILES}
+            ${PROBLEM_DIR}/abundances.c
+            ${PROBLEM_DIR}/abundances.h
             ${PROBLEM_DIR}/init_tools.c
             ${PROBLEM_DIR}/init_tools.h
             ${PROBLEM_DIR}/interpolation.c
             ${PROBLEM_DIR}/interpolation.h
-            ${PROBLEM_DIR}/read_mu_table.c
-            ${PROBLEM_DIR}/read_mu_table.h
-            ${PROBLEM_DIR}/shock.c
-            ${PROBLEM_DIR}/shock.h
+            ${PROBLEM_DIR}/pluto_usr.h
             )
 
-    # Overwritten files
-
-    # TODO: This was wrong (PROBLEM_DIR was SOURCE_DIR)! Might not compile now
+    #Overwritten files
     set(SOURCE_FILES  ${SOURCE_FILES}
-            ${PROBLEM_DIR}/cmd_line_opt.c
-            ${PROBLEM_DIR}/input_data.c
-            ${PROBLEM_DIR}/jet_domain.c
-            ${PROBLEM_DIR}/main.c
-            #${PROBLEM_DIR}/mappers3D.c
-            ${PROBLEM_DIR}/set_grid.c
-            ${PROBLEM_DIR}/startup.c
-            ${PROBLEM_DIR}/userdef_output.c
-            )
-
-elseif (PROBLEM STREQUAL HD/Jet)
-
-    # TODO: Change the way problem-dependent overrides are handled
-    # Non-overridden Src files
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/cmd_line_opt.c
-            ${SOURCE_DIR}/input_data.c
-            ${SOURCE_DIR}/jet_domain.c
-            ${SOURCE_DIR}/main.c
-            ${SOURCE_DIR}/set_grid.c
-            ${SOURCE_DIR}/startup.c
-            )
-
-    # Overwritten files
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${PROBLEM_DIR}/userdef_output.c
             )
 
 endif()
@@ -196,7 +163,6 @@ endif()
 
 # Files under SRC. Used for all problems
 
-# TODO: Change the way problem-dependent overrides are handled
 set(SOURCE_FILES  ${SOURCE_FILES}
         ${SOURCE_DIR}/adv_flux.c
         ${SOURCE_DIR}/arrays.c
@@ -568,12 +534,9 @@ elseif (WITH_COOLING STREQUAL SNEQ)
             )
 
 else ()
-    if (PROBLEM_TYPE STREQUAL Real)
-        set(SOURCE_FILES ${SOURCE_FILES}
-                ${PROBLEM_DIR}/abundances.c
-                ${PROBLEM_DIR}/abundances.h
-                )
-    endif()
+    set(SOURCE_FILES ${SOURCE_FILES}
+            ${PROBLEM_DIR}/abundances.c
+            ${PROBLEM_DIR}/abundances.h)
 
 endif ()
 
@@ -714,7 +677,6 @@ endif ()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-#set(RUNTIME_OUTPUT_DIRECTORY "/Users/ayw/lab/Radiative_Shocks/PLUTO_simulations/runs/ovi")
 
 
 # Include, link, and executable

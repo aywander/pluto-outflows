@@ -1,6 +1,8 @@
 #!/bin/bash
 
-## This one liner just renames all the numbered dbl files of one number to dbl files without the number. Useful to construct a restart from standard output files. This script cannot split a single output file into multple files yet.
+# This one liner just renames all the numbered dbl files of one number to dbl files without the number.
+# Useful to construct a restart from standard output files.
+# This script cannot split a single output file into multple files yet.
 
 for i in $(ls *.$1.dbl); do 
   echo cp $i $(echo $i | sed -e "s/[0-9][0-9][0-9][0-9]\.//")

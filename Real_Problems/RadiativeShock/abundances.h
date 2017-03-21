@@ -1,6 +1,9 @@
 #ifndef abundances_h
 #define abundances_h
+
+#include "pluto.h"
+
 #if COOLING == NO
-real MeanMolecularWeight (real *);
+double MeanMolecularWeight (real *);
 #endif
 #endif

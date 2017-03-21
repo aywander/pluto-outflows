@@ -1,14 +1,10 @@
 #include "pluto.h"
-/* AYW -- 2013-01-08 23:05 JST 
- * Custom headers.
- * abundances.h: to get 
- * MeanMolecularWeight function
- * rMuTable.h :To use tabular MU */
+/* AYW -- 2013-01-08 23:05 JST */
 #include "pluto_usr.h"
-#include "abundances.h"
-#if MU_CALC == MU_TABLE
 #include "read_mu_table.h"
-#endif
+#include "interpolation.h"
+#include "init_tools.h"
+
 /* -- AYW */
 
 #define frac_Z   1.e-3   /* = N(Z) / N(H), fractional number density of 
@@ -22,90 +18,104 @@ void Radiat (double *v, double *rhs)
  * 
  ******************************************************************* */
 {
-  int    klo, khi, kmid;
-  static int ntab;
-  double  mu, T, Tmid, scrh, dT, prs;
-  static double *L_tab, *T_tab, E_cost;
-  
-  FILE *fcool;
+    int klo, khi, kmid;
+    static int ntab;
+    double mu, T, Tmid, scrh, dT, prs;
+    static double *L_tab, *T_tab, E_cost;
+    // TODO: Subtract cooling rate at g_minCoolingTemp
+
+    FILE *fcool;
 
 /* -------------------------------------------
         Read tabulated cooling function
    ------------------------------------------- */
 
-  if (T_tab == NULL){
-    print1 (" > Reading table from disk...\n");
-    fcool = fopen("cooltable.dat","r");
-    if (fcool == NULL){
-      print1 ("! Radiat: cooltable.dat could not be found.\n");
-      QUIT_PLUTO(1);
-    }
-    L_tab = ARRAY_1D(20000, double);
-    T_tab = ARRAY_1D(20000, double);
+    if (T_tab == NULL) {
+        print1(" > Reading table from disk...\n");
 
-    ntab = 0;
-    while (fscanf(fcool, "%lf  %lf\n", T_tab + ntab, 
-                                       L_tab + ntab)!=EOF) {
-      ntab++;
+        /*  Read in input table with 1st column as P/rho in cgs and second column being Lambda */
+        fcool = fopen("cooltable.dat", "r");
+        if (fcool == NULL) {
+            print1("! Radiat: cooltable.dat could not be found.\n");
+            QUIT_PLUTO(1);
+        }
+        L_tab = ARRAY_1D(20000, double);
+        T_tab = ARRAY_1D(20000, double);
+
+        ntab = 0;
+        while (fscanf(fcool, "%lf  %lf\n", T_tab + ntab,
+                      L_tab + ntab) != EOF) {
+            ntab++;
+        }
+        /* Normalization for Lambda * n^2 [erg cm-3 s-1] into code units when multiplied */
+        E_cost = UNIT_LENGTH / UNIT_DENSITY / pow(UNIT_VELOCITY, 3.0);
     }
-    E_cost = UNIT_LENGTH/UNIT_DENSITY/pow(UNIT_VELOCITY, 3.0);
-  }
 
 /* ---------------------------------------------
             Get pressure and temperature 
    --------------------------------------------- */
 
-  prs = v[RHOE]*(g_gamma-1.0);
-  if (prs < 0.0) {
-    prs     = g_smallPressure;
-    v[RHOE] = prs/(g_gamma - 1.0);
-  }
+    // TODO: Check if this is correct for RHD
+    /* v[RHOE] is the internal energy density (not specific). See cooling_source.c. */
+    prs = v[RHOE] * (g_gamma - 1.0);
+    if (prs < 0.0) {
+        prs = g_smallPressure;
+        v[RHOE] = prs / (g_gamma - 1.0);
+    }
 
-  mu  = MeanMolecularWeight(v);
-  T   = prs/v[RHO]*KELVIN*mu;
+    mu = MeanMolecularWeight(v);
 
-  if (T != T){
-    print1 (" ! Nan found in radiat \n");
-    print1 (" ! rho = %12.6e, prs = %12.6e\n",v[RHO], prs);
-    QUIT_PLUTO(1);
-  }
+    /* DM 11 Jul 2015: Now T corresponds to P / rho and not temperature in Kelvin */
+    // T   = prs / v[RHO] * KELVIN * mu;
+    T = prs / v[RHO] * UNIT_VELOCITY * UNIT_VELOCITY;
 
-  if (T < g_minCoolingTemp) { 
-    rhs[RHOE] = 0.0;
-    return;
-  }
+    if (T != T) {
+        print1(" ! Nan found in radiat \n");
+        print1(" ! rho = %12.6e, prs = %12.6e\n", v[RHO], prs);
+        QUIT_PLUTO(1);
+    }
+
+    /* rhs[RHOE] is the rate of change of v[RHOE] */
+
+    /* NOTE: This is not consistent with the value of mu from the cooling table if MU_CALC = MU_CONST */
+    //  if (T < g_minCoolingTemp) {
+    if (prs / v[RHO] * mu * KELVIN < g_minCoolingTemp) {
+        rhs[RHOE] = 0.0;
+        return;
+    }
 
 /* ----------------------------------------------
         Table lookup by binary search  
    ---------------------------------------------- */
 
-  klo = 0;
-  khi = ntab - 1;
+    klo = 0;
+    khi = ntab - 1;
 
-  if (T > T_tab[khi] || T < T_tab[klo]){
-    print (" ! T out of range   %12.6e\n",T);
-    QUIT_PLUTO(1);
-  }
-
-  while (klo != (khi - 1)){
-    kmid = (klo + khi)/2;
-    Tmid = T_tab[kmid];
-    if (T <= Tmid){
-      khi = kmid;
-    }else if (T > Tmid){
-      klo = kmid;
+    if (T > T_tab[khi] || T < T_tab[klo]) {
+        print(" ! T out of range   %12.6e %12.6e %12.6e  %12.6e \n", T, prs, v[RHO], prs / v[RHO] * KELVIN * mu);
+        QUIT_PLUTO(1);
     }
-  }
 
-  dT       = T_tab[khi] - T_tab[klo];
-  scrh     = L_tab[klo]*(T_tab[khi] - T)/dT + L_tab[khi]*(T - T_tab[klo])/dT;
-  rhs[RHOE] = -scrh*v[RHO]*v[RHO];
-  /* AYW -- */
-  //rhs[RHOE] *= E_cost*UNIT_DENSITY*UNIT_DENSITY/(CONST_mp*CONST_mp);
-  rhs[RHOE] *= E_cost*UNIT_DENSITY*UNIT_DENSITY/(CONST_amu*mu*CONST_amu*mu);
-  /* -- AYW */
+    while (klo != (khi - 1)) {
+        kmid = (klo + khi) / 2;
+        Tmid = T_tab[kmid];
+        if (T <= Tmid) {
+            khi = kmid;
+        } else if (T > Tmid) {
+            klo = kmid;
+        }
+    }
+
+    /* Note, Ecost is normalization for Lambda * n^2 [erg cm-3 s-1] into code units when multiplied.
+     * rhs[RHOE] is the rate of change of v[RHOE]. */
+    dT = T_tab[khi] - T_tab[klo];
+    scrh = L_tab[klo] * (T_tab[khi] - T) / dT + L_tab[khi] * (T - T_tab[klo]) / dT;
+    rhs[RHOE] = -scrh * v[RHO] * v[RHO];
+    // rhs[RHOE] *= E_cost * UNIT_DENSITY * UNIT_DENSITY / (CONST_amu * CONST_amu);
+    rhs[RHOE] *= E_cost * UNIT_DENSITY * UNIT_DENSITY / (CONST_amu * CONST_amu * mu * mu);
 }
 #undef T_MIN
+
 /* ******************************************************************* */
 double MeanMolecularWeight (double *V)
 /*
@@ -114,52 +124,57 @@ double MeanMolecularWeight (double *V)
  *
  ********************************************************************* */
 {
-  /* AYW -- 2012-10-02 15:28 JST
-   * Note this file is just for tabulated cooling!
-   * When no cooling is available there is a MeanMolecularWeight
-   * function in abundances.c.
-   * */
+
+/* AYW -- 2012-10-02 15:28 JST
+ * Note this file is just for tabulated cooling!
+ * When no cooling is available there is a MeanMolecularWeight
+ * function in abundances.c.
+ * */
 
 #if MU_CALC == MU_TABLE
 
-  int il;
-  double por, r1, r2, frac;
-  double y0, y1, y2, y3;
+    int il;
+    double por;
 
-  if (mu_por == NULL){
-    rMuTable()
-  }
+    if (mu_por == NULL) {
+        ReadMuTable();
+    }
 
-  /* Value of T/mu in cgs */
-  por = V[PRS]/V[RHO]*KELVIN
+    /* Value of p/rho in code units */
+    por = V[PRS] / V[RHO];
 
-  /* Find cell left index to interpolate at */
-  il = hunter(mu_rad, mu_ndata, por);
+    /* Interpolate */
+    return InterpolationWrapper(mu_por, mu_mu, mu_ndata, por);
 
-  /* Linear fractional location of por in cell */
-  r1 = mu_por[il];
-  r2 = mu_por[il+1];
-  frac = (r - r1)/(r2 - r1);
-
-  /* Mu interpolation */
-  y0 = mu_mu[il-1];
-  y1 = mu_mu[il];
-  y2 = mu_mu[il+1];
-  y3 = mu_mu[il+2];
-  return CubicCatmullRomInterpolate(y0, y1, y2, y3, frac);
 
 #elif MU_CALC == MU_FRACTIONS
 
-  return  ( (A_H + frac_He*A_He + frac_Z*A_Z) /
-            (2.0 + frac_He + 2.0*frac_Z - 0.0));
+    return  ( (A_H + frac_He*A_He + frac_Z*A_Z) /
+                  (2.0 + frac_He + 2.0*frac_Z - 0.0));
+
+#elif MU_CALC == MU_ANALYTIC
+
+    /* Value of log10(p/rho) in cgs units */
+    double por;
+    por = log10(V[PRS] / V[RHO] * vn.pres_norm / vn.dens_norm);
+
+    static double a = 11.48648535;
+    static double w = 0.62276904;
+    static double m = 1.25;
+    double tanh_factor;
+
+    tanh_factor = tanh((por - a) / w);
+    return 0.5 * (MU_NORM + m) + 0.5 * tanh_factor * (MU_NORM - m);
+
+#elif MU_CALC == MU_CONST
+
+    return (MU_NORM);
 
 #else
 
-  return (MU_NORM);
+    return (MU_NORM);
 
 #endif
 
 }
-
-
 

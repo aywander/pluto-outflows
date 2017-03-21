@@ -263,6 +263,8 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
  *
  *********************************************************************** */
 {
+
+    // TODO: After all the modules are isolated, move the below variables into the respective module sections
     int i, j, k, nv;
     double *x1, *x2, *x3;
     double *dV1, *dV2, *dV3;
@@ -322,15 +324,23 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
         /* Accretion and Nozzle */
 
-        /* Note - this condition prevents interprocessor communications.
-         * It is not strictly necessary. */
+        /* Note - this condition prevents interprocessor communications
+         * beyond here and is not strictly necessary. */
         // TODO: Consider removing this condition
         if (SphereIntersectsDomain(grid, nz.sph)) {
 
-            // TODO: Separate ACCRETION from NOZZLE (if possible)
+            // TODO: Separate ACCRETION from NOZZLE
+            // TODO: Create a AGN switch, and change NOZZLE to AGN_NOZZLE
 #if ACCRETION == YES
             /* Create buffer array for internal sink region solution */
             Vc_new = ARRAY_4D(NVAR, NX3_TOT, NX2_TOT, NX1_TOT, double);
+
+            /* Update outflow state according to accretion */
+#if FEEDBACK_CYCLE == YES
+            SetOutflowState(&os);
+
+#endif
+
 #endif
 
 
@@ -578,6 +588,8 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 }
 
 
+// TODO: Use vector only for relativistic simulations (?)
+
 #if BODY_FORCE != NO
 /* ********************************************************************* */
 void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
@@ -666,16 +678,18 @@ double BodyForcePotential(double x1, double x2, double x3)
     /* Common variables */
     double r, pot;
 
-    /* Hernquist potential */
+    /* Hernquist potential, given a "galaxy" mass. */
 #if GRAV_POTENTIAL == GRAV_HERNQUIST
 
-    double a, rho0;
+    double a, mg;
 
     r = SPH1(x1, x2, x3);
     a = g_inputParam[PAR_HRAD] * ini_code[PAR_HRAD];
-    rho0 = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
+    mg = g_inputParam[PAR_MGAL] * ini_code[PAR_MGAL];
 
-    pot = 2. * CONST_PI * CONST_G / vn.newton_norm * rho0 * a * a / (1. + r / a);
+    pot = - mg * CONST_G / vn.newton_norm / (r + a);
+
+//    pot = 2. k* CONST_PI * CONST_G / vn.newton_norm * rho0 * a * a / (1. + r / a);
 
 
     /* Gravity table */

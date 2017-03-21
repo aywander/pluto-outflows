@@ -1,6 +1,10 @@
+#include "abundances.h"
 #include "pluto.h"
 #include "pluto_usr.h"
-#include "abundances.h"
+#include "read_mu_table.h"
+#include "interpolation.h"
+#include "init_tools.h"
+
 
 #if COOLING == NO
 
@@ -15,7 +19,7 @@
 #define A_H      1.008   /*   atomic weight of Hydrogen  */
 
 /* ******************************************************************* */
-real MeanMolecularWeight (real *V)
+double MeanMolecularWeight (real *V)
 /* This function is reproduced here because without the cooling function
  * the mean molecular weight function is not compiled in. 
  *   Changing the abundances every time a new problem is set up is 
@@ -23,11 +27,51 @@ real MeanMolecularWeight (real *V)
  *
  ********************************************************************* */
 {
-  //return (0.5)
-  return (0.6156);
-  //return  ( (A_H + frac_He*A_He + frac_Z*A_Z) /
-  //           (2.0 + frac_He + 2.0*frac_Z - 0.0)); 
-  
+#if MU_CALC == MU_TABLE
+
+    int il;
+    double por;
+
+    if (mu_por == NULL) {
+        ReadMuTable();
+    }
+
+    /* Value of p/rho in code units */
+    por = V[PRS] / V[RHO];
+
+    /* Interpolate */
+    return InterpolationWrapper(mu_por, mu_mu, mu_ndata, por);
+
+
+#elif MU_CALC == MU_FRACTIONS
+
+    return  ( (A_H + frac_He*A_He + frac_Z*A_Z) /
+                  (2.0 + frac_He + 2.0*frac_Z - 0.0));
+
+#elif MU_CALC == MU_ANALYTIC
+
+    /* Value of log10(p/rho) in cgs units */
+    double por;
+    por = log10(V[PRS] / V[RHO] * vn.pres_norm / vn.dens_norm);
+
+    static double a = 11.48648535;
+    static double w = 0.62276904;
+    static double m = 1.25;
+    double tanh_factor;
+
+    tanh_factor = tanh((por - a) / w);
+    return 0.5 * (MU_NORM + m) + 0.5 * tanh_factor * (MU_NORM - m);
+
+#elif MU_CALC == MU_CONST
+
+    return (MU_NORM);
+
+#else
+
+    return (MU_NORM);
+
+#endif
+
 }
 
 #endif

@@ -7,6 +7,7 @@
 #include "clouds.h"
 #include "idealEOS.h"
 #include "hot_halo.h"
+#include "interpolation.h"
 
 /* ************************************************************** */
 int CloudCubePixel(int *el, const double x1,
@@ -136,8 +137,9 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
 {
 
     int il;
-    double r1, r2, y0, y1, y2, y3, frac, r_sph, r_cyl, phi, phi_cyl;
-    double dens, sigma_g2, wrho, wrho_cgs, wrad_cgs, wtrb, ek;
+    double r1, r2, y0, y1, y2, y3, frac;
+    double r_sph, r_cyl, phi_rz, phi_r0, phi_00;
+    double dens, sigma_g2, wrho, wrho_cgs, wrad_cgs, wtrb, ek2;
 
     /* The following are only some
      * profiles for the warm phase that produce
@@ -181,23 +183,24 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
 
 #endif
 
-    /* Gravitational potential (cgs from table, then turn into code units) */
-    r_sph = SPH1(x1, x2, x3);
-    phi = InterpolationWrapper(gr_rad, gr_phi, gr_ndata, r_sph);
+    /* Gravitational potential */
+    phi_rz = BodyForcePotential(x1, x2, x3);
+    phi_00 = BodyForcePotential(0, 0, 0);
 
     /* Is the potential non-spherical? */
-    ek = g_inputParam[PAR_WROT] * g_inputParam[PAR_WROT];
+    ek2 = g_inputParam[PAR_WROT] * g_inputParam[PAR_WROT];
 
-    if (ek > 0) {
+    if (ek2 > 0) {
 
         /* Now, the same for the cylindrical radius (in cgs) */
         r_cyl = CYL1(x1, x2, x3);
-        phi_cyl = InterpolationWrapper(gr_rad, gr_phi, gr_ndata, r_cyl);
+        phi_r0 = BodyForcePotential(r_cyl, 0, 0);
+//        phi_r0 = InterpolationWrapper(gr_rad, gr_phi, gr_ndata, r_cyl);
     }
 
     /* The profile */
-    // TODO: we used to assume that phi(0,0) = 0 Eqn 15. Sutherland & Bicknell (2007), but this is no longer the case if a BH potential is included.
-    dens = wrho * exp((-phi + phi_cyl * ek) / sigma_g2);
+    // TODO: Check if this still works if a BH potential is included.
+    dens = wrho * exp((-phi_rz + phi_r0 * ek2 + phi_00 * (1. - ek2)) / sigma_g2);
 
 
 #elif CLOUD_DENSITY == CD_HOMOGENEOUS

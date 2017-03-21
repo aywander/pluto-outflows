@@ -122,12 +122,10 @@ void HotHaloPrimitives(double *halo,
 
     double vel, scrh;
     double inv_unit_G;
-    double r, a, rs, rho0;
     double frac;
     double y0, y1, y2, y3, r1, r2;
     int iv, il, ic;
     static int once01 = 0;
-
 
     /* Initialize gravity arrays - as good as any other place to do it */
 #ifdef GRAV_TABLE
@@ -141,16 +139,27 @@ void HotHaloPrimitives(double *halo,
 
     /* Consider different distributions */
 
-    /* Hernquist potential (hydrostatic)*/
+    /* Hernquist potential (isothermal hydrostatic)*/
 #if GRAV_POTENTIAL == GRAV_HERNQUIST
+
+    double r, a, rs, rho0, phi, phi0, te, c2;
+
+    /* Thermodynamic parameters */
     rho0 = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
-    r = SPH1(x1, x2, x3);
+    te = g_inputParam[PAR_HTMP] * ini_cgs[PAR_HTMP];
+    c2 = g_gamma * CONST_kB * te  / (MU_CONST * CONST_amu) / vn.pot_norm;
+
+    /* Distribution scale */
     a = g_inputParam[PAR_HRAD] * ini_code[PAR_HRAD];
+    r = SPH1(x1, x2, x3);
     rs = r / a;
-    halo[RHO] = rho0 / (rs * pow((1 + rs), 3));
-    halo[PRS] = -2 * CONST_PI * CONST_G / vn.newton_norm * rho0 * rho0 * a * a *
-                (pow(1. + rs, -4) / 12. * (25. + 52. * rs + 42. * rs * rs + 12. * rs * rs * rs) -
-                log(1. + rs) + log(rs));
+
+    /* Values for the potential */
+    phi = BodyForcePotential(x1, x2, x3);
+    phi0 = BodyForcePotential(0, 0, 0);
+
+    halo[RHO] = rho0 * exp((phi - phi0) / c2);
+    halo[PRS] = halo[RHO] * c2;
 
 
     /* This is also the default */
@@ -165,7 +174,7 @@ void HotHaloPrimitives(double *halo,
     /* The density from the table is in units of cm^-3 */
     r = SPH1(x1, x2, x3);
     halo[RHO] = InterpolationWrapper(hot_rad, hot_rho, hot_ndata, r);
-    halo[RHO] = halo[RHO] * g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
+    halo[RHO] *= g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
 
 #if (GRAV_POTENTIAL == GRAV_SINGLE_ISOTHERMAL) || (GRAV_POTENTIAL == GRAV_DOUBLE_ISOTHERMAL)
 
@@ -175,7 +184,7 @@ void HotHaloPrimitives(double *halo,
 
     halo[PRS] = InterpolationWrapper(hot_rad, hot_prs, hot_ndata, r);
 
-#endif // if ISOTHERMAL
+#endif // if SINGLE_ or DOUBLE_ISOTHERMAL
 
 #endif // GRAV_POTENTIAL types
 

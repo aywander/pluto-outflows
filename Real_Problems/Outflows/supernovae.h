@@ -5,6 +5,7 @@
 #ifndef PLUTO_SUPERNOVAE_H
 #define PLUTO_SUPERNOVAE_H
 
+#include "pluto_usr.h"
 
 void SetSupernovaePhysics();
 
