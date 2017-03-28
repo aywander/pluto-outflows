@@ -8,20 +8,20 @@
   coordinates.
 
   \author A. Mignone (mignone@ph.unito.it)
-  \date   Sep 24, 2012
+  \date   Aug 24, 2015
 */
 /* ///////////////////////////////////////////////////////////////////// */
 #include "pluto.h"
 
-static void InitializeGrid (Input *, Grid *);
-static void MakeGrid       (int, Input *, double *, double *, double *);
+static void InitializeGrid (Runtime *, Grid *);
+static void MakeGrid       (int, Runtime *, double *, double *, double *);
 static void stretch_fun (double, double *, double *, double *);
 
 /* ********************************************************************* */
-void SetGrid (Input *INI, Grid *GXYZ)
+void SetGrid (Runtime *rtime, Grid *GXYZ)
 /*! 
  *
- * \param [in] INI pointer to Input structure
+ * \param [in]  rtime   pointer to a Runtime  structure
  * \param [out] GXYZ pointer to array of Grid structures
  * 
  *********************************************************************** */
@@ -34,9 +34,9 @@ void SetGrid (Input *INI, Grid *GXYZ)
   FILE *fg;
   double xpatch_lft, xpatch_rgt;
 
-  InitializeGrid(INI, GXYZ);
+  InitializeGrid(rtime, GXYZ);
 
-  i    = MAX(INI->npoint[0], MAX(INI->npoint[1], INI->npoint[2]));
+  i    = MAX(rtime->npoint[0], MAX(rtime->npoint[1], rtime->npoint[2]));
   dx   = ARRAY_1D(i + 2, double);
   xlft = ARRAY_1D(i + 2, double);
   xrgt = ARRAY_1D(i + 2, double);
@@ -47,19 +47,19 @@ void SetGrid (Input *INI, Grid *GXYZ)
     ngh = G->nghost;
 
     iL = ngh - 1;
-    MakeGrid (idim, INI, xlft, xrgt, dx);
-/*MakeGrid (idim, INI, G->xl_glob + iL, G->xr_glob + iL, G->dx_glob + iL); */
+    MakeGrid (idim, rtime, xlft, xrgt, dx);
+/*MakeGrid (idim, rtime, G->xl_glob + iL, G->xr_glob + iL, G->dx_glob + iL); */
 
   /* ---- Assign values to grid structure members ----  */
 
-    for (i = 1; i <= INI->npoint[idim]; i++) {
+    for (i = 1; i <= rtime->npoint[idim]; i++) {
       G->dx_glob[i + ngh - 1] = dx[i];
       G->xl_glob[i + ngh - 1] = xlft[i];
       G->xr_glob[i + ngh - 1] = xrgt[i];
     }
 
     iL = ngh;
-    iR = INI->npoint[idim] + ngh - 1;
+    iR = rtime->npoint[idim] + ngh - 1;
     if (idim < DIMENSIONS){
       G->xr_glob[iL - 1] = G->xl_glob[iL];
       G->xl_glob[iR + 1] = G->xr_glob[iR];
@@ -90,6 +90,7 @@ void SetGrid (Input *INI, Grid *GXYZ)
 /*  ---- define leftmost and rightmost domain extrema  ---- */
 
 
+      // TODO: Check if this is really a bug
       /* AYW -- This is a bug. This should be of the local domain.
        * Fixing here. */
       G->xi = G->xl[G->lbeg];
@@ -112,7 +113,7 @@ void SetGrid (Input *INI, Grid *GXYZ)
                        Write grid file 
    --------------------------------------------------------------------- */
 
-  sprintf (fname,"%s/grid.out", INI->output_dir);
+  sprintf (fname,"%s/grid.out", rtime->output_dir);
 #ifdef PLUTO3_Grid
   fg = fopen(fname,"w");
   for (idim = 0; idim < 3; idim++) {
@@ -135,7 +136,12 @@ void SetGrid (Input *INI, Grid *GXYZ)
 
     fg = fopen(fname,"w");
     fprintf (fg, "# ******************************************************\n");
+  #ifdef CHOMBO
+    fprintf (fg, "# PLUTO-Chombo %s (Base) Grid File\n",PLUTO_VERSION);
+  #else
     fprintf (fg, "# PLUTO %s Grid File\n",PLUTO_VERSION);
+  #endif
+
     fprintf (fg, "# Generated on  %s",asctime(localtime(&time_now)));
 
 /*    fprintf (fg, "# %s\n", getenv("PWD")); */
@@ -213,7 +219,7 @@ void FreeGrid (Grid *grid)
 }
 
 /* ********************************************************************* */
-void InitializeGrid (Input *INI, Grid *GXYZ)
+void InitializeGrid (Runtime *rtime, Grid *GXYZ)
 /*!
  * Allocate memory for grid arrays, set shortcut pointers 
  * for local grids.
@@ -229,7 +235,7 @@ void InitializeGrid (Input *INI, Grid *GXYZ)
 
     G = GXYZ + idim;
     if (GEOMETRY == CARTESIAN){
-      G->uniform = INI->grid_is_uniform[idim];
+      G->uniform = rtime->grid_is_uniform[idim];
     }else{ 
       G->uniform = 0;
     }
@@ -271,7 +277,7 @@ void InitializeGrid (Input *INI, Grid *GXYZ)
 }
 
 /* ********************************************************************* */
-void MakeGrid (int idim, Input *INI, double *xlft, double *xrgt, double *dx)
+void MakeGrid (int idim, Runtime *rtime, double *xlft, double *xrgt, double *dx)
 /*! 
  *
  *  Build grid nodes as defined by pluto.ini.
@@ -325,7 +331,7 @@ void MakeGrid (int idim, Input *INI, double *xlft, double *xrgt, double *dx)
   double dalpha, alpha, f, df;
   double dy;
 
-  nseg = INI->npatch[idim];
+  nseg = rtime->npatch[idim];
 
 /* ---------------------------------------------------
        for each patch, find the leftmost and 
@@ -333,15 +339,15 @@ void MakeGrid (int idim, Input *INI, double *xlft, double *xrgt, double *dx)
    --------------------------------------------------- */
 
   i_patch_lft[1] = 1;
-  i_patch_rgt[1] = INI->patch_npoint[idim][1];
-  x_patch_lft[1] = INI->patch_left_node[idim][1];
-  x_patch_rgt[1] = INI->patch_left_node[idim][2];
+  i_patch_rgt[1] = rtime->patch_npoint[idim][1];
+  x_patch_lft[1] = rtime->patch_left_node[idim][1];
+  x_patch_rgt[1] = rtime->patch_left_node[idim][2];
  
   for (iseg = 2; iseg <= nseg; iseg++) {
     i_patch_lft[iseg] = i_patch_rgt[iseg - 1] + 1;
-    i_patch_rgt[iseg] = i_patch_lft[iseg] + INI->patch_npoint[idim][iseg] - 1;
-    x_patch_lft[iseg] = INI->patch_left_node[idim][iseg];
-    x_patch_rgt[iseg] = INI->patch_left_node[idim][iseg + 1];
+    i_patch_rgt[iseg] = i_patch_lft[iseg] + rtime->patch_npoint[idim][iseg] - 1;
+    x_patch_lft[iseg] = rtime->patch_left_node[idim][iseg];
+    x_patch_rgt[iseg] = rtime->patch_left_node[idim][iseg + 1];
   }
 
   done_with_segment[0] = 0;
@@ -355,11 +361,11 @@ void MakeGrid (int idim, Input *INI, double *xlft, double *xrgt, double *dx)
     iL     = i_patch_lft[iseg];
     iR     = i_patch_rgt[iseg];
 
-    npoint = INI->patch_npoint[idim][iseg];
+    npoint = rtime->patch_npoint[idim][iseg];
 
 /*  ----  first process only uniform or logarithmic grids  ----  */
 
-    if (INI->patch_type[idim][iseg] == UNIFORM_GRID) {
+    if (rtime->patch_type[idim][iseg] == UNIFORM_GRID) {
 
       for (i = iL; i <= iR; i++) {
         dx[i]   = (xR - xL)/(double)(npoint);
@@ -368,11 +374,11 @@ void MakeGrid (int idim, Input *INI, double *xlft, double *xrgt, double *dx)
       }
       done_with_segment[iseg] = 1;
 
-    } else if ( INI->patch_type[idim][iseg] == LOGARITHMIC_INC_GRID ||
-                INI->patch_type[idim][iseg] == LOGARITHMIC_DEC_GRID) {
+    } else if ( rtime->patch_type[idim][iseg] == LOGARITHMIC_INC_GRID ||
+                rtime->patch_type[idim][iseg] == LOGARITHMIC_DEC_GRID) {
  
-      log_inc = INI->patch_type[idim][iseg] == LOGARITHMIC_INC_GRID;
-      log_dec = INI->patch_type[idim][iseg] == LOGARITHMIC_DEC_GRID;
+      log_inc = rtime->patch_type[idim][iseg] == LOGARITHMIC_INC_GRID;
+      log_dec = rtime->patch_type[idim][iseg] == LOGARITHMIC_DEC_GRID;
 
       dy  = log10( (xR + fabs(xL) - xL)/fabs(xL));
       dy /= (double) (npoint);
@@ -420,7 +426,7 @@ void MakeGrid (int idim, Input *INI, double *xlft, double *xrgt, double *dx)
       xR     = x_patch_rgt[iseg];
       iL     = i_patch_lft[iseg];
       iR     = i_patch_rgt[iseg];
-      npoint = INI->patch_npoint[idim][iseg];
+      npoint = rtime->patch_npoint[idim][iseg];
 
 /*  -----------------------------------------------------
      now find whether the segment to right (iseg+1) or 
@@ -437,7 +443,7 @@ void MakeGrid (int idim, Input *INI, double *xlft, double *xrgt, double *dx)
       otherwise process the grid    
     -----------------------------------------------------  */
 
-      if (INI->patch_type[idim][iseg] == STRETCHED_GRID && 
+      if (rtime->patch_type[idim][iseg] == STRETCHED_GRID &&
           next_seg_is != 0 && !done_with_segment[iseg]) {
 
 /*  ----------------------------------------------------------

@@ -66,12 +66,14 @@
 #define  PAR_LOMX                42
 #define  PAR_LCMX                43
 
-/* -- user-defined symbolic constants -- */
+/* [Beg] user-defined constants (do not change this line) */
 
 #define  MU_NORM                 0.60364
 #define  UNIT_DENSITY            (CONST_amu * MU_NORM)
 #define  UNIT_LENGTH             (1.e3 * CONST_pc)
 #define  UNIT_VELOCITY           (CONST_c)
+
+/* [End] user-defined constants (do not change this line) */
 
 /* -- supplementary constants (user editable) -- */ 
 

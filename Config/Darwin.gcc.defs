@@ -5,15 +5,12 @@
 ########################################################################
 
 CC       = gcc
-# AYW -- 
-#CFLAGS   = -c -fast -finline-functions -Winline -Wundef
-CFLAGS   = -c -O3 -finline-functions -Winline -Wundef
-# -- AYW
-LDFLAGS  = -bind_at_load -lm 
+CFLAGS   = -c -O3 
+LDFLAGS  = -lm 
 
 PARALLEL = FALSE
-USE_HDF5 = TRUE
-USE_PNG  = TRUE
+USE_HDF5 = FALSE
+USE_PNG  = FALSE
 
 #######################################
 # MPI additional spefications
@@ -27,10 +24,6 @@ endif
 #######################################
 
 ifeq ($(strip $(USE_HDF5)), TRUE)
-
- HDF5_LIB = /usr/local
- INCLUDE_DIRS += -I$(HDF5_LIB)/include
- LDFLAGS      += -L$(HDF5_LIB)/lib -lhdf5 -lz
 endif
 
 #######################################

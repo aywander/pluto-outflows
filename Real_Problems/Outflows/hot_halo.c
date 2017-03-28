@@ -8,11 +8,11 @@
 #include "hot_halo.h"
 #include "read_grav_table.h"
 #include "read_hot_table.h"
-#include "abundances.h"
 #include "idealEOS.h"
 #include "outflow.h"
 #include "accretion.h"
 #include "grid_geometry.h"
+#include "interpolation.h"
 
 
 /* ************************************************ */
@@ -172,7 +172,7 @@ void HotHaloPrimitives(double *halo,
 #elif defined(GRAV_TABLE)
 
     /* The density from the table is in units of cm^-3 */
-    r = SPH1(x1, x2, x3);
+    double r = SPH1(x1, x2, x3);
     halo[RHO] = InterpolationWrapper(hot_rad, hot_rho, hot_ndata, r);
     halo[RHO] *= g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
 

@@ -4,7 +4,7 @@
 #define  GEOMETRY                CARTESIAN
 #define  BODY_FORCE              POTENTIAL
 #define  COOLING                 TABULATED
-#define  INTERPOLATION           PARABOLIC
+#define  RECONSTRUCTION          PARABOLIC
 #define  TIME_STEPPING           RK3
 #define  DIMENSIONAL_SPLITTING   YES
 #define  NTRACER                 1

@@ -9,7 +9,7 @@
 
 
   \author A. Mignone (mignone@ph.unito.it)
-  \date   Sepy 10, 2012
+  \date   Sept 10, 2012
 */
 /* ///////////////////////////////////////////////////////////////////// */
 #include "pluto.h"
@@ -17,7 +17,6 @@
 #include "init_tools.h"
 #include "read_grav_table.h"
 #include "interpolation.h"
-#include "abundances.h"
 #include "accretion.h"
 #include "clouds.h"
 #include "grid_geometry.h"
@@ -588,7 +587,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 }
 
 
-// TODO: Use vector only for relativistic simulations (?)
+// TODO: Use vector only for relativistic simulations
 
 #if BODY_FORCE != NO
 /* ********************************************************************* */

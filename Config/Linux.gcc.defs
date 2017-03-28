@@ -4,13 +4,11 @@
 #             
 ########################################################################
 
-# CC       = mpicc
-# CC       = icc
 CC       = gcc
 CFLAGS   = -c -O3
 LDFLAGS  = -lm
 
-PARALLEL = True
+PARALLEL = FALSE
 USE_HDF5 = FALSE
 USE_PNG  = FALSE
 
@@ -26,10 +24,6 @@ endif
 #######################################
 
 ifeq ($(strip $(USE_HDF5)), TRUE)
- # HDF5_LIB      = /usr/local/lib/hdf5-serial
- HDF5_LIB      = /usr/local/lib/hdf5-parallel
- INCLUDE_DIRS += -I$(HDF5_LIB)/include
- LDFLAGS      += -L$(HDF5_LIB)/lib -lhdf5 -lz
 endif
 
 #######################################

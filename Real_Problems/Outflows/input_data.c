@@ -8,7 +8,7 @@
   The geometry and dimensions of the input grid can be different from 
   the actual grid employed by PLUTO, as long as the coordinate geometry
   transformation has been implemented.
-  The input grid and data fild_x1es should employ the same format and 
+  The input grid and data files should employ the same format and
   conventions employed by PLUTO. 
   
   - Gridfile: coordinates should be written using the PLUTO 4.0 grid format.
@@ -77,7 +77,7 @@ static double ***Vin[ID_MAX_NVAR]; /**< An array of 3D data values containing th
 /* This function shifts a coordinate by a multiple of the input cube width
    DM 11Aug15: Fixed bug. */
 double shift_idx(double x, const double xmin, const double xmax, 
-    const double id_x_beg, const double id_x_end) {
+                 const double id_x_beg, const double id_x_end) {
 
     if (x < id_x_beg || x > id_x_end) {
         if (x > xmin && x < xmax) {
@@ -762,21 +762,9 @@ void InputDataFree (void)
 {
     int nv;
     for (nv = 0; nv < id_nvar; nv++) {
-        /* free ((char *) Vin[nv][0][0]);
-         free ((char *) Vin[nv][0]);
-         free ((char *) Vin[nv]);
-        */
-
-        printf("inputdata free \n");
-
-        printf("test again: %lf %d \n", Vin[RHO][10][10][10], id_nvar);
-        // FreeArray3D(Vin[nv]);
         free((char *) Vin[nv][0][0]);
-        printf(" r 1\n");
         free((char *) Vin[nv][0]);
-        printf(" r 2\n");
         free((char *) Vin[nv]);
-        printf("done once \n");
     }
 }
 

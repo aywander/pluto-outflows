@@ -1,7 +1,6 @@
 #include "pluto.h"
 #include "pluto_usr.h"
 #include "idealEOS.h"
-#include "abundances.h"
 #include "init_tools.h"
 
 /* *************************************************************** */

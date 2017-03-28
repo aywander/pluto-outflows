@@ -5,15 +5,12 @@
 ########################################################################
 
 CC       = gcc
-# AYW -- 2013-01-10 15:39 JST
-#CFLAGS   = -c -g -O0 -Wall -Wno-unused-variable
-CFLAGS   = -c -g -Wall -Wno-unused-variable
-# -- AYW
+CFLAGS   = -c -g -O0 -Wall -Wno-unused-but-set-variable
 LDFLAGS  = -lm 
 
 PARALLEL = FALSE
-USE_HDF5 = TRUE
-USE_PNG  = TRUE
+USE_HDF5 = FALSE
+USE_PNG  = FALSE
 
 #######################################
 # MPI additional spefications
@@ -27,7 +24,7 @@ endif
 #######################################
 
 ifeq ($(strip $(USE_HDF5)), TRUE)
- HDF5_LIB      = /usr/local
+ HDF5_LIB      = /usr/local/lib/hdf5-serial
  INCLUDE_DIRS += -I$(HDF5_LIB)/include
  LDFLAGS      += -L$(HDF5_LIB)/lib -lhdf5 -lz
 endif

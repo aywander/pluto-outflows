@@ -6,8 +6,8 @@ project(PLUTO)
 # Set these
 
 set(PLUTO_SOURCE_DIR            /Users/ayw/dev/PLUTO)
-set(PROBLEM_TYPE                Real)
-set(PROBLEM                     Outflows)
+set(PROBLEM_TYPE                Test)
+set(PROBLEM                     HD/Jet)
 
 set(WITH_PARALLEL               OFF)
 set(WITH_PNG                    OFF)
@@ -16,11 +16,11 @@ set(WITH_ASYNC_IO               OFF)
 set(WITH_CHOMBO                 OFF)
 
 set(WITH_PHYSICS                HD)
-set(WITH_GEOMETRY               CARTESIAN)
+set(WITH_GEOMETRY               CYLINDRICAL)
 set(WITH_BODY_FORCE             NONE)
-set(WITH_COOLING                TABULATED)
-set(WITH_INTERPOLATION          PARABOLIC)
-set(WITH_TIME_STEPPING          RK3)
+set(WITH_COOLING                NONE)
+set(WITH_INTERPOLATION          LINEAR)
+set(WITH_TIME_STEPPING          RK2)
 
 set(WITH_PARTICLES              OFF)
 set(WITH_FARGO                  OFF)
@@ -40,6 +40,9 @@ set(WITH_GLM                    OFF)
 
 #_______________________________________________________________________________________________________________________
 # Main bit
+
+# The dependences of which files to build depending on which module can be found in the individual makefiles in the
+# module folders, and in AppendAdditionalFiles() in Tools/Python/define_problem.py .
 
 
 
@@ -104,6 +107,7 @@ if (PROBLEM STREQUAL Outflows)
             ${PROBLEM_DIR}/init_tools.h
             ${PROBLEM_DIR}/interpolation.c
             ${PROBLEM_DIR}/interpolation.h
+            ${PROBLEM_DIR}/mean_mol_weight.c
             ${PROBLEM_DIR}/multicloud_init.c
             ${PROBLEM_DIR}/multicloud_init.h
             ${PROBLEM_DIR}/outflow.c
@@ -116,17 +120,17 @@ if (PROBLEM STREQUAL Outflows)
             ${PROBLEM_DIR}/read_hot_table.h
             ${PROBLEM_DIR}/read_mu_table.c
             ${PROBLEM_DIR}/read_mu_table.h
-            ${PROBLEM_DIR}/supernovae.c
-            ${PROBLEM_DIR}/supernovae.h
+#            ${PROBLEM_DIR}/supernovae.c
+#            ${PROBLEM_DIR}/supernovae.h
             )
 
-    # Overwritten files
+    # Overridden files
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${PROBLEM_DIR}/cmd_line_opt.c
             ${PROBLEM_DIR}/input_data.c
             ${PROBLEM_DIR}/jet_domain.c
             ${PROBLEM_DIR}/main.c
-            #${PROBLEM_DIR}/mappers3D.c
+            #${PROBLEM_DIR}/mappers3D.c       # Not confident about the modifications inside
             ${PROBLEM_DIR}/set_grid.c
             ${PROBLEM_DIR}/startup.c
             ${PROBLEM_DIR}/userdef_output.c
@@ -139,7 +143,7 @@ elseif (PROBLEM STREQUAL SupernovaFeedback)
     set(SOURCE_FILES  ${SOURCE_FILES}
             )
 
-    # Overwritten files
+    # Overridden files
     set(SOURCE_FILES  ${SOURCE_FILES}
             )
 
@@ -158,8 +162,7 @@ elseif (PROBLEM STREQUAL RadiativeShock)
             ${PROBLEM_DIR}/shock.h
             )
 
-    # Overwritten files
-
+    # Overridden files
     # TODO: This was wrong (PROBLEM_DIR was SOURCE_DIR)! Might not compile now
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${PROBLEM_DIR}/cmd_line_opt.c
@@ -174,7 +177,7 @@ elseif (PROBLEM STREQUAL RadiativeShock)
 
 elseif (PROBLEM STREQUAL HD/Jet)
 
-    # TODO: Change the way problem-dependent overrides are handled
+    # TODO: Change the way problem-dependent overrides are handled. Not trivial as files in modules may be overridden.
     # Non-overridden Src files
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${SOURCE_DIR}/cmd_line_opt.c
@@ -185,7 +188,7 @@ elseif (PROBLEM STREQUAL HD/Jet)
             ${SOURCE_DIR}/startup.c
             )
 
-    # Overwritten files
+    # Overridden files
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${PROBLEM_DIR}/userdef_output.c
             )
@@ -196,7 +199,7 @@ endif()
 
 # Files under SRC. Used for all problems
 
-# TODO: Change the way problem-dependent overrides are handled
+# TODO: Change the way problem-dependent overrides are handled. Not trivial as files in modules may be overridden.
 set(SOURCE_FILES  ${SOURCE_FILES}
         ${SOURCE_DIR}/adv_flux.c
         ${SOURCE_DIR}/arrays.c
@@ -210,48 +213,49 @@ set(SOURCE_FILES  ${SOURCE_FILES}
         ${SOURCE_DIR}/doxy-comment.c
         ${SOURCE_DIR}/entropy_switch.c
         #${SOURCE_DIR}/failsafe.c                         # Never used
-        ${SOURCE_DIR}/flag.c
         ${SOURCE_DIR}/flag_shock.c
         ${SOURCE_DIR}/get_nghost.c
-        ${SOURCE_DIR}/globals.h
+        ${SOURCE_DIR}/globals.h                           # Modified
         ${SOURCE_DIR}/initialize.c
         #${SOURCE_DIR}/input_data.c                       # Override
         ${SOURCE_DIR}/int_bound_reset.c
         #${SOURCE_DIR}/jet_domain.c                       # Override
         ${SOURCE_DIR}/macros.h
         #${SOURCE_DIR}/main.c                             # Override
-        ${SOURCE_DIR}/mappers3D.c                        # Override
+        ${SOURCE_DIR}/mappers3D.c                         # Override
+#        ${SOURCE_DIR}/mean_mol_weight.c                  # Override
         ${SOURCE_DIR}/parabolic_flux.c
         ${SOURCE_DIR}/parabolic_rhs.c
         ${SOURCE_DIR}/parse_file.c
-        ${SOURCE_DIR}/pluto.h                            # modified
+        ${SOURCE_DIR}/pluto.h                             # Modified
         ${SOURCE_DIR}/prototypes.h
+        ${SOURCE_DIR}/rbox.c
         ${SOURCE_DIR}/restart.c
-        ${SOURCE_DIR}/rkc.c
+#        ${SOURCE_DIR}/rkc.c                              # Buggy (not used?)
+        ${SOURCE_DIR}/runtime_setup.c
         ${SOURCE_DIR}/set_geometry.c
         #${SOURCE_DIR}/set_grid.c                         # Overwritten
         ${SOURCE_DIR}/set_image.c
         ${SOURCE_DIR}/set_indexes.c
         ${SOURCE_DIR}/set_output.c
-        ${SOURCE_DIR}/setup.c
         ${SOURCE_DIR}/show_config.c
         ${SOURCE_DIR}/split_source.c
-        #${SOURCE_DIR}/startup.c                          # override
-        ${SOURCE_DIR}/structs.h                          # modified
+        #${SOURCE_DIR}/startup.c                          # Override
+        ${SOURCE_DIR}/structs.h                           # Modified
         ${SOURCE_DIR}/sts.c
         ${SOURCE_DIR}/tools.c
-        #${SOURCE_DIR}/userdef_output.c    # Override
-        #${SOURCE_DIR}/userdef_output.dt.c # unused?
-        #${SOURCE_DIR}/userdef_output.shock_tracking.c    # unused?
+        #${SOURCE_DIR}/userdef_output.c                   # Override
+        #${SOURCE_DIR}/userdef_output.dt.c                # Never used?
+        #${SOURCE_DIR}/userdef_output.shock_tracking.c    # Never used?
         ${SOURCE_DIR}/var_names.c
         ${SOURCE_DIR}/vec_pot_diff.c
         ${SOURCE_DIR}/vec_pot_update.c
-        ${SOURCE_DIR}/visc_flux.c
         ${SOURCE_DIR}/write_data.c
         ${SOURCE_DIR}/write_img.c
         ${SOURCE_DIR}/write_tab.c
         ${SOURCE_DIR}/write_vtk.c
 
+        ${SOURCE_DIR}/Math_Tools/math_interp.c
         ${SOURCE_DIR}/Math_Tools/math_lu_decomp.c
         ${SOURCE_DIR}/Math_Tools/math_misc.c
         ${SOURCE_DIR}/Math_Tools/math_ode.c
@@ -263,7 +267,6 @@ set(SOURCE_FILES  ${SOURCE_FILES}
 
         ${SOURCE_DIR}/Time_Stepping/update_stage.c
 
-        ${SOURCE_DIR}/States/findshock.c
         ${SOURCE_DIR}/States/flatten.c
         )
 
@@ -336,16 +339,14 @@ if (WITH_CHOMBO)
             ${SOURCE_DIR}/Chombo/amrPluto.cpp
             ${SOURCE_DIR}/Chombo/LevelPluto.cpp
             ${SOURCE_DIR}/Chombo/LevelPluto.H
-            ${SOURCE_DIR}/Chombo/PatchCTU.1D.cpp
-            ${SOURCE_DIR}/Chombo/PatchCTU.3D.cpp
-            ${SOURCE_DIR}/Chombo/PatchEuler.3D.cpp
+            ${SOURCE_DIR}/Chombo/PatchCTU.cpp
+            ${SOURCE_DIR}/Chombo/PatchEuler.cpp
             ${SOURCE_DIR}/Chombo/PatchGrid.H
             ${SOURCE_DIR}/Chombo/PatchPluto.cpp
             ${SOURCE_DIR}/Chombo/PatchPluto.H
             ${SOURCE_DIR}/Chombo/PatchStartup.cpp
             ${SOURCE_DIR}/Chombo/PatchTools.cpp
             ${SOURCE_DIR}/Chombo/TagCells.cpp
-            ${SOURCE_DIR}/Time_Stepping/update_stage.vChombo3.1.c
             )
 endif ()
 
@@ -353,34 +354,37 @@ endif ()
 # Physics
 
 if (WITH_PHYSICS STREQUAL HD)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/HD)
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/HD ${SOURCE_DIR}/MHD)
     set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/HD/ausm.c               # Buggy (but need)
+            ${SOURCE_DIR}/HD/ausm.c
             #${SOURCE_DIR}/HD/ausm_up.c           # Buggy (don't need)
             ${SOURCE_DIR}/HD/eigenv.c
             ${SOURCE_DIR}/HD/fluxes.c
+            ${SOURCE_DIR}/MHD/get_area_flux.c
             ${SOURCE_DIR}/HD/hll.c
             ${SOURCE_DIR}/HD/hll_speed.c
             ${SOURCE_DIR}/HD/hllc.c
             ${SOURCE_DIR}/HD/mappers.c
             ${SOURCE_DIR}/HD/mod_defs.h
             ${SOURCE_DIR}/HD/prim_eqn.c
-            ${SOURCE_DIR}/HD/rhs.c
-            ${SOURCE_DIR}/HD/riemann.c
-            #${SOURCE_DIR}/HD/riemann_full.c      # old implementation, don't need
+            ${SOURCE_DIR}/MHD/rhs.c
+            ${SOURCE_DIR}/MHD/rhs_source.c
+#            ${SOURCE_DIR}/HD/riemann_full.c       # Buggy (not used?)
             ${SOURCE_DIR}/HD/roe.c
-            ${SOURCE_DIR}/HD/rusanov-dw.c
+#            ${SOURCE_DIR}/HD/rusanov-dw.c         # Don't need
             ${SOURCE_DIR}/HD/set_solver.c
             ${SOURCE_DIR}/HD/tvdlf.c
+            ${SOURCE_DIR}/HD/two_shock.c
             )
 
 elseif (WITH_PHYSICS STREQUAL RHD)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/RHD)
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/RHD ${SOURCE_DIR}/RMHD)
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${SOURCE_DIR}/RHD/eigenv.c
             ${SOURCE_DIR}/RHD/energy_solve.c
             ${SOURCE_DIR}/RHD/entropy_solve.c
             ${SOURCE_DIR}/RHD/fluxes.c
+            ${SOURCE_DIR}/RMHD/four_vel.c
             ${SOURCE_DIR}/RHD/hll.c
             ${SOURCE_DIR}/RHD/hll_speed.c
             ${SOURCE_DIR}/RHD/hllc.c
@@ -388,11 +392,11 @@ elseif (WITH_PHYSICS STREQUAL RHD)
             ${SOURCE_DIR}/RHD/mod_defs.h
             ${SOURCE_DIR}/RHD/pressure_fix.c
             ${SOURCE_DIR}/RHD/prim_eqn.c
-            ${SOURCE_DIR}/RHD/rhs.c
-            ${SOURCE_DIR}/RHD/riemann.c
+            ${SOURCE_DIR}/RMHD/rhs.c
             ${SOURCE_DIR}/RHD/set_solver.c
             ${SOURCE_DIR}/RHD/tvdlf.c
-            ${SOURCE_DIR}/RHD/vel_limiter.c
+            ${SOURCE_DIR}/RHD/two_shock.c
+            ${SOURCE_DIR}/RMHD/vel_limiter.c
             )
 
 
@@ -402,6 +406,7 @@ elseif (WITH_PHYSICS STREQUAL MHD)
             ${SOURCE_DIR}/MHD/bckgrnd_field.c
             ${SOURCE_DIR}/MHD/eigenv.c
             ${SOURCE_DIR}/MHD/fluxes.c
+            ${SOURCE_DIR}/MHD/get_area_flux.c
             ${SOURCE_DIR}/MHD/hll.c
             ${SOURCE_DIR}/MHD/hll_speed.c
             ${SOURCE_DIR}/MHD/hllc.c
@@ -410,7 +415,8 @@ elseif (WITH_PHYSICS STREQUAL MHD)
             ${SOURCE_DIR}/MHD/mod_defs.h
             ${SOURCE_DIR}/MHD/prim_eqn.c
             ${SOURCE_DIR}/MHD/rhs.c
-            ${SOURCE_DIR}/MHD/roe.bckfld.c
+            ${SOURCE_DIR}/MHD/rhs_source.c
+#            ${SOURCE_DIR}/MHD/roe.bckfld.c          # Don't need
             ${SOURCE_DIR}/MHD/roe.c
             ${SOURCE_DIR}/MHD/set_solver.c
             ${SOURCE_DIR}/MHD/source.c
@@ -424,6 +430,7 @@ elseif (WITH_PHYSICS STREQUAL RMHD)
             ${SOURCE_DIR}/RMHD/energy_solve.c
             ${SOURCE_DIR}/RMHD/entropy_solve.c
             ${SOURCE_DIR}/RMHD/fluxes.c
+            ${SOURCE_DIR}/RMHD/four_vel.c
             ${SOURCE_DIR}/RMHD/hll.c
             ${SOURCE_DIR}/RMHD/hll_speed.c
             ${SOURCE_DIR}/RMHD/hllc.c
@@ -433,8 +440,11 @@ elseif (WITH_PHYSICS STREQUAL RMHD)
             ${SOURCE_DIR}/RMHD/pressure_fix.c
             ${SOURCE_DIR}/RMHD/prim_eqn.c
             ${SOURCE_DIR}/RMHD/quartic.c
+#            ${SOURCE_DIR}/RMHD/quartic.devel1.c       # Not used
+#            ${SOURCE_DIR}/RMHD/quartic.new.c          # Not used
+#            ${SOURCE_DIR}/RMHD/quartic.old.c          # Not used
             ${SOURCE_DIR}/RMHD/rhs.c
-            ${SOURCE_DIR}/RMHD/rusanov-dw.c
+#            ${SOURCE_DIR}/RMHD/rusanov-dw.c           # Not used
             ${SOURCE_DIR}/RMHD/set_solver.c
             ${SOURCE_DIR}/RMHD/source.c
             ${SOURCE_DIR}/RMHD/tvdlf.c
@@ -519,20 +529,19 @@ if (WITH_COOLING STREQUAL H2_COOL)
             ${SOURCE_DIR}/Cooling/H2_COOL/maxrate.c
             ${SOURCE_DIR}/Cooling/H2_COOL/pluto.ini
             ${SOURCE_DIR}/Cooling/H2_COOL/radiat.c
-            ${SOURCE_DIR}/Cooling/H2_COOL/radiat.new.c
             )
 
 elseif (WITH_COOLING STREQUAL TABULATED)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Cooling/Tab)
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Cooling/TABULATED)
     set(SOURCE_FILES ${SOURCE_FILES}
             ${PROBLEM_DIR}/cooling_source.c
             ${PROBLEM_DIR}/radiat.c
             ${SOURCE_DIR}/cooling_ode_solver.c
-            ${SOURCE_DIR}/Cooling/Tab/cooling.h
-            #${SOURCE_DIR}/Cooling/Tab/extract.c
-            ${SOURCE_DIR}/Cooling/Tab/jacobian.c
-            ${SOURCE_DIR}/Cooling/Tab/maxrate.c
-            #${SOURCE_DIR}/Cooling/Tab/radiat.c           # Override
+            ${SOURCE_DIR}/Cooling/TABULATED/cooling.h
+            #${SOURCE_DIR}/Cooling/TABULATED/extract.c
+            ${SOURCE_DIR}/Cooling/TABULATED/jacobian.c
+            ${SOURCE_DIR}/Cooling/TABULATED/maxrate.c
+            #${SOURCE_DIR}/Cooling/TABULATED/radiat.c           # Override
             )
 
 elseif (WITH_COOLING STREQUAL MINEQ)
@@ -570,8 +579,6 @@ elseif (WITH_COOLING STREQUAL SNEQ)
 else ()
     if (PROBLEM_TYPE STREQUAL Real)
         set(SOURCE_FILES ${SOURCE_FILES}
-                ${PROBLEM_DIR}/abundances.c
-                ${PROBLEM_DIR}/abundances.h
                 )
     endif()
 
@@ -600,6 +607,7 @@ elseif (WITH_EOS STREQUAL PVTE)
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/EOS/PVTE)
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${SOURCE_DIR}/EOS/PVTE/eos.h
+            ${SOURCE_DIR}/EOS/PVTE/fundamental_derivative.c
             ${SOURCE_DIR}/EOS/PVTE/internal_energy.c
             ${SOURCE_DIR}/EOS/PVTE/pvte_law.c
             ${SOURCE_DIR}/EOS/PVTE/pvte_law_dAngelo.c
@@ -625,19 +633,19 @@ endif ()
 
 if ((WITH_TIME_STEPPING STREQUAL RK2) OR (WITH_TIME_STEPPING STREQUAL RK3))
     set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Time_Stepping/rk_update.c
+            ${SOURCE_DIR}/Time_Stepping/rk_step.c
             )
 
 elseif (WITH_TIME_STEPPING STREQUAL CHARACTERISTIC_TRACING)
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${SOURCE_DIR}/States/char_tracing.c
-            ${SOURCE_DIR}/Time_Stepping/ctu_update.c
+            ${SOURCE_DIR}/Time_Stepping/ctu_step.c
             )
 
 elseif (WITH_TIME_STEPPING STREQUAL HANCOCK)
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${SOURCE_DIR}/States/hancock.c
-            ${SOURCE_DIR}/Time_Stepping/ctu_update.c
+            ${SOURCE_DIR}/Time_Stepping/ctu_step.c
             )
 endif()
 
@@ -646,7 +654,7 @@ endif()
 
 if (WITH_INTERPOLATION STREQUAL FLAT)
     set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/States/states_flat.c    # Bug in error statement
+            ${SOURCE_DIR}/States/flat_states.c
             )
 
 elseif (WITH_INTERPOLATION STREQUAL LINEAR)
@@ -667,14 +675,12 @@ elseif (WITH_INTERPOLATION STREQUAL PARABOLIC)
 
 elseif (WITH_INTERPOLATION STREQUAL WENO3)
     set(SOURCE_FILES  ${SOURCE_FILES}
-
-            ${SOURCE_DIR}/States/lim_coeff.c
-            ${SOURCE_DIR}/States/states_weno3.c
+            ${SOURCE_DIR}/States/weno3_states.c
             )
 
 elseif (WITH_INTERPOLATION STREQUAL LIMO3)
     set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/States/states_limo3.c
+            ${SOURCE_DIR}/States/limo3_states.c
             )
 
 endif ()
@@ -704,7 +710,7 @@ if (WITH_FD)
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${SOURCE_DIR}/fd_flux.c
             ${SOURCE_DIR}/fd_reconstruct.c
-            ${SOURCE_DIR}/States/states_fd.c
+            ${SOURCE_DIR}/States/fd_states.c
             )
 endif ()
 

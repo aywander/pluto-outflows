@@ -14,7 +14,6 @@
 #include "pluto.h"
 #include "pluto_usr.h"
 #include "init_tools.h"
-#include "abundances.h"
 
 /* Global struct and arrays for normalization */
 VarNorm vn;
@@ -118,7 +117,7 @@ void SetIniNormalization() {
     ini_cgs[PAR_HVX3] = GEOM_UNITS3(1, 1.e5);
     ini_cgs[PAR_HVRD] = 1.e5;
     ini_cgs[PAR_HRAD] = vn.l_norm;
-    ini_cgs[PAR_MGAL] = CONST_Msun;
+//    ini_cgs[PAR_MGAL] = CONST_Msun;
     ini_cgs[PAR_WRHO] = vn.dens_norm;
     ini_cgs[PAR_WTRB] = 1.e5;
     ini_cgs[PAR_WRAD] = vn.l_norm;
@@ -135,10 +134,10 @@ void SetIniNormalization() {
     ini_cgs[PAR_WVAN] = 1.e5;
     ini_cgs[PAR_SGAV] = 1.e5;
     ini_cgs[PAR_NCLD] = 1;
-    ini_cgs[PAR_SPOW] = 1;
-    ini_cgs[PAR_SDUR] = 1.e6 * year;
-    ini_cgs[PAR_SRAD] = vn.l_norm;
-    ini_cgs[PAR_SHGT] = vn.l_norm;
+//    ini_cgs[PAR_SPOW] = 1;
+//    ini_cgs[PAR_SDUR] = 1.e6 * year;
+//    ini_cgs[PAR_SRAD] = vn.l_norm;
+//    ini_cgs[PAR_SHGT] = vn.l_norm;
     ini_cgs[PAR_LOMX] = 1;
     ini_cgs[PAR_LCMX] = 1;
 
@@ -163,7 +162,7 @@ void SetIniNormalization() {
     ini_code[PAR_HVX3] = ini_cgs[PAR_HVX3] / GEOM_UNITS3(1, vn.v_norm);
     ini_code[PAR_HVRD] = ini_cgs[PAR_HVRD] / vn.v_norm;
     ini_code[PAR_HRAD] = ini_cgs[PAR_HRAD] / vn.l_norm;
-    ini_code[PAR_MGAL] = ini_cgs[PAR_MGAL] / vn.m_norm;
+//    ini_code[PAR_MGAL] = ini_cgs[PAR_MGAL] / vn.m_norm;
     ini_code[PAR_WRHO] = ini_cgs[PAR_WRHO] / vn.dens_norm;
     ini_code[PAR_WTRB] = ini_cgs[PAR_WTRB] / vn.v_norm;
     ini_code[PAR_WRAD] = ini_cgs[PAR_WRAD] / vn.l_norm;
@@ -180,10 +179,10 @@ void SetIniNormalization() {
     ini_code[PAR_WVAN] = ini_cgs[PAR_WVAN] / vn.v_norm;
     ini_code[PAR_SGAV] = ini_cgs[PAR_SGAV] / vn.v_norm;
     ini_code[PAR_NCLD] = ini_cgs[PAR_NCLD];
-    ini_code[PAR_SPOW] = ini_cgs[PAR_SPOW] / vn.power_norm;
-    ini_code[PAR_SDUR] = ini_cgs[PAR_SDUR] / vn.t_norm;
-    ini_code[PAR_SRAD] = ini_cgs[PAR_SRAD] / vn.l_norm;
-    ini_code[PAR_SHGT] = ini_cgs[PAR_SHGT] / vn.l_norm;
+//    ini_code[PAR_SPOW] = ini_cgs[PAR_SPOW] / vn.power_norm;
+//    ini_code[PAR_SDUR] = ini_cgs[PAR_SDUR] / vn.t_norm;
+//    ini_code[PAR_SRAD] = ini_cgs[PAR_SRAD] / vn.l_norm;
+//    ini_code[PAR_SHGT] = ini_cgs[PAR_SHGT] / vn.l_norm;
     ini_code[PAR_LOMX] = ini_cgs[PAR_LOMX];
     ini_code[PAR_LCMX] = ini_cgs[PAR_LCMX];
 

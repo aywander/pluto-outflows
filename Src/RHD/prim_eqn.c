@@ -21,24 +21,16 @@
   implements the source term part.
 
   \author A. Mignone (mignone@ph.unito.it)
-  \date   Jul 31, 2012
+  \date   July 03, 2015
 */
 /* ///////////////////////////////////////////////////////////////////// */
 #include "pluto.h"
 
-/* AYW -- 2014-11-21 18:36 JST 
- * Most ammendments here were adapted from ../HD/prim_eqn.c
- * -- AYW */
-
-
 /* ********************************************************************* */
-/* AYW  2014-11-21 18:07 JST */
 void PrimRHS (double *w, double *dw, double cs2, double h, double *Adw)
-//void PrimRHS (real *w, real *dw, real cs2, real h, real *Adw)
-/* -- AYW */
 /*!
  * Compute the matrix-vector multiplication \f$ A(\mathbf{v})\cdot 
- * \Delta\mathbf{v} \f$ where A is the matrix of the quasi-linear form 
+ * \Delta\mathbf{v} \f$ where \c A is the matrix of the quasi-linear form 
  * of the RHD equations.
  *
  * \param [in]  w    vector of primitive variables;
@@ -56,71 +48,69 @@ void PrimRHS (double *w, double *dw, double cs2, double h, double *Adw)
   double d_2, g2, scrh;
   double g, v1, v2, v3, gx2;
 
-  #if USE_FOUR_VELOCITY == YES
+#if RECONSTRUCT_4VEL
+  rho = w[RHO];
+  EXPAND(u1  = w[VXn];  ,
+         u2  = w[VXt];  ,
+         u3  = w[VXb];)
 
-   rho = w[RHO];
-   EXPAND(u1  = w[VXn];  ,
-          u2  = w[VXt];  ,
-          u3  = w[VXb];)
+  scrh = EXPAND(u1*u1, + u2*u2, + u3*u3);
+  g2   = 1.0 + scrh;
+  g    = sqrt(g2);
+  d_2  = g/(g2 - scrh*cs2);
 
-   scrh = EXPAND(u1*u1, + u2*u2, + u3*u3);
-   g2   = 1.0 + scrh;
-   g    = sqrt(g2);
-   d_2  = g/(g2 - scrh*cs2);
+/* Get 3vel  */
 
-   /* get three-vel  */
+  EXPAND(v1 = u1/g; ,
+         v2 = u2/g; ,
+         v3 = u3/g;)
 
-   EXPAND(v1 = u1/g; ,
-          v2 = u2/g; ,
-          v3 = u3/g;)
+  gx2 = 1.0/(1.0 - v1*v1);
 
-   gx2 = 1.0/(1.0 - v1*v1);
+  scrh = EXPAND(v1*dw[VXn], + v2*dw[VXt], + v3*dw[VXb]);
 
-   scrh = EXPAND(v1*dw[VXn], + v2*dw[VXt], + v3*dw[VXb]);
+  Adw[PRS] =  d_2*(rho*h*cs2*(dw[VXn] - v1*scrh)
+                      + u1*(1.0 - cs2)*dw[PRS]);
 
-   Adw[PRS] =  d_2*(rho*h*cs2*(dw[VXn] - v1*scrh)
-                       + u1*(1.0 - cs2)*dw[PRS]);
-
-   Adw[RHO] = v1*dw[RHO] - (v1*dw[PRS] - Adw[PRS])/(h*cs2);
+  Adw[RHO] = v1*dw[RHO] - (v1*dw[PRS] - Adw[PRS])/(h*cs2);
  
-   scrh = 1.0/(g*rho*h);
-   d_2  = u1*dw[PRS] - g*Adw[PRS];
+  scrh = 1.0/(g*rho*h);
+  d_2  = u1*dw[PRS] - g*Adw[PRS];
 
-   EXPAND(Adw[VXn] = v1*dw[VXn] + scrh*(dw[PRS] + u1*d_2);  ,
-          Adw[VXt] = v1*dw[VXt] + scrh*u2*d_2;                ,
-          Adw[VXb] = v1*dw[VXb] + scrh*u3*d_2;)
-
-   for (nv = NFLX; nv < NVAR; nv++) Adw[nv] = v1*dw[nv];         
-
-  #else
-
-   rho = w[RHO];
-   EXPAND(v1 = w[VXn];  ,
-          v2 = w[VXt];  ,
-          v3 = w[VXb];)
-
-   g2  = EXPAND(v1*v1, + v2*v2, + v3*v3);
-   d_2 = 1.0/(1.0 - g2*cs2);
-   g2  = 1.0/(1.0 - g2);
-
-   Adw[PRS] = d_2*(cs2*rho*h*dw[VXn] 
-               + v1*(1.0 - cs2)*dw[PRS]);
-
-   Adw[RHO] = v1*dw[RHO] - (v1*dw[PRS] - Adw[PRS])/(h*cs2);
+  EXPAND(Adw[VXn] = v1*dw[VXn] + scrh*(dw[PRS] + u1*d_2);  ,
+         Adw[VXt] = v1*dw[VXt] + scrh*u2*d_2;                ,
+         Adw[VXb] = v1*dw[VXb] + scrh*u3*d_2;)
   
-   scrh = 1.0/(g2*rho*h);
-   EXPAND(Adw[VXn] =  v1*dw[VXn] 
-                   + scrh*(dw[PRS] - v1*Adw[PRS]); ,
-          Adw[VXt] =  v1*dw[VXt] -  scrh*v2*Adw[PRS];  ,
-          Adw[VXb] =  v1*dw[VXb] -  scrh*v3*Adw[PRS];)
+#else
+  rho = w[RHO];
+  EXPAND(v1 = w[VXn];  ,
+         v2 = w[VXt];  ,
+         v3 = w[VXb];)
 
-   for (nv = NFLX; nv < NVAR; nv++) Adw[nv] = v1*dw[nv];
-  #endif
+  g2  = EXPAND(v1*v1, + v2*v2, + v3*v3);
+  d_2 = 1.0/(1.0 - g2*cs2);
+  g2  = 1.0/(1.0 - g2);
+
+  Adw[PRS] = d_2*(cs2*rho*h*dw[VXn] 
+              + v1*(1.0 - cs2)*dw[PRS]);
+
+  Adw[RHO] = v1*dw[RHO] - (v1*dw[PRS] - Adw[PRS])/(h*cs2);
+  
+  scrh = 1.0/(g2*rho*h);
+  EXPAND(Adw[VXn] =  v1*dw[VXn] 
+                  + scrh*(dw[PRS] - v1*Adw[PRS]); ,
+         Adw[VXt] =  v1*dw[VXt] -  scrh*v2*Adw[PRS];  ,
+         Adw[VXb] =  v1*dw[VXb] -  scrh*v3*Adw[PRS];)
+#endif
+
+#if NSCL > 0 
+  NSCL_LOOP(nv)  Adw[nv] = v1*dw[nv];
+#endif
 
 }
 
-/* ********************************************************************* */
-void PrimSource (const State_1D *state, int beg, int end,
+/* *********************************************************************  */
+void PrimSource (const State_1D *state, int beg, int end, 
                  double *a2, double *h, double **src, Grid *grid)
 /*!
  * Compute source terms of the RHD equations in primitive variables.
@@ -145,148 +135,99 @@ void PrimSource (const State_1D *state, int beg, int end,
  *
  *********************************************************************** */
 {
-  /* AYW -- 2014-11-24 01:38 JST */
-  //int    nv, i;
-  int    nv, i, j, k;
-  /* -- AYW */
+  int    nv, i;
   double r_1, scrh, alpha;
   double vel2, delta;
   double *q, *x1, *x2, *x3, g[3];
 
-  /* AYW -- 2014-11-21 18:33 JST */
-  double hscale; /* scale factor */
-  double *v, *vp, *A, *dV, r_inv, ct;
-  double *x1p, *x2p, *x3p;
-  double *dx1, *dx2, *dx3;
-  static double *phi_p;
-  /* -- AYW */
-
-  /* AYW -- 2014-11-21 18:34 JST */
-
-#if ROTATING_FRAME == YES
- print1 ("! PrimSource: does not work with rotations\n");
- QUIT_PLUTO(1);
-#endif
-
-  /* ----------------------------------------------------------
-   1. Memory allocation and pointer shortcuts 
-   ---------------------------------------------------------- */
-  if (phi_p == NULL) phi_p = ARRAY_1D(NMAX_POINT, double);
-  //if (gPhi == NULL) gPhi = ARRAY_1D(NMAX_POINT, double);
-  /* -- AYW */
-
-
   #if GEOMETRY == CYLINDRICAL
-   x1 = grid[IDIR].xgc; x1p = grid[IDIR].xr; dx1 = grid[IDIR].dx;
-   x2 = grid[JDIR].xgc; x2p = grid[JDIR].xr; dx2 = grid[JDIR].dx;
-   x3 = grid[KDIR].xgc; x3p = grid[KDIR].xr; dx3 = grid[KDIR].dx;
+   x1 = grid[IDIR].xgc;
+   x2 = grid[JDIR].xgc;
+   x3 = grid[KDIR].xgc;
   #else  
-   x1 = grid[IDIR].x; x1p = grid[IDIR].xr; dx1 = grid[IDIR].dx;
-   x2 = grid[JDIR].x; x2p = grid[JDIR].xr; dx2 = grid[JDIR].dx;
-   x3 = grid[KDIR].x; x3p = grid[KDIR].xr; dx3 = grid[KDIR].dx;
+   x1 = grid[IDIR].x; 
+   x2 = grid[JDIR].x; 
+   x3 = grid[KDIR].x; 
   #endif
 
-  /* AYW -- 2014-11-21 19:01 JST */
+  for (i = beg; i <= end; i++){
+  for (nv = NVAR; nv--;  ){
+    src[i][nv] = 0.0;
+  }}
 
-  A  = grid[g_dir].A;
-  dV = grid[g_dir].dV;
-  hscale  = 1.0;
+#if GEOMETRY == CARTESIAN
 
-  i = g_i; j = g_j; k = g_k;
-
-/* ----------------------------------------------------------
-     initialize all elements of src to zero
-   ---------------------------------------------------------- */
-
-  memset((void *)src[0], '\0',NMAX_POINT*NVAR*sizeof(double));
- 
-  //for (i = beg; i <= end; i++){
-  //for (nv = NVAR; nv--;  ){
-  //  src[i][nv] = 0.0;
-  //}}
-  //
-
-/* ----------------------------------------------------------
-   2. Compute geometrical source terms
-   ---------------------------------------------------------- */
-
-  /* -- AYW */
-
-  #if GEOMETRY == CARTESIAN
-
-   /* --  nothing to do here -- */
-   
-  #elif GEOMETRY == CYLINDRICAL 
+#elif GEOMETRY == CYLINDRICAL 
   
-   if (g_dir == IDIR){
-     for (i = beg; i <= end; i++) {
-
-       r_1  = 1.0/x1[i];
-       q    = state->v[i];
-       vel2 = EXPAND(q[VX1]*q[VX1], +q[VX2]*q[VX2], +q[VX3]*q[VX3]);
-
-       #if USE_FOUR_VELOCITY == YES
-        scrh    = sqrt(1.0 + vel2);
-        alpha   = q[VXn]*r_1*scrh/(1.0 + vel2*(1.0 - a2[i]));
-        scrh    = a2[i]*alpha;
-        print1 ("! Primitive source terms not yet implemented\n");
-        print1 ("! with 4-vel. Please try 3-vel\n");
-        QUIT_PLUTO(1);
-       #else
-        alpha = q[VXn]*r_1/(1.0 - a2[i]*vel2);
-        scrh  = a2[i]*(1.0 - vel2)*alpha;
-       #endif
-
-       src[i][RHO] = -q[RHO]*alpha;
-       EXPAND (src[i][VX1] = scrh*q[VX1];  ,
-               src[i][VX2] = scrh*q[VX2];  ,
-               src[i][VX3] = scrh*q[VX3];)
-
-       #if COMPONENTS == 3
-        EXPAND(src[i][iVR]   +=  q[iVPHI]*q[iVPHI]*r_1;   ,
-                                                          ,
-               src[i][iVPHI] += -q[iVPHI]*q[iVR]*r_1;)
-       #endif
-
-       src[i][PRS] = -a2[i]*q[RHO]*h[i]*alpha;
-
-     }
-   }
-
-  #elif GEOMETRY == SPHERICAL && DIMENSIONS == 1 && COMPONENTS == 1
-
-   if (g_dir == IDIR){
-     for (i = beg; i <= end; i++) {
+  if (g_dir == IDIR){
+    for (i = beg; i <= end; i++) {
  
-       r_1  = 1.0/x1[i];
-       q    = state->v[i];
-       vel2 = EXPAND(q[VX1]*q[VX1], +q[VX2]*q[VX2], +q[VX3]*u[VX3]);
+      r_1  = 1.0/x1[i];
+      q    = state->v[i];
+      vel2 = EXPAND(q[VX1]*q[VX1], +q[VX2]*q[VX2], +q[VX3]*q[VX3]);
 
-       #if USE_FOUR_VELOCITY == YES
-        print1 ("! Primitive source terms not yet implemented\n");
-        print1 ("! with 4-vel. Please try 3-vel\n");
-        QUIT_PLUTO(1);
-       #else
-        delta = 1.0 - vel2*a2[i];
-        scrh  = 2.0*q[iVR]/delta*r_1;
-       #endif
+      #if RECONSTRUCT_4VEL
+      scrh    = sqrt(1.0 + vel2);
+      alpha   = q[VXn]*r_1*scrh/(1.0 + vel2*(1.0 - a2[i]));
+      scrh    = a2[i]*alpha;
+      print1 ("! Primitive source terms not yet implemented\n");
+      print1 ("! with 4-vel. Please try 3-vel\n");
+      QUIT_PLUTO(1);
+      #else
+      alpha = q[VXn]*r_1/(1.0 - a2[i]*vel2);
+      scrh  = a2[i]*(1.0 - vel2)*alpha;
+      #endif
 
-       src[i][RHO] = -q[RHO]*scrh;
-       EXPAND (src[i][VX1] = scrh*q[VX1]*a2[i]*(1.0 - vel2);  ,
-               src[i][VX2] = scrh*q[VX2]*a2[i]*(1.0 - vel2);  ,
-               src[i][VX3] = scrh*q[VX3]*a2[i]*(1.0 - vel2);)
+      src[i][RHO] = -q[RHO]*alpha;
+      EXPAND (src[i][VX1] = scrh*q[VX1];  ,
+              src[i][VX2] = scrh*q[VX2];  ,
+              src[i][VX3] = scrh*q[VX3];)
 
-       src[i][PRS] = src[i][RHO]*h[i]*a2[i];
-     }
-   }
+      #if COMPONENTS == 3
+      EXPAND(src[i][iVR]   +=  q[iVPHI]*q[iVPHI]*r_1;   ,
+                                                        ,
+             src[i][iVPHI] += -q[iVPHI]*q[iVR]*r_1;)
+      #endif
 
-  #else 
+      src[i][PRS] = -a2[i]*q[RHO]*h[i]*alpha;
 
-   print1 ("! Primitive source terms not available for this geometry\n");
-   print1 ("! Please use RK integrators\n");
-   QUIT_PLUTO(1);
+    }
+  }
 
-  #endif   
+#elif GEOMETRY == SPHERICAL && DIMENSIONS == 1 && COMPONENTS == 1
+
+  if (g_dir == IDIR){
+    for (i = beg; i <= end; i++) {
+ 
+      r_1  = 1.0/x1[i];
+      q    = state->v[i];
+      vel2 = EXPAND(q[VX1]*q[VX1], +q[VX2]*q[VX2], +q[VX3]*u[VX3]);
+
+      #if RECONSTRUCT_4VEL 
+      print1 ("! PrimRHSD(): primitive source terms not yet implemented\n");
+      print1 ("!            with 4-vel. Please try 3-vel\n");
+      QUIT_PLUTO(1);
+      #else
+      delta = 1.0 - vel2*a2[i];
+      scrh  = 2.0*q[iVR]/delta*r_1;
+      #endif
+
+      src[i][RHO] = -q[RHO]*scrh;
+      EXPAND (src[i][VX1] = scrh*q[VX1]*a2[i]*(1.0 - vel2);  ,
+              src[i][VX2] = scrh*q[VX2]*a2[i]*(1.0 - vel2);  ,
+              src[i][VX3] = scrh*q[VX3]*a2[i]*(1.0 - vel2);)
+
+      src[i][PRS] = src[i][RHO]*h[i]*a2[i];
+    }
+  }
+
+#else 
+
+  print1 ("! PrimRHS(): primitive source terms not available for this geometry\n");
+  print1 ("!            Use RK integrators\n");
+  QUIT_PLUTO(1);
+
+#endif   
   
 /* -----------------------------------------------------------
                    Add body force
@@ -296,10 +237,7 @@ void PrimSource (const State_1D *state, int beg, int end,
    i = beg - 1;
    if (g_dir == IDIR) {
      #if BODY_FORCE & POTENTIAL
-      /* AYW -- 2014-11-24 01:22 JST */
-      phi_p[i] = BodyForcePotential(x1p[i], x2[g_j], x3[g_k]);
-      //gPhi[i] = BodyForcePotential(x1p[i], x2[g_j], x3[g_k]);
-      /* -- AYW */
+      gPhi[i] = BodyForcePotential(x1p[i], x2[g_j], x3[g_k]);
      #endif
      for (i = beg; i <= end; i++){
        #if BODY_FORCE & VECTOR
@@ -308,12 +246,8 @@ void PrimSource (const State_1D *state, int beg, int end,
         src[i][VX1] += g[g_dir];
        #endif
        #if BODY_FORCE & POTENTIAL
-        /* AYW -- 2014-11-24 01:24 JST */
-        phi_p[i]     = BodyForcePotential(x1p[i], x2[g_j], x3[g_k]); 
-        //gPhi[i]     = BodyForcePotential(x1p[i], x2[g_j], x3[g_k]); 
-        src[i][VX1] -= (phi_p[i] - phi_p[i-1])/(hscale*dx1[i]);
-        //src[i][VX1] -= (gPhi[i] - gPhi[i-1])/(hscale*dx1[i]);
-        /* -- AYW */
+        gPhi[i]     = BodyForcePotential(x1p[i], x2[g_j], x3[g_k]); 
+        src[i][VX1] -= (gPhi[i] - gPhi[i-1])/(hscale*dx1[i]);
        #endif
 
        #if DIMENSIONS == 1
@@ -324,10 +258,7 @@ void PrimSource (const State_1D *state, int beg, int end,
      }
    }else if (g_dir == JDIR){
      #if BODY_FORCE & POTENTIAL
-      /* AYW -- 2014-11-24 01:26 JST */
-      phi_p[i] = BodyForcePotential(x1[g_i], x2p[i], x3[g_k]);
-      //gPhi[i] = BodyForcePotential(x1[g_i], x2p[i], x3[g_k]);
-      /* -- AYW */
+      gPhi[i] = BodyForcePotential(x1[g_i], x2p[i], x3[g_k]);
      #endif
      for (i = beg; i <= end; i++){
        #if BODY_FORCE & VECTOR
@@ -336,12 +267,8 @@ void PrimSource (const State_1D *state, int beg, int end,
         src[i][VX2] += g[g_dir];
        #endif
        #if BODY_FORCE & POTENTIAL
-        /* AYW -- 2014-11-24 01:26 JST */
-        phi_p[i]     = BodyForcePotential(x1[g_i], x2p[i], x3[g_k]);
-        //gPhi[i]     = BodyForcePotential(x1[g_i], x2p[i], x3[g_k]);
-        src[i][VX2] -= (phi_p[i] - phi_p[i-1])/(hscale*dx2[i]);
-        //src[i][VX2] -= (gPhi[i] - gPhi[i-1])/(hscale*dx2[i]);
-        /* -- AYW */
+        gPhi[i]     = BodyForcePotential(x1[g_i], x2p[i], x3[g_k]);
+        src[i][VX2] -= (gPhi[i] - gPhi[i-1])/(hscale*dx2[i]);
        #endif
 
        #if DIMENSIONS == 2 && COMPONENTS == 3
@@ -350,10 +277,7 @@ void PrimSource (const State_1D *state, int beg, int end,
      }
    }else if (g_dir == KDIR){
      #if BODY_FORCE & POTENTIAL
-      /* AYW -- 2014-11-24 01:27 JST */
-      phi_p[i] = BodyForcePotential(x1[g_i], x2[g_j], x3p[i]);
-      //gPhi[i] = BodyForcePotential(x1[g_i], x2[g_j], x3p[i]);
-      /* -- AYW */
+      gPhi[i] = BodyForcePotential(x1[g_i], x2[g_j], x3p[i]);
      #endif
      for (i = beg; i <= end; i++){
        #if BODY_FORCE & VECTOR
@@ -362,12 +286,8 @@ void PrimSource (const State_1D *state, int beg, int end,
         src[i][VX3] += g[g_dir];
        #endif
        #if BODY_FORCE & POTENTIAL
-        /* AYW -- 2014-11-24 01:27 JST */
-        phi_p[i]     = BodyForcePotential(x1[g_i], x2[g_j], x3p[i]); 
-        //gPhi[i]     = BodyForcePotential(x1[g_i], x2[g_j], x3p[i]); 
-        src[i][VX3] -=  (phi_p[i] - phi_p[i-1])/(hscale*dx3[i]);
-        //src[i][VX3] -=  (gPhi[i] - gPhi[i-1])/(hscale*dx3[i]);
-        /* -- AYW */
+        gPhi[i]     = BodyForcePotential(x1[g_i], x2[g_j], x3p[i]); 
+        src[i][VX3] -=  (gPhi[i] - gPhi[i-1])/(hscale*dx3[i]);
        #endif
      }
    }

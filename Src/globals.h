@@ -65,7 +65,7 @@ long int NMAX_POINT;  /**< Maximum number of points among the three
 /*! \name Direction-dependent Vector Labels
     Vector indices permuted during sweeps are used to distinguish between 
     normal ("n"), tangent ("t") and bi-tangent ("b") directions.
-    In vector notations, \f$ \vec{b} = \vec{n} X \vec{t} \f$, they
+    In vector notations, \f$ \hvec{b} = \hvec{n} \times \hvec{t} \f$, they
     form a right-handed triad.
     Values are set in the SetIndex() function before commencing 
     integration.                                                        */
@@ -73,6 +73,10 @@ long int NMAX_POINT;  /**< Maximum number of points among the three
 int VXn, VXt, VXb; 
 int MXn, MXt, MXb;
 int BXn, BXt, BXb;
+#if DUST == YES
+  int VXn_D, VXt_D, VXb_D;
+  int MXn_D, MXt_D, MXb_D;
+#endif
 /**@} */
                
 int g_i; /**<  x1 grid index when sweeping along the x2 or x3 direction. */
@@ -108,13 +112,14 @@ double g_smallPressure = 1.e-12; /**< Small value for pressure fix. */
  * Need g_gamma also if EOS == TAUB.
  * Currently this doesn not seem to cause conflicts.
  * See also pluto.h. */
-//#if EOS == IDEAL 
+//#if EOS == IDEAL
 #if (EOS == IDEAL) || (EOS == TAUB)
 /* -- AYW */
  double g_gamma = 5./3.;
 #elif EOS == ISOTHERMAL
  double g_isoSoundSpeed = 1.0; /* g_isoSoundSpeed */
 #endif
+
 
 double g_time;     /**< The current integration time. */
 double g_dt;       /**< The current integration time step. */

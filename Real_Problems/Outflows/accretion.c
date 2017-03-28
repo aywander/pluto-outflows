@@ -378,8 +378,10 @@ void SphericalAccretionOutput() {
         static double next_output = -1;
         double accr_rate_msun_yr;
 
-        dir = GetOutputDir();
-        sprintf (fname, "%s/accretion_rate.dat", dir);
+        // TODO: complete this (if necessary)
+//        dir = GetOutputDir();
+//        sprintf(fname, "%s/accretion_rate.dat", dir);
+        sprintf(fname, "accretion_rate.dat");
 
         /* Open file if first timestep (but not restart).
          * We always write out the first timestep. */
