@@ -9,8 +9,8 @@ CFLAGS   = -c -O3
 LDFLAGS  = -lm 
 
 PARALLEL = FALSE
-USE_HDF5 = FALSE
-USE_PNG  = FALSE
+USE_HDF5 = TRUE
+USE_PNG  = TRUE
 
 #######################################
 # MPI additional spefications
@@ -24,6 +24,9 @@ endif
 #######################################
 
 ifeq ($(strip $(USE_HDF5)), TRUE)
+ HDF5_LIB      = /Users/ayw/dev/PLUTO/Lib/hdf5-serial
+ INCLUDE_DIRS += -I$(HDF5_LIB)/include
+ LDFLAGS      += -L$(HDF5_LIB)/lib -lhdf5 -lz
 endif
 
 #######################################

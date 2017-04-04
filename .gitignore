@@ -2,6 +2,15 @@
 **/*.sw*
 **/*.pyc
 Doxygen
-.svn
-Lab/
+Lib/
 .idea/
+cmake-build-debug/
+cmake-build-release/
+**/*h5
+**/*flt
+**/*out
+**/*dbl
+**/*vtk
+**/*log
+**/*xmf
+**/pluto

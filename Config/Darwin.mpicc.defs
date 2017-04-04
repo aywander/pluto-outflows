@@ -9,15 +9,15 @@ CFLAGS   = -c -O3
 LDFLAGS  = -lm 
 
 PARALLEL = TRUE   
-USE_HDF5 = FALSE
-USE_PNG  = FALSE
+USE_HDF5 = TRUE
+USE_PNG  = TRUE
 
 #######################################
 # MPI additional spefications
 #######################################
 
 ifeq ($(strip $(PARALLEL)), TRUE)
- USE_ASYNC_IO =    
+ USE_ASYNC_IO = FALSE
 endif
 
 #######################################
@@ -25,6 +25,9 @@ endif
 #######################################
 
 ifeq ($(strip $(USE_HDF5)), TRUE)
+ HDF5_LIB      = /Users/ayw/dev/PLUTO/Lib/hdf5-parallel
+ INCLUDE_DIRS += -I$(HDF5_LIB)/include
+ LDFLAGS      += -L$(HDF5_LIB)/lib -lhdf5 -lz
 endif
 
 #######################################

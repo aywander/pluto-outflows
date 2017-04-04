@@ -5,12 +5,12 @@ project(PLUTO)
 #_______________________________________________________________________________________________________________________
 # Set these
 
-set(PLUTO_SOURCE_DIR            /Users/ayw/dev/PLUTO)
-#set(PLUTO_SOURCE_DIR            C:/Users/Utilisateur/Desktop/PLUTO)
+#set(PLUTO_SOURCE_DIR            /Users/ayw/dev/PLUTO)
+set(PLUTO_SOURCE_DIR            C:/Users/Utilisateur/Desktop/PLUTO)
 set(PROBLEM_TYPE                Test)
 set(PROBLEM                     HD/Stellar_Wind)
 
-set(WITH_PARALLEL               OFF)
+set(WITH_PARALLEL               ON)
 set(WITH_PNG                    OFF)
 set(WITH_HDF5                   OFF)
 set(WITH_ASYNC_IO               OFF)
@@ -41,7 +41,7 @@ set(WITH_GLM                    OFF)
 
 # -- Library paths --
 
-set(HDF5_PATH ${PLUTO_SOURCE_DIR}/Lib)
+set(HDF5_PATH C:/cygwin64/home/Utilisateur/hdf5)
 
 #_______________________________________________________________________________________________________________________
 # Main bit
@@ -98,8 +98,8 @@ if (PROBLEM STREQUAL Outflows)
     # TODO: Automate necessary file link to run simulations
     # Executable output location
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/Accretion)
-#    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/IC5063)
-#    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/Outflow)
+    #    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/IC5063)
+    #    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/Outflow)
 
     # New files
     set(SOURCE_FILES  ${SOURCE_FILES}
@@ -130,8 +130,8 @@ if (PROBLEM STREQUAL Outflows)
             ${PROBLEM_DIR}/read_hot_table.h
             ${PROBLEM_DIR}/read_mu_table.c
             ${PROBLEM_DIR}/read_mu_table.h
-#            ${PROBLEM_DIR}/supernovae.c
-#            ${PROBLEM_DIR}/supernovae.h
+            #            ${PROBLEM_DIR}/supernovae.c
+            #            ${PROBLEM_DIR}/supernovae.h
             )
 
     # Overridden files
@@ -151,7 +151,7 @@ elseif (PROBLEM STREQUAL SupernovaFeedback)
 
     # Executable output location
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/SupernovaFeedback/Supernova)
-#    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/SupernovaFeedback/Starburst)
+    #    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/SupernovaFeedback/Starburst)
 
     # New files
     set(SOURCE_FILES  ${SOURCE_FILES}
@@ -253,22 +253,26 @@ set(SOURCE_FILES  ${SOURCE_FILES}
         ${SOURCE_DIR}/flag_shock.c
         ${SOURCE_DIR}/get_nghost.c
         ${SOURCE_DIR}/globals.h                           # Modified
+
         ${SOURCE_DIR}/initialize.c
         #${SOURCE_DIR}/input_data.c                       # Override
         ${SOURCE_DIR}/int_bound_reset.c
         #${SOURCE_DIR}/jet_domain.c                       # Override
         ${SOURCE_DIR}/macros.h
         #${SOURCE_DIR}/main.c                             # Override
+
         ${SOURCE_DIR}/mappers3D.c                         # Override
-#        ${SOURCE_DIR}/mean_mol_weight.c                  # Override
+
+        #        ${SOURCE_DIR}/mean_mol_weight.c                  # Override
         ${SOURCE_DIR}/parabolic_flux.c
         ${SOURCE_DIR}/parabolic_rhs.c
         ${SOURCE_DIR}/parse_file.c
         ${SOURCE_DIR}/pluto.h                             # Modified
+
         ${SOURCE_DIR}/prototypes.h
         ${SOURCE_DIR}/rbox.c
         ${SOURCE_DIR}/restart.c
-#        ${SOURCE_DIR}/rkc.c                              # Buggy (not used?)
+        #        ${SOURCE_DIR}/rkc.c                              # Buggy (not used?)
         ${SOURCE_DIR}/runtime_setup.c
         ${SOURCE_DIR}/set_geometry.c
         #${SOURCE_DIR}/set_grid.c                         # Overwritten
@@ -278,7 +282,9 @@ set(SOURCE_FILES  ${SOURCE_FILES}
         ${SOURCE_DIR}/show_config.c
         ${SOURCE_DIR}/split_source.c
         #${SOURCE_DIR}/startup.c                          # Override
+
         ${SOURCE_DIR}/structs.h                           # Modified
+
         ${SOURCE_DIR}/sts.c
         ${SOURCE_DIR}/tools.c
         #${SOURCE_DIR}/userdef_output.c                   # Override
@@ -320,17 +326,17 @@ if (WITH_PARALLEL)
 
     # ----
 
-    set(CMAKE_C_COMPILER /usr/local/bin/mpicc)
-    set(CMAKE_CXX_COMPILER /usr/local/bin/mpicxx)
+#    set(CMAKE_C_COMPILER /usr/local/bin/mpicc)
+#    set(CMAKE_CXX_COMPILER /usr/local/bin/mpicxx)
 
     # OR (https://cmake.org/pipermail/cmake/2015-April/060252.html)
 
-#    find_package(MPI REQUIRED)
-#    set(CMAKE_C_COMPILE_FLAGS ${CMAKE_C_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
-#    set(CMAKE_C_LINK_FLAGS ${CMAKE_C_LINK_FLAGS} ${MPI_LINK_FLAGS})
-#    set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
-#    set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
-#    set(LINK_LIBRARIES ${LINK_LIBRARIES} ${MPI_LIBRARIES})
+        find_package(MPI REQUIRED)
+        set(CMAKE_C_COMPILE_FLAGS ${CMAKE_C_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
+        set(CMAKE_C_LINK_FLAGS ${CMAKE_C_LINK_FLAGS} ${MPI_LINK_FLAGS})
+        set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
+        set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
+        set(LINK_LIBRARIES ${LINK_LIBRARIES} ${MPI_LIBRARIES})
 
     # ----
 
@@ -378,23 +384,32 @@ if (WITH_HDF5)
 
     if (WITH_PARALLEL)
         set(HDF5_PREFER_PARALLEL TRUE)
-        set(HDF5_ROOT ${HDF5_PATH}/hdf5-parallel)
+        set(HDF5_ROOT ${HDF5_PATH}/hdf5_parallel)
     else()
-        set(HDF5_ROOT ${HDF5_PATH}/hdf5-serial)
+        set(HDF5_ROOT ${HDF5_PATH}/hdf5_serial)
     endif ()
 
     find_package(HDF5 REQUIRED)
 
+#    set(CMAKE_LINK_LIBRARY_FLAG ${CMAKE_LINK_LIBRARY_FLAG} "-L ${HDF5_ROOT}/lib -Wl,-rpath ${HDF5_ROOT}/lib")
+#    set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-L ${HDF5_ROOT}/lib -Wl,-rpath ${HDF5_ROOT}/lib")
+#    set(CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS} "-L ${HDF5_ROOT}/lib -Wl,-rpath ${HDF5_ROOT}/lib")
+#    set(CMAKE_STATIC_LINKER_FLAGS ${CMAKE_STATIC_LINKER_FLAGS} "-L ${HDF5_ROOT}/lib -Wl,-rpath ${HDF5_ROOT}/lib")
+#    set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -L${HDF5_ROOT}/lib -Wl,-rpath ${HDF5_ROOT}/lib)
+#    set(CMAKE_STATIC_LINKER_FLAGS ${CMAKE_STATIC_LINKER_FLAGS} "-L ${HDF5_ROOT}/lib")
+
+    set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} ${HDF5_ROOT}/lib)
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${HDF5_INCLUDE_DIRS})
     set(LINK_LIBRARIES ${LINK_LIBRARIES} ${HDF5_LIBRARIES})
+    set(LINK_DIRECTORIES ${LINK_DIRECTORIES} ${HDF5_ROOT}/lib)
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_HDF5")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_HDF5 -L ${HDF5_ROOT}/lib")
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${SOURCE_DIR}/hdf5_io.c
             )
 endif ()
-
 
 if (WITH_ASYNC_IO)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_ASYNC_IO")
@@ -446,9 +461,9 @@ if (WITH_PHYSICS STREQUAL HD)
             ${SOURCE_DIR}/HD/prim_eqn.c
             ${SOURCE_DIR}/MHD/rhs.c
             ${SOURCE_DIR}/MHD/rhs_source.c
-#            ${SOURCE_DIR}/HD/riemann_full.c       # Buggy (not used?)
+            #            ${SOURCE_DIR}/HD/riemann_full.c       # Buggy (not used?)
             ${SOURCE_DIR}/HD/roe.c
-#            ${SOURCE_DIR}/HD/rusanov-dw.c         # Don't need
+            #            ${SOURCE_DIR}/HD/rusanov-dw.c         # Don't need
             ${SOURCE_DIR}/HD/set_solver.c
             ${SOURCE_DIR}/HD/tvdlf.c
             ${SOURCE_DIR}/HD/two_shock.c
@@ -494,7 +509,7 @@ elseif (WITH_PHYSICS STREQUAL MHD)
             ${SOURCE_DIR}/MHD/prim_eqn.c
             ${SOURCE_DIR}/MHD/rhs.c
             ${SOURCE_DIR}/MHD/rhs_source.c
-#            ${SOURCE_DIR}/MHD/roe.bckfld.c          # Don't need
+            #            ${SOURCE_DIR}/MHD/roe.bckfld.c          # Don't need
             ${SOURCE_DIR}/MHD/roe.c
             ${SOURCE_DIR}/MHD/set_solver.c
             ${SOURCE_DIR}/MHD/source.c
@@ -518,11 +533,11 @@ elseif (WITH_PHYSICS STREQUAL RMHD)
             ${SOURCE_DIR}/RMHD/pressure_fix.c
             ${SOURCE_DIR}/RMHD/prim_eqn.c
             ${SOURCE_DIR}/RMHD/quartic.c
-#            ${SOURCE_DIR}/RMHD/quartic.devel1.c       # Not used
-#            ${SOURCE_DIR}/RMHD/quartic.new.c          # Not used
-#            ${SOURCE_DIR}/RMHD/quartic.old.c          # Not used
+            #            ${SOURCE_DIR}/RMHD/quartic.devel1.c       # Not used
+            #            ${SOURCE_DIR}/RMHD/quartic.new.c          # Not used
+            #            ${SOURCE_DIR}/RMHD/quartic.old.c          # Not used
             ${SOURCE_DIR}/RMHD/rhs.c
-#            ${SOURCE_DIR}/RMHD/rusanov-dw.c           # Not used
+            #            ${SOURCE_DIR}/RMHD/rusanov-dw.c           # Not used
             ${SOURCE_DIR}/RMHD/set_solver.c
             ${SOURCE_DIR}/RMHD/source.c
             ${SOURCE_DIR}/RMHD/tvdlf.c
@@ -808,5 +823,4 @@ link_directories(${LINK_DIRECTORIES})
 link_libraries(${LINK_LIBRARIES})
 
 add_executable(pluto ${SOURCE_FILES})
-
 
