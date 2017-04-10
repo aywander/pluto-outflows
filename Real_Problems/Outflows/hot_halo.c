@@ -139,8 +139,14 @@ void HotHaloPrimitives(double *halo,
 
     /* Consider different distributions */
 
+#if (GRAV_POTENTIAL == NONE) || (GRAV_POTENTIAL == GRAV_HOMOGENEOUS)
+
+    halo[RHO] = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
+    halo[PRS] = PresIdealEOS(halo[RHO], g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP], MU_NORM);
+
+
     /* Hernquist potential (isothermal hydrostatic)*/
-#if GRAV_POTENTIAL == GRAV_HERNQUIST
+#elif GRAV_POTENTIAL == GRAV_HERNQUIST
 
     double r, a, rs, rho0, phi, phi0, te, c2;
 
@@ -163,10 +169,6 @@ void HotHaloPrimitives(double *halo,
 
 
     /* This is also the default */
-#elif (GRAV_POTENTIAL == GRAV_HOMOGENEOUS) || (GRAV_POTENTIAL == NONE)
-
-    halo[RHO] = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
-    halo[PRS] = PresIdealEOS(halo[RHO], g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP], MU_NORM);
 
 
 #elif defined(GRAV_TABLE)

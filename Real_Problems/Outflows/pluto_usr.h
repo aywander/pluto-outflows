@@ -98,18 +98,12 @@
 /* GRAV_POTENTIAL values. 
  * Gravitational Potential shape 
  * NONE for no potential.
- *
- * GRAV_FNAME <string>
- * GRAV_HNAME <string>
- * Gives the filename for the potential or
- * acceleration vector, and its header file.*/
+ * */
 #define GRAV_HOMOGENEOUS          1
 #define GRAV_HERNQUIST            2
 #define GRAV_HERNQUIST_NFW        3
 #define GRAV_SINGLE_ISOTHERMAL    4
 #define GRAV_DOUBLE_ISOTHERMAL    5
-#define GRAV_FNAME            "gravtable.dat"
-#define HOT_FNAME             "hottable.dat"
 
 
 /* JD_MODE values.
@@ -316,12 +310,25 @@
 #define GRAV_POTENTIAL NONE
 #endif
 
+
+/* Default
+
 /* Whether the gravity potential requires table */
 #if (GRAV_POTENTIAL == GRAV_HERNQUIST_NFW) || \
     (GRAV_POTENTIAL == GRAV_SINGLE_ISOTHERMAL) || \
     (GRAV_POTENTIAL == GRAV_DOUBLE_ISOTHERMAL)
 
 #define GRAV_TABLE
+
+/* Default gravity and hot halo filename */
+#ifndef GRAV_FNAME
+#define GRAV_FNAME            "gravtable.dat"
+#endif
+
+#ifndef HOT_FNAME
+#define HOT_FNAME             "hottable.dat"
+#endif
+
 #endif
 
 

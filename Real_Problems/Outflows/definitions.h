@@ -1,12 +1,12 @@
 #define  PHYSICS                 HD
 #define  DIMENSIONS              2
 #define  COMPONENTS              2
-#define  GEOMETRY                CARTESIAN
-#define  BODY_FORCE              POTENTIAL
-#define  COOLING                 TABULATED
+#define  GEOMETRY                SPHERICAL
+#define  BODY_FORCE              NONE
+#define  COOLING                 NONE
 #define  RECONSTRUCTION          PARABOLIC
 #define  TIME_STEPPING           RK3
-#define  DIMENSIONAL_SPLITTING   YES
+#define  DIMENSIONAL_SPLITTING   NO
 #define  NTRACER                 1
 #define  USER_DEF_PARAMETERS     39
 #define  USER_DEF_CONSTANTS      4
@@ -64,8 +64,8 @@
 /* [Beg] user-defined constants (do not change this line) */
 
 #define  MU_NORM                 0.60364
-#define  UNIT_DENSITY            CONST_amu * MU_NORM
-#define  UNIT_LENGTH             CONST_pc * 1.e3
+#define  UNIT_DENSITY            ((CONST_amu) * (MU_NORM))
+#define  UNIT_LENGTH             ((CONST_pc) * 1.e3)
 #define  UNIT_VELOCITY           CONST_c
 
 /* [End] user-defined constants (do not change this line) */
@@ -77,6 +77,8 @@
 #define  PRINT_TO_FILE          YES
 #define  INTERNAL_BOUNDARY      YES
 #define  SHOCK_FLATTENING       MULTID
-#define  ARTIFICIAL_VISCOSITY   NO
-#define  CHAR_LIMITING          YES
+#define  ARTIFICIAL_VISC        NO
 #define  LIMITER                MC_LIM
+#define  SHOW_TIME_STEPS        YES
+#define  CHAR_LIMITING          NO
+#define  PPM_ORDER              5

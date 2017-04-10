@@ -82,6 +82,8 @@
 #define  PRINT_TO_FILE          YES
 #define  INTERNAL_BOUNDARY      YES
 #define  SHOCK_FLATTENING       MULTID
-#define  ARTIFICIAL_VISCOSITY   NO
-#define  CHAR_LIMITING          YES
+#define  ARTIFICIAL_VISC        NO
 #define  LIMITER                MC_LIM
+#define  SHOW_TIME_STEPS        YES
+#define  CHAR_LIMITING          NO
+#define  PPM_ORDER              5

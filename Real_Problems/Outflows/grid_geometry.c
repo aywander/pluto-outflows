@@ -494,7 +494,7 @@ int SphereIntersectsDomain(struct GRID *grid, const double r) {
                                   (rcfii && cfii < r2) ||
                                   (rcfif && cfif < r2) ||
                                   (rcffi && cffi < r2) ||
-                                  (rcfff && cfff < r2))
+                                  (rcfff && cfff < r2));
 
 #endif
 

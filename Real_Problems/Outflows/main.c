@@ -49,9 +49,8 @@
 #include "pluto.h"
 #include "globals.h"
 
-/* AYW -- made this YES */
 #ifndef SHOW_TIME_STEPS
-  #define SHOW_TIME_STEPS  YES   /* -- show time steps due to advection,
+  #define SHOW_TIME_STEPS  NO   /* -- show time steps due to advection,
                                      diffusion and cooling */
 #endif
 

@@ -79,6 +79,7 @@
  * directly in the conversion macros.
  *   */
 
+// TODO: these macros should be used inside the conversion macros, and not as arguments to the most generic macros. This is because the realignment messes up the generality of the conversion macros.
 #define D_ZERO_CYL1(a)  a
 #define D_ZERO_CYL2(b)  D_SELECT(0, b, 0)
 #define D_ZERO_CYL3(c)  0
@@ -118,6 +119,7 @@
 #endif
 
 
+// TODO: remove dependencies outside of a geometry pair (so that you could change order in which they appear).
 
 /* CARTESIAN -- POLAR */
 /* The coordinate systems are always aligned the same way for all dimensions */
@@ -278,7 +280,7 @@
                                      SPH2POL1(x1, x2, x3)*sin(x3),\
                                      SPH2CYL2(x1, x2, x3),\
                                      SPH2POL1(x1, x2, x3)*sin(x3)) )
-#define SPH2CART3(x1, x2, x3) ( SPH2CYL2(x1, x2, x3) )
+#define SPH2CART3(x1, x2, x3) ( D_SELECT(0, 0, SPH2POL3(x1, x2, x3)) )
 
 #define VCART2SPH1(x1, x2, x3, v1, v2, v3) ( ((x1)*(v1) + (x2)*(v2) + (x3)*(v3))/(CART2SPH1(x1, x2, x3)) )
 //#define VCART2SPH1(x1, x2, x3, v1, v2, v3) ( SELECT(\
