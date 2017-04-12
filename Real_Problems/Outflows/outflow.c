@@ -43,15 +43,20 @@ void SetNozzleGeometry(Nozzle * noz) {
  ************************************************** */
 
     double ang, rad, sph, dir, dbh, omg, phi;
-    double cbh, orig, area, cone_height, cone_apex, isfan;
+    double cbh, orig, area, vol, cone_height, cone_apex;
+    int is_fan, is_two_sided;
 
     double small_angle = 1.e-12;
     double large = 1.e30;
 
     /* First determine if we are dealing with a cone or a parallel nozzle */
     ang = g_inputParam[PAR_OANG] * ini_code[PAR_OANG];
-    if (ang > small_angle) isfan = 1;
-    else isfan = 0;
+    if (ang > small_angle) is_fan = 1;
+    else is_fan = 0;
+
+    /* Determine if nozzle is one-sided */
+    if (FLOWAXIS(g_domBeg[IDIR], g_domBeg[JDIR], g_domBeg[KDIR]) < 0.) is_two_sided = 1;
+    else is_two_sided = 0;
 
 
 #if ACCRETION == YES && FEEDBACK_CYCLE == YES
@@ -95,20 +100,54 @@ void SetNozzleGeometry(Nozzle * noz) {
     orig = g_domBeg[FLOWAXIS(IDIR, JDIR, KDIR)];
 #endif
 
-    if (isfan) {
-        area = 2. * CONST_PI * (1. - cos(ang)) * pow(rad / sin(ang), 2);
+    /* Equations are in terms of rad, rather than sph,
+     * so that they are valid also if there are not internal boundaries. */
+
+    if (is_fan) {
 
         /* cone apex is only valid when cone is aligned with flow axis */
         cone_height = rad / tan(ang);
         cone_apex = orig - cone_height;
+
+        /* Area of nozzle */
+        double cone_side = rad / sin(ang);
+        area = 2. * CONST_PI * (1. - cos(ang)) * cone_side * cone_side;
+
+        /* Volume of nozzle. It is the revolved volume. */
+        // TODO: The volume is only valid in the case of two-sided galaxies, where dbh = 0.
+#if INTERNAL_BOUNDARY == YES
+        double spherical_cone_volume = area * cone_side / 3.;
+        double overlap_rad = rad * (1. - cbh / cone_height);
+        double overlap_volume = CONST_PI * overlap_rad * overlap_rad * (cone_height - cbh) / 3.;
+        vol = spherical_cone_volume - overlap_volume ;
+#else
+        vol = 0;
+#endif
+
     }
     else {
-        area = CONST_PI * rad * rad;
-
         cone_height = large;
         cone_apex = -large;
+
+        /* Area and volume of nozzle */
+        area = CONST_PI * rad * rad;
+
+        /* Volume of nozzle */
+        // TODO: The volume is only valid in the case of two-sided galaxies, where dbh = 0.
+#if INTERNAL_BOUNDARY == YES
+        vol = area * cbh;
+#else
+        vol = 0;
+#endif
+
     }
 
+    /* Power should always be the total power injected into box */
+    // TODO: Make sure two-sided and one-sided cases are consistent.
+    if (is_two_sided){
+        area *= 2.;
+        vol *= 2.;
+    }
 
     /* Some consistency checks */
 
@@ -134,8 +173,17 @@ void SetNozzleGeometry(Nozzle * noz) {
             /* TODO: Calculate minimum OSPH */
         }
     }
-#endif // INTERNAL_BOUNDARY
 
+#else // INTERNAL_BOUNDARY
+
+#if NOZZLE_FILL == NF_CONSERVATIVE
+
+    print1("Error: INTERNAL_BOUNDARY must be TRUE if NOZZLE_FILL == NF_CONSERVATIVE.");
+    QUIT_PLUTO(1);
+
+#endif
+
+#endif
 
     noz->ang = ang;
     noz->rad = rad;
@@ -147,9 +195,12 @@ void SetNozzleGeometry(Nozzle * noz) {
     noz->cbh = cbh;
     noz->orig = orig;
     noz->area = area;
+    noz->vol = vol;
     noz->cone_height = cone_height;
     noz->cone_apex = cone_apex;
-    noz->isfan = isfan;
+    noz->is_fan = is_fan;
+    noz->is_two_sided = is_two_sided;
+
 }
 
 
@@ -165,6 +216,10 @@ void SetOutflowState(OutflowState *ofs) {
     // TODO: Change g_inputParam[PAR_OPOW] -> nz.pow, etc, everywhere in code.
 
     // TODO: Some of these quantities need to be uptdated after restart.
+
+    // TODO: allow the possibilty to set fluxes directly if outflow is aligned with grid.
+
+    // TODO: Create freely expanding, self-similar solution inside nozzle (for improved interpolation).
 
     NOZZLE_SELECT(SetJetState(ofs), SetUfoState(ofs));
 
@@ -294,7 +349,9 @@ void SetJetState(OutflowState *ofs) {
 
     ofs->pow = power;
     ofs->mdt = chi;
-    ofs->spd = lorentz;
+    // NOTE: DANGER (when testing feedback cycle), changed from lorentz to speed.
+    //       Maybe this is OK, and only change chi to actual mdot. Check feedback cycle code.
+    ofs->spd = speed;
     ofs->rho = dens;
     ofs->prs = pres;
     ofs->eth = gmm1 * pres * speed * nz.area * lorentz * lorentz;
@@ -517,7 +574,7 @@ void OutflowVelocity(double *out_primitives, double speed,
     double cv1, cv2, cv3;
     double cv1p, cv2p, cv3p;
 
-    if (nz.isfan) {
+    if (nz.is_fan) {
 
 #if INTERNAL_BOUNDARY == YES
         /* If we're in the counter-nozzle region use mirror symmetric value of cx1p
@@ -683,7 +740,7 @@ int InNozzleRegion(const double x1, const double x2, const double x3) {
     D_SELECT(cx1p, cx2p, cx3p) = fabs(D_SELECT(cx1p, cx2p, cx3p));
 #endif
 
-    if (nz.isfan) {
+    if (nz.is_fan) {
 
         /* Shift so that cone apex is at (0,0,0) */
         D_SELECT(cx1p, cx2p, cx3p) -= nz.cone_apex;

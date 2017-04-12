@@ -22,12 +22,14 @@ typedef struct {
                               // = g_domBeg[FLOWAXIS(IDIR, JDIR, KDIR)];.
                               // Can be positive or negative.
     double area;              // Area through which flux is calculated.
+    double vol;               // Volume into which energy etc is dumped.
     double cone_height;       // Height of cone. Always positive.
     double cone_apex;         // Location of apex relative to (0,0,0)
                               // for a cone whose apex is on the flow axis.
                               // Can be used for a cone after RotateGrid2Nozzle transform.
                               // Can be positive or negative.
-    int isfan;                // Is the nozzle a fan (conical) or bullet-shaped (parallel)
+    int is_fan;               // Is the nozzle a fan (conical) or bullet-shaped (parallel)
+    int is_two_sided;         // Is the nozzle two-sided?
 } Nozzle;
 
 extern Nozzle nz;

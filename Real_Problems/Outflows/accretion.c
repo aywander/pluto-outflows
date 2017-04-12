@@ -101,7 +101,7 @@ int InSinkRegion(const double x1, const double x2, const double x3) {
     D_SELECT(cx1p, cx2p, cx3p) = fabs(D_SELECT(cx1p, cx2p, cx3p));
 #endif
 
-    if (nz.isfan) {
+    if (nz.is_fan) {
 
         /* Shift so that cone apex is at (0,0,0) */
         D_SELECT(cx1p, cx2p, cx3p) -= nz.cone_apex;

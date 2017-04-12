@@ -109,7 +109,7 @@ void Init (double *v, double x1, double x2, double x3)
     }
 
 
-#if NOZZLE != NONE
+#if (NOZZLE != NONE) && (NOZZLE_FILL == NF_PRIMITIVE)
 
     /* Initialize nozzle if we're in hemisphere around
      * nozzle inlet region, otherwise halo */
@@ -186,7 +186,7 @@ void Init (double *v, double x1, double x2, double x3)
 
 /* ********************************************************************* */
 void Analysis (const Data *d, Grid *grid)
-/*! 
+/*!
  *  Perform runtime data analysis.
  *
  * \param [in] d the PLUTO Data structure
@@ -194,6 +194,99 @@ void Analysis (const Data *d, Grid *grid)
  *
  *********************************************************************** */
 {
+
+    // TODO: move to separate function in outflows.c
+    // TODO: INTERNAL_BOUNDARY needs to be off for this? Or maybe just adjust flags.
+    /* Conservative NOZZLE_FILL Dump */
+
+#if (NOZZLE != NONE) && (NOZZLE_FILL == NF_CONSERVATIVE)
+
+    RBox *box = GetRBox(DOM, CENTER);
+
+//    if (g_time <= 0.) {
+//        PrimToCons3D(d->Vc, d->Uc, box);
+//    }
+    PrimToCons3D(d->Vc, d->Uc, box);
+
+    double *x1, *x2, *x3;
+    double *dV1, *dV2, *dV3;
+    double out_conservatives[NVAR];
+    int nv;
+
+    VAR_LOOP(nv) out_conservatives[nv] = 0.;
+
+    /* These are the geometrical central points */
+    x1 = grid[IDIR].x;
+    x2 = grid[JDIR].x;
+    x3 = grid[KDIR].x;
+
+    /* These are cell volumes */
+    dV1 = grid[IDIR].dV;
+    dV2 = grid[JDIR].dV;
+    dV3 = grid[KDIR].dV;
+
+    /* These are cell widths */
+    double *dx1, *dx2, *dx3;
+    dx1 = grid[IDIR].dx;
+    dx2 = grid[JDIR].dx;
+    dx3 = grid[KDIR].dx;
+
+    // TODO: Relativistic version
+#if (PHYSICS == RHD) || (PHYSICS == RMHD)
+    print1("Error: NOZZLE_FILL CONSERVATIVE not supported if PHYSICS is RHD or RMHD.");
+        QUIT_PLUTO(1);
+#endif
+
+    // TODO: Need both old and new timesteps here. Need to do this from main
+    double dt_nf = g_dt;
+
+    /* Total energy to dump per unit volume */
+    double energy_dump = os.pow * dt_nf / nz.vol;
+
+    /* Total mass to dump per unit volume */
+    double mass_dump = os.mdt * dt_nf / nz.vol;
+
+    /* Momentum input per unit volume */
+    double momentum_dump = mass_dump * os.spd;
+
+    /* Weights */
+    // Do uniform dump first.
+
+    // TODO: Conservative variables are specific energy ?
+    // TODO: Volume is incorrectly calculated
+
+    /* Apply on all cells in Nozzle region */
+    int k, j, i;
+    double cell_volume;
+    DOM_LOOP(k, j, i) {
+
+                if (InNozzleRegion(x1[i], x2[j], x3[k])) {
+
+//                    cell_volume = dV1[i] * dV2[j] * dV3[k];
+//                    out_conservatives[RHO] = mass_dump * cell_volume;
+//                    out_conservatives[ENG] = energy_dump * cell_volume;
+//                    OutflowVelocity(out_conservatives, momentum_dump * cell_volume, x1[i], x2[j], x3[k]);
+
+                    out_conservatives[RHO] = mass_dump;
+                    out_conservatives[ENG] = energy_dump;
+                    OutflowVelocity(out_conservatives, momentum_dump, x1[i], x2[j], x3[k]);
+
+//                    VAR_LOOP(nv) d->Uc[k][j][i][nv] += out_conservatives[nv];
+                    d->Uc[k][j][i][RHO] += out_conservatives[RHO];
+                    EXPAND(d->Uc[k][j][i][MX1] += out_conservatives[MX1];,
+                           d->Uc[k][j][i][MX2] += out_conservatives[MX2];,
+                           d->Uc[k][j][i][MX3] += out_conservatives[MX3];);
+                    d->Uc[k][j][i][ENG] += out_conservatives[ENG];
+
+                }
+
+            }
+
+    // TODO: The nozzle filling should maybe be done in eitehr rk_step or ctu_step, or in a rhs routine.
+    ConsToPrim3D(d->Uc, d->Vc, d->flag, box);
+
+
+#endif
 
     /* Accretion */
 
@@ -287,11 +380,8 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
     dV3 = grid[KDIR].dV;
 
 
-
-
 #if INTERNAL_BOUNDARY == YES
     if (side == 0) {    /* -- check solution inside domain -- */
-
 
 
 #if SUPERNOVAE
@@ -346,8 +436,8 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
             TOT_LOOP(k, j, i) {
 
 
-#if NOZZLE == NONE
-                        if (0)
+#if (NOZZLE == NONE) || (NOZZLE_FILL == NF_CONSERVATIVE)
+                        if (0) {}
 #else
                         if (InNozzleRegion(x1[i], x2[j], x3[k])) {
 
@@ -516,8 +606,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
                            as opposed to a half-galaxy simulation,
                            treat just like other _BEG boundaries    */
 
-                        if (FLOWAXIS(g_domBeg[IDIR], g_domBeg[JDIR], g_domBeg[KDIR]) < 0.) {
-
+                        if (nz.is_two_sided) {
                             HaloOuterBoundary(side, d, i, j, k, x1[i], x2[j], x3[k], &touch);
 
                         } // full galaxy
@@ -534,7 +623,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
                             mirror[FLOWAXIS(VX1, VX2, VX3)] *= -1.0;
 
-#if NOZZLE == NONE
+#if (NOZZLE == NONE) || (NOZZLE_FILL == NF_CONSERVATIVE)
                             for (nv = 0; nv < NVAR; ++nv) {
                                     d->Vc[nv][k][j][i] = mirror[nv];
                                 }

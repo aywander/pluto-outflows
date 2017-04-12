@@ -25,77 +25,102 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, const
  *
  ************************************************** */
 
+    // TODO: Also have a density and pressure condition for initiating touch.
 
-    int nv;
-    double vmag, vmag_small = 1.e-6;
     double halo_primitives[NVAR];
-    double vx1, vx2, vx3;
+    double rho, prs, vx1, vx2, vx3, vmag;
+    double rho_ini, prs_ini, vx1_ini, vx2_ini, vx3_ini, vmag_ini;
+    double rho_cond, prs_cond, vel_cond;
+    double fvel_small = 1.e-3;
+    double frho_small = 1.e-3;
+    double fprs_small = 1.e-3;
+    int nv;
 
+    /* Hot halo primitives */
     HotHaloPrimitives(halo_primitives, x1, x2, x3);
 
-    /* fill array */
-
-    /* Calculate velocity */
+    /* Get velocity, density, and prs from data */
     switch(side) {
         case X1_BEG:
             EXPAND(vx1 = d->Vc[VX1][k][j][IBEG];,
                    vx2 = d->Vc[VX2][k][j][IBEG];,
                    vx3 = d->Vc[VX3][k][j][IBEG];);
+            rho = d->Vc[RHO][k][j][IBEG];
+            prs = d->Vc[PRS][k][j][IBEG];
             break;
         case X1_END:
             EXPAND(vx1 = d->Vc[VX1][k][j][IEND];,
                    vx2 = d->Vc[VX2][k][j][IEND];,
                    vx3 = d->Vc[VX3][k][j][IEND];);
+            rho = d->Vc[RHO][k][j][IEND];
+            prs = d->Vc[PRS][k][j][IEND];
             break;
         case X2_BEG:
             EXPAND(vx1 = d->Vc[VX1][k][JBEG][i];,
                    vx2 = d->Vc[VX2][k][JBEG][i];,
                    vx3 = d->Vc[VX3][k][JBEG][i];);
+            rho = d->Vc[RHO][k][JBEG][i];
+            prs = d->Vc[PRS][k][JBEG][i];
             break;
         case X2_END:
             EXPAND(vx1 = d->Vc[VX1][k][JEND][i];,
                    vx2 = d->Vc[VX2][k][JEND][i];,
                    vx3 = d->Vc[VX3][k][JEND][i];);
+            rho = d->Vc[RHO][k][JEND][i];
+            prs = d->Vc[PRS][k][JEND][i];
             break;
         case X3_BEG:
             EXPAND(vx1 = d->Vc[VX1][KBEG][j][i];,
                    vx2 = d->Vc[VX2][KBEG][j][i];,
                    vx3 = d->Vc[VX3][KBEG][j][i];);
+            rho = d->Vc[RHO][KBEG][j][i];
+            prs = d->Vc[PRS][KBEG][j][i];
             break;
         case X3_END:
             EXPAND(vx1 = d->Vc[VX1][KEND][j][i];,
                    vx2 = d->Vc[VX2][KEND][j][i];,
                    vx3 = d->Vc[VX3][KEND][j][i];);
+            rho = d->Vc[RHO][KEND][j][i];
+            prs = d->Vc[PRS][KEND][j][i];
             break;
         default:
             QUIT_PLUTO(1);
     }
 
     vmag = VMAG(x1, x2, x3, vx1, vx2, vx3);
+    EXPAND(vx1_ini = halo_primitives[VX1];,
+           vx2_ini = halo_primitives[VX2];,
+           vx3_ini = halo_primitives[VX3];);
+    vmag_ini = VMAG(x1, x2, x3, vx1_ini, vx2_ini, vx3_ini);
+
+    /* Conditions */
+    vel_cond = vmag_ini > 0 ? (vmag - vmag_ini) / vmag_ini : vmag;
+    rho_cond = (rho - rho_ini) / rho_ini;
+    prs_cond = (prs - prs_ini) / prs_ini;
 
     /* Set outflow (zero grad) if cell outside boundary has some velocity,
      * else set to Hot halo. */
 
-    if (vmag > vmag_small || *touch == 1) {
+    if ( ( (vel_cond > fvel_small) && (rho_cond > frho_small) && (prs_cond > fprs_small) ) || *touch == 1 ) {
 
         switch(side) {
             case X1_BEG:
-                for (nv = 0; nv < NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][IBEG];
+                VAR_LOOP(nv) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][IBEG];
                 break;
             case X1_END:
-                for (nv = 0; nv < NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][IEND];
+                VAR_LOOP(nv) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][IEND];
                 break;
             case X2_BEG:
-                for (nv = 0; nv < NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][JBEG][i];
+                VAR_LOOP(nv) d->Vc[nv][k][j][i] = d->Vc[nv][k][JBEG][i];
                 break;
             case X2_END:
-                for (nv = 0; nv < NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][k][JEND][i];
+                VAR_LOOP(nv) d->Vc[nv][k][j][i] = d->Vc[nv][k][JEND][i];
                 break;
             case X3_BEG:
-                for (nv = 0; nv < NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][KBEG][j][i];
+                VAR_LOOP(nv) d->Vc[nv][k][j][i] = d->Vc[nv][KBEG][j][i];
                 break;
             case X3_END:
-                for (nv = 0; nv < NVAR; nv++) d->Vc[nv][k][j][i] = d->Vc[nv][KEND][j][i];
+                VAR_LOOP(nv) d->Vc[nv][k][j][i] = d->Vc[nv][KEND][j][i];
                 break;
             default:
                 QUIT_PLUTO(1);
@@ -300,7 +325,7 @@ int InFlankRegion(const double x1, const double x2, const double x3) {
     D_SELECT(cx1p, cx2p, cx3p) = fabs(D_SELECT(cx1p, cx2p, cx3p));
 #endif
 
-    if (nz.isfan) {
+    if (nz.is_fan) {
 
         /* Shift so that cone apex is at (0,0,0) */
         D_SELECT(cx1p, cx2p, cx3p) -= nz.cone_apex;

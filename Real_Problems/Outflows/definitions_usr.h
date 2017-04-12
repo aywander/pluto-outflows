@@ -1,6 +1,7 @@
 /* -- Own definitions choices -- */
 
 #define NOZZLE                      NOZZLE_UFO
+#define NOZZLE_FILL                 NF_CONSERVATIVE
 #define NOZZLE_CAP                  YES
 
 #define ACCRETION                   NO

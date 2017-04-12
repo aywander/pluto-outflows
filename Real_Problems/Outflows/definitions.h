@@ -1,7 +1,7 @@
 #define  PHYSICS                 HD
 #define  DIMENSIONS              2
 #define  COMPONENTS              2
-#define  GEOMETRY                SPHERICAL
+#define  GEOMETRY                CYLINDRICAL
 #define  BODY_FORCE              NONE
 #define  COOLING                 NONE
 #define  RECONSTRUCTION          PARABOLIC

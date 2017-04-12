@@ -20,9 +20,17 @@
  * Type of inlet nozzle 
  * This determines e.g. whether UfoPrimitives, 
  * JetPrimitives, etc are called.
- *   */
+ * */
 #define NOZZLE_JET      1
 #define NOZZLE_UFO      2
+
+/* NOZZLE_FILL values.
+ * How nozzle region is set.
+ * Either set primitives by overwriting them
+ * or dump energy and mass as conservative quantities
+ * */
+#define NF_PRIMITIVE    1
+#define NF_CONSERVATIVE 2
 
 
 /* Accretion */
@@ -153,6 +161,12 @@
 #ifndef NOZZLE
 #define NOZZLE NOZZLE_JET
 #endif
+
+
+#ifndef NOZZLE_FILL
+#define NOZZLE_FILL NF_PRIMITIVE
+#endif
+
 
 /* Use a hemispherical cap?
  * By default, if INTERNAL_BOUNDARY is off, a hemispherical
@@ -310,8 +324,6 @@
 #define GRAV_POTENTIAL NONE
 #endif
 
-
-/* Default
 
 /* Whether the gravity potential requires table */
 #if (GRAV_POTENTIAL == GRAV_HERNQUIST_NFW) || \
