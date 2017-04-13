@@ -18,6 +18,7 @@
 #define  THERMAL_CONDUCTION      NO
 #define  VISCOSITY               NO
 #define  ROTATING_FRAME          NO
+#define  RECONSTRUCT_4VEL        NO
 
 /* -- user-defined parameters (labels) -- */
 

@@ -519,6 +519,86 @@ void SetUfoState(OutflowState *ofs) {
 
 
 /* ************************************************ */
+void NozzleFill(const Data *d, const Grid *grid) {
+/*
+ * Dumps mass, momentum, and energy into nozzle region,
+ * according to nozzle parameters.
+ *
+ ************************************************** */
+
+    RBox *box = GetRBox(DOM, CENTER);
+
+    // Just for initialization, need to convert primitives to conservatives
+    // TODO: This may not be needed if this is modularized and attached somewhere else in main.c
+    if (g_time <= 0.) PrimToCons3D(d->Vc, d->Uc, box);
+
+    double *x1, *x2, *x3;
+    double out_conservatives[NVAR];
+    int nv;
+
+    /* zero buffer */
+    VAR_LOOP(nv) out_conservatives[nv] = 0.;
+
+    /* These are the geometrical central points */
+    x1 = grid[IDIR].x;
+    x2 = grid[JDIR].x;
+    x3 = grid[KDIR].x;
+
+
+    // TODO: Relativistic version
+#if (PHYSICS == RHD) || (PHYSICS == RMHD)
+    print1("Error: NOZZLE_FILL CONSERVATIVE not supported if PHYSICS is RHD or RMHD.");
+    QUIT_PLUTO(1);
+#endif
+
+    // TODO: Adjust volume for the case below
+#if GEOMETRY == SPHERICAL
+    if (g_domBeg[IDIR] > 0.) {
+        print1("Error: NOZZLE_FILL CONSERVATIVE not supported if (GEOMETRY == SPHERICAL) && (g_domBeg[IDIR] > 0.).");
+        QUIT_PLUTO(1);
+    }
+#endif
+
+    // TODO: Need both old and new timesteps here. Need to do this from main.c
+    double dt_nf = g_dt;
+
+    /* Total energy to dump per unit volume */
+    double energy_dump = os.pow * dt_nf / nz.vol;
+
+    /* Total mass to dump per unit volume */
+    double mass_dump = os.mdt * dt_nf / nz.vol;
+
+    /* Momentum input per unit volume */
+    double momentum_dump = mass_dump * os.spd;
+
+    /* Weights */
+    // Do uniform dump first.
+
+    // TODO: Conservative variables are specific energy ?
+    // TODO: Volume is incorrectly calculated for spherical setups; nothing is dumped in the excluded x1_beg region.
+
+    /* Apply on all cells in Nozzle region */
+    int k, j, i;
+    DOM_LOOP(k, j, i) {
+
+                if (InNozzleRegion(x1[i], x2[j], x3[k])) {
+
+                    out_conservatives[RHO] = mass_dump;
+                    out_conservatives[ENG] = energy_dump;
+                    OutflowVelocity(out_conservatives, momentum_dump, x1[i], x2[j], x3[k]);
+
+                    VAR_LOOP(nv) d->Uc[k][j][i][nv] += out_conservatives[nv];
+
+                }
+
+            }
+
+    /* Update primitives */
+    ConsToPrim3D(d->Uc, d->Vc, d->flag, box);
+}
+
+
+/* ************************************************ */
 void OutflowPrimitives(double *out_primitives, const double x1, const double x2, const double x3) {
 /*
  * Runs the relevant primitives function for nozzle flow.
@@ -800,3 +880,4 @@ double Profile(const double x1, const double x2, const double x3)
         return 1.0 / cosh(pow(cr / nz.rad, n));
     }
 }
+

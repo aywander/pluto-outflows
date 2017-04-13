@@ -776,7 +776,7 @@ double NextTimeStep (Time_Step *Dts, Runtime *ini, Grid *grid)
 
     DIM_LOOP(idim) Dts->cmax[idim] = 0.0;
     Dts->inv_dta = 0.0;
-  Dts->inv_dtp = 0.5e-38;
+    Dts->inv_dtp = 0.5e-38;
     Dts->dt_cool = 1.e38;
 
     return (dtnext);

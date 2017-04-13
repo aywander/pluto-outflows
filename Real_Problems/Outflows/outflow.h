@@ -59,6 +59,8 @@ void SetJetState(OutflowState *ofs);
 
 void SetUfoState(OutflowState *ofs);
 
+void NozzleFill(const Data *d, const Grid *grid);
+
 int InNozzleCap(const double x1, const double x2, const double x3);
 
 int InNozzleRegion(const double x1, const double x2, const double x3);
