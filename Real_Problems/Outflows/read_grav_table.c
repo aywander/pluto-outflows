@@ -5,7 +5,8 @@
 
 #ifdef GRAV_TABLE
 
-double *gr_rad, *gr_phi, *gr_vec;
+//double *gr_rad, *gr_phi, *gr_vec;
+double *gr_rad, *gr_phi;
 double *gr_dphidr;
 int gr_ndata;
 
@@ -15,12 +16,10 @@ void ReadGravTable() {
    * two-column file in code units. Columns are radius and potential or gravitational
    * acceleration, depending on whether GRAV_USE_POTENTIAL is YES or NO.
    *
-   * The values of these are filled into the global arrays gr_rad, gr_phi and gr_vec, gr_dphidr, which
+   * The values of these are filled into the global arrays gr_rad, gr_phi, and gr_dphidr, which
    * are used throughout the code.
    * 
    * Returns 0
-
-   ------(DM: Feb20, 2015): for GRAV=POTENTIAL read a three column table of r, phi, dphi/dr normalised to PLUTO units before read------
    *
    * */
 
@@ -43,23 +42,23 @@ void ReadGravTable() {
 
   /* Allocate memory for potential profile arrays */
   gr_rad = ARRAY_1D(gr_ndata, double);
-#if BODY_FORCE == POTENTIAL
+//#if BODY_FORCE == POTENTIAL
   gr_phi = ARRAY_1D(gr_ndata, double);
   gr_dphidr = ARRAY_1D(gr_ndata, double);
-#else
-  gr_vec = ARRAY_1D(gr_ndata, sizeof(double));
-#endif
+//#else
+//  gr_vec = ARRAY_1D(gr_ndata, double);
+//#endif
 
   /* Read data */
   fseek(f, 0, SEEK_SET);
   for (i = 0; i < gr_ndata; ++i) {
     fscanf(f, "%le ", &gr_rad[i]);
-#if BODY_FORCE == POTENTIAL
+//#if BODY_FORCE == POTENTIAL
     fscanf(f, "%le ", &gr_phi[i]);
     fscanf(f, "%le ", &gr_dphidr[i]);
-#else
-    fscanf(f, "%le ", &gr_vec[i]);
-#endif
+//#else
+//    fscanf(f, "%le ", &gr_vec[i]);
+//#endif
   }
 
   /* Clean up */

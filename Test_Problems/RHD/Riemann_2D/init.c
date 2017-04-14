@@ -57,7 +57,7 @@ void Init (double *us, double x1, double x2, double x3)
     us[VX2] = 0.99;
   }   
 
-  #if USE_FOUR_VELOCITY == YES
+  #if RECONSTRUCT_4VEL == YES
    scrh = 1.0/sqrt(1.0 - us[VX1]*us[VX1] - us[VX2]*us[VX2]);
    us[VX1] *= scrh;
    us[VX2] *= scrh;

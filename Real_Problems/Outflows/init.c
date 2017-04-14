@@ -449,7 +449,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
         if (box->vpos == CENTER) {
             BOX_LOOP(box, k, j, i) {
 
-                        HaloOuterBoundary(side, d, i, j, k, x1[i], x2[j], x3[k], &touch);
+                        HaloOuterBoundary(side, d, i, j, k, grid, &touch);
 
                     }
         } else if (box->vpos == X1FACE) {
@@ -465,7 +465,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
         if (box->vpos == CENTER) {
             BOX_LOOP(box, k, j, i) {
 
-                        HaloOuterBoundary(side, d, i, j, k, x1[i], x2[j], x3[k], &touch);
+                        HaloOuterBoundary(side, d, i, j, k, grid, &touch);
 
                     }
         } else if (box->vpos == X1FACE) {
@@ -482,7 +482,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
         if (box->vpos == CENTER) {
             BOX_LOOP(box, k, j, i) {
 
-                        HaloOuterBoundary(side, d, i, j, k, x1[i], x2[j], x3[k], &touch);
+                        HaloOuterBoundary(side, d, i, j, k, grid, &touch);
 
                     }
         } else if (box->vpos == X1FACE) {
@@ -499,7 +499,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
         if (box->vpos == CENTER) {
             BOX_LOOP(box, k, j, i) {
 
-                        HaloOuterBoundary(side, d, i, j, k, x1[i], x2[j], x3[k], &touch);
+                        HaloOuterBoundary(side, d, i, j, k, grid, &touch);
 
                     }
         } else if (box->vpos == X1FACE) {
@@ -522,8 +522,8 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
                            as opposed to a half-galaxy simulation,
                            treat just like other _BEG boundaries    */
 
-                        if (nz.is_two_sided) {
-                            HaloOuterBoundary(side, d, i, j, k, x1[i], x2[j], x3[k], &touch);
+                        if (nz.is_two_sided && GEOMETRY != SPHERICAL) {
+                            HaloOuterBoundary(side, d, i, j, k, grid, &touch);
 
                         } // full galaxy
 
@@ -578,7 +578,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
         if (box->vpos == CENTER) {
             BOX_LOOP(box, k, j, i) {
 
-                        HaloOuterBoundary(side, d, i, j, k, x1[i], x2[j], x3[k], &touch);
+                        HaloOuterBoundary(side, d, i, j, k, grid, &touch);
 
                     }
         } else if (box->vpos == X1FACE) {
@@ -629,7 +629,7 @@ void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
 #elif defined GRAV_TABLE
 
     r = SPH1(x1, x2, x3);
-    gr = -InterpolationWrapper(gr_rad, gr_vec, gr_ndata, r);
+    gr = -InterpolationWrapper(gr_rad, gr_dphidr, gr_ndata, r);
 
 
     /* Flat thermodynamic profile but gravity is on.
@@ -692,8 +692,6 @@ double BodyForcePotential(double x1, double x2, double x3)
     mg = g_inputParam[PAR_MGAL] * ini_code[PAR_MGAL];
 
     pot = - mg * CONST_G / vn.newton_norm / (r + a);
-
-//    pot = 2. k* CONST_PI * CONST_G / vn.newton_norm * rho0 * a * a / (1. + r / a);
 
 
     /* Gravity table */

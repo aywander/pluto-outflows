@@ -1,7 +1,7 @@
 /* -- Own definitions choices -- */
 
-#define NOZZLE                      NOZZLE_UFO
-#define NOZZLE_FILL                 NF_CONSERVATIVE
+#define NOZZLE                      NOZZLE_JET
+#define NOZZLE_FILL                 NF_PRIMITIVE
 #define NOZZLE_CAP                  YES
 
 #define ACCRETION                   NO
@@ -14,7 +14,7 @@
 #define FEEDBACK_CYCLE              NO
 #define FBC_DEBOOST_MODE            FBC_DEBOOST_MODE_3
 
-#define GRAV_POTENTIAL              NONE
+#define GRAV_POTENTIAL              GRAV_DOUBLE_ISOTHERMAL
 
 #define CLOUDS                      NO
 #define CLOUD_REPEAT	            NO

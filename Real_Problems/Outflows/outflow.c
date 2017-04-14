@@ -55,7 +55,11 @@ void SetNozzleGeometry(Nozzle * noz) {
     else is_fan = 0;
 
     /* Determine if nozzle is one-sided */
+#if GEOMETRY == SPHERICAL
+    if (g_domEnd[JDIR] > 3. * CONST_PI / 4.) is_two_sided = 1;
+#else
     if (FLOWAXIS(g_domBeg[IDIR], g_domBeg[JDIR], g_domBeg[KDIR]) < 0.) is_two_sided = 1;
+#endif
     else is_two_sided = 0;
 
 
@@ -725,10 +729,10 @@ void OutflowVelocity(double *out_primitives, double speed,
            out_primitives[VX2] = vx2;,
            out_primitives[VX3] = vx3;);
 
-#if USE_FOUR_VELOCITY == YES
+#if RECONSTRUCT_4VEL == YES
     /* This is the same for all geometries */
     double lorentz;
-    lorentz = Vel2Lorentz(speed);
+    lorentz = Speed2Lorentz(speed);
     EXPAND(out_primitives[VX1] *= lorentz;,
            out_primitives[VX2] *= lorentz;,
            out_primitives[VX3] *= lorentz;);

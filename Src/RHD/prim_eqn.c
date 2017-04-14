@@ -26,8 +26,18 @@
 /* ///////////////////////////////////////////////////////////////////// */
 #include "pluto.h"
 
+/* AYW -- 2014-11-21 18:36 JST
+ * Most ammendments here were adapted from ../HD/prim_eqn.c
+ * NOTE: The routines here are only called for ChTr and Hancock?
+ * not for RK time integration.
+ * -- AYW */
+
+
 /* ********************************************************************* */
+/* AYW  2014-11-21 18:07 JST */
 void PrimRHS (double *w, double *dw, double cs2, double h, double *Adw)
+//void PrimRHS (real *w, real *dw, real cs2, real h, real *Adw)
+/* -- AYW */
 /*!
  * Compute the matrix-vector multiplication \f$ A(\mathbf{v})\cdot 
  * \Delta\mathbf{v} \f$ where \c A is the matrix of the quasi-linear form 
@@ -135,20 +145,79 @@ void PrimSource (const State_1D *state, int beg, int end,
  *
  *********************************************************************** */
 {
-  int    nv, i;
+  /* AYW -- 2014-11-24 01:38 JST */
+  //int    nv, i;
+  int    nv, i, j, k;
+  /* -- AYW */
   double r_1, scrh, alpha;
   double vel2, delta;
   double *q, *x1, *x2, *x3, g[3];
 
+  /* AYW -- 2014-11-21 18:33 JST */
+  double hscale; /* scale factor */
+  double *v, *vp, *A, *dV, r_inv, ct;
+  double *x1p, *x2p, *x3p;
+  double *dx1, *dx2, *dx3;
+  static double *phi_p;
+  /* -- AYW */
+
+  /* AYW -- 2014-11-21 18:34 JST */
+
+#if ROTATING_FRAME == YES
+ print1 ("! PrimSource: does not work with rotations\n");
+ QUIT_PLUTO(1);
+#endif
+
+  /* ----------------------------------------------------------
+   1. Memory allocation and pointer shortcuts
+   ---------------------------------------------------------- */
+  if (phi_p == NULL) phi_p = ARRAY_1D(NMAX_POINT, double);
+  //if (gPhi == NULL) gPhi = ARRAY_1D(NMAX_POINT, double);
+  /* -- AYW */
+
+
+    /* AYW -- need variables x1p and dx1 */
   #if GEOMETRY == CYLINDRICAL
-   x1 = grid[IDIR].xgc;
-   x2 = grid[JDIR].xgc;
-   x3 = grid[KDIR].xgc;
-  #else  
-   x1 = grid[IDIR].x; 
-   x2 = grid[JDIR].x; 
-   x3 = grid[KDIR].x; 
+   x1 = grid[IDIR].xgc; x1p = grid[IDIR].xr; dx1 = grid[IDIR].dx;
+   x2 = grid[JDIR].xgc; x2p = grid[JDIR].xr; dx2 = grid[JDIR].dx;
+   x3 = grid[KDIR].xgc; x3p = grid[KDIR].xr; dx3 = grid[KDIR].dx;
+//   x1 = grid[IDIR].xgc;
+//   x2 = grid[JDIR].xgc;
+//   x3 = grid[KDIR].xgc;
+  #else
+   x1 = grid[IDIR].x; x1p = grid[IDIR].xr; dx1 = grid[IDIR].dx;
+   x2 = grid[JDIR].x; x2p = grid[JDIR].xr; dx2 = grid[JDIR].dx;
+   x3 = grid[KDIR].x; x3p = grid[KDIR].xr; dx3 = grid[KDIR].dx;
+//   x1 = grid[IDIR].x;
+//   x2 = grid[JDIR].x;
+//   x3 = grid[KDIR].x;
   #endif
+
+  /* AYW -- 2014-11-21 19:01 JST */
+
+  A  = grid[g_dir].A;
+  dV = grid[g_dir].dV;
+  hscale  = 1.0;
+
+  i = g_i; j = g_j; k = g_k;
+
+/* ----------------------------------------------------------
+     initialize all elements of src to zero
+   ---------------------------------------------------------- */
+
+  memset((void *)src[0], '\0',NMAX_POINT*NVAR*sizeof(double));
+
+  //for (i = beg; i <= end; i++){
+  //for (nv = NVAR; nv--;  ){
+  //  src[i][nv] = 0.0;
+  //}}
+  //
+
+/* ----------------------------------------------------------
+   2. Compute geometrical source terms
+   ---------------------------------------------------------- */
+
+  /* -- AYW */
 
   for (i = beg; i <= end; i++){
   for (nv = NVAR; nv--;  ){
@@ -157,7 +226,7 @@ void PrimSource (const State_1D *state, int beg, int end,
 
 #if GEOMETRY == CARTESIAN
 
-#elif GEOMETRY == CYLINDRICAL 
+#elif GEOMETRY == CYLINDRICAL
   
   if (g_dir == IDIR){
     for (i = beg; i <= end; i++) {
@@ -237,7 +306,10 @@ void PrimSource (const State_1D *state, int beg, int end,
    i = beg - 1;
    if (g_dir == IDIR) {
      #if BODY_FORCE & POTENTIAL
-      gPhi[i] = BodyForcePotential(x1p[i], x2[g_j], x3[g_k]);
+      /* AYW -- 2014-11-24 01:22 JST */
+      phi_p[i] = BodyForcePotential(x1p[i], x2[g_j], x3[g_k]);
+      //gPhi[i] = BodyForcePotential(x1p[i], x2[g_j], x3[g_k]);
+      /* -- AYW */
      #endif
      for (i = beg; i <= end; i++){
        #if BODY_FORCE & VECTOR
@@ -246,8 +318,12 @@ void PrimSource (const State_1D *state, int beg, int end,
         src[i][VX1] += g[g_dir];
        #endif
        #if BODY_FORCE & POTENTIAL
-        gPhi[i]     = BodyForcePotential(x1p[i], x2[g_j], x3[g_k]); 
-        src[i][VX1] -= (gPhi[i] - gPhi[i-1])/(hscale*dx1[i]);
+        /* AYW -- 2014-11-24 01:24 JST */
+        phi_p[i]     = BodyForcePotential(x1p[i], x2[g_j], x3[g_k]);
+        //gPhi[i]     = BodyForcePotential(x1p[i], x2[g_j], x3[g_k]);
+        src[i][VX1] -= (phi_p[i] - phi_p[i-1])/(hscale*dx1[i]);
+        //src[i][VX1] -= (gPhi[i] - gPhi[i-1])/(hscale*dx1[i]);
+        /* -- AYW */
        #endif
 
        #if DIMENSIONS == 1
@@ -258,7 +334,10 @@ void PrimSource (const State_1D *state, int beg, int end,
      }
    }else if (g_dir == JDIR){
      #if BODY_FORCE & POTENTIAL
-      gPhi[i] = BodyForcePotential(x1[g_i], x2p[i], x3[g_k]);
+      /* AYW -- 2014-11-24 01:26 JST */
+      phi_p[i] = BodyForcePotential(x1[g_i], x2p[i], x3[g_k]);
+      //gPhi[i] = BodyForcePotential(x1[g_i], x2p[i], x3[g_k]);
+      /* -- AYW */
      #endif
      for (i = beg; i <= end; i++){
        #if BODY_FORCE & VECTOR
@@ -267,8 +346,12 @@ void PrimSource (const State_1D *state, int beg, int end,
         src[i][VX2] += g[g_dir];
        #endif
        #if BODY_FORCE & POTENTIAL
-        gPhi[i]     = BodyForcePotential(x1[g_i], x2p[i], x3[g_k]);
-        src[i][VX2] -= (gPhi[i] - gPhi[i-1])/(hscale*dx2[i]);
+        /* AYW -- 2014-11-24 01:26 JST */
+        phi_p[i]     = BodyForcePotential(x1[g_i], x2p[i], x3[g_k]);
+        //gPhi[i]     = BodyForcePotential(x1[g_i], x2p[i], x3[g_k]);
+        src[i][VX2] -= (phi_p[i] - phi_p[i-1])/(hscale*dx2[i]);
+        //src[i][VX2] -= (gPhi[i] - gPhi[i-1])/(hscale*dx2[i]);
+        /* -- AYW */
        #endif
 
        #if DIMENSIONS == 2 && COMPONENTS == 3
@@ -277,7 +360,10 @@ void PrimSource (const State_1D *state, int beg, int end,
      }
    }else if (g_dir == KDIR){
      #if BODY_FORCE & POTENTIAL
-      gPhi[i] = BodyForcePotential(x1[g_i], x2[g_j], x3p[i]);
+      /* AYW -- 2014-11-24 01:27 JST */
+      phi_p[i] = BodyForcePotential(x1[g_i], x2[g_j], x3p[i]);
+      //gPhi[i] = BodyForcePotential(x1[g_i], x2[g_j], x3p[i]);
+      /* -- AYW */
      #endif
      for (i = beg; i <= end; i++){
        #if BODY_FORCE & VECTOR
@@ -286,8 +372,12 @@ void PrimSource (const State_1D *state, int beg, int end,
         src[i][VX3] += g[g_dir];
        #endif
        #if BODY_FORCE & POTENTIAL
-        gPhi[i]     = BodyForcePotential(x1[g_i], x2[g_j], x3p[i]); 
-        src[i][VX3] -=  (gPhi[i] - gPhi[i-1])/(hscale*dx3[i]);
+        /* AYW -- 2014-11-24 01:27 JST */
+        phi_p[i]     = BodyForcePotential(x1[g_i], x2[g_j], x3p[i]);
+        //gPhi[i]     = BodyForcePotential(x1[g_i], x2[g_j], x3p[i]);
+        src[i][VX3] -=  (phi_p[i] - phi_p[i-1])/(hscale*dx3[i]);
+        //src[i][VX3] -=  (gPhi[i] - gPhi[i-1])/(hscale*dx3[i]);
+        /* -- AYW */
        #endif
      }
    }

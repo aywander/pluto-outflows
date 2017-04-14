@@ -20,7 +20,7 @@ void ComputeUserVar (const Data *d, Grid *grid)
   double ***prs, ***rho, ***vx1, ***vx2, ***vx3, dummy[NVAR];
   double mu, sp1, sp2, sp3;
   double *x1, *x2, *x3;
-#if USE_FOUR_VELOCITY == YES
+#if RECONSTRUCT_4VEL == YES
   double ***v1, ***v2, ***v3;
   double vel, speed, lorentz;
 #endif
@@ -30,7 +30,7 @@ void ComputeUserVar (const Data *d, Grid *grid)
   spd = GetUserVar("spd");
 
 /* Change to v instead of u = lorentz v */
-#if USE_FOUR_VELOCITY == YES
+#if RECONSTRUCT_4VEL == YES
   v1  = GetUserVar("v1");
   v2  = GetUserVar("v2");
   v3  = GetUserVar("v3");
@@ -67,10 +67,10 @@ void ComputeUserVar (const Data *d, Grid *grid)
            sp3 = vx3[k][j][i];);
     spd[k][j][i] = VMAG(x1[i], x2[j], x3[k], sp1, sp2, sp3);
 
-#if USE_FOUR_VELOCITY == YES
+#if RECONSTRUCT_4VEL == YES
     /* speed at this point is gamma * vel.
      * Solve for vel. Then get gamma.
-     * Note, c=1 if USE_FOUR_VELOCITY = YES. */
+     * Note, c=1 if RECONSTRUCT_4VEL = YES. */
     speed = spd[k][j][i];
     if (speed > 0){
         vel = speed / sqrt(1 + speed * speed);
@@ -102,7 +102,7 @@ void ChangeDumpVar ()
   /* HDF5 output cannot be controlled yet. Everything is output.*/
 
   /* VTK output */
-#if USE_FOUR_VELOCITY
+#if RECONSTRUCT_4VEL
   EXPAND(SetDumpVar("v1",  VTK_OUTPUT, YES);,
          SetDumpVar("v2",  VTK_OUTPUT, YES);,
          SetDumpVar("v3",  VTK_OUTPUT, YES););
@@ -127,7 +127,7 @@ void ChangeDumpVar ()
 
 
   /* FLT output */
-#if USE_FOUR_VELOCITY
+#if RECONSTRUCT_4VEL
   EXPAND(SetDumpVar("v1",  FLT_OUTPUT, YES);,
          SetDumpVar("v2",  FLT_OUTPUT, YES);,
          SetDumpVar("v3",  FLT_OUTPUT, YES););
@@ -152,7 +152,7 @@ void ChangeDumpVar ()
 
 
   /* PNG output */
-#if USE_FOUR_VELOCITY
+#if RECONSTRUCT_4VEL
   EXPAND(SetDumpVar("v1",  PNG_OUTPUT, YES);,
          SetDumpVar("v2",  PNG_OUTPUT, YES);,
          SetDumpVar("v3",  PNG_OUTPUT, YES););

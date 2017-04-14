@@ -16,7 +16,7 @@ set(WITH_HDF5                   ON)
 set(WITH_ASYNC_IO               OFF)
 set(WITH_CHOMBO                 OFF)
 
-set(WITH_PHYSICS                HD)
+set(WITH_PHYSICS                RHD)
 set(WITH_COOLING                NONE)
 set(WITH_INTERPOLATION          PARABOLIC)
 set(WITH_TIME_STEPPING          RK3)
@@ -442,7 +442,7 @@ if (WITH_PHYSICS STREQUAL HD)
             ${SOURCE_DIR}/HD/hllc.c
             ${SOURCE_DIR}/HD/mappers.c
             ${SOURCE_DIR}/HD/mod_defs.h
-            ${SOURCE_DIR}/HD/prim_eqn.c
+            ${SOURCE_DIR}/HD/prim_eqn.c            # Only used for ChTr / Hancock (?)
             ${SOURCE_DIR}/MHD/rhs.c
             ${SOURCE_DIR}/MHD/rhs_source.c
 #            ${SOURCE_DIR}/HD/riemann_full.c       # Buggy (not used?)

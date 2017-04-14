@@ -16,8 +16,7 @@
 
 
 /* ************************************************ */
-void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, const double x1, const double x2,
-                       const double x3, int *touch) {/* Get primitives array for hot halo*/
+void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid *grid, int *touch) {/* Get primitives array for hot halo*/
 /*
  * Set the values for the outer boundary conditions on sides that do not contain the jet.
  *
@@ -36,10 +35,15 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, const
     double fprs_small = 1.e-3;
     int nv;
 
-    /* Hot halo primitives */
-    HotHaloPrimitives(halo_primitives, x1, x2, x3);
+    /* These are the geometrical central points */
+    double x1, x2, x3;
+    double x1_inside, x2_inside, x3_inside;
+    x1 = grid[IDIR].x[i];
+    x2 = grid[JDIR].x[j];
+    x3 = grid[KDIR].x[k];
 
-    /* Get velocity, density, and prs from data */
+
+    /* Get velocity, density, and prs from data, just inside the domain. */
     switch(side) {
         case X1_BEG:
             EXPAND(vx1 = d->Vc[VX1][k][j][IBEG];,
@@ -47,6 +51,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, const
                    vx3 = d->Vc[VX3][k][j][IBEG];);
             rho = d->Vc[RHO][k][j][IBEG];
             prs = d->Vc[PRS][k][j][IBEG];
+            x1_inside = grid[IDIR].x[IBEG];
+            x2_inside = grid[JDIR].x[j];
+            x3_inside = grid[KDIR].x[k];
             break;
         case X1_END:
             EXPAND(vx1 = d->Vc[VX1][k][j][IEND];,
@@ -54,6 +61,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, const
                    vx3 = d->Vc[VX3][k][j][IEND];);
             rho = d->Vc[RHO][k][j][IEND];
             prs = d->Vc[PRS][k][j][IEND];
+            x1_inside = grid[IDIR].x[IEND];
+            x2_inside = grid[JDIR].x[j];
+            x3_inside = grid[KDIR].x[k];
             break;
         case X2_BEG:
             EXPAND(vx1 = d->Vc[VX1][k][JBEG][i];,
@@ -61,6 +71,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, const
                    vx3 = d->Vc[VX3][k][JBEG][i];);
             rho = d->Vc[RHO][k][JBEG][i];
             prs = d->Vc[PRS][k][JBEG][i];
+            x1_inside = grid[IDIR].x[i];
+            x2_inside = grid[JDIR].x[JBEG];
+            x3_inside = grid[KDIR].x[k];
             break;
         case X2_END:
             EXPAND(vx1 = d->Vc[VX1][k][JEND][i];,
@@ -68,6 +81,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, const
                    vx3 = d->Vc[VX3][k][JEND][i];);
             rho = d->Vc[RHO][k][JEND][i];
             prs = d->Vc[PRS][k][JEND][i];
+            x1_inside = grid[IDIR].x[i];
+            x2_inside = grid[JDIR].x[JEND];
+            x3_inside = grid[KDIR].x[k];
             break;
         case X3_BEG:
             EXPAND(vx1 = d->Vc[VX1][KBEG][j][i];,
@@ -75,6 +91,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, const
                    vx3 = d->Vc[VX3][KBEG][j][i];);
             rho = d->Vc[RHO][KBEG][j][i];
             prs = d->Vc[PRS][KBEG][j][i];
+            x1_inside = grid[IDIR].x[i];
+            x2_inside = grid[JDIR].x[j];
+            x3_inside = grid[KDIR].x[KBEG];
             break;
         case X3_END:
             EXPAND(vx1 = d->Vc[VX1][KEND][j][i];,
@@ -82,19 +101,28 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, const
                    vx3 = d->Vc[VX3][KEND][j][i];);
             rho = d->Vc[RHO][KEND][j][i];
             prs = d->Vc[PRS][KEND][j][i];
+            x1_inside = grid[IDIR].x[i];
+            x2_inside = grid[JDIR].x[j];
+            x3_inside = grid[KDIR].x[KEND];
             break;
         default:
             QUIT_PLUTO(1);
     }
 
     vmag = VMAG(x1, x2, x3, vx1, vx2, vx3);
+
+
+    /* Hot halo primitives, just inside the domain. */
+    HotHaloPrimitives(halo_primitives, x1_inside, x2_inside, x3_inside);
+    rho_ini = halo_primitives[RHO];
+    prs_ini = halo_primitives[PRS];
     EXPAND(vx1_ini = halo_primitives[VX1];,
            vx2_ini = halo_primitives[VX2];,
            vx3_ini = halo_primitives[VX3];);
-    vmag_ini = VMAG(x1, x2, x3, vx1_ini, vx2_ini, vx3_ini);
+    vmag_ini = VMAG(x1_inside, x2_inside, x3_inside, vx1_ini, vx2_ini, vx3_ini);
 
     /* Conditions */
-    vel_cond = vmag_ini > 0 ? (vmag - vmag_ini) / vmag_ini : vmag;
+    vel_cond = vmag_ini > 0. ? (vmag - vmag_ini) / vmag_ini : vmag;
     rho_cond = (rho - rho_ini) / rho_ini;
     prs_cond = (prs - prs_ini) / prs_ini;
 
@@ -130,6 +158,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, const
     }
 
     else
+
+        /* Hot halo primitives, just inside the domain. */
+        HotHaloPrimitives(halo_primitives, x1, x2, x3);
         for (nv = 0; nv < NVAR; ++nv) d->Vc[nv][k][j][i] = halo_primitives[nv];
 
 }
@@ -195,7 +226,6 @@ void HotHaloPrimitives(double *halo,
 
     /* This is also the default */
 
-
 #elif defined(GRAV_TABLE)
 
     /* The density from the table is in units of cm^-3 */
@@ -203,15 +233,11 @@ void HotHaloPrimitives(double *halo,
     halo[RHO] = InterpolationWrapper(hot_rad, hot_rho, hot_ndata, r);
     halo[RHO] *= g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
 
-#if (GRAV_POTENTIAL == GRAV_SINGLE_ISOTHERMAL) || (GRAV_POTENTIAL == GRAV_DOUBLE_ISOTHERMAL)
-
+    /* Currently, all gravity table profiles are assumed to be isothermal */
     halo[PRS] = PresIdealEOS(halo[RHO], g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP], MU_NORM);
 
-#else
-
-    halo[PRS] = InterpolationWrapper(hot_rad, hot_prs, hot_ndata, r);
-
-#endif // if SINGLE_ or DOUBLE_ISOTHERMAL
+    /* Else we need the following line, and g_inputParam[PAR_HRHO] needs to be 1. */
+//    halo[PRS] = InterpolationWrapper(hot_rad, hot_prs, hot_ndata, r);
 
 #endif // GRAV_POTENTIAL types
 
@@ -264,9 +290,9 @@ void HotHaloPrimitives(double *halo,
 
     EXPAND(halo[VX1] = vx1;, halo[VX2] = vx2;, halo[VX3] = vx3;);
 
-#if USE_FOUR_VELOCITY == YES
+#if RECONSTRUCT_4VEL == YES
     vel = VMAG(x1, x2, x3, halo[VX1], halo[VX2], halo[VX3]);
-    scrh = Vel2Lorentz(vel);
+    scrh = Speed2Lorentz(vel);
     EXPAND(halo[VX1] *= scrh;, halo[VX2] *= scrh;, halo[VX3] *= scrh;);
 #endif
 

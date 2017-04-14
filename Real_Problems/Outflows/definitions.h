@@ -1,8 +1,8 @@
-#define  PHYSICS                 HD
+#define  PHYSICS                 RHD
 #define  DIMENSIONS              2
 #define  COMPONENTS              2
 #define  GEOMETRY                CYLINDRICAL
-#define  BODY_FORCE              NONE
+#define  BODY_FORCE              VECTOR
 #define  COOLING                 NONE
 #define  RECONSTRUCTION          PARABOLIC
 #define  TIME_STEPPING           RK3
@@ -14,11 +14,11 @@
 /* -- physics dependent declarations -- */
 
 #define  EOS                     IDEAL
-#define  ENTROPY_SWITCH          YES
+#define  ENTROPY_SWITCH          SELECTIVE
 #define  THERMAL_CONDUCTION      NO
 #define  VISCOSITY               NO
 #define  ROTATING_FRAME          NO
-#define  RECONSTRUCT_4VEL        NO
+#define  RECONSTRUCT_4VEL        YES
 
 /* -- user-defined parameters (labels) -- */
 

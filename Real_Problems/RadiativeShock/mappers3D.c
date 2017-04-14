@@ -113,7 +113,7 @@ void ConsToPrim3D (Data_Arr U, Data_Arr V, Grid *grid)
                         g = EXPAND(V[VX1][k][j][i] * V[VX1][k][j][i], +V[VX2][k][j][i] * V[VX2][k][j][i],
                                    +V[VX3][k][j][i] * V[VX3][k][j][i]);
                         g = 1.0 / sqrt(1.0 - g);
-#if USE_FOUR_VELOCITY == YES
+#if RECONSTRUCT_4VEL == YES
                         EXPAND(V[VX1][k][j][i] *= g;  ,
                                   V[VX2][k][j][i] *= g;  ,
                                V[VX3][k][j][i] *= g;)

@@ -513,9 +513,9 @@ void CloudVelocity(double *cloud, double *halo,
     EXPAND(cloud[VX1] = v1;, cloud[VX2] = v2;, cloud[VX3] = v3;);
 
 
-#if USE_FOUR_VELOCITY == YES
+#if RECONSTRUCT_4VEL == YES
     double vel = VMAG(x1, x2, x3, cloud[VX1], cloud[VX2], cloud[VX3]);
-    double scrh = Vel2Lorentz(vel);
+    double scrh = Speed2Lorentz(vel);
     EXPAND(cloud[VX1] *= scrh;, cloud[VX2] *= scrh;, cloud[VX3] *= scrh;);
 #endif
 }
