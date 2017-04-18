@@ -196,7 +196,10 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
         /* Now, the same for the cylindrical radius (in cgs) */
         r_cyl = CYL1(x1, x2, x3);
         phi_r0 = BodyForcePotential(r_cyl, 0, 0);
-//        phi_r0 = InterpolationWrapper(gr_rad, gr_phi, gr_ndata, r_cyl);
+    }
+    else {
+        phi_r0 = 0;
+
     }
 
     /* The profile */
