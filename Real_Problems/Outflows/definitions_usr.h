@@ -23,13 +23,13 @@
 #define CLOUD_DENSITY               CD_KEPLERIAN
 #define CLOUD_VELOCITY              CD_KEPLERIAN
 #define CLOUD_SCALE                 CS_VELOCITY_DISPERSION
+#define CLOUD_EXTRACT               NONE
 
 
 #define MU_CALC                     MU_ANALYTIC
 /* --- Not usually changed ---- */
 #define CLOUD_TCRIT                 3.0e4
 #define CLOUD_MUCRIT                0.6212407755077543
-#define CLOUD_EXTRACT               NONE
 #define JD_MODE                     JD_GRAD
 #define BH_POT_SMOOTH               4.0
 

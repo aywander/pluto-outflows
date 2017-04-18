@@ -184,19 +184,17 @@
 /* When components == 3, (x1, x2) is assumed to always lie on the cylindrical plane and v3 perpendicular to that plane.
  * so that we can always get the radial speeds */
 #define VCART2CYL1(x1, x2, x3, v1, v2, v3)  ( v1 )
-#define VCART2CYL2(x1, x2, x3, v1, v2, v3)  ( v2 )
-#define VCART2CYL3(x1, x2, x3, v1, v2, v3)  ( v3 / CART2CYL1(x1, x2, x3) )  // with / r
 //#define VCART2CYL1(x1, x2, x3, v1, v2, v3)  ( SELECT( \
 //      ((x1)*(v1) + (x2)*(v2))/(CART2CYL1(x1, x2, x3)),\
 //      v1,\
 //      ((x1)*(v1) + (x2)*(v2))/(CART2CYL1(x1, x2, x3)) ) )
-//#define VCART2CYL2(x1, x2, x3, v1, v2, v3)  ( SELECT(v3, v2, v3) )
-//#define VCART2CYL3(x1, x2, x3, v1, v2, v3)  ( SELECT(\
-//      (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2))/\
-//      (CART2POL1(x1, x2, x3)),\
-//      0, \
-//      (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2))/\
-//      (CART2POL1(x1, x2, x3)) )  ) // with /r
+#define VCART2CYL2(x1, x2, x3, v1, v2, v3)  ( SELECT(v3, v2, v3) )
+#define VCART2CYL3(x1, x2, x3, v1, v2, v3)  ( SELECT(\
+      (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2))/\
+      (CART2POL1(x1, x2, x3)),\
+      0, \
+      (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2))/\
+      (CART2POL1(x1, x2, x3)) )  ) // with /r
 //#define VCART2CYL3(x1, x2, x3, v1, v2, v3)  ( SELECT(\
 //      -sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2),\
 //      0, \
@@ -229,16 +227,16 @@
 //#define CYL2SPH2(x1, x2, x3) ( acos((SELECT(x2, x1, x2))/(CYL2SPH1(x1, x2, x3))) )  // Assumes theta is measured from x2 in 2D
 #define CYL2SPH3(x1, x2, x3) ( 0 )
 
-//#define VSPH2CYL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (x1)*(v2)*cos(x2) )
-//#define VSPH2CYL2(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) + (x1)*(v2)*sin(x2) )
-#define VSPH2CYL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (v2)*cos(x2) ) // without *r, assumes theta is measured from x2
-#define VSPH2CYL2(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - (v2)*sin(x2) ) // without *r, assumes theta is measured from x2
+#define VSPH2CYL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (x1)*(v2)*cos(x2) )  // with * r, assumes theta is measured from x2
+#define VSPH2CYL2(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) + (x1)*(v2)*sin(x2) )  // with * r, assumes theta is measured from x2
+//#define VSPH2CYL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (v2)*cos(x2) ) // without *r, assumes theta is measured from x2
+//#define VSPH2CYL2(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - (v2)*sin(x2) ) // without *r, assumes theta is measured from x2
 #define VSPH2CYL3(x1, x2, x3, v1, v2, v3) ( v3 )
 
 #define VCYL2SPH1(x1, x2, x3, v1, v2, v3) ( sin(CYL2SPH2(x1, x2, x3))*(v1) + cos(CYL2SPH2(x1, x2, x3))*(v2) )
-//#define VCYL2SPH2(x1, x2, x3, v1, v2, v3) ( (cos(CYL2SPH2(x1, x2, x3))*(v1) - sin(CYL2SPH2(x1, x2, x3))*(v2))/\
-//    (CYL2SPH1(x1, x2, x3) ) )
-#define VCYL2SPH2(x1, x2, x3, v1, v2, v3) (cos(CYL2SPH2(x1, x2, x3))*(v1) - sin(CYL2SPH2(x1, x2, x3))*(v2)) // without /r, assumes theta is measured from x2
+#define VCYL2SPH2(x1, x2, x3, v1, v2, v3) ( (cos(CYL2SPH2(x1, x2, x3))*(v1) - sin(CYL2SPH2(x1, x2, x3))*(v2))/\
+    (CYL2SPH1(x1, x2, x3) ) )  // with /r, assumes theta is measured from x2
+//#define VCYL2SPH2(x1, x2, x3, v1, v2, v3) (cos(CYL2SPH2(x1, x2, x3))*(v1) - sin(CYL2SPH2(x1, x2, x3))*(v2)) // without /r, assumes theta is measured from x2
 #define VCYL2SPH3(x1, x2, x3, v1, v2, v3) ( v3 )
 
 
@@ -258,16 +256,16 @@
 //#define POL2SPH2(x1, x2, x3) ( acos((SELECT(x3, x1, x3))/(POL2SPH1(x1, x2, x3))) )  // Assumes theta is measured from x1 in 2D
 #define POL2SPH3(x1, x2, x3) ( x2 )
 
-//#define VSPH2POL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (x1)*(v2)*cos(x2) )
-#define VSPH2POL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (v2)*cos(x2) ) //without *r, assumes theta is measured from x3
+#define VSPH2POL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (x1)*(v2)*cos(x2) )  // with *r, assumes theta is measured from x3
+//#define VSPH2POL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (v2)*cos(x2) ) //without *r, assumes theta is measured from x3
 #define VSPH2POL2(x1, x2, x3, v1, v2, v3) ( v3 )
-//#define VSPH2POL3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) + (x1)*(v2)*sin(x2) )
-#define VSPH2POL3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - (v2)*sin(x2) ) //without *r, assumes theta is measured from x3
+#define VSPH2POL3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) + (x1)*(v2)*sin(x2) ) //with *r, assumes theta is measured from x3
+//#define VSPH2POL3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - (v2)*sin(x2) ) //without *r, assumes theta is measured from x3
 
 #define VPOL2SPH1(x1, x2, x3, v1, v2, v3) ( sin(POL2SPH2(x1, x2, x3))*(v1) + cos(POL2SPH2(x1, x2, x3))*(v3) )
-//#define VPOL2SPH2(x1, x2, x3, v1, v2, v3) ( (cos(POL2SPH2(x1, x2, x3))*(v1) - sin(POL2SPH2(x1, x2, x3))*(v3))/\
-//    (POL2SPH1(x1, x2, x3)) )
-#define VPOL2SPH2(x1, x2, x3, v1, v2, v3) ( cos(POL2SPH2(x1, x2, x3))*(v1) - sin(POL2SPH2(x1, x2, x3))*(v3) ) // without /r
+#define VPOL2SPH2(x1, x2, x3, v1, v2, v3) ( (cos(POL2SPH2(x1, x2, x3))*(v1) - sin(POL2SPH2(x1, x2, x3))*(v3))/\
+//    (POL2SPH1(x1, x2, x3)) ) // with /r
+//#define VPOL2SPH2(x1, x2, x3, v1, v2, v3) ( cos(POL2SPH2(x1, x2, x3))*(v1) - sin(POL2SPH2(x1, x2, x3))*(v3) ) // without /r
 #define VPOL2SPH3(x1, x2, x3, v1, v2, v3) ( v2 )
 
 
@@ -297,44 +295,53 @@
 //      cos(CART2SPH2(x1, x2, x3))*(v3) \
 //      ) ) // assuming theta from x2 axis in 2D
 
+//#define VCART2SPH2(x1, x2, x3, v1, v2, v3) ( SELECT(\
+//      cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
+//      cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
+//      sin(CART2SPH2(x1, x2, x3))*(v3),\
+//      cos(CART2SPH2(x1, x2, x3))*(v1) + sin(CART2SPH2(x1, x2, x3))*(v2),\
+//      cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
+//      cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
+//      sin(CART2SPH2(x1, x2, x3))*(v3) \
+//    ) ) // without /r and  assuming theta from x2 axis in 2D
 #define VCART2SPH2(x1, x2, x3, v1, v2, v3) ( SELECT(\
-      cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
+      (cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
       cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
-      sin(CART2SPH2(x1, x2, x3))*(v3),\
-      cos(CART2SPH2(x1, x2, x3))*(v1) + sin(CART2SPH2(x1, x2, x3))*(v2),\
-      cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
+      sin(CART2SPH2(x1, x2, x3))*(v3)) / (CART2SPH1(x1, x2, x3)),\
+      (cos(CART2SPH2(x1, x2, x3))*(v1) + sin(CART2SPH2(x1, x2, x3))*(v2)) / (CART2SPH1(x1, x2, x3)),\
+      (cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
       cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
-      sin(CART2SPH2(x1, x2, x3))*(v3) \
-    ) ) // without /r and  assuming theta from x2 axis in 2D
+      sin(CART2SPH2(x1, x2, x3))*(v3)) / (CART2SPH1(x1, x2, x3)) \
+    ) ) // with /r and  assuming theta from x2 axis in 2D
 
-//#define VCART2SPH3(x1, x2, x3, v1, v2, v3) ( (-sin(CART2SPH3(x1, x2, x3))*(v1) + cos(CART2SPH3(x1, x2, x3))*(v2))/\
-//    (CART2POL1(x1, x2, x3)) )
-#define VCART2SPH3(x1, x2, x3, v1, v2, v3) ( -sin(CART2SPH3(x1, x2, x3))*(v1) + cos(CART2SPH3(x1, x2, x3))*(v2) )
+#define VCART2SPH3(x1, x2, x3, v1, v2, v3) ( (-sin(CART2SPH3(x1, x2, x3))*(v1) + cos(CART2SPH3(x1, x2, x3))*(v2))/\
+    (CART2POL1(x1, x2, x3)) )   // with /r
+//#define VCART2SPH3(x1, x2, x3, v1, v2, v3) ( -sin(CART2SPH3(x1, x2, x3))*(v1) + cos(CART2SPH3(x1, x2, x3))*(v2) )  // with /r
 
-//#define VSPH2CART1(x1, x2, x3, v1, v2, v3) ( SELECT(\
-//      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2)*(x1) - sin(x2)*(v3)*(SPH2POL1(x1, x2, x3)\
-//      sin(x2)*(v1) + cos(x2)*(v2)*(x1),\
-//      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2)*(x1) - sin(x2)*(v3)*(SPH2POL1(x1, x2, x3)\
-//      ) ), assumes theta is measured from x2 in 2D
 #define VSPH2CART1(x1, x2, x3, v1, v2, v3) ( SELECT(\
-      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3), \
-      SGN(SPH2CART1(x1, x2, x3))*(sin(x2)*(v1) + cos(x2)*(v2)),\
-      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3) \
-      ) ) // without *r, assumes theta is measured from x2 in 2D
+      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2)*(x1) - sin(x2)*(v3)*(SPH2POL1(x1, x2, x3)),\
+      SGN(SPH2CART1(x1, x2, x3))*(sin(x2)*(v1) + cos(x2)*(v2)*(x1)),\
+      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2)*(x1) - sin(x2)*(v3)*(SPH2POL1(x1, x2, x3))\
+      ) ) // with *r, assumes theta is measured from x2 in 2D
+//#define VSPH2CART1(x1, x2, x3, v1, v2, v3) ( SELECT(\
+//      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3), \
+//      SGN(SPH2CART1(x1, x2, x3))*(sin(x2)*(v1) + cos(x2)*(v2)),\
+//      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3) \
+//      ) ) // without *r, assumes theta is measured from x2 in 2D
 
-//#define VSPH2CART2(x1, x2, x3, v1, v2, v3) ( SELECT(\
-//      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2)*(x1) + cos(x3)*(v3)*(SPH2POL1(x1, x2, x3)),\
-//      cos(x2)*(v1) - sin(x2)*(v2)*(x1),\
-//      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2)*(x1) + cos(x3)*(v3)*(SPH2POL1(x1, x2, x3)))\
-//    ) assumes theta is measured from x2 in 2D
 #define VSPH2CART2(x1, x2, x3, v1, v2, v3) ( SELECT(\
-      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2) + cos(x3)*(v3),\
-      cos(x2)*(v1) - sin(x2)*(v2),\
-      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2) + cos(x3)*(v3))\
-    ) // without *r, assumes theta is measured from x2 in 2D
+      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2)*(x1) + cos(x3)*(v3)*(SPH2POL1(x1, x2, x3)),\
+      cos(x2)*(v1) - sin(x2)*(v2)*(x1),\
+      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2)*(x1) + cos(x3)*(v3)*(SPH2POL1(x1, x2, x3)) \
+      ) ) // with *r, assumes theta is measured from x2 in 2D
+//#define VSPH2CART2(x1, x2, x3, v1, v2, v3) ( SELECT(\
+//      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2) + cos(x3)*(v3),\
+//      cos(x2)*(v1) - sin(x2)*(v2),\
+//      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2) + cos(x3)*(v3))\
+//    ) // without *r, assumes theta is measured from x2 in 2D
 
-//#define VSPH2CART3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - sin(x2)*(v2)*(x1) )
-#define VSPH2CART3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - sin(x2)*(v2) ) // without *r
+#define VSPH2CART3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - sin(x2)*(v2)*(x1) )
+//#define VSPH2CART3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - sin(x2)*(v2) ) // without *r
 
 
 
