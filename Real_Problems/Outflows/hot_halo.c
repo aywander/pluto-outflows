@@ -159,9 +159,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
 
     else
 
-        /* Hot halo primitives, just inside the domain. */
+        /* Hot halo primitives, in the ghost zones. */
         HotHaloPrimitives(halo_primitives, x1, x2, x3);
-        for (nv = 0; nv < NVAR; ++nv) d->Vc[nv][k][j][i] = halo_primitives[nv];
+        VAR_LOOP(nv) d->Vc[nv][k][j][i] = halo_primitives[nv];
 
 }
 

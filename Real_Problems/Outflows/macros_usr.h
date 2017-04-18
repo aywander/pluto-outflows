@@ -133,15 +133,15 @@
 
 //#define VCART2POL1(x1, x2, x3, v1, v2, v3)  ( ((x1)*(v1) + (x2)*(v2))/CART2POL1(x1, x2, x3) )
 #define VCART2POL1(x1, x2, x3, v1, v2, v3)  ( cos(CART2POL2(x1, x2, x3))*(v1) + sin(CART2POL2(x1, x2, x3))*(v2) )
-//#define VCART2POL2(x1, x2, x3, v1, v2, v3)  ( (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2))/\
-//    (CART2POL1(x1, x2, x3)) )
-#define VCART2POL2(x1, x2, x3, v1, v2, v3)  (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2)) // without /r
-#define VCART2POL3(x1, x2, x3, v1, v2, v3)  ( v3 )
+#define VCART2POL2(x1, x2, x3, v1, v2, v3)  ( (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2))/\
+    (CART2POL1(x1, x2, x3)) )  // with /r
+//#define VCART2POL2(x1, x2, x3, v1, v2, v3)  (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2)) // without /r
+//#define VCART2POL3(x1, x2, x3, v1, v2, v3)  ( v3 )
 
-//#define VPOL2CART1(x1, x2, x3, v1, v2, v3)  ( cos(x2)*(v1) - sin(x2)*(x1)*(v2) )
-//#define VPOL2CART2(x1, x2, x3, v1, v2, v3)  ( sin(x2)*(v1) + cos(x2)*(x1)*(v2) ) 
-#define VPOL2CART1(x1, x2, x3, v1, v2, v3)  ( cos(x2)*(v1) - sin(x2)*(v2) ) // without r
-#define VPOL2CART2(x1, x2, x3, v1, v2, v3)  ( sin(x2)*(v1) + cos(x2)*(v2) ) // without r
+#define VPOL2CART1(x1, x2, x3, v1, v2, v3)  ( cos(x2)*(v1) - sin(x2)*(x1)*(v2) )  // with * r
+#define VPOL2CART2(x1, x2, x3, v1, v2, v3)  ( sin(x2)*(v1) + cos(x2)*(x1)*(v2) )  // with * r
+//#define VPOL2CART1(x1, x2, x3, v1, v2, v3)  ( cos(x2)*(v1) - sin(x2)*(v2) ) // without * r
+//#define VPOL2CART2(x1, x2, x3, v1, v2, v3)  ( sin(x2)*(v1) + cos(x2)*(v2) ) // without * r
 #define VPOL2CART3(x1, x2, x3, v1, v2, v3)  ( v3 )
 
 
@@ -170,33 +170,37 @@
 /* CARTESIAN -- CYLINDRICAL */
 /* In 2D Cartesian plane is in cylindrical r-z plane. In 3D the non-existent third cylindrical coordinate is set to 0 
  * In 3D the (x1, x2) is assumed to always lie on the cylindrical plane 
- * so that we can always get the cylindrical radius */ 
-#define CART2CYL1(x1, x2, x3)  ( D_SELECT(sqrt((x1)*(x1) +(x2)*(x2)), fabs(x1), sqrt((x1)*(x1) +(x2)*(x2))) )
-#define CART2CYL2(x1, x2, x3)  ( D_SELECT(x3, x2, x3) )
+ * so that we can always get the cylindrical radius */
+#define CART2CYL1(x1, x2, x3)  ( D_SELECT(fabs(x1), fabs(x1), sqrt((x1)*(x1) +(x2)*(x2))) )
+#define CART2CYL2(x1, x2, x3)  ( D_SELECT(0, x2, x3) )
 #define CART2CYL3(x1, x2, x3)  ( 0 )
 
+/* There can never be an x3 in the following */
 #define CYL2CART1(x1, x2, x3)  ( x1 )
 #define CYL2CART2(x1, x2, x3)  ( D_SELECT(0, x2, 0) )
-#define CYL2CART3(x1, x2, x3)  ( D_SELECT(x2, 0, x2) )
+#define CYL2CART3(x1, x2, x3)  ( D_SELECT(0, 0, x2) )
 
 
-/* In 3D the (x1, x2) is assumed to always lie on the cylindrical plane and v3 perpendicular to that plane.
+/* When components == 3, (x1, x2) is assumed to always lie on the cylindrical plane and v3 perpendicular to that plane.
  * so that we can always get the radial speeds */
-#define VCART2CYL1(x1, x2, x3, v1, v2, v3)  ( SELECT( \
-      ((x1)*(v1) + (x2)*(v2))/(CART2CYL1(x1, x2, x3)),\
-      v1,\
-      ((x1)*(v1) + (x2)*(v2))/(CART2CYL1(x1, x2, x3)) ) )
-#define VCART2CYL2(x1, x2, x3, v1, v2, v3)  ( SELECT(v3, v2, v3) )
+#define VCART2CYL1(x1, x2, x3, v1, v2, v3)  ( v1 )
+#define VCART2CYL2(x1, x2, x3, v1, v2, v3)  ( v2 )
+#define VCART2CYL3(x1, x2, x3, v1, v2, v3)  ( v3 / CART2CYL1(x1, x2, x3) )  // with / r
+//#define VCART2CYL1(x1, x2, x3, v1, v2, v3)  ( SELECT( \
+//      ((x1)*(v1) + (x2)*(v2))/(CART2CYL1(x1, x2, x3)),\
+//      v1,\
+//      ((x1)*(v1) + (x2)*(v2))/(CART2CYL1(x1, x2, x3)) ) )
+//#define VCART2CYL2(x1, x2, x3, v1, v2, v3)  ( SELECT(v3, v2, v3) )
 //#define VCART2CYL3(x1, x2, x3, v1, v2, v3)  ( SELECT(\
 //      (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2))/\
-//      (CART2CYL1(x1, x2, x3)),\
+//      (CART2POL1(x1, x2, x3)),\
 //      0, \
 //      (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2))/\
-//      (CART2CYL1(x1, x2, x3)) )
-#define VCART2CYL3(x1, x2, x3, v1, v2, v3)  ( SELECT(\
-      -sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2),\
-      0, \
-      -sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2) ) // without /r
+//      (CART2POL1(x1, x2, x3)) )  ) // with /r
+//#define VCART2CYL3(x1, x2, x3, v1, v2, v3)  ( SELECT(\
+//      -sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2),\
+//      0, \
+//      -sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2) ) // without /r
 
 
 /* If GEOMETRY = 3D Cartesian, assumes x1, x2, and x3 are Cartesian coordinates, rather than x1, x2 being cylindrical

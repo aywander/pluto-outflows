@@ -92,12 +92,10 @@
 #define CV_ZERO          0
 #define CV_KEPLERIAN     1
 
-
-
 /* CLOUD_SCALE values.
  * Decide whether the cloud scale height is given by the velocity
  * dispersion or the radius */
-#define CS_SCALE_HEIGHT          1
+#define CS_SCALE_HEIGHT          0
 #define CS_VELOCITY_DISPERSION   1
 
 

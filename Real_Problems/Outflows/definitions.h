@@ -1,13 +1,13 @@
-#define  PHYSICS                 RHD
+#define  PHYSICS                 HD
 #define  DIMENSIONS              2
-#define  COMPONENTS              2
+#define  COMPONENTS              3
 #define  GEOMETRY                CYLINDRICAL
 #define  BODY_FORCE              VECTOR
 #define  COOLING                 NONE
 #define  RECONSTRUCTION          PARABOLIC
 #define  TIME_STEPPING           RK3
 #define  DIMENSIONAL_SPLITTING   NO
-#define  NTRACER                 1
+#define  NTRACER                 2
 #define  USER_DEF_PARAMETERS     39
 #define  USER_DEF_CONSTANTS      4
 
@@ -18,7 +18,7 @@
 #define  THERMAL_CONDUCTION      NO
 #define  VISCOSITY               NO
 #define  ROTATING_FRAME          NO
-#define  RECONSTRUCT_4VEL        YES
+#define  RECONSTRUCT_4VEL        NO
 
 /* -- user-defined parameters (labels) -- */
 

@@ -8,6 +8,7 @@
 #include "idealEOS.h"
 #include "hot_halo.h"
 #include "interpolation.h"
+#include "read_grav_table.h"
 
 /* ************************************************************** */
 int CloudCubePixel(int *el, const double x1,
@@ -87,7 +88,6 @@ void ReadFractalData()
         int get_var[] = {RHO, ARG_EXPAND(VX1, VX2, VX3), -1};
 
 #else
-
         int get_var[] = {RHO, -1};
 
 #endif
@@ -158,11 +158,11 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
 #elif CLOUD_DENSITY == CD_KEPLERIAN
 
     /* Must use gravitational potential */
-#if BODY_FORCE != POTENTIAL
-    fputs("Error: Must use BODY_FORCE = POTENTIAL\n", stderr);
-    fputs("with CLOUD_DENSITY = CD_KEPLERIAN.\n", stderr);
-    QUIT_PLUTO(1);
-#endif
+//#if BODY_FORCE != POTENTIAL
+//    fputs("Error: Must use BODY_FORCE = POTENTIAL\n", stderr);
+//    fputs("with CLOUD_DENSITY = CD_KEPLERIAN.\n", stderr);
+//    QUIT_PLUTO(1);
+//#endif
 
     /* The dense gas mean density input parameter (in code units)*/
     wrho = g_inputParam[PAR_WRHO] * ini_code[PAR_WRHO];
@@ -178,14 +178,15 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
 
 #elif CLOUD_SCALE == CS_VELOCITY_DISPERSION
     /* External initialisation of turbulent velocity dispersion */
-    wtrb = g_inputParam[PAR_WTRB]*ini_code[PAR_WTRB];
-    sigma_g2 = wtrb*wtrb;
+    wtrb = g_inputParam[PAR_WTRB] * ini_code[PAR_WTRB];
+    sigma_g2 = wtrb * wtrb;
 
 #endif
 
     /* Gravitational potential */
     phi_rz = BodyForcePotential(x1, x2, x3);
-    phi_00 = BodyForcePotential(0, 0, 0);
+//    phi_00 = BodyForcePotential(0, 0, 0); // Cannot interpolate this point, if central BH is present.
+    phi_00 = 0.;
 
     /* Is the potential non-spherical? */
     ek2 = g_inputParam[PAR_WROT] * g_inputParam[PAR_WROT];
@@ -209,7 +210,7 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
 
 #else
     /* Homogeneous halo, gravity off. */
-    dens = g_inputParam[PAR_WRHO];
+    dens = g_inputParam[PAR_WRHO] * ini_code[PAR_WRHO];
 
 #endif
 
@@ -358,14 +359,15 @@ void CloudVelocity(double *cloud, double *halo,
 #if CLOUD_VELOCITY == CV_KEPLERIAN
 
     double ek;
-    double r_cyl, r1, r2, frac;
-    double y0, y1, y2, y3, phiderv_cyl;
+    double r_cyl, rad, r1, r2, frac;
+    double y0, y1, y2, y3, dphidr;
+    double gvec[COMPONENTS];
     int il;
     double vpol1, vpol2, vpol3;
     double xpol1, xpol2, xpol3;
 
     /* The rotational parameter */
-    ek = g_inputParam[PAR_WROT];
+    ek = g_inputParam[PAR_WROT] * ini_code[PAR_WROT];
 
     EXPAND(v1 = cloud[VX1];,
            v2 = cloud[VX2];,
@@ -385,12 +387,18 @@ void CloudVelocity(double *cloud, double *halo,
         vpol3 = VPOL3(x1, x2, x3, v1, v2, v3);
 
 
-        /* cycldrical radius */
+        /* Use spherical radius instead of cycldrical radius, here.
+         * At least for N-body initializations of thick discs in non-cylindrical potentials,
+         * this gives a better results */
         r_cyl = CYL1(x1, x2, x3);
-        phiderv_cyl = InterpolationWrapper(gr_rad, gr_dphidr, gr_ndata, r_cyl);
+//        dphidr = -InterpolationWrapper(gr_rad, gr_dphidr, gr_ndata, r_cyl);
+//        rad = SPH1(x1, x2, x3);
+//        dphidr = -InterpolationWrapper(gr_rad, gr_dphidr, gr_ndata, rad);
+        BodyForceVector(cloud, gvec, x1, x2, x3);
+        dphidr = VPOL2(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
 
         /* The angular velocity */
-        vpol2 += g_inputParam[PAR_WROT] * sqrt(r_cyl * phiderv_cyl);
+        vpol2 += ek * sqrt(r_cyl * dphidr);
 
         /* Convert velocity vectors back to the current coordinate system */
         EXPAND(v1 = VPOL_1(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3);,
@@ -450,7 +458,7 @@ void CloudVelocity(double *cloud, double *halo,
         vcart2 = VCART2(x1, x2, x3, v1, v2, v3);
         vcart3 = VCART3(x1, x2, x3, v1, v2, v3);
 
-        /* Apply change to component paralell to flow axis (assumed to be in km/s)
+        /* Apply change to component parallel to flow axis (assumed to be in km/s).
          * Can't use FLOWAXIS macro though because we are in transformed coords. */
         SELECT(vcart1, vcart2, vcart3) += g_inputParam[PAR_WVPL] * ini_code[PAR_WVPL];
 
@@ -473,8 +481,9 @@ void CloudVelocity(double *cloud, double *halo,
         vcart2 = VCART2(x1, x2, x3, v1, v2, v3);
         vcart3 = VCART3(x1, x2, x3, v1, v2, v3);
 
-        /* Apply change to radial component (assumed to be in km/s) */
-        vcart2 += g_inputParam[PAR_WVPP] * ini_code[PAR_WVPP];
+        /* Apply change to component perpendicular to flow axis (assumed to be in km/s).
+        * Can't use FLOWAXIS macro though because we are in transformed coords. */
+        SELECT(vcart1, vcart1, vcart2) += g_inputParam[PAR_WVPP] * ini_code[PAR_WVPP];
 
         /* Convert velocity vectors back to the current coordinate system */
         EXPAND(v1 = VCART_1(xcart1, xcart2, xcart3, vcart1, vcart2, vcart3);,
@@ -485,7 +494,7 @@ void CloudVelocity(double *cloud, double *halo,
 
     if (fabs(g_inputParam[PAR_WVAN]) > 0) {
 
-        /* Convert coordinates and velocity vectors to cylerical */
+        /* Convert coordinates and velocity vectors to cylindrical */
 
         xcyl1 = POL1(x1, x2, x3);
         xcyl2 = POL2(x1, x2, x3);
@@ -495,7 +504,7 @@ void CloudVelocity(double *cloud, double *halo,
         vcyl2 = VPOL2(x1, x2, x3, v1, v2, v3);
         vcyl3 = VPOL3(x1, x2, x3, v1, v2, v3);
 
-        /* Apply change to radial component (assumed to be in km/s) */
+        /* Apply change to polar component (assumed to be in km/s) */
         vcyl2 += g_inputParam[PAR_WVAN] * ini_code[PAR_WVAN];
 
         /* Convert velocity vectors back to the current coordinate system */
