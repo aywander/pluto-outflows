@@ -20,8 +20,8 @@
 #define CLOUD_REPEAT	            NO
 #define CLOUDS_MULTI   	            NO
 
-#define CLOUD_DENSITY               CD_KEPLERIAN
-#define CLOUD_VELOCITY              CD_KEPLERIAN
+#define CLOUD_DENSITY               CD_HOMOGENEOUS
+#define CLOUD_VELOCITY              NONE
 #define CLOUD_SCALE                 CS_VELOCITY_DISPERSION
 #define CLOUD_EXTRACT               NONE
 

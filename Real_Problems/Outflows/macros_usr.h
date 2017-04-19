@@ -136,7 +136,7 @@
 #define VCART2POL2(x1, x2, x3, v1, v2, v3)  ( (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2))/\
     (CART2POL1(x1, x2, x3)) )  // with /r
 //#define VCART2POL2(x1, x2, x3, v1, v2, v3)  (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2)) // without /r
-//#define VCART2POL3(x1, x2, x3, v1, v2, v3)  ( v3 )
+#define VCART2POL3(x1, x2, x3, v1, v2, v3)  ( v3 )
 
 #define VPOL2CART1(x1, x2, x3, v1, v2, v3)  ( cos(x2)*(v1) - sin(x2)*(x1)*(v2) )  // with * r
 #define VPOL2CART2(x1, x2, x3, v1, v2, v3)  ( sin(x2)*(v1) + cos(x2)*(x1)*(v2) )  // with * r
@@ -264,7 +264,7 @@
 
 #define VPOL2SPH1(x1, x2, x3, v1, v2, v3) ( sin(POL2SPH2(x1, x2, x3))*(v1) + cos(POL2SPH2(x1, x2, x3))*(v3) )
 #define VPOL2SPH2(x1, x2, x3, v1, v2, v3) ( (cos(POL2SPH2(x1, x2, x3))*(v1) - sin(POL2SPH2(x1, x2, x3))*(v3))/\
-//    (POL2SPH1(x1, x2, x3)) ) // with /r
+    (POL2SPH1(x1, x2, x3)) ) // with /r
 //#define VPOL2SPH2(x1, x2, x3, v1, v2, v3) ( cos(POL2SPH2(x1, x2, x3))*(v1) - sin(POL2SPH2(x1, x2, x3))*(v3) ) // without /r
 #define VPOL2SPH3(x1, x2, x3, v1, v2, v3) ( v2 )
 
@@ -277,7 +277,7 @@
 #define CART2SPH2(x1, x2, x3) ( acos((D_SELECT(x3, x2, x3))/(CART2SPH1(x1, x2, x3))) )
 #define CART2SPH3(x1, x2, x3) ( D_SELECT(0, CONST_PI*HS(-(x1)), 2*CONST_PI*HS(-(x2)) +\
     (SGN(x2))*acos((x1)/(CART2CYL1(x1, x2, x3)))) )
-#define SPH2CART1(x1, x2, x3) ( (SPH2POL1(x1, x2, x3))*cos(x3) )
+#define SPH2CART1(x1, x2, x3) ( D_SELECT(x1, SPH2CYL1(x1, x2, x3), (SPH2POL1(x1, x2, x3))*cos(x3)) )
 #define SPH2CART2(x1, x2, x3) ( D_SELECT(\
                                      SPH2POL1(x1, x2, x3)*sin(x3),\
                                      SPH2CYL2(x1, x2, x3),\
