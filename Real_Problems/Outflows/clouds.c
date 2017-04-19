@@ -115,10 +115,11 @@ void GetFractalData(double *cloud, const double x1, const double x2, const doubl
 
     /* Cloud data is in cartesian coordiantes
        InputDataInterpolate */
-    x = CART1(x1, x2, x3);
-    y = CART2(x1, x2, x3);
-    z = CART3(x1, x2, x3);
-    InputDataInterpolate(cloud, x, y, z);
+//    x = CART1(x1, x2, x3);
+//    y = CART2(x1, x2, x3);
+//    z = CART3(x1, x2, x3);
+//    InputDataInterpolate(cloud, x, y, z);
+    InputDataInterpolate(cloud, x1, x2, x3);
 
 }
 
