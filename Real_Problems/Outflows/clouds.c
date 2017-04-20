@@ -466,7 +466,7 @@ void CloudVelocity(double *cloud, double *halo,
 
         /* Apply change to component parallel to flow axis (assumed to be in km/s).
          * Can't use FLOWAXIS macro though because we are in transformed coords. */
-        SELECT(vcart1, vcart2, vcart3) += g_inputParam[PAR_WVPL] * ini_code[PAR_WVPL];
+        D_SELECT(vcart1, vcart2, vcart3) += g_inputParam[PAR_WVPL] * ini_code[PAR_WVPL];
 
         /* Convert velocity vectors back to the current coordinate system */
         EXPAND(v1 = VCART_1(xcart1, xcart2, xcart3, vcart1, vcart2, vcart3);,
@@ -489,7 +489,7 @@ void CloudVelocity(double *cloud, double *halo,
 
         /* Apply change to component perpendicular to flow axis (assumed to be in km/s).
         * Can't use FLOWAXIS macro though because we are in transformed coords. */
-        SELECT(vcart1, vcart1, vcart2) += g_inputParam[PAR_WVPP] * ini_code[PAR_WVPP];
+        D_SELECT(vcart1, vcart1, vcart2) += g_inputParam[PAR_WVPP] * ini_code[PAR_WVPP];
 
         /* Convert velocity vectors back to the current coordinate system */
         EXPAND(v1 = VCART_1(xcart1, xcart2, xcart3, vcart1, vcart2, vcart3);,

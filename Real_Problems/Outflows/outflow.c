@@ -665,14 +665,17 @@ void OutflowVelocity(double *out_primitives, double speed,
          NOTE, since we've rotated to flow-axis, the nozzle is cylindrically symmetric
          and we don't have to use rotational symmetry. */
 
-        if (FLOWAXIS(cx1p, cx2p, cx3p) < 0) {
+        /* Can't use FLOWAXIS macro though because we are in transformed coords. */
+
+        if (D_SELECT(cx1p, cx2p, cx3p) < 0) {
             mirror_side = 1;
-            FLOWAXIS(cx1p, cx2p, cx3p) *= -1;
+            D_SELECT(cx1p, cx2p, cx3p) *= -1;
         }
 #endif
 
         /* Move cone apex to 0,0,0 */
-        FLOWAXIS(cx1p, cx2p, cx3p) -= nz.cone_apex;
+        /* Can't use FLOWAXIS macro though because we are in transformed coords. */
+        D_SELECT(cx1p, cx2p, cx3p) -= nz.cone_apex;
 
         /* Spherical coordinates of the rotated cartesian coordinates */
         double sx1p, sx2p, sx3p;
@@ -686,15 +689,15 @@ void OutflowVelocity(double *out_primitives, double speed,
         cv3p = VSPH2CART3(sx1p, sx2p, sx3p, speed, 0, 0);
 
         /* Move cone apex back */
-        FLOWAXIS(cx1p, cx2p, cx3p) += nz.cone_apex;
+        D_SELECT(cx1p, cx2p, cx3p) += nz.cone_apex;
 
 #if INTERNAL_BOUNDARY == YES
         /* Create mirror-symmetrically opposite velocity vector
          and mirror back cell position */
 
         if (mirror_side) {
-            FLOWAXIS(cx1p, cx2p, cx3p) *= -1;
-            FLOWAXIS(cv1p, cv2p, cv3p) *= -1;
+            D_SELECT(cx1p, cx2p, cx3p) *= -1;
+            D_SELECT(cv1p, cv2p, cv3p) *= -1;
         }
 
 #endif
@@ -705,13 +708,13 @@ void OutflowVelocity(double *out_primitives, double speed,
         cv1p = 0;
         cv2p = 0;
         cv3p = 0;
-        FLOWAXIS(cv1p, cv2p, cv3p) = speed;
+        D_SELECT(cv1p, cv2p, cv3p) = speed;
 
 #if INTERNAL_BOUNDARY == YES
         /* Create mirror-symmetrically opposite velocity vector */
 
-        if (FLOWAXIS(cx1p, cx2p, cx3p) < 0) {
-            FLOWAXIS(cv1p, cv2p, cv3p) *= -1;
+        if (D_SELECT(cx1p, cx2p, cx3p) < 0) {
+            D_SELECT(cv1p, cv2p, cv3p) *= -1;
         }
 #endif
 

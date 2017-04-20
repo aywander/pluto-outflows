@@ -79,6 +79,18 @@
  * directly in the conversion macros.
  *   */
 
+#define CSPD_ANGULAR  0
+#define CSPD_LINEAR   1
+
+#define CIRCULAR_SPEED  CSPD_LINEAR
+
+#if  CIRCULAR_SPEED == CSPD_ANGULAR
+    #define C_SELECT(a, b) a
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+    #define C_SELECT(a, b) b
+#endif
+
+
 // TODO: these macros should be used inside the conversion macros, and not as arguments to the most generic macros. This is because the realignment messes up the generality of the conversion macros.
 #define D_ZERO_CYL1(a)  a
 #define D_ZERO_CYL2(b)  D_SELECT(0, b, 0)
@@ -133,15 +145,22 @@
 
 //#define VCART2POL1(x1, x2, x3, v1, v2, v3)  ( ((x1)*(v1) + (x2)*(v2))/CART2POL1(x1, x2, x3) )
 #define VCART2POL1(x1, x2, x3, v1, v2, v3)  ( cos(CART2POL2(x1, x2, x3))*(v1) + sin(CART2POL2(x1, x2, x3))*(v2) )
+#if CIRCULAR_SPEED == CSPD_ANGULAR
 #define VCART2POL2(x1, x2, x3, v1, v2, v3)  ( (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2))/\
-    (CART2POL1(x1, x2, x3)) )  // with /r
-//#define VCART2POL2(x1, x2, x3, v1, v2, v3)  (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2)) // without /r
+    (CART2POL1(x1, x2, x3)) )
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+#define VCART2POL2(x1, x2, x3, v1, v2, v3)  (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2))
+#endif
+
 #define VCART2POL3(x1, x2, x3, v1, v2, v3)  ( v3 )
 
-#define VPOL2CART1(x1, x2, x3, v1, v2, v3)  ( cos(x2)*(v1) - sin(x2)*(x1)*(v2) )  // with * r
-#define VPOL2CART2(x1, x2, x3, v1, v2, v3)  ( sin(x2)*(v1) + cos(x2)*(x1)*(v2) )  // with * r
-//#define VPOL2CART1(x1, x2, x3, v1, v2, v3)  ( cos(x2)*(v1) - sin(x2)*(v2) ) // without * r
-//#define VPOL2CART2(x1, x2, x3, v1, v2, v3)  ( sin(x2)*(v1) + cos(x2)*(v2) ) // without * r
+#if CIRCULAR_SPEED == CSPD_ANGULAR
+#define VPOL2CART1(x1, x2, x3, v1, v2, v3)  ( cos(x2)*(v1) - sin(x2)*(x1)*(v2) )
+#define VPOL2CART2(x1, x2, x3, v1, v2, v3)  ( sin(x2)*(v1) + cos(x2)*(x1)*(v2) )
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+#define VPOL2CART1(x1, x2, x3, v1, v2, v3)  ( cos(x2)*(v1) - sin(x2)*(v2) )
+#define VPOL2CART2(x1, x2, x3, v1, v2, v3)  ( sin(x2)*(v1) + cos(x2)*(v2) )
+#endif
 #define VPOL2CART3(x1, x2, x3, v1, v2, v3)  ( v3 )
 
 
@@ -189,16 +208,19 @@
 //      v1,\
 //      ((x1)*(v1) + (x2)*(v2))/(CART2CYL1(x1, x2, x3)) ) )
 #define VCART2CYL2(x1, x2, x3, v1, v2, v3)  ( SELECT(v3, v2, v3) )
+#if CIRCULAR_SPEED == CSPD_ANGULAR
 #define VCART2CYL3(x1, x2, x3, v1, v2, v3)  ( SELECT(\
       (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2))/\
       (CART2POL1(x1, x2, x3)),\
       0, \
       (-sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2))/\
-      (CART2POL1(x1, x2, x3)) )  ) // with /r
-//#define VCART2CYL3(x1, x2, x3, v1, v2, v3)  ( SELECT(\
-//      -sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2),\
-//      0, \
-//      -sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2) ) // without /r
+      (CART2POL1(x1, x2, x3)) )  )
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+#define VCART2CYL3(x1, x2, x3, v1, v2, v3)  ( SELECT(\
+      -sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2),\
+      0, \
+      -sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2) )
+#endif
 
 
 /* If GEOMETRY = 3D Cartesian, assumes x1, x2, and x3 are Cartesian coordinates, rather than x1, x2 being cylindrical
@@ -227,16 +249,22 @@
 //#define CYL2SPH2(x1, x2, x3) ( acos((SELECT(x2, x1, x2))/(CYL2SPH1(x1, x2, x3))) )  // Assumes theta is measured from x2 in 2D
 #define CYL2SPH3(x1, x2, x3) ( 0 )
 
-#define VSPH2CYL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (x1)*(v2)*cos(x2) )  // with * r, assumes theta is measured from x2
-#define VSPH2CYL2(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) + (x1)*(v2)*sin(x2) )  // with * r, assumes theta is measured from x2
-//#define VSPH2CYL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (v2)*cos(x2) ) // without *r, assumes theta is measured from x2
-//#define VSPH2CYL2(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - (v2)*sin(x2) ) // without *r, assumes theta is measured from x2
+#if CIRCULAR_SPEED == CSPD_ANGULAR
+#define VSPH2CYL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (x1)*(v2)*cos(x2) )  // assumes theta is measured from x2
+#define VSPH2CYL2(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) + (x1)*(v2)*sin(x2) )  // assumes theta is measured from x2
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+#define VSPH2CYL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (v2)*cos(x2) ) // assumes theta is measured from x2
+#define VSPH2CYL2(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - (v2)*sin(x2) ) // assumes theta is measured from x2
+#endif
 #define VSPH2CYL3(x1, x2, x3, v1, v2, v3) ( v3 )
 
 #define VCYL2SPH1(x1, x2, x3, v1, v2, v3) ( sin(CYL2SPH2(x1, x2, x3))*(v1) + cos(CYL2SPH2(x1, x2, x3))*(v2) )
+#if CIRCULAR_SPEED == CSPD_ANGULAR
 #define VCYL2SPH2(x1, x2, x3, v1, v2, v3) ( (cos(CYL2SPH2(x1, x2, x3))*(v1) - sin(CYL2SPH2(x1, x2, x3))*(v2))/\
-    (CYL2SPH1(x1, x2, x3) ) )  // with /r, assumes theta is measured from x2
-//#define VCYL2SPH2(x1, x2, x3, v1, v2, v3) (cos(CYL2SPH2(x1, x2, x3))*(v1) - sin(CYL2SPH2(x1, x2, x3))*(v2)) // without /r, assumes theta is measured from x2
+    (CYL2SPH1(x1, x2, x3) ) )  // assumes theta is measured from x2
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+#define VCYL2SPH2(x1, x2, x3, v1, v2, v3) (cos(CYL2SPH2(x1, x2, x3))*(v1) - sin(CYL2SPH2(x1, x2, x3))*(v2)) // assumes theta is measured from x2
+#endif
 #define VCYL2SPH3(x1, x2, x3, v1, v2, v3) ( v3 )
 
 
@@ -256,16 +284,25 @@
 //#define POL2SPH2(x1, x2, x3) ( acos((SELECT(x3, x1, x3))/(POL2SPH1(x1, x2, x3))) )  // Assumes theta is measured from x1 in 2D
 #define POL2SPH3(x1, x2, x3) ( x2 )
 
-#define VSPH2POL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (x1)*(v2)*cos(x2) )  // with *r, assumes theta is measured from x3
-//#define VSPH2POL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (v2)*cos(x2) ) //without *r, assumes theta is measured from x3
+#if CIRCULAR_SPEED == CSPD_ANGULAR
+#define VSPH2POL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (x1)*(v2)*cos(x2) )  // assumes theta is measured from x3
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+#define VSPH2POL1(x1, x2, x3, v1, v2, v3) ( sin(x2)*(v1) + (v2)*cos(x2) ) // assumes theta is measured from x3
+#endif
 #define VSPH2POL2(x1, x2, x3, v1, v2, v3) ( v3 )
-#define VSPH2POL3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) + (x1)*(v2)*sin(x2) ) //with *r, assumes theta is measured from x3
-//#define VSPH2POL3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - (v2)*sin(x2) ) //without *r, assumes theta is measured from x3
+#if CIRCULAR_SPEED == CSPD_ANGULAR
+#define VSPH2POL3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) + (x1)*(v2)*sin(x2) ) // assumes theta is measured from x3
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+#define VSPH2POL3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - (v2)*sin(x2) ) // assumes theta is measured from x3
+#endif
 
 #define VPOL2SPH1(x1, x2, x3, v1, v2, v3) ( sin(POL2SPH2(x1, x2, x3))*(v1) + cos(POL2SPH2(x1, x2, x3))*(v3) )
+#if CIRCULAR_SPEED == CSPD_ANGULAR
 #define VPOL2SPH2(x1, x2, x3, v1, v2, v3) ( (cos(POL2SPH2(x1, x2, x3))*(v1) - sin(POL2SPH2(x1, x2, x3))*(v3))/\
-    (POL2SPH1(x1, x2, x3)) ) // with /r
-//#define VPOL2SPH2(x1, x2, x3, v1, v2, v3) ( cos(POL2SPH2(x1, x2, x3))*(v1) - sin(POL2SPH2(x1, x2, x3))*(v3) ) // without /r
+    (POL2SPH1(x1, x2, x3)) )
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+#define VPOL2SPH2(x1, x2, x3, v1, v2, v3) ( cos(POL2SPH2(x1, x2, x3))*(v1) - sin(POL2SPH2(x1, x2, x3))*(v3) )
+#endif
 #define VPOL2SPH3(x1, x2, x3, v1, v2, v3) ( v2 )
 
 
@@ -295,15 +332,7 @@
 //      cos(CART2SPH2(x1, x2, x3))*(v3) \
 //      ) ) // assuming theta from x2 axis in 2D
 
-//#define VCART2SPH2(x1, x2, x3, v1, v2, v3) ( SELECT(\
-//      cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-//      cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
-//      sin(CART2SPH2(x1, x2, x3))*(v3),\
-//      cos(CART2SPH2(x1, x2, x3))*(v1) + sin(CART2SPH2(x1, x2, x3))*(v2),\
-//      cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-//      cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
-//      sin(CART2SPH2(x1, x2, x3))*(v3) \
-//    ) ) // without /r and  assuming theta from x2 axis in 2D
+#if CIRCULAR_SPEED == CSPD_ANGULAR
 #define VCART2SPH2(x1, x2, x3, v1, v2, v3) ( SELECT(\
       (cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
       cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
@@ -312,36 +341,59 @@
       (cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
       cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
       sin(CART2SPH2(x1, x2, x3))*(v3)) / (CART2SPH1(x1, x2, x3)) \
-    ) ) // with /r and  assuming theta from x2 axis in 2D
+    ) ) // assuming theta from x2 axis in 2D
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+#define VCART2SPH2(x1, x2, x3, v1, v2, v3) ( SELECT(\
+      cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
+      cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
+      sin(CART2SPH2(x1, x2, x3))*(v3),\
+      cos(CART2SPH2(x1, x2, x3))*(v1) + sin(CART2SPH2(x1, x2, x3))*(v2),\
+      cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
+      cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
+      sin(CART2SPH2(x1, x2, x3))*(v3) \
+    ) ) // assuming theta from x2 axis in 2D
+#endif
 
+#if CIRCULAR_SPEED == CSPD_ANGULAR
 #define VCART2SPH3(x1, x2, x3, v1, v2, v3) ( (-sin(CART2SPH3(x1, x2, x3))*(v1) + cos(CART2SPH3(x1, x2, x3))*(v2))/\
-    (CART2POL1(x1, x2, x3)) )   // with /r
-//#define VCART2SPH3(x1, x2, x3, v1, v2, v3) ( -sin(CART2SPH3(x1, x2, x3))*(v1) + cos(CART2SPH3(x1, x2, x3))*(v2) )  // with /r
+    (CART2POL1(x1, x2, x3)) )
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+#define VCART2SPH3(x1, x2, x3, v1, v2, v3) ( -sin(CART2SPH3(x1, x2, x3))*(v1) + cos(CART2SPH3(x1, x2, x3))*(v2) )
+#endif
 
+#if CIRCULAR_SPEED == CSPD_ANGULAR
 #define VSPH2CART1(x1, x2, x3, v1, v2, v3) ( SELECT(\
       sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2)*(x1) - sin(x2)*(v3)*(SPH2POL1(x1, x2, x3)),\
       SGN(SPH2CART1(x1, x2, x3))*(sin(x2)*(v1) + cos(x2)*(v2)*(x1)),\
       sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2)*(x1) - sin(x2)*(v3)*(SPH2POL1(x1, x2, x3))\
-      ) ) // with *r, assumes theta is measured from x2 in 2D
-//#define VSPH2CART1(x1, x2, x3, v1, v2, v3) ( SELECT(\
-//      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3), \
-//      SGN(SPH2CART1(x1, x2, x3))*(sin(x2)*(v1) + cos(x2)*(v2)),\
-//      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3) \
-//      ) ) // without *r, assumes theta is measured from x2 in 2D
+      ) ) // assumes theta is measured from x2 in 2D
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+#define VSPH2CART1(x1, x2, x3, v1, v2, v3) ( SELECT(\
+      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3), \
+      SGN(SPH2CART1(x1, x2, x3))*(sin(x2)*(v1) + cos(x2)*(v2)),\
+      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3) \
+      ) ) // assumes theta is measured from x2 in 2D
+#endif
 
+#if CIRCULAR_SPEED == CSPD_ANGULAR
 #define VSPH2CART2(x1, x2, x3, v1, v2, v3) ( SELECT(\
       sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2)*(x1) + cos(x3)*(v3)*(SPH2POL1(x1, x2, x3)),\
       cos(x2)*(v1) - sin(x2)*(v2)*(x1),\
       sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2)*(x1) + cos(x3)*(v3)*(SPH2POL1(x1, x2, x3)) \
-      ) ) // with *r, assumes theta is measured from x2 in 2D
-//#define VSPH2CART2(x1, x2, x3, v1, v2, v3) ( SELECT(\
-//      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2) + cos(x3)*(v3),\
-//      cos(x2)*(v1) - sin(x2)*(v2),\
-//      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2) + cos(x3)*(v3))\
-//    ) // without *r, assumes theta is measured from x2 in 2D
+      ) ) // assumes theta is measured from x2 in 2D
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+#define VSPH2CART2(x1, x2, x3, v1, v2, v3) ( SELECT(\
+      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2) + cos(x3)*(v3),\
+      cos(x2)*(v1) - sin(x2)*(v2),\
+      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2) + cos(x3)*(v3))\
+    ) // assumes theta is measured from x2 in 2D
+#endif
 
+#if CIRCULAR_SPEED == CSPD_ANGULAR
 #define VSPH2CART3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - sin(x2)*(v2)*(x1) )
-//#define VSPH2CART3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - sin(x2)*(v2) ) // without *r
+#elif CIRCULAR_SPEED == CSPD_LINEAR
+#define VSPH2CART3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - sin(x2)*(v2) )
+#endif
 
 
 
