@@ -332,7 +332,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
         /* Note - this condition prevents interprocessor communications
          * beyond here and is not strictly necessary. */
         // TODO: Consider removing this condition
-        if (SphereIntersectsDomain(grid, nz.sph)) {
+//        if (SphereIntersectsDomain(grid, nz.sph)) {
 
             // TODO: Separate ACCRETION from NOZZLE
             // TODO: Create a AGN switch, and change NOZZLE to AGN_NOZZLE
@@ -437,7 +437,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
 #endif   // If Accretion
 
-        } // SphereIntersectsDomain
+//        } // SphereIntersectsDomain
 
 
     } // side == 0

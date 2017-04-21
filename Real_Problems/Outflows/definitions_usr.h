@@ -16,7 +16,7 @@
 
 #define GRAV_POTENTIAL              GRAV_DOUBLE_ISOTHERMAL
 
-#define CLOUDS                      YES
+#define CLOUDS                      NO
 #define CLOUD_REPEAT	            NO
 #define CLOUDS_MULTI   	            NO
 
