@@ -378,7 +378,7 @@ void CloudVelocity(double *cloud, double *halo,
            v3 = cloud[VX3];);
 
     /* If ek == 0, then it's spherical) and velocities are just those read in.
-     * If ek > 0., there is a keplerian component that needs to be added. */
+     * If ek > 0., there is a Keplerian component that needs to be added. */
     if (ek > 0.) {
 
         /* Convert coordinates and velocity vectors to cylindrical polars */
@@ -395,16 +395,16 @@ void CloudVelocity(double *cloud, double *halo,
          * At least for N-body initializations of thick discs in non-cylindrical potentials,
          * this gives a better results */
         r_cyl = CYL1(x1, x2, x3);
-//        dphidr = -InterpolationWrapper(gr_rad, gr_dphidr, gr_ndata, r_cyl);
-//        rad = SPH1(x1, x2, x3);
-//        dphidr = -InterpolationWrapper(gr_rad, gr_dphidr, gr_ndata, rad);
         BodyForceVector(cloud, gvec, x1, x2, x3);
-        dphidr = VPOL2(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
+
+        // TODO: Ask Miki-kun which is correct
+//        dphidr = VPOL1(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
+        dphidr = VSPH1(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
 
         /* The angular velocity - This should be angular speed, no? */
         // TODO: to check
 //        vpol2 += ek * sqrt(r_cyl * dphidr);
-        vpol2 += ek * sqrt(r_cyl * dphidr) / r_cyl;
+//        vpol2 += ek * sqrt(r_cyl * dphidr) / r_cyl;
 
         /* Convert velocity vectors back to the current coordinate system */
         EXPAND(v1 = VPOL_1(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3);,

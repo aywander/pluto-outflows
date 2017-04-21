@@ -186,11 +186,16 @@ void InputDataSet (char *grid_fname, int *get_var)
       ::id_nx1 and ::id_x1.                                              */
 /* --------------------------------------------------------------------- */
 
+    /* AYW -- 2013-04-19 12:08 JST
+    * Store read data extents in global arrays */
+
     fscanf(fp, "%d \n", &id_nx1);
     id_x1 = ARRAY_1D(id_nx1, double);
     for (i = 0; i < id_nx1; i++) {
         fscanf(fp, "%d  %lf %lf\n", &ip, &xl, &xr);
         id_x1[i] = 0.5 * (xl + xr);
+        if (i == 0)          g_idBoxBeg[IDIR] = xl;   // AYW added
+        if (i == id_nx1 - 1) g_idBoxEnd[IDIR] = xr;   // AYW added
     }
 
     fscanf(fp, "%d \n", &id_nx2);
@@ -198,6 +203,8 @@ void InputDataSet (char *grid_fname, int *get_var)
     for (i = 0; i < id_nx2; i++) {
         fscanf(fp, "%d  %lf %lf\n", &ip, &xl, &xr);
         id_x2[i] = 0.5 * (xl + xr);
+        if (i == 0)          g_idBoxBeg[JDIR] = xl;   // AYW added
+        if (i == id_nx2 - 1) g_idBoxEnd[JDIR] = xr;   // AYW added
     }
 
     fscanf(fp, "%d \n", &id_nx3);
@@ -205,6 +212,8 @@ void InputDataSet (char *grid_fname, int *get_var)
     for (i = 0; i < id_nx3; i++) {
         fscanf(fp, "%d  %lf %lf\n", &ip, &xl, &xr);
         id_x3[i] = 0.5 * (xl + xr);
+        if (i == 0)          g_idBoxBeg[KDIR] = xl;   // AYW added
+        if (i == id_nx3 - 1) g_idBoxEnd[KDIR] = xr;   // AYW added
     }
     fclose(fp);
 
@@ -215,24 +224,18 @@ void InputDataSet (char *grid_fname, int *get_var)
     if (id_nx3 == 1) id_x3[0] = 0.0;
 
     /* AYW -- 2013-04-19 12:08 JST
-    * Store read data extents in global arrays */
-#if CLOUDS_MULTI != YES
-    g_idBoxBeg[IDIR] = id_x1[0];
-    g_idBoxEnd[IDIR] = id_x1[id_nx1 - 1];
-    g_idBoxBeg[JDIR] = id_x2[0];
-    g_idBoxEnd[JDIR] = id_x2[id_nx2 - 1];
-    g_idBoxBeg[KDIR] = id_x3[0];
-    g_idBoxEnd[KDIR] = id_x3[id_nx3 - 1];
+    * Store read data number of points in global vars */
     g_idnx1 = id_nx1;
     g_idnx2 = id_nx2;
     g_idnx3 = id_nx3;
     /* -- AYW */
 
-#else
     /* DM -- */
-    g_idBoxBeg[IDIR] = PAR_WX1L; g_idBoxEnd[IDIR] = PAR_WX1H;
-    g_idBoxBeg[JDIR] = PAR_WX2L; g_idBoxEnd[JDIR] = PAR_WX2H;
-    g_idBoxBeg[KDIR] = PAR_WX3L; g_idBoxEnd[KDIR] = PAR_WX3H;
+    /* In case of CLOUDS_MULTI, overwrite these with input parameters */
+#if CLOUDS_MULTI == YES
+    g_idBoxBeg[IDIR] = g_inputParam[PAR_WX1L]; g_idBoxEnd[IDIR] = g_inputParam[PAR_WX1H];
+    g_idBoxBeg[JDIR] = g_inputParam[PAR_WX2L]; g_idBoxEnd[JDIR] = g_inputParam[PAR_WX2H];
+    g_idBoxBeg[KDIR] = g_inputParam[PAR_WX3L]; g_idBoxEnd[KDIR] = g_inputParam[PAR_WX3H];
     /* -- DM */
 #endif
 
