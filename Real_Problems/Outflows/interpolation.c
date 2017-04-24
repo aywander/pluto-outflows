@@ -237,9 +237,9 @@ void x3u_3d_extrapol(double ***a, int kb, int i, int j, int k, Grid *grid)
     double *x1, *x2, *x3;
     double y0, y1, y2, z0, z1, z2;
 
-    x1 = grid[IDIR].xgc;
-    x2 = grid[JDIR].xgc;
-    x3 = grid[KDIR].xgc;
+    x1 = grid[IDIR].x;
+    x2 = grid[JDIR].x;
+    x3 = grid[KDIR].x;
 
     y0 = a[kb][j][i];
     y1 = a[kb - 1][j][i];
@@ -269,9 +269,9 @@ void x2l_3d_extrapol (double ***a, int jb, int i, int j, int k, Grid *grid)
     double *x1, *x2, *x3;
     double y0, y1, y2, z0, z1, z2;
 
-    x1 = grid[IDIR].xgc;
-    x2 = grid[JDIR].xgc;
-    x3 = grid[KDIR].xgc;
+    x1 = grid[IDIR].x;
+    x2 = grid[JDIR].x;
+    x3 = grid[KDIR].x;
 
     y0 = a[k][jb][i];
     y1 = a[k][jb + 1][i];
