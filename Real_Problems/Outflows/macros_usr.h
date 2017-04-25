@@ -70,7 +70,17 @@
  * more flexibility in the use of these macros in different dimensionality and geometry than the current.
  *
  * Note, that in cylindrical coordinates, we don't have a third dimension (always set it to 0), but
- * we do have 3 components.  
+ * we do have 3 components.
+ *
+ * Theta goes from 0 to pi, and is never negative.
+ * Phi goes from 0 to 2 pi, and is never negative.
+ * Negative coordinates work in PLUTO, but it is better to stick to the above convention, as these are the ranges
+ * used in the Test_Problems.
+ *
+ * Theta dot and phi dot go in the directions of positive theta and phi, respectively.
+ * In 2D spherical, we assume that theta is measured from x2. That is, compared to 3D, the x2 axis represents the 3D-x3
+ * axis, whereas x1 represents either the 3D x1 or x2 axis. Mathematically, the conversions are the same, if one chooses
+ * phi = 0, or phi = pi / 2 for the respective cases.
  *
  * */
 
@@ -135,6 +145,7 @@
 
 /* CARTESIAN -- POLAR */
 /* The coordinate systems are always aligned the same way for all dimensions */
+/* phi = 0 to 2 pi */
 #define CART2POL1(x1, x2, x3)  ( sqrt((x1)*(x1) + (x2)*(x2)) )
 #define CART2POL2(x1, x2, x3)  ( 2*CONST_PI*HS(-(x2)) + (SGN(x2))*acos((x1)/(CART2POL1(x1, x2, x3))) ) 
 #define CART2POL3(x1, x2, x3)  ( x3 )
@@ -309,10 +320,9 @@
 /* CARTESIAN -- SPHERICAL */
 /* Assume theta = pi/2 in 1D. Azimuthal angle phi and poloidal angle theta don't exist in 2D and 1D 
  * and cannot be derived, because the axes are differently aligned. Assume also that phi = 0 in 2D alignment.
- * Assumes theta is measured from x2 in 2D. This is different from the mathematical conventions, but
- * as long as it is consistent in the position and velocity macros, this is no problem. Note that
- * but basis vector (theta dot) points in -theta direction (as required by PLUTO velocity primitives). */
-#define CART2SPH1(x1, x2, x3) ( sqrt((x1)*(x1) + (x2)*(x2) + (x3)*(x3)) )
+ * Assumes theta is measured from x2 in 2D. Theta dot goes along theta.
+ * Theta goes from 0 to pi, and is never negative. */
+#define CART2SPH1(x1, x2, x3) ( sqrt(D_EXPAND((x1)*(x1), + (x2)*(x2), + (x3)*(x3))) )
 #define CART2SPH2(x1, x2, x3) ( acos((D_SELECT(x3, x2, x3))/(CART2SPH1(x1, x2, x3))) )
 #define CART2SPH3(x1, x2, x3) ( D_SELECT(0, CONST_PI*HS(-(x1)), 2*CONST_PI*HS(-(x2)) +\
     (SGN(x2))*acos((x1)/(CART2CYL1(x1, x2, x3)))) )
@@ -323,37 +333,31 @@
                                      SPH2POL1(x1, x2, x3)*sin(x3)) )
 #define SPH2CART3(x1, x2, x3) ( D_SELECT(0, 0, SPH2POL3(x1, x2, x3)) )
 
-#define VCART2SPH1(x1, x2, x3, v1, v2, v3) ( ((x1)*(v1) + (x2)*(v2) + (x3)*(v3))/(CART2SPH1(x1, x2, x3)) )
-//#define VCART2SPH1(x1, x2, x3, v1, v2, v3) ( SELECT(\
-//      sin(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-//      sin(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) +\
-//      cos(CART2SPH2(x1, x2, x3))*(v3), \
-//      sin(CART2SPH2(x1, x2, x3))*(v1) + cos(CART2SPH2(x1, x2, x3))*(v2), \
-//      sin(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-//      sin(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) +\
-//      cos(CART2SPH2(x1, x2, x3))*(v3) \
-//      ) ) // assumes theta from x2 axis, theta dot in -theta direction (consistency with PLUTO velocity primitives)
+//#define VCART2SPH1(x1, x2, x3, v1, v2, v3) ( ((x1)*(v1) + (x2)*(v2) + (x3)*(v3))/(CART2SPH1(x1, x2, x3)) )
+#define VCART2SPH1(x1, x2, x3, v1, v2, v3) ( SELECT(\
+      (v1), \
+      sin(CART2SPH2(x1, x2, x3))*(v1) + cos(CART2SPH2(x1, x2, x3))*(v2), \
+      sin(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
+      sin(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) +\
+      cos(CART2SPH2(x1, x2, x3))*(v3) \
+      ) )
 
 #if CIRCULAR_SPEED == CSPD_ANGULAR
 #define VCART2SPH2(x1, x2, x3, v1, v2, v3) ( SELECT(\
-      (cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-      cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
-      sin(CART2SPH2(x1, x2, x3))*(v3)) / (CART2SPH1(x1, x2, x3)),\
-      (cos(CART2SPH2(x1, x2, x3))*(v1) + sin(CART2SPH2(x1, x2, x3))*(v2)) / (CART2SPH1(x1, x2, x3)),\
+      (0),\
+      (cos(CART2SPH2(x1, x2, x3))*(v1) - sin(CART2SPH2(x1, x2, x3))*(v2)) / (CART2SPH1(x1, x2, x3)),\
       (cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
       cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
       sin(CART2SPH2(x1, x2, x3))*(v3)) / (CART2SPH1(x1, x2, x3)) \
-    ) ) // assumes theta from x2 axis, theta dot in -theta direction (consistency with PLUTO velocity primitives)
+    ) )
 #elif CIRCULAR_SPEED == CSPD_LINEAR
 #define VCART2SPH2(x1, x2, x3, v1, v2, v3) ( SELECT(\
-      cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-      cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
-      sin(CART2SPH2(x1, x2, x3))*(v3),\
-      cos(CART2SPH2(x1, x2, x3))*(v1) + sin(CART2SPH2(x1, x2, x3))*(v2),\
+      (0),\
+      (cos(CART2SPH2(x1, x2, x3))*(v1) - sin(CART2SPH2(x1, x2, x3))*(v2)),\
       cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
       cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
       sin(CART2SPH2(x1, x2, x3))*(v3) \
-    ) ) // assumes theta from x2 axis, theta dot in -theta direction (consistency with PLUTO velocity primitives)
+    ) )
 #endif
 
 #if CIRCULAR_SPEED == CSPD_ANGULAR
@@ -365,32 +369,30 @@
 
 #if CIRCULAR_SPEED == CSPD_ANGULAR
 #define VSPH2CART1(x1, x2, x3, v1, v2, v3) ( SELECT(\
-      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2)*(x1) - sin(x2)*(v3)*(SPH2POL1(x1, x2, x3)),\
-      SGN(SPH2CART1(x1, x2, x3))*(sin(x2)*(v1) + cos(x2)*(v2)*(x1)),\
+      (v1),\
+      (sin(x2)*(v1) + cos(x2)*(v2)*(x1)),\
       sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2)*(x1) - sin(x2)*(v3)*(SPH2POL1(x1, x2, x3))\
-      ) ) // assumes theta is measured from x2 in 2D
+      ) )
 #elif CIRCULAR_SPEED == CSPD_LINEAR
 #define VSPH2CART1(x1, x2, x3, v1, v2, v3) ( SELECT(\
-      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3), \
-      SGN(SPH2CART1(x1, x2, x3))*(-sin(x2)*(v1) + cos(x2)*(v2)),\
+      (v1), \
+      (sin(x2)*(v1) + cos(x2)*(v2)),\
       sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3) \
-      ) ) // assumes theta is measured from x2 in 2D, but basis vector pointing in -theta direction (as required by PLUTO primitives)
-          // If we change this, we should do SGN(SPH2CART1(x1, x2, x3))*(sin(x2)*(v1) + cos(x2)*(v2))
+      ) )
 #endif
 
 #if CIRCULAR_SPEED == CSPD_ANGULAR
 #define VSPH2CART2(x1, x2, x3, v1, v2, v3) ( SELECT(\
-      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2)*(x1) + cos(x3)*(v3)*(SPH2POL1(x1, x2, x3)),\
+      (0)),\
       cos(x2)*(v1) - sin(x2)*(v2)*(x1),\
       sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2)*(x1) + cos(x3)*(v3)*(SPH2POL1(x1, x2, x3)) \
-      ) ) // assumes theta is measured from x2 in 2D
+      ) )
 #elif CIRCULAR_SPEED == CSPD_LINEAR
 #define VSPH2CART2(x1, x2, x3, v1, v2, v3) ( SELECT(\
-      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2) + cos(x3)*(v3),\
-      cos(x2)*(v1) + sin(x2)*(v2),\
+      (0),\
+      cos(x2)*(v1) - sin(x2)*(v2),\
       sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2) + cos(x3)*(v3))\
-    ) // assumes theta is measured from x2 in 2D, but basis vector pointing in -theta direction (as required by PLUTO primitives)
-      // If we change this, we should do cos(x2)*(v1) - sin(x2)*(v2)
+    )
 #endif
 
 #if CIRCULAR_SPEED == CSPD_ANGULAR

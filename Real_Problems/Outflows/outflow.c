@@ -119,6 +119,7 @@ void SetNozzleGeometry(Nozzle * noz) {
 
         /* Volume of nozzle. It is the revolved volume. */
         // TODO: The volume is only valid in the case of two-sided galaxies, where dbh = 0.
+        // TODO: This does not exclude the spherical hole in SPHERICAL geometries
 #if INTERNAL_BOUNDARY == YES
         double spherical_cone_volume = area * cone_side / 3.;
         double overlap_rad = rad * (1. - cbh / cone_height);
@@ -138,6 +139,7 @@ void SetNozzleGeometry(Nozzle * noz) {
 
         /* Volume of nozzle */
         // TODO: The volume is only valid in the case of two-sided galaxies, where dbh = 0.
+        // TODO: This does not exclude the spherical hole in SPHERICAL geometries
 #if INTERNAL_BOUNDARY == YES
         vol = area * cbh;
 #else
@@ -168,13 +170,13 @@ void SetNozzleGeometry(Nozzle * noz) {
     }
     /* This check is for avoiding the cone of the nozzle to be buried in the
      outflow boundary for half-galaxy simulations. */
-    if (FLOWAXIS(g_domBeg[IDIR], g_domBeg[JDIR], g_domBeg[KDIR]) >= 0.) {
+    if (!is_two_sided) {
 
         if (acos(1 - ((sph - cbh) * (sph - cbh) + rad * rad) /
                      (2 * sph * sph)) + dir > CONST_PI / 2) {
             print1("Error: OSPH is too small. It must be at least...");
             QUIT_PLUTO(1);
-            /* TODO: Calculate minimum OSPH */
+            // TODO: Calculate minimum OSPH
         }
     }
 
@@ -556,6 +558,7 @@ void NozzleFill(const Data *d, const Grid *grid) {
 #endif
 
     // TODO: Adjust volume for the case below
+    // NOTE: Volume is incorrectly calculated for spherical setups; nothing is dumped in the excluded x1_beg region.
 #if GEOMETRY == SPHERICAL
     if (g_domBeg[IDIR] > 0.) {
         print1("Error: NOZZLE_FILL CONSERVATIVE not supported if (GEOMETRY == SPHERICAL) && (g_domBeg[IDIR] > 0.).");
@@ -579,7 +582,6 @@ void NozzleFill(const Data *d, const Grid *grid) {
     // Do uniform dump first.
 
     // TODO: Conservative variables are specific energy ?
-    // TODO: Volume is incorrectly calculated for spherical setups; nothing is dumped in the excluded x1_beg region.
 
     /* Apply on all cells in Nozzle region */
     int k, j, i;
@@ -684,9 +686,9 @@ void OutflowVelocity(double *out_primitives, double speed,
         sx3p = CART2SPH3(cx1p, cx2p, cx3p);
 
         /* Cartesian velocities from spherical velocity */
-        cv1p = VSPH2CART1(sx1p, sx2p, sx3p, speed, 0, 0);
-        cv2p = VSPH2CART2(sx1p, sx2p, sx3p, speed, 0, 0);
-        cv3p = VSPH2CART3(sx1p, sx2p, sx3p, speed, 0, 0);
+        EXPAND(cv1p = VSPH2CART1(sx1p, sx2p, sx3p, speed, 0, 0);,
+               cv2p = VSPH2CART2(sx1p, sx2p, sx3p, speed, 0, 0);,
+               cv3p = VSPH2CART3(sx1p, sx2p, sx3p, speed, 0, 0););
 
         /* Move cone apex back */
         D_SELECT(cx1p, cx2p, cx3p) += nz.cone_apex;

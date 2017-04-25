@@ -25,6 +25,19 @@ void ComputeUserVar (const Data *d, Grid *grid)
   double vel, speed, lorentz;
 #endif
 
+
+
+  double ***xs1, ***xs2, ***xs3;
+    double ***xc1, ***xc2, ***xc3;
+    D_EXPAND(xs1 = GetUserVar("xs1");,
+           xs2 = GetUserVar("xs2");,
+           xs3 = GetUserVar("xs3"););
+    D_EXPAND(xc1 = GetUserVar("xc1");,
+             xc2 = GetUserVar("xc2");,
+             xc3 = GetUserVar("xc3"););
+
+
+
   /* New variables - names must exist under uservar */
   te = GetUserVar("te");
   spd = GetUserVar("spd");
@@ -52,6 +65,13 @@ void ComputeUserVar (const Data *d, Grid *grid)
 //  x3 = grid[KDIR].xgc;
 
   DOM_LOOP(k, j, i) {
+
+              D_EXPAND(xc1[k][j][i] = CART1(x1[i], x2[j], x3[k]);,
+                       xc2[k][j][i] = CART2(x1[i], x2[j], x3[k]);,
+                       xc3[k][j][i] = CART3(x1[i], x2[j], x3[k]););
+              D_EXPAND(xs1[k][j][i] = x1[i];,
+                       xs2[k][j][i] = x2[j];,
+                       xs3[k][j][i] = x3[k];);
 
         /* Temperature */
         for (nv = 0; nv < NVAR; nv++) dummy[nv] = d->Vc[nv][k][j][i];
