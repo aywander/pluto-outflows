@@ -357,6 +357,11 @@
 #endif
 
 
+/* Output in userdef_output for debugging of coordiante systems */
+#ifndef COORDINATE_SYSTEM_DEBUG
+#define COORDINATE_SYSTEM_DEBUG FALSE
+#endif
+
 
 /* For further refinement modes define these variables in TagCells.cpp */
 #define NPLUS_REF_VARS 0

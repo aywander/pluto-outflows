@@ -25,9 +25,10 @@
 #define CLOUD_SCALE                 CS_VELOCITY_DISPERSION
 #define CLOUD_EXTRACT               NONE
 
+#define COORDINATE_SYSTEM_DEBUG     FALSE
 
-#define MU_CALC                     MU_ANALYTIC
 /* --- Not usually changed ---- */
+#define MU_CALC                     MU_ANALYTIC
 #define CLOUD_TCRIT                 3.0e4
 #define CLOUD_MUCRIT                0.6212407755077543
 #define JD_MODE                     JD_GRAD

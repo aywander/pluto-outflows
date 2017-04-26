@@ -26,15 +26,16 @@ void ComputeUserVar (const Data *d, Grid *grid)
 #endif
 
 
-
+#if COORDINATE_SYSTEM_DEBUG == TRUE
   double ***xs1, ***xs2, ***xs3;
-    double ***xc1, ***xc2, ***xc3;
-    D_EXPAND(xs1 = GetUserVar("xs1");,
-           xs2 = GetUserVar("xs2");,
-           xs3 = GetUserVar("xs3"););
-    D_EXPAND(xc1 = GetUserVar("xc1");,
-             xc2 = GetUserVar("xc2");,
-             xc3 = GetUserVar("xc3"););
+  double ***xc1, ***xc2, ***xc3;
+  D_EXPAND(xs1 = GetUserVar("xs1");,
+         xs2 = GetUserVar("xs2");,
+         xs3 = GetUserVar("xs3"););
+  D_EXPAND(xc1 = GetUserVar("xc1");,
+           xc2 = GetUserVar("xc2");,
+           xc3 = GetUserVar("xc3"););
+#endif
 
 
 
@@ -59,19 +60,16 @@ void ComputeUserVar (const Data *d, Grid *grid)
   x2 = grid[JDIR].x;
   x3 = grid[KDIR].x;
 
-  /* These are the volumetric central points */
-//  x1 = grid[IDIR].xgc;
-//  x2 = grid[JDIR].xgc;
-//  x3 = grid[KDIR].xgc;
-
   DOM_LOOP(k, j, i) {
 
+#if COORDINATE_SYSTEM_DEBUG == TRUE
               D_EXPAND(xc1[k][j][i] = CART1(x1[i], x2[j], x3[k]);,
                        xc2[k][j][i] = CART2(x1[i], x2[j], x3[k]);,
                        xc3[k][j][i] = CART3(x1[i], x2[j], x3[k]););
               D_EXPAND(xs1[k][j][i] = x1[i];,
                        xs2[k][j][i] = x2[j];,
                        xs3[k][j][i] = x3[k];);
+#endif
 
         /* Temperature */
         for (nv = 0; nv < NVAR; nv++) dummy[nv] = d->Vc[nv][k][j][i];
@@ -176,9 +174,9 @@ void ChangeDumpVar ()
   EXPAND(SetDumpVar("v1",  FLT_H5_OUTPUT, YES);,
          SetDumpVar("v2",  FLT_H5_OUTPUT, YES);,
          SetDumpVar("v3",  FLT_H5_OUTPUT, YES););
-  EXPAND(SetDumpVar("vx1",  FLT_H5_OUTPUT, YES);,
-         SetDumpVar("vx2",  FLT_H5_OUTPUT, YES);,
-         SetDumpVar("vx3",  FLT_H5_OUTPUT, YES););
+  EXPAND(SetDumpVar("vx1",  FLT_H5_OUTPUT, NO);,
+         SetDumpVar("vx2",  FLT_H5_OUTPUT, NO);,
+         SetDumpVar("vx3",  FLT_H5_OUTPUT, NO););
   SetDumpVar("prs",  FLT_H5_OUTPUT, YES);
   SetDumpVar("tr1",  FLT_H5_OUTPUT, YES);
 #if CLOUDS == YES
