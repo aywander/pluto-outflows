@@ -11,6 +11,7 @@
 */
 /* ///////////////////////////////////////////////////////////////////// */
 #include "pluto.h"
+#include "macros_usr.h"
 
 /* ********************************************************************* */
 void ConsToPrim3D (Data_Arr U, Data_Arr V, unsigned char ***flag, RBox *box)
@@ -82,10 +83,19 @@ void ConsToPrim3D (Data_Arr U, Data_Arr V, unsigned char ***flag, RBox *box)
 
             //-----DM 26feb,2015: fix negative pressure, density, energy----//
 
+            /* AYW --
+             * This routine has changed a lot from PLUTO 4.1 to 4.2.
+             * Simplified the smoothing here - macros RHO_FAIL, PRS_FAIL etc, don't exist anymore.
+             * Instead, there is a FLAG_CONS2PRIM_FAIL, for all cases.
+             * So we smooth density and pressure for this cell. */
+
             // TODO: AYW -- extract as method (?)
             // TODO: AYW -- Is it correct to be using V, rather than v here?
 
-            if ((flag[i] & RHO_FAIL) == RHO_FAIL) {
+
+            if ((flag[k][j][i] & FLAG_CONS2PRIM_FAIL) == FLAG_CONS2PRIM_FAIL) {
+
+                // Density fix
 
                 rhofix = BURY(V[RHO], k, j, i);
 
@@ -99,11 +109,9 @@ void ConsToPrim3D (Data_Arr U, Data_Arr V, unsigned char ***flag, RBox *box)
                     rhofix = g_smallDensity;
                 }
 
-                V[RHO][k][j][i] = rhofix;
+                v[i][RHO] = rhofix;
 
-            } // RHO_FAIL
-
-            if ((flag[i] & PRS_FAIL) == PRS_FAIL) {
+                // Pressure fix
 
                 prsfix = BURY(V[PRS], k, j, i);
 
@@ -117,47 +125,10 @@ void ConsToPrim3D (Data_Arr U, Data_Arr V, unsigned char ***flag, RBox *box)
                     prsfix = g_smallPressure;
                 }
 
-                V[PRS][k][j][i] = prsfix;
+                v[i][PRS] = prsfix;
 
 
-                // TODO: AYW -- Why is this inside the PRS_FAIL condition?
-                if ((flag[i] & ENG_FAIL) == ENG_FAIL) {
-
-                    engfix = C_BURY(U, k, j, i, ENG);
-
-                    // TODO: AYW -- I don't understand the substituted values here
-                    if (engfix <= 0.0) {
-                        print1("ENG still neg [%d,%d,%d] \n", i, j, k);
-                        m2 = EXPAND(U[k][j][i][MX1] * U[k][j][i][MX1], +U[k][j][i][MX2] * U[k][j][i][MX2],
-                                    +U[k][j][i][MX3] * U[k][j][i][MX3]);
-                        engfix = sqrt(1.e-8 + m2 + U[k][j][i][RHO] * U[k][j][i][RHO]);
-                    }
-
-                    if (engfix != engfix) {
-                        print1("ENG is NAN [%d,%d,%d] \n", i, j, k);
-                        m2 = EXPAND(U[k][j][i][MX1] * U[k][j][i][MX1], +U[k][j][i][MX2] * U[k][j][i][MX2],
-                                    +U[k][j][i][MX3] * U[k][j][i][MX3]);
-                        engfix = sqrt(1.e-8 + m2 + U[k][j][i][RHO] * U[k][j][i][RHO]);
-                    }
-                    U[k][j][i][ENG] = engfix;
-                } // ENG_fail
-
-
-                scrh = 1.0 / (U[k][j][i][ENG] + prsfix);
-                EXPAND(V[VX1][k][j][i] = U[k][j][i][MX1] * scrh;,
-                       V[VX2][k][j][i] = U[k][j][i][MX2] * scrh;,
-                       V[VX3][k][j][i] = U[k][j][i][MX3] * scrh;)
-                g = EXPAND(V[VX1][k][j][i] * V[VX1][k][j][i], +V[VX2][k][j][i] * V[VX2][k][j][i],
-                           +V[VX3][k][j][i] * V[VX3][k][j][i]);
-                g = 1.0 / sqrt(1.0 - g);
-#if RECONSTRUCT_4VEL == YES
-                EXPAND(V[VX1][k][j][i] *= g;  ,
-                          V[VX2][k][j][i] *= g;  ,
-                       V[VX3][k][j][i] *= g;)
-#endif
-
-
-            } // PRS_FAIL
+            } // CONS2PRIM_FAIL
 
             V[nv][k][j][i] = v[i][nv];
         }
