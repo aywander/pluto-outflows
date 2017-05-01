@@ -3,7 +3,7 @@
 #define  COMPONENTS              3
 #define  GEOMETRY                SPHERICAL
 #define  BODY_FORCE              VECTOR
-#define  COOLING                 TABULATED
+#define  COOLING                 NONE
 #define  RECONSTRUCTION          PARABOLIC
 #define  TIME_STEPPING           RK3
 #define  DIMENSIONAL_SPLITTING   NO
@@ -82,4 +82,4 @@
 #define  LIMITER                MC_LIM
 #define  SHOW_TIME_STEPS        YES
 #define  CHAR_LIMITING          NO
-#define  PPM_ORDER              5
+#define  PPM_ORDER              4

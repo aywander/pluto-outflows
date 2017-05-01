@@ -103,9 +103,10 @@ void ReadFractalData()
 /* ************************************************************** */
 void GetFractalData(double *cloud, const double x1, const double x2, const double x3)
 /*!
- * This routine returns the value of the fractal multiplication factor "fd"
- * at point (x1, x2, x3). The array "cloud" is filled in the process. For
- * the values specified in ReadFractalData.
+ *  This routine is just a wrapper to InputDataInterpolate.
+ *  The input cube has a normalized density distribution about 1
+ *  (which is later multiplied by WRHO) and
+ *
  *
  **************************************************************** */
 {
@@ -113,13 +114,13 @@ void GetFractalData(double *cloud, const double x1, const double x2, const doubl
     double x, y, z;
     int nv, inv;
 
-    /* Cloud data is in cartesian coordiantes
-       InputDataInterpolate */
-//    x = CART1(x1, x2, x3);
-//    y = CART2(x1, x2, x3);
-//    z = CART3(x1, x2, x3);
-//    InputDataInterpolate(cloud, x, y, z);
     InputDataInterpolate(cloud, x1, x2, x3);
+
+    // TODO: Add condition for whether CLOUD_INPUT_DATA is used
+    /* Normalize velocities to code units here */
+    EXPAND(cloud[VX1] *= ini_code[PAR_WTRB];,
+           cloud[VX2] *= ini_code[PAR_WTRB];,
+           cloud[VX3] *= ini_code[PAR_WTRB];);
 
 }
 
@@ -357,7 +358,7 @@ void CloudVelocity(double *cloud, double *halo,
  **************************************************************** */
 {
 
-    /* The coulds at this point are in CGS units */
+    /* The clouds at this point are in km/s, as they come in read from the cube */
     double v1, v2, v3;
 
 #if CLOUD_VELOCITY == CV_KEPLERIAN
@@ -394,17 +395,18 @@ void CloudVelocity(double *cloud, double *halo,
         /* Use spherical radius instead of cycldrical radius, here.
          * At least for N-body initializations of thick discs in non-cylindrical potentials,
          * this gives a better results */
-        r_cyl = CYL1(x1, x2, x3);
         BodyForceVector(cloud, gvec, x1, x2, x3);
 
         // TODO: Ask Miki-kun which is correct
-//        dphidr = VPOL1(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
-        dphidr = VSPH1(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
+//        dphidr = -VPOL1(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
+        dphidr = -VSPH1(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
 
-        /* The angular velocity - This should be angular speed, no? */
-        // TODO: to check
-//        vpol2 += ek * sqrt(r_cyl * dphidr);
-//        vpol2 += ek * sqrt(r_cyl * dphidr) / r_cyl;
+        // Original code
+//        r_cyl = CYL1(x1, x2, x3);
+//        dphidr = InterpolationWrapper(gr_rad, gr_dphidr, gr_ndata, r_cyl);
+
+        /* The angular (linear) velocity */
+        vpol2 += ek * sqrt(r_cyl * dphidr);
 
         /* Convert velocity vectors back to the current coordinate system */
         EXPAND(v1 = VPOL_1(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3);,
@@ -521,10 +523,7 @@ void CloudVelocity(double *cloud, double *halo,
     }
 
 
-    /* Convert to code units here */
-    EXPAND(v1 *= ini_code[PAR_WTRB];,
-           v2 *= ini_code[PAR_WTRB];,
-           v3 *= ini_code[PAR_WTRB];);
+    /* Put back in to cloud array */
     EXPAND(cloud[VX1] = v1;, cloud[VX2] = v2;, cloud[VX3] = v3;);
 
 

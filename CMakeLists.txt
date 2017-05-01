@@ -17,7 +17,7 @@ set(WITH_ASYNC_IO               OFF)
 set(WITH_CHOMBO                 OFF)
 
 set(WITH_PHYSICS                HD)
-set(WITH_COOLING                TABULATED)
+set(WITH_COOLING                NONE)
 set(WITH_INTERPOLATION          PARABOLIC)
 set(WITH_TIME_STEPPING          RK3)
 
@@ -40,6 +40,13 @@ set(WITH_GLM                    OFF)
 # -- Library paths --
 
 set(HDF5_PATH ${PLUTO_SOURCE_DIR}/Lib)
+
+# -- Compilers --
+
+set(WITH_C_COMPILER /usr/bin/gcc)
+set(WITH_MPI_COMPILER /usr/local/bin/mpicc)
+set(WITH_MPIXX_COMPILER /usr/local/bin/mpicxx)
+
 
 #_______________________________________________________________________________________________________________________
 # Main bit
@@ -68,7 +75,7 @@ set(INCLUDE_DIRECTORIES
 
 set(LINK_DIRECTORIES)
 
-set(LINK_LIBRARIES)
+set(LINK_LIBRARIES m z)
 
 
 # Setup-dependent / Problem-type dependent files
@@ -319,8 +326,8 @@ if (WITH_PARALLEL)
 
     # ----
 
-    set(CMAKE_C_COMPILER /usr/local/bin/mpicc)
-    set(CMAKE_CXX_COMPILER /usr/local/bin/mpicxx)
+    set(CMAKE_C_COMPILER ${WITH_MPI_COMPILER})
+    set(CMAKE_CXX_COMPILER ${WITH_MPIXX_COMPILER)
 
     # OR (https://cmake.org/pipermail/cmake/2015-April/060252.html)
 
@@ -359,6 +366,9 @@ if (WITH_PARALLEL)
             ${SOURCE_DIR}/Parallel/al_szptr_.c
             ${SOURCE_DIR}/Parallel/al_write_array_async.c
             )
+    else()
+
+    set(CMAKE_C_COMPILER ${WITH_C_COMPILER})
 endif ()
 
 
@@ -377,9 +387,13 @@ if (WITH_HDF5)
 
     if (WITH_PARALLEL)
         set(HDF5_PREFER_PARALLEL TRUE)
-        set(HDF5_ROOT ${HDF5_PATH}/hdf5-parallel)
+        if (DEFINED  ${HDF5_PATH})
+            set(HDF5_ROOT ${HDF5_PATH}/hdf5-parallel)
+        endif()
     else()
-        set(HDF5_ROOT ${HDF5_PATH}/hdf5-serial)
+        if (DEFINED  ${HDF5_PATH})
+            set(HDF5_ROOT ${HDF5_PATH}/hdf5-serial)
+        endif()
     endif ()
 
     find_package(HDF5 REQUIRED)

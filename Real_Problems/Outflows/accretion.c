@@ -151,7 +151,8 @@ void SphericalAccretion(const Data *d, Grid *grid) {
 
     /* Measure accretion rate through a spherical surface defined by ac->rad (ARAD) */
 
-    if (SphereSurfaceIntersectsDomain(grid, ac.rad)) {
+    // TODO: Probalby don't really need this condition. Just keeps some processors idle.
+//    if (SphereSurfaceIntersectsDomain(grid, ac.rad)) {
 
         /* Get number of cells lying on spherical surface ac.rad. */
 
@@ -252,7 +253,7 @@ void SphericalAccretion(const Data *d, Grid *grid) {
 
 #endif // SIC_HYBRID
 
-    }
+//    } // if (SphereSurfaceIntersectsDomain)
 
 
 
@@ -324,6 +325,7 @@ void FederrathAccretion(const Data *d, Grid *grid) {
     double accr, accr_rate = 0;
     double result[NVAR];
 
+    // TODO: The SphereIntersectsDomain, probably not necessary.
     if (SphereIntersectsDomain(grid, ac.snk)){
 
         /* These are the geometrical central points */
@@ -448,7 +450,7 @@ void SphericalFreeflow(double *prims, double ****Vc, const double *x1, const dou
  *
  ************************************************** */
 
-    /* Cental cell radius */
+    /* Central cell radius */
     double radc = SPH1(x1[i], x2[j], x3[k]);
 
     /* Number of cells in a direction to look at - hardcoded here */

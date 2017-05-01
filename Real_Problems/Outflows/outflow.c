@@ -117,7 +117,7 @@ void SetNozzleGeometry(Nozzle * noz) {
         double cone_side = rad / sin(ang);
         area = 2. * CONST_PI * (1. - cos(ang)) * cone_side * cone_side;
 
-        /* Volume of nozzle. It is the revolved volume. */
+        /* Volume of nozzle. It is the 3D (revolved) volume. */
         // TODO: The volume is only valid in the case of two-sided galaxies, where dbh = 0.
         // TODO: This does not exclude the spherical hole in SPHERICAL geometries
 #if INTERNAL_BOUNDARY == YES

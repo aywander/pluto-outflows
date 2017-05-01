@@ -112,9 +112,9 @@ void SetIniNormalization() {
     ini_cgs[PAR_ASNK] = vn.l_norm;
     ini_cgs[PAR_HRHO] = vn.dens_norm;
     ini_cgs[PAR_HTMP] = 1;
-    ini_cgs[PAR_HVX1] = GEOM_UNITS1(1, 1.e5);
-    ini_cgs[PAR_HVX2] = GEOM_UNITS2(1, 1.e5);
-    ini_cgs[PAR_HVX3] = GEOM_UNITS3(1, 1.e5);
+    ini_cgs[PAR_HVX1] = 1.e5;
+    ini_cgs[PAR_HVX2] = 1.e5;
+    ini_cgs[PAR_HVX3] = 1.e5;
     ini_cgs[PAR_HVRD] = 1.e5;
     ini_cgs[PAR_HRAD] = vn.l_norm;
 //    ini_cgs[PAR_MGAL] = CONST_Msun;
@@ -157,9 +157,9 @@ void SetIniNormalization() {
     ini_code[PAR_ASNK] = ini_cgs[PAR_ASNK] / vn.l_norm;
     ini_code[PAR_HRHO] = ini_cgs[PAR_HRHO] / vn.dens_norm;
     ini_code[PAR_HTMP] = ini_cgs[PAR_HTMP] / vn.temp_norm;
-    ini_code[PAR_HVX1] = ini_cgs[PAR_HVX1] / GEOM_UNITS1(1, vn.v_norm);
-    ini_code[PAR_HVX2] = ini_cgs[PAR_HVX2] / GEOM_UNITS2(1, vn.v_norm);
-    ini_code[PAR_HVX3] = ini_cgs[PAR_HVX3] / GEOM_UNITS3(1, vn.v_norm);
+    ini_code[PAR_HVX1] = ini_cgs[PAR_HVX1] / vn.v_norm;
+    ini_code[PAR_HVX2] = ini_cgs[PAR_HVX2] / vn.v_norm;
+    ini_code[PAR_HVX3] = ini_cgs[PAR_HVX3] / vn.v_norm;
     ini_code[PAR_HVRD] = ini_cgs[PAR_HVRD] / vn.v_norm;
     ini_code[PAR_HRAD] = ini_cgs[PAR_HRAD] / vn.l_norm;
 //    ini_code[PAR_MGAL] = ini_cgs[PAR_MGAL] / vn.m_norm;
