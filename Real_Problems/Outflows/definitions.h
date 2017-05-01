@@ -1,5 +1,5 @@
 #define  PHYSICS                 HD
-#define  DIMENSIONS              3
+#define  DIMENSIONS              2
 #define  COMPONENTS              3
 #define  GEOMETRY                SPHERICAL
 #define  BODY_FORCE              VECTOR
@@ -82,4 +82,4 @@
 #define  LIMITER                MC_LIM
 #define  SHOW_TIME_STEPS        YES
 #define  CHAR_LIMITING          NO
-#define  PPM_ORDER              5
+#define  PPM_ORDER              4

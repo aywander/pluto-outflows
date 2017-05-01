@@ -10,7 +10,7 @@ set(PLUTO_SOURCE_DIR            /Users/ayw/dev/PLUTO)
 set(PROBLEM_TYPE                Real)
 set(PROBLEM                     Outflows)
 
-set(WITH_PARALLEL               OFF)
+set(WITH_PARALLEL               ON)
 set(WITH_PNG                    OFF)
 set(WITH_HDF5                   ON)
 set(WITH_ASYNC_IO               OFF)
@@ -41,6 +41,13 @@ set(WITH_GLM                    OFF)
 
 set(HDF5_PATH ${PLUTO_SOURCE_DIR}/Lib)
 
+# -- Compilers --
+
+set(WITH_C_COMPILER /usr/bin/gcc)
+set(WITH_MPI_COMPILER /usr/local/bin/mpicc)
+set(WITH_MPIXX_COMPILER /usr/local/bin/mpicxx)
+
+
 #_______________________________________________________________________________________________________________________
 # Main bit
 
@@ -68,7 +75,7 @@ set(INCLUDE_DIRECTORIES
 
 set(LINK_DIRECTORIES)
 
-set(LINK_LIBRARIES)
+set(LINK_LIBRARIES m z)
 
 
 # Setup-dependent / Problem-type dependent files
@@ -139,7 +146,7 @@ if (PROBLEM STREQUAL Outflows)
             ${PROBLEM_DIR}/input_data.c
             ${PROBLEM_DIR}/jet_domain.c
             ${PROBLEM_DIR}/main.c
-            ${PROBLEM_DIR}/mappers3D.c       # Not confident about the modifications inside
+#            ${PROBLEM_DIR}/mappers3D.c       # Not confident about the modifications inside
             ${PROBLEM_DIR}/set_grid.c
             ${PROBLEM_DIR}/startup.c
             ${PROBLEM_DIR}/userdef_output.c
@@ -258,7 +265,7 @@ set(SOURCE_FILES  ${SOURCE_FILES}
         #${SOURCE_DIR}/jet_domain.c                       # Override
         ${SOURCE_DIR}/macros.h
         #${SOURCE_DIR}/main.c                             # Override
-#        ${SOURCE_DIR}/mappers3D.c                         # Override
+        ${SOURCE_DIR}/mappers3D.c                         # Override
 #        ${SOURCE_DIR}/mean_mol_weight.c                  # Override
         ${SOURCE_DIR}/parabolic_flux.c
         ${SOURCE_DIR}/parabolic_rhs.c
@@ -319,8 +326,8 @@ if (WITH_PARALLEL)
 
     # ----
 
-    set(CMAKE_C_COMPILER /usr/local/bin/mpicc)
-    set(CMAKE_CXX_COMPILER /usr/local/bin/mpicxx)
+    set(CMAKE_C_COMPILER ${WITH_MPI_COMPILER})
+    set(CMAKE_CXX_COMPILER ${WITH_MPIXX_COMPILER})
 
     # OR (https://cmake.org/pipermail/cmake/2015-April/060252.html)
 
@@ -359,6 +366,9 @@ if (WITH_PARALLEL)
             ${SOURCE_DIR}/Parallel/al_szptr_.c
             ${SOURCE_DIR}/Parallel/al_write_array_async.c
             )
+    else()
+
+    set(CMAKE_C_COMPILER ${WITH_C_COMPILER})
 endif ()
 
 
@@ -377,9 +387,13 @@ if (WITH_HDF5)
 
     if (WITH_PARALLEL)
         set(HDF5_PREFER_PARALLEL TRUE)
-        set(HDF5_ROOT ${HDF5_PATH}/hdf5-parallel)
+        if (DEFINED HDF5_PATH)
+            set(HDF5_ROOT ${HDF5_PATH}/hdf5-parallel)
+        endif()
     else()
-        set(HDF5_ROOT ${HDF5_PATH}/hdf5-serial)
+        if (DEFINED HDF5_PATH)
+            set(HDF5_ROOT ${HDF5_PATH}/hdf5-serial)
+        endif ()
     endif ()
 
     find_package(HDF5 REQUIRED)
