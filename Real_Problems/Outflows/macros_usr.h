@@ -89,6 +89,8 @@
  * directly in the conversion macros.
  *   */
 
+// NOTE: This was just for a test. Note, in PLUTO, the velocities are linear velocities in all coordinate systems.
+// TODO: Leave this, as reference for when macros are turned into functions.
 #define CSPD_ANGULAR  0
 #define CSPD_LINEAR   1
 
@@ -142,6 +144,7 @@
 
 
 // TODO: remove dependencies outside of a geometry pair (so that you could change order in which they appear).
+// TODO: THESE SHOULD ALL BE FUNCTIONS NOT MACROS!
 
 /* CARTESIAN -- POLAR */
 /* The coordinate systems are always aligned the same way for all dimensions */
@@ -230,7 +233,7 @@
 #define VCART2CYL3(x1, x2, x3, v1, v2, v3)  ( SELECT(\
       -sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2),\
       0, \
-      -sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2) )
+      -sin(CART2POL2(x1, x2, x3))*(v1) + cos(CART2POL2(x1, x2, x3))*(v2) ) )
 #endif
 
 
@@ -768,27 +771,6 @@
 #define ARG_FLOWAXIS(a, b) FLOWAXIS1(a, b), FLOWAXIS2(a, b), FLOWAXIS3(a, b)
 
 
-/* GEOMETRY and dimension dependent dimensions of a dimension. 
- * a is output if dimension is non-dimensional (an angle)
- * b        -               has dimensions of length   
- * */
-#define GEOM_UNITS1(a, b) b
-#if   GEOMETRY == SPHERICAL
-  #define GEOM_UNITS2(a, b) a
-  #define GEOM_UNITS3(a, b) a
-#elif GEOMETRY == POLAR
-  #define GEOM_UNITS2(a, b) a
-  #define GEOM_UNITS3(a, b) b
-#elif GEOMETRY == CARTESIAN
-  #define GEOM_UNITS2(a, b) b
-  #define GEOM_UNITS3(a, b) b
-#elif GEOMETRY == CYLINDRICAL
-  #define GEOM_UNITS2(a, b) b
-  #define GEOM_UNITS3(a, b) a
-#endif
-
-
-
 /* Add normal transverse loops. Cf TRANSVERSE_LOOP in pluto.h */
 #define KTDOM_LOOP(in,k,j,i) k = in; JDOM_LOOP(j) IDOM_LOOP(i)
 #define JTDOM_LOOP(in,k,j,i) j = in; KDOM_LOOP(k) IDOM_LOOP(i)
@@ -859,6 +841,7 @@ ITDOM_LOOP(IBEG,k,j,i) {command} ITDOM_LOOP(IEND,k,j,i) {command}
 // TODO: Add prologation
 // TODO: Add Laplacian
 // TODO: Probably don't need W_AVERAGE, but leaving as reference for LAPLACIAN or related macros
+// TODO: ALL the below should be functions.
 
 #if DIMENSIONS == 1
 
@@ -948,75 +931,5 @@ ITDOM_LOOP(IBEG,k,j,i) {command} ITDOM_LOOP(IEND,k,j,i) {command}
 
 
 #endif
-
-
-
-/* Spherical inner inflow boundary conditions */
-
-#if DIMENSIONS == 1
-
-#if GEOMETRY == CARTESIAN
-
-#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i) ( HS(x) * (q[k][j][i+1]) + HS(-x) * (q[k][j][i-1]) )
-
-#elif (GEOMETRY == POLAR) || (GEOMETRY == CARTESIAN)
-
-#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i)
-
-#elif GEOMETRY == SPHERICAL
-
-#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i)
-
-#endif // Geometry
-
-
-#elif DIMENSIONS == 2
-
-#if GEOMETRY == CARTESIAN
-
-#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i) \
-( 4 * ( HS(x)  * (x)  * (q[k][j][i+1]) + HS(y)  * (y)  * (q[k][j+1][i]) + \
-        HS(-x) * (-x) * (q[k][j][i-1]) + HS(-y) * (-y) * (q[k][j-1][i]) ) / \
-      ( HS(x) * (x) + HS(y) * (y) + HS(-x) * (-x) + HS(-y) * (-y) ) + \
-      ( HS(x)  * HS(y)  * (q[k][j+1][i+1]) + HS(-x) * HS(y)  * (q[k][j+1][i-1]) + \
-        HS(x)  * HS(-y) * (q[k][j-1][i+1]) + HS(-x) * HS(-y) * (q[k][j-1][i-1]) ) ) / 5.
-
-#elif (GEOMETRY == POLAR) || (GEOMETRY == CARTESIAN)
-
-#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i)
-
-#elif GEOMETRY == SPHERICAL
-
-#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i)
-
-#endif // Geometry
-
-
-#elif DIMENSIONS == 3
-
-#if GEOMETRY == CARTESIAN
-
-#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i) \
-( 4 * ( HS(x)  * (x)  * (q[k][j][i+1]) + HS(y)  * (y)  * (q[k][j+1][i]) + \
-        HS(-x) * (-x) * (q[k][j][i-1]) + HS(-y) * (-y) * (q[k][j-1][i]) ) / \
-      ( HS(x) * (x) + HS(y) * (y) + HS(-x) * (-x) + HS(-y) * (-y) ) + \
-      ( HS(x)  * HS(y)  * (q[k][j+1][i+1]) + HS(-x) * HS(y)  * (q[k][j+1][i-1]) + \
-        HS(x)  * HS(-y) * (q[k][j-1][i+1]) + HS(-x) * HS(-y) * (q[k][j-1][i-1]) ) ) / 5.
-
-
-#elif (GEOMETRY == POLAR) || (GEOMETRY == CARTESIAN)
-
-#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i)
-
-#elif GEOMETRY == SPHERICAL
-
-#define SPHERICAL_FREEFLOW(q, x, y, z, k, j, i)
-
-#endif // Geometry
-
-#endif // Dimensions
-
-
-
 
 
