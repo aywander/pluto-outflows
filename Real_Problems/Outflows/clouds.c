@@ -392,17 +392,12 @@ void CloudVelocity(double *cloud, double *halo,
         vpol3 = VPOL3(x1, x2, x3, v1, v2, v3);
 
 
-        /* Use spherical radius instead of cycldrical radius, here.
-         * At least for N-body initializations of thick discs in non-cylindrical potentials,
-         * this gives a better results */
+        /* Use local gradient, rather than mid plane potential.
+         * At least for N-body initializations of thick discs in non-axissymetric potentials,
+         * this gives a better results, according to Miki et al 2017, MAGI paper. */
+        r_cyl = CYL1(x1, x2, x3);
         BodyForceVector(cloud, gvec, x1, x2, x3);
-
-        // TODO: Ask Miki-kun which is correct
-//        dphidr = -VPOL1(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
-        dphidr = -VSPH1(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
-
-        // Original code
-//        r_cyl = CYL1(x1, x2, x3);
+        dphidr = -VPOL1(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
 //        dphidr = InterpolationWrapper(gr_rad, gr_dphidr, gr_ndata, r_cyl);
 
         /* The angular (linear) velocity */
