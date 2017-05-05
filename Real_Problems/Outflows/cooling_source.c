@@ -202,12 +202,16 @@ void CoolingSource (const Data *d, double dt, Time_Step *Dts, Grid *GXYZ)
     if (T1 < g_minCoolingTemp && T0 > g_minCoolingTemp)
       prs = g_minCoolingTemp*v1[RHO]/(KELVIN*mu1);
 
+
   /* ------------------------------------------
       Suggest next time step based on 
       fractional variaton.
      ------------------------------------------ */
 
-    err = fabs(prs/d->Vc[PRS][k][j][i] - 1.0);
+    // AYW -- Exclude heating
+//    err = fabs(prs/d->Vc[PRS][k][j][i] - 1.0);
+    err = fabs(MIN(prs/d->Vc[PRS][k][j][i], 1.) - 1.0);
+    // -- AYW
 
     #if COOLING == MINEq
      for (nv = NFLX; nv < NFLX + NIONS - Fe_IONS; nv++) 

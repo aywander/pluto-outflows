@@ -22,14 +22,9 @@ void ComputeUserVar (const Data *d, Grid *grid)
   lmd = GetUserVar("lmd");
 
   /* These are the geometrical central points */
-  //x1 = grid[IDIR].x;
-  //x2 = grid[JDIR].x;
-  //x3 = grid[KDIR].x;
-
-  /* These are the volumetric central points */
-  x1 = grid[IDIR].xgc;
-  x2 = grid[JDIR].xgc;
-  x3 = grid[KDIR].xgc;
+  x1 = grid[IDIR].x;
+  x2 = grid[JDIR].x;
+  x3 = grid[KDIR].x;
 
   DOM_LOOP(k, j, i) {
 

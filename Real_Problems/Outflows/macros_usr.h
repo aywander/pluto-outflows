@@ -334,12 +334,15 @@
 #define SPH2CART3(x1, x2, x3) ( D_SELECT(0, 0, SPH2POL3(x1, x2, x3)) )
 
 //#define VCART2SPH1(x1, x2, x3, v1, v2, v3) ( ((x1)*(v1) + (x2)*(v2) + (x3)*(v3))/(CART2SPH1(x1, x2, x3)) )
+// D2-C3, v2 is galactic axis, v3 is perpendicular axis
 #define VCART2SPH1(x1, x2, x3, v1, v2, v3) ( SELECT(\
       (v1), \
       sin(CART2SPH2(x1, x2, x3))*(v1) + cos(CART2SPH2(x1, x2, x3))*(v2), \
-      sin(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-      sin(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) +\
-      cos(CART2SPH2(x1, x2, x3))*(v3) \
+      D_SELECT((v1), \
+               (sin(CART2SPH2(x1, x2, x3))*(v1) + cos(CART2SPH2(x1, x2, x3))*(v2)), \
+               (sin(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
+                sin(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) +\
+                cos(CART2SPH2(x1, x2, x3))*(v3) ) ) \
       ) )
 
 #if CIRCULAR_SPEED == CSPD_ANGULAR
@@ -351,12 +354,15 @@
       sin(CART2SPH2(x1, x2, x3))*(v3)) / (CART2SPH1(x1, x2, x3)) \
     ) )
 #elif CIRCULAR_SPEED == CSPD_LINEAR
+// D2-C3, v2 is galactic axis, v3 is perpendicular axis
 #define VCART2SPH2(x1, x2, x3, v1, v2, v3) ( SELECT(\
       (0),\
       (cos(CART2SPH2(x1, x2, x3))*(v1) - sin(CART2SPH2(x1, x2, x3))*(v2)),\
-      cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
-      cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
-      sin(CART2SPH2(x1, x2, x3))*(v3) \
+      D_SELECT((0),\
+               (cos(CART2SPH2(x1, x2, x3))*(v1) - sin(CART2SPH2(x1, x2, x3))*(v2)),\
+               (cos(CART2SPH2(x1, x2, x3))*cos(CART2SPH3(x1, x2, x3))*(v1) +\
+                cos(CART2SPH2(x1, x2, x3))*sin(CART2SPH3(x1, x2, x3))*(v2) -\
+                sin(CART2SPH2(x1, x2, x3))*(v3) ) ) \
     ) )
 #endif
 
@@ -364,7 +370,14 @@
 #define VCART2SPH3(x1, x2, x3, v1, v2, v3) ( (-sin(CART2SPH3(x1, x2, x3))*(v1) + cos(CART2SPH3(x1, x2, x3))*(v2))/\
     (CART2POL1(x1, x2, x3)) )
 #elif CIRCULAR_SPEED == CSPD_LINEAR
-#define VCART2SPH3(x1, x2, x3, v1, v2, v3) ( -sin(CART2SPH3(x1, x2, x3))*(v1) + cos(CART2SPH3(x1, x2, x3))*(v2) )
+// D2-C3, v2 is galactic axis, v3 is perpendicular axis
+#define VCART2SPH3(x1, x2, x3, v1, v2, v3) ( SELECT(\
+      (0),\
+      (0),\
+      D_SELECT((0),\
+               (-sin(CART2SPH3(x1, x2, x3))*(v1) + cos(CART2SPH3(x1, x2, x3))*(v3) ), \
+               (-sin(CART2SPH3(x1, x2, x3))*(v1) + cos(CART2SPH3(x1, x2, x3))*(v2) ) )\
+       )  )
 #endif
 
 #if CIRCULAR_SPEED == CSPD_ANGULAR
@@ -377,7 +390,9 @@
 #define VSPH2CART1(x1, x2, x3, v1, v2, v3) ( SELECT(\
       (v1), \
       (sin(x2)*(v1) + cos(x2)*(v2)),\
-      sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3) \
+      D_SELECT((v1), \
+              (sin(x2)*(v1) + cos(x2)*(v2)), \
+              (sin(x2)*cos(x3)*(v1) + cos(x2)*cos(x3)*(v2) - sin(x3)*(v3))) \
       ) )
 #endif
 
@@ -390,15 +405,20 @@
 #elif CIRCULAR_SPEED == CSPD_LINEAR
 #define VSPH2CART2(x1, x2, x3, v1, v2, v3) ( SELECT(\
       (0),\
-      cos(x2)*(v1) - sin(x2)*(v2),\
-      sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2) + cos(x3)*(v3))\
-    )
+      (cos(x2)*(v1) - sin(x2)*(v2)),\
+      D_SELECT((0),  \
+               (cos(x2)*(v1) - sin(x2)*(v2)),  \
+               (sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2) + cos(x3)*(v3)))  \
+    ) )
 #endif
 
 #if CIRCULAR_SPEED == CSPD_ANGULAR
 #define VSPH2CART3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - sin(x2)*(v2)*(x1) )
 #elif CIRCULAR_SPEED == CSPD_LINEAR
-#define VSPH2CART3(x1, x2, x3, v1, v2, v3) ( cos(x2)*(v1) - sin(x2)*(v2) )
+#define VSPH2CART3(x1, x2, x3, v1, v2, v3) ( D_SELECT( \
+       (0), \
+       (sin(x2)*sin(x3)*(v1) + cos(x2)*sin(x3)*(v2) + cos(x3)*(v3)), \
+       (cos(x2)*(v1) - sin(x2)*(v2)) ) )
 #endif
 
 

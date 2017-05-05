@@ -164,7 +164,7 @@ void Init (double *v, double x1, double x2, double x3)
     }
 
 #if COOLING
-    g_minCoolingTemp = 1.e2;
+    g_minCoolingTemp = 3.e2;
     g_maxCoolingRate = 0.9;
 #endif
 

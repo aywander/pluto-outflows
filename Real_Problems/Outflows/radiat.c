@@ -6,6 +6,10 @@
 #include "init_tools.h"
 /* -- AYW */
 
+int HuntCooltableIndex(double T, const double *T_tab, const int ntab);
+
+double InterpolatedCoolingRate(double T, const double *T_tab, const double *L_tab, int klo);
+
 /* ***************************************************************** */
 void Radiat (double *v, double *rhs)
 /*!
@@ -17,11 +21,12 @@ void Radiat (double *v, double *rhs)
     static int ntab;
     double mu, T, Tmid, scrh, dT, prs;
     static double *L_tab, *T_tab, E_cost;
-    // TODO: Subtract cooling rate at g_minCoolingTemp
+    static double por_min, L_tmin;
+    double Te;
 
     FILE *fcool;
 
-/* -------------------------------------------
+/* ------------------------------------7XhPmOk%-------
         Read tabulated cooling function
    ------------------------------------------- */
 
@@ -43,12 +48,20 @@ void Radiat (double *v, double *rhs)
             ntab++;
         }
         /* Normalization for Lambda * n^2 [erg cm-3 s-1] into code units when multiplied */
-        E_cost = UNIT_LENGTH / UNIT_DENSITY / pow(UNIT_VELOCITY, 3.0);
+        E_cost = vn.t_norm / vn.pres_norm;
+
+        /* Get cooling rate at minimum temperature */
+        por_min = g_minCoolingTemp / KELVIN / MU_NORM * vn.pres_norm / vn.dens_norm;
+        klo = HuntCooltableIndex(por_min, T_tab, ntab);
+        L_tmin = InterpolatedCoolingRate(por_min, T_tab, L_tab, klo);
+
     }
 
 /* ---------------------------------------------
             Get pressure and temperature 
    --------------------------------------------- */
+
+    /* Get primitive pressure and mean molecular weight. */
 
     // TODO: Check if this is correct for RHD
     prs = v[RHOE] * (g_gamma - 1.0);
@@ -57,11 +70,18 @@ void Radiat (double *v, double *rhs)
         v[RHOE] = prs / (g_gamma - 1.0);
     }
 
-    mu = MeanMolecularWeight(v);
+    double prims[NVAR] = {v[RHO], ARG_EXPAND(0, 0, 0), prs, 0, TRC};
+#if CLOUDS
+    prims[TRC+1] = v[TRC+1] / v[RHO];
+#endif
+    mu = MeanMolecularWeight(prims);
+
+
 
     /* DM 11 Jul 2015: Now T corresponds to P / rho and not temperature in Kelvin */
     // T   = prs / v[RHO] * KELVIN * mu;
     T = prs / v[RHO] * UNIT_VELOCITY * UNIT_VELOCITY;
+    Te = prs / v[RHO] * KELVIN * mu;
 
     if (T != T) {
         print1(" ! Nan found in radiat \n");
@@ -70,11 +90,12 @@ void Radiat (double *v, double *rhs)
     }
 
     // NOTE: This is not consistent with the value of mu from the cooling table, if MU_CALC = MU_CONST
-//  if (T < g_minCoolingTemp) { 
-    if (prs / v[RHO] * KELVIN * mu < g_minCoolingTemp) {
-        rhs[RHOE] = 0.0;
-        return;
-    }
+    // AYW -- Add gentle heating below instead of rhs[RHOE] = 0
+//  if (T < g_minCoolingTemp) {
+//    if (Te < g_minCoolingTemp) {
+//        rhs[RHOE] = 0.0;
+//        return;
+//    }
 
 /* ----------------------------------------------
         Table lookup by binary search  
@@ -88,15 +109,7 @@ void Radiat (double *v, double *rhs)
         QUIT_PLUTO(1);
     }
 
-    while (klo != (khi - 1)) {
-        kmid = (klo + khi) / 2;
-        Tmid = T_tab[kmid];
-        if (T <= Tmid) {
-            khi = kmid;
-        } else if (T > Tmid) {
-            klo = kmid;
-        }
-    }
+    klo = HuntCooltableIndex(T, T_tab, ntab);
 
 /* -----------------------------------------------
     Compute r.h.s
@@ -106,10 +119,40 @@ void Radiat (double *v, double *rhs)
      * Mu itself does not contain amu, we divide by amu^2 below. Note, Ecost is normalization for
      * Lambda * n^2 [erg cm-3 s-1] into code units when multiplied. */
 
-    dT = T_tab[khi] - T_tab[klo];
-    scrh = L_tab[klo] * (T_tab[khi] - T) / dT + L_tab[khi] * (T - T_tab[klo]) / dT;
-    rhs[RHOE] = -scrh * v[RHO] * v[RHO];
+    scrh = InterpolatedCoolingRate(T, T_tab, L_tab, klo);
+
+    rhs[RHOE] = -(scrh - L_tmin);                     // Cooling and Heating
+    rhs[RHOE] *=  v[RHO] * v[RHO];
 
     scrh       = UNIT_DENSITY / (CONST_amu * mu);
     rhs[RHOE] *= E_cost * scrh * scrh;
+}
+
+double InterpolatedCoolingRate(double T, const double *T_tab, const double *L_tab, int klo) {
+    double scrh;
+    double dT;
+    int khi = klo + 1;
+    dT = T_tab[khi] - T_tab[klo];
+    scrh = L_tab[klo] * (T_tab[khi] - T) / dT + L_tab[khi] * (T - T_tab[klo]) / dT;
+    return scrh;
+}
+
+int HuntCooltableIndex(double T, const double *T_tab, const int ntab) {
+
+    int klo, khi, kmid;
+    double Tmid;
+
+    klo = 0;
+    khi = ntab - 1;
+
+    while (klo != (khi - 1)) {
+        kmid = (klo + khi) / 2;
+        Tmid = T_tab[kmid];
+        if (T <= Tmid) {
+            khi = kmid;
+        } else if (T > Tmid) {
+            klo = kmid;
+        }
+    }
+    return klo;
 }
