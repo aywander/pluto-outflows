@@ -286,3 +286,42 @@ void PrintGridStruct(Grid *grid, int show_for_rank, int k, int j, int i) {
     }
 
 }
+
+/* ************************************************ */
+void PrintBaseNormalizations() {
+    /*!
+     * grid     array of grid structures
+     *
+     * The function prints out grid structure members and
+     * is useful for parallel debugging.
+     *
+     ************************************************** */
+
+    int prank = 0;
+#ifdef PARALLEL
+    MPI_Comm_rank(MPI_COMM_WORLD, &prank);
+#endif
+
+    if (prank == 0) {
+
+        print1("vn.l_norm      = %16e \n", vn.l_norm );
+        print1("vn.dens_norm   = %16e \n", vn.dens_norm );
+        print1("vn.v_norm      = %16e \n", vn.v_norm );
+        print1("vn.temp_norm   = %16e \n", vn.temp_norm );
+        print1("vn.t_norm      = %16e \n", vn.t_norm );
+        print1("vn.area_norm   = %16e \n", vn.area_norm );
+        print1("vn.pres_norm   = %16e \n", vn.pres_norm );
+        print1("vn.power_norm  = %16e \n", vn.power_norm );
+        print1("vn.eflux_norm  = %16e \n", vn.eflux_norm );
+        print1("vn.eint_norm   = %16e \n", vn.eint_norm );
+        print1("vn.mdot_norm   = %16e \n", vn.mdot_norm );
+        print1("vn.newton_norm = %16e \n", vn.newton_norm );
+        print1("vn.pot_norm    = %16e \n", vn.pot_norm );
+        print1("vn.acc_norm    = %16e \n", vn.acc_norm );
+        print1("vn.n_norm      = %16e \n", vn.n_norm );
+        print1("vn.m_norm      = %16e \n", vn.m_norm );
+        print1("\n");
+
+    }
+
+}

@@ -67,6 +67,7 @@ void Init (double *v, double x1, double x2, double x3)
 
         /* Initialize base normalization struct */
         SetBaseNormalization();
+        PrintBaseNormalizations();
 
         /* Set normalization factors for input parameters */
         SetIniNormalization();

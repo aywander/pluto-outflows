@@ -1,5 +1,5 @@
 #define  PHYSICS                 HD
-#define  DIMENSIONS              3
+#define  DIMENSIONS              2
 #define  COMPONENTS              3
 #define  GEOMETRY                SPHERICAL
 #define  BODY_FORCE              VECTOR

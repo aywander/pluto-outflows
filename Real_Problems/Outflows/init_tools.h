@@ -59,5 +59,6 @@ void PrintInitData01(const double *ufo_primitives, const double *halo_primitives
 
 void PrintGridStruct(Grid *grid, int show_for_rank, int k, int j, int i);
 
+void PrintBaseNormalizations();
 
 #endif
