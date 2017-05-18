@@ -416,24 +416,29 @@ void SphericalAccretionOutput() {
             /* Accretion rate in cgs */
             accr_rate_msun_yr = ac.accr_rate * vn.mdot_norm / (CONST_Msun / (CONST_ly / CONST_c));
 
+            // TODO: add Eddington rate and Eddington ratio here
 #if MEASURE_BONDI_ACCRETION == YES
 
             double accr_rate_bondi_msun_yr;
 
             accr_rate_bondi_msun_yr = ac.accr_rate_bondi * vn.mdot_norm / (CONST_Msun / (CONST_ly / CONST_c));
-            fprintf(fp_acc, "%12.6e  %12.6e  %12.6e %12.6e %12.6e \n",
-                    g_time * vn.t_norm / (CONST_ly / CONST_c),
-                    g_dt * vn.t_norm / (CONST_ly / CONST_c),
-                    accr_rate_msun_yr,
-                    accr_rate_bondi_msun_yr,
-                    ac.mbh * vn.m_norm / CONST_Msun);
+            fprintf(fp_acc, "%12.6e  %12.6e  %12.6e %12.6e %12.6e %12.6e %12.6e \n",
+                    g_time * vn.t_norm / (CONST_ly / CONST_c),            // time
+                    g_dt * vn.t_norm / (CONST_ly / CONST_c),              // dt
+                    accr_rate_msun_yr,                                    // measured acc rate
+                    ac.accr_rate * vn.mdot_norm * CONST_c * CONST_c,      // measured acc power
+                    accr_rate_bondi_msun_yr,                              // bondi rate
+                    ac.mbh * vn.m_norm / CONST_Msun,                      // black hole mass
+                    ac.edd * vn.power_norm);                              // Eddington power
 
 #else
-            fprintf(fp_acc, "%12.6e  %12.6e  %12.6e %12.6e \n",
+            fprintf(fp_acc, "%12.6e  %12.6e  %12.6e %12.6e %12.6e %12.6e %12.6e \n",
                     g_time * vn.t_norm / (CONST_ly / CONST_c),
                     g_dt * vn.t_norm / (CONST_ly / CONST_c),
                     accr_rate_msun_yr,
-                    ac.mbh * vn.m_norm / CONST_Msun);
+                    ac.accr_rate * vn.mdot_norm * CONST_c * CONST_c,
+                    ac.mbh * vn.m_norm / CONST_Msun,
+                    ac.edd * vn.power_norm);
 #endif
 
             next_output += ACCRETION_OUTPUT_RATE;
@@ -651,13 +656,13 @@ void SphericalFreeflowInternalBoundary(const double ****Vc, int i, int j, int k,
  ************************************************** */
 
     int nv;
-    double vx1, vx2, vx3, vs1;
+    double vx1, vx2, vx3, vs1, vs2, vs3;
     double sx1, sx2, sx3;
     double prims[NVAR];
 
     SphericalFreeflow(prims, Vc, x1, x2, x3, k, j, i);
 
-    /* Remove non spherical velocity components of gas */
+    /* Limit radial velocity component to negative values. */
     vx1 = vx2 = vx3 = 0;
     EXPAND(vx1 = prims[VX1];,
            vx2 = prims[VX2];,
@@ -666,13 +671,15 @@ void SphericalFreeflowInternalBoundary(const double ****Vc, int i, int j, int k,
     sx2 = SPH2(x1[i], x2[j], x3[k]);
     sx3 = SPH3(x1[i], x2[j], x3[k]);
     vs1 = VSPH1(x1[i], x2[j], x3[k], vx1, vx2, vx3);
+    vs2 = VSPH2(x1[i], x2[j], x3[k], vx1, vx2, vx3);
+    vs3 = VSPH3(x1[i], x2[j], x3[k], vx1, vx2, vx3);
     vs1 = MIN(vs1, 0);
 
     for (nv = 0; nv < NVAR; ++nv) result[nv] = prims[nv];
 
-    EXPAND(result[VX1] = VSPH_1(sx1, sx2, sx3, vs1, 0, 0);,
-           result[VX2] = VSPH_2(sx1, sx2, sx3, vs1, 0, 0);,
-           result[VX3] = VSPH_3(sx1, sx2, sx3, vs1, 0, 0);
+    EXPAND(result[VX1] = VSPH_1(sx1, sx2, sx3, vs1, vs2, vs3);,
+           result[VX2] = VSPH_2(sx1, sx2, sx3, vs1, vs2, vs3);,
+           result[VX3] = VSPH_3(sx1, sx2, sx3, vs1, vs2, vs3);
     );
 
 }

@@ -9,7 +9,7 @@ set(PLUTO_SOURCE_DIR            /Users/ayw/dev/PLUTO)
 set(PROBLEM_TYPE                Real)
 set(PROBLEM                     Outflows)
 
-set(WITH_PARALLEL               ON)
+set(WITH_PARALLEL               OFF)
 set(WITH_PNG                    OFF)
 set(WITH_HDF5                   ON)
 set(WITH_ASYNC_IO               OFF)

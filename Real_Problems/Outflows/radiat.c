@@ -72,7 +72,7 @@ void Radiat (double *v, double *rhs)
 
     double prims[NVAR] = {v[RHO], ARG_EXPAND(0, 0, 0), prs, 0, TRC};
 #if CLOUDS
-    prims[TRC+1] = v[TRC+1] / v[RHO];
+    prims[TRC + 1] = v[TRC + 1] / v[RHO];
 #endif
     mu = MeanMolecularWeight(prims);
 
@@ -89,6 +89,7 @@ void Radiat (double *v, double *rhs)
         QUIT_PLUTO(1);
     }
 
+
     // NOTE: This is not consistent with the value of mu from the cooling table, if MU_CALC = MU_CONST
     // AYW -- Add gentle heating below instead of rhs[RHOE] = 0
 //  if (T < g_minCoolingTemp) {
@@ -97,12 +98,17 @@ void Radiat (double *v, double *rhs)
 //        return;
 //    }
 
+
+
 /* ----------------------------------------------
         Table lookup by binary search  
    ---------------------------------------------- */
 
     klo = 0;
     khi = ntab - 1;
+
+    /* Limit temperature to maximum value in table */
+    T = MIN(T, T_tab[klo]);
 
     if (T > T_tab[khi] || T < T_tab[klo]) {
         print(" ! T out of range   %12.6e %12.6e %12.6e  %12.6e \n", T, prs, v[RHO], prs / v[RHO] * KELVIN * mu);
