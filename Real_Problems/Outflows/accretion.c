@@ -121,49 +121,6 @@ int InSinkRegion(const double x1, const double x2, const double x3) {
 }
 
 
-/* ************************************************ */
-void RandomSamplingSphericalSurface(const int npoints, const double radius, double *x1, double *x2, double *x3) {
-/*!
- * Return random points on surface of sphere.
- * Use method by Marsaglia (1972), see:
- * http://mathworld.wolfram.com/SpherePointPicking.html
- *
- ************************************************** */
-
-    int i, j, k;
-
-
-    int lcount = 0;
-
-    double r2, scrh;
-    double cx1, cx2, cx3;
-    double rad_sc = sqrt(radius);
-
-    while (lcount < npoints) {
-        double rvar1 = RandomNumber(-rad_sc, rad_sc);
-        double rvar2 = RandomNumber(-rad_sc, rad_sc);
-
-        // Rejection
-        r2 = rvar1 * rvar1 + rvar2 * rvar2;
-        if (r2 < rad_sc * rad_sc) {
-
-            // Cartesian coordinates of points on sphere
-            scrh = sqrt(rad_sc * rad_sc - rvar1 * rvar1 - rvar2 * rvar2);
-            cx1 = 2. * rvar1 * scrh;
-            cx2 = 2. * rvar2 * scrh;
-            cx3 = rad_sc * rad_sc - 2. * r2;
-
-            D_EXPAND(x1[lcount] = CART_1(cx1, cx2, cx3);,
-                     x2[lcount] = CART_2(cx1, cx2, cx3);,
-                     x3[lcount] = CART_3(cx1, cx2, cx3););
-
-            lcount ++;
-        }
-
-    }
-
-}
-
 // TODO: Special case for spherical cases
 // NOTE: spherical cases for
 //       - SphericalSampledAccretion
@@ -188,22 +145,18 @@ void SphericalSampledAccretion(const Data *d, Grid *grid) {
     int gcount = 0, lcount = 0;
 
     /* Determine number of sampling points to use */
-    static int once = 0;
-    static int npoints;
+    int npoints;
     static double area_per_point;
 
     double dl_min = grid[IDIR].dl_min;
-    if (!once) {
-        npoints = (int) (ac.area / (dl_min * dl_min));
-        area_per_point = ac.area / npoints;
-        once = 1;
-    }
+    npoints = (int) (ac.area / (dl_min * dl_min)) * 100;
 
     /* Get npoint random points on spherical surface */
     x1 = ARRAY_1D(npoints, double);
     x2 = ARRAY_1D(npoints, double);
     x3 = ARRAY_1D(npoints, double);
-    RandomSamplingSphericalSurface(npoints, ac.rad, x1, x2, x3);
+    npoints = UniformSamplingSphericalSurface(npoints, ac.rad, x1, x2, x3);
+    area_per_point = ac.area / npoints;
 
     /* Determine which variables to interpolate */
     double v[NVAR];
@@ -228,6 +181,8 @@ void SphericalSampledAccretion(const Data *d, Grid *grid) {
             accr = rho * vs1 * area_per_point;
             accr_rate += accr;
 
+            lcount ++;
+
         }
 
     }
@@ -235,11 +190,17 @@ void SphericalSampledAccretion(const Data *d, Grid *grid) {
 
 #ifdef PARALLEL
     MPI_Allreduce(&accr_rate, &ac.accr_rate_rss, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&lcount, &gcount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
 #else
     ac.accr_rate_rss = accr_rate;
+    gcount = lcount;
 
 #endif
+
+    print1("\n");
+    print1("SphericalSampledAccretion: gcount = %10d, npoints = %10d", gcount, npoints);
+    print1("\n");
 
     FreeArray1D(x1);
     FreeArray1D(x2);

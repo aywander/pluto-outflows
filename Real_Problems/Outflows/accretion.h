@@ -54,8 +54,6 @@ void VacuumInternalBoundary(double *result);
 
 double EddingtonLuminosity(const double mbh);
 
-void RandomSamplingSphericalSurface(const int npoints, const double radius, double *x1, double *x2, double *x3);
-
 void SphericalSampledAccretion(const Data *d, Grid *grid);
 
 void SphericalAccretion(const Data *d, Grid *grid);

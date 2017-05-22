@@ -31,4 +31,8 @@ double InterpolationWrapper(const double arg_arr[], const double val_arr[], cons
 
 void InterpolateGrid(const Data *data, const Grid *grid, int *vars, double x1, double x2, double x3, double *v);
 
+int UniformSamplingSphericalSurface(const int npoints, const double radius, double *x1, double *x2, double *x3);
+
+void RandomSamplingSphericalSurface(const int npoints, const double radius, double *x1, double *x2, double *x3);
+
 #endif

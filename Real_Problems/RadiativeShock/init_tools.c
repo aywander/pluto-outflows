@@ -157,10 +157,10 @@ void PrintGridStruct(Grid *grid, int show_for_rank, int k, int j, int i) {
      *
      ************************************************** */
 
-    int prank = 0;
-#ifdef PARALLEL
-    MPI_Comm_rank(MPI_COMM_WORLD, &prank);
-#endif
+//    int prank = 0;
+//#ifdef PARALLEL
+//    MPI_Comm_rank(MPI_COMM_WORLD, &prank);
+//#endif
 
     if (prank == show_for_rank) {
         printf("\n");
