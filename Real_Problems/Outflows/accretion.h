@@ -18,6 +18,7 @@ typedef struct {
     double area;              // Area of surface
     double accr_rate;         // Mass accretion rate (global)
     double accr_rate_bondi;   // Bondi accretion rate
+    double accr_rate_rss;     // Mass accretion rate (random spherical sampling)
     double deboost;           // Deboost factor for outflow
     Nozzle nzi;               // Initial nozzle parameters
     OutflowState osi;         // Initial outflow state parameters
@@ -51,15 +52,15 @@ void BondiFlowInternalBoundary(const double x1, const double x2, const double x3
 
 void VacuumInternalBoundary(double *result);
 
-
-
 double EddingtonLuminosity(const double mbh);
+
+void RandomSamplingSphericalSurface(const int npoints, const double radius, double *x1, double *x2, double *x3);
+
+void SphericalSampledAccretion(const Data *d, Grid *grid);
 
 void SphericalAccretion(const Data *d, Grid *grid);
 
 void SphericalAccretionOutput();
-
-
 
 double VirialParameter(const double * prim, const double mass,
                        const double x1, const double x2, const double x3);

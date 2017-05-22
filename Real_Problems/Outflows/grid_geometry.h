@@ -30,6 +30,8 @@ int BoxIntersectsDomain(struct GRID *grid,
                         const double x2i, const double x2f,
                         const double x3i, const double x3f);
 
+int PointInDomain(struct GRID *grid, const double x1, const double x2, const double x3);
+
 double FindDxMax(const Grid *grid);
 
 #include "init_tools.h"

@@ -5,7 +5,30 @@
 #include "pluto_usr.h"
 #include "interpolation.h"
 
-int hunter(const double arr[], const int narr, const double val) {
+
+
+int hunter2(const double *arr, const int narr, const double val) {
+
+    /*
+     * This function returns index, il, of an array, arr, such that
+     * arr[il] < val < arr[il + 1]
+     */
+
+    int il = 0;
+    int ih = narr;
+
+    while (il != (ih - 1)){
+        int im = (il + ih) / 2;
+        if   (val <= arr[im])
+            ih = im;
+        else
+            il = im;
+    }
+    return il;
+}
+
+
+int hunter(const double *arr, const int narr, const double val) {
 
     /*
      * This function returns index, il, of an array, arr, such that
@@ -288,3 +311,60 @@ void x2l_3d_extrapol (double ***a, int jb, int i, int j, int k, Grid *grid)
 
 }
 
+
+void InterpolateGrid(const Data *data, const Grid *grid, int *vars, double x1, double x2, double x3, double *v){
+
+    /* Get domain data and range */
+
+    D_EXPAND(int gr_nx1 = grid[IDIR].np_int;,
+             int gr_nx2 = grid[JDIR].np_int;,
+             int gr_nx3 = grid[KDIR].np_int;);
+    D_EXPAND(double * gr_x1 = grid[IDIR].x;,
+             double * gr_x2 = grid[JDIR].x;,
+             double * gr_x3 = grid[KDIR].x;);
+
+    /* Find left indices */
+    // TODO: Check whether size of gr_x1 is same as gr_nx1
+    int il, jl, kl;
+    il = jl = kl = 0;
+    D_EXPAND(il = hunter2(gr_x1, gr_nx1, x1);,
+             jl = hunter2(gr_x2, gr_nx2, x2);,
+             kl = hunter2(gr_x3, gr_nx3, x3););
+
+
+    /* Define normalized coordinates between [0,1]: */
+
+    double xx, yy, zz;
+    xx = yy = zz = 0.0;
+
+    D_EXPAND(xx = (x1 - gr_x1[il]) / (gr_x1[il + 1] - gr_x1[il]);,
+             yy = (x2 - gr_x2[jl]) / (gr_x2[jl + 1] - gr_x2[jl]);,
+             zz = (x3 - gr_x3[kl]) / (gr_x3[kl + 1] - gr_x3[kl]););
+
+
+    /* Perform bi- or tri-linear interpolation. */
+
+    int nv = 0;
+    double ***V;
+
+    while (vars[nv] != -1) {
+
+        int inv = vars[nv];
+        V = data->Vc[nv];
+
+        D_EXPAND(
+        v[inv] = V[kl][jl][il] * (1.0 - xx) * (1.0 - yy) * (1.0 - zz)
+                  + V[kl][jl][il + 1] * xx * (1.0 - yy) * (1.0 - zz);,
+
+        v[inv] += V[kl][jl + 1][il] * (1.0 - xx) * yy * (1.0 - zz)
+                  + V[kl][jl + 1][il + 1] * xx * yy * (1.0 - zz);,
+
+        v[inv] += V[kl + 1][jl][il] * (1.0 - xx) * (1.0 - yy) * zz
+                  + V[kl + 1][jl][il + 1] * xx * (1.0 - yy) * zz
+                  + V[kl + 1][jl + 1][il] * (1.0 - xx) * yy * zz
+                  + V[kl + 1][jl + 1][il + 1] * xx * yy * zz;
+        );
+
+        nv ++;
+    }
+}

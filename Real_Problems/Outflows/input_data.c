@@ -698,7 +698,7 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
 /* AYW -- 2012-11-29 11:53 JST 
  * Do geometric velocity conversions here. Convert from
  * data geometry back to PLUTO geometry 
- * NOTE: Only partly tested (Cartesian to Cylindrical).
+ * NOTE: Assumptions on alignment made.
 */
     if (do_vel) {
 

@@ -309,6 +309,8 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
 /*! - Convert PLUTO coordinates to input grid geometry if necessary.     */
 /* --------------------------------------------------------------------- */
 
+  // TODO: Use my macros
+
   #if GEOMETRY == CARTESIAN
    if (id_geom == GEOMETRY) {  
 

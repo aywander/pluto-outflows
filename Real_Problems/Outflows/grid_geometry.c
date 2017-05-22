@@ -559,6 +559,34 @@ int BoxIntersectsDomain(struct GRID *grid,
     return 1;
 }
 
+/* ************************************************ */
+int PointInDomain(struct GRID *grid, const double x1, const double x2, const double x3) {
+/*!
+ * Check whether Point is in Domain
+ * grid is an array of grid structures
+ *
+ * WARNING: untested
+ *
+ ************************************************** */
+
+
+    /* The local domain limits */
+    D_EXPAND(double x1i = grid[IDIR].xi;
+             double x1f = grid[IDIR].xf;,
+             double x2i = grid[JDIR].xi;
+             double x2f = grid[JDIR].xf;,
+             double x3i = grid[KDIR].xi;
+             double x3f = grid[KDIR].xf;);
+
+    /* Check whether box is in domain */
+    if (D_EXPAND(x1i < x1 && x1 < x1f, &&
+                 x2i < x2 && x2 < x2f, &&
+                 x3i < x3 && x3 < x3f)) return 1;
+
+    else return 0;
+
+}
+
 /* ****************************************************** */
 double FindDxMax(const Grid *grid) {
 /*!
