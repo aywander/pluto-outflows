@@ -316,17 +316,17 @@ void InterpolateGrid(const Data *data, const Grid *grid, int *vars, double x1, d
 
     /* Get domain data and range */
 
-    D_EXPAND(int gr_nx1 = grid[IDIR].np_int;,
-             int gr_nx2 = grid[JDIR].np_int;,
-             int gr_nx3 = grid[KDIR].np_int;);
+    D_EXPAND(int gr_nx1 = grid[IDIR].np_tot;,
+             int gr_nx2 = grid[JDIR].np_tot;,
+             int gr_nx3 = grid[KDIR].np_tot;);
     D_EXPAND(double * gr_x1 = grid[IDIR].x;,
              double * gr_x2 = grid[JDIR].x;,
              double * gr_x3 = grid[KDIR].x;);
 
     /* Find left indices */
-    // TODO: Check whether size of gr_x1 is same as gr_nx1
-    int il, jl, kl;
-    il = jl = kl = 0;
+    int il = grid[IDIR].lbeg;
+    int jl = grid[JDIR].lbeg;
+    int kl = grid[KDIR].lbeg;
     D_EXPAND(il = hunter2(gr_x1, gr_nx1, x1);,
              jl = hunter2(gr_x2, gr_nx2, x2);,
              kl = hunter2(gr_x3, gr_nx3, x3););
@@ -387,11 +387,13 @@ int UniformSamplingSphericalSurface(const int npoints, const double radius, doub
     int npoints_dir;
     npoints_dir = (int) (sqrt(npoints / CONST_PI * 4.));
 
+    double spacing = 2 * rad_sc / npoints_dir;
+
     for (int n1 = 0; n1 < npoints_dir; n1++) {
         for (int n2 = 0; n2 < npoints_dir; n2++) {
 
-            double rvar1 = -rad_sc + n1 * 2 * rad_sc / npoints_dir;
-            double rvar2 = -rad_sc + n2 * 2 * rad_sc / npoints_dir;
+            double rvar1 = -rad_sc + (0.5 + n1) * spacing;
+            double rvar2 = -rad_sc + (0.5 + n2) * spacing;
 
             // Rejection
             r2 = rvar1 * rvar1 + rvar2 * rvar2;

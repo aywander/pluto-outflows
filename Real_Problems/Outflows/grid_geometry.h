@@ -21,16 +21,16 @@ int SphereSurfaceIntersectsCellByCorners(const double x1, const double x2, const
                                          const double dx1, const double dx2, const double dx3,
                                          const double r);
 
-int SphereSurfaceIntersectsDomain(struct GRID *grid, double r);
+int SphereSurfaceIntersectsDomain(const struct GRID *grid, double r);
 
-int SphereIntersectsDomain(struct GRID *grid, const double r);
+int SphereIntersectsDomain(const struct GRID *grid, const double r);
 
-int BoxIntersectsDomain(struct GRID *grid,
+int BoxIntersectsDomain(const struct GRID *grid,
                         const double x1i, const double x1f,
                         const double x2i, const double x2f,
                         const double x3i, const double x3f);
 
-int PointInDomain(struct GRID *grid, const double x1, const double x2, const double x3);
+int PointInDomain(const struct GRID *grid, const double x1, const double x2, const double x3);
 
 double FindDxMax(const Grid *grid);
 

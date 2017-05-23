@@ -248,7 +248,7 @@ int SphereSurfaceIntersectsCellByCorners(const double x1, const double x2, const
 }
 
 /* ************************************************ */
-int SphereSurfaceIntersectsDomain(struct GRID *grid, double r) {
+int SphereSurfaceIntersectsDomain(const struct GRID *grid, double r) {
 /*
  * Returns 1 if sphere surface intersects local domain.
  * Only for INTERNAL_BOUNDARY YES
@@ -291,7 +291,7 @@ int SphereSurfaceIntersectsDomain(struct GRID *grid, double r) {
 }
 
 /* ************************************************ */
-int SphereIntersectsDomain(struct GRID *grid, const double r) {
+int SphereIntersectsDomain(const struct GRID *grid, const double r) {
 /*
  * Returns 1 if solid sphere intersects local domain.
  * This considers the entire sphere, surface and body.
@@ -510,7 +510,7 @@ int SphereIntersectsDomain(struct GRID *grid, const double r) {
 }
 
 /* ************************************************ */
-int BoxIntersectsDomain(struct GRID *grid,
+int BoxIntersectsDomain(const struct GRID *grid,
                         const double b1i, const double b1f,
                         const double b2i, const double b2f,
                         const double b3i, const double b3f){
@@ -560,7 +560,7 @@ int BoxIntersectsDomain(struct GRID *grid,
 }
 
 /* ************************************************ */
-int PointInDomain(struct GRID *grid, const double x1, const double x2, const double x3) {
+int PointInDomain(const struct GRID *grid, const double x1, const double x2, const double x3) {
 /*!
  * Check whether Point is in Domain
  * grid is an array of grid structures
@@ -579,9 +579,9 @@ int PointInDomain(struct GRID *grid, const double x1, const double x2, const dou
              double x3f = grid[KDIR].xf;);
 
     /* Check whether box is in domain */
-    if (D_EXPAND(x1i < x1 && x1 < x1f, &&
-                 x2i < x2 && x2 < x2f, &&
-                 x3i < x3 && x3 < x3f)) return 1;
+    if (D_EXPAND(x1i < x1 && x1 <= x1f, &&
+                 x2i < x2 && x2 <= x2f, &&
+                 x3i < x3 && x3 <= x3f)) return 1;
 
     else return 0;
 

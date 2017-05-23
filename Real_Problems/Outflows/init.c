@@ -213,7 +213,6 @@ void Analysis (const Data *d, Grid *grid)
     FederrathAccretion(d, grid);
 
 #else
-    SphericalAccretion(d, grid);
     SphericalSampledAccretion(d, grid);
 
 #endif
@@ -284,7 +283,6 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
     static int touch = 0;
 #if ACCRETION == YES
     double ****Vc_new;
-    double accr, accr_rate = 0;
 #endif
 
     /* These are the geometrical central points */
