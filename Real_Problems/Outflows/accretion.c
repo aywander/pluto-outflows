@@ -40,7 +40,7 @@ void SetAccretionPhysics() {
     ac.edd = EddingtonLuminosity(ac.mbh);
 
     /* Global accretion rate */
-    ac.accr_rate = 0;
+    ac.accr_rate_sel = 0;
     ac.accr_rate_rss = 0;
 
     /* Area of accretion surface. */
@@ -123,6 +123,31 @@ int InSinkRegion(const double x1, const double x2, const double x3) {
 }
 
 
+
+/* ************************************************ */
+void SphericalAccretion(const Data *d, Grid *grid) {
+
+/*!
+ * Calculate the spherical accretion rate through the surface of a sphere.
+ *
+ ************************************************** */
+
+    /* Measure accretion rate at a given radius */
+    ac.accr_rate_rss = SphericalSampledAccretion(d, grid, ac.rad);
+    ac.accr_rate_sel = SphericalSelectedAccretion(d, grid, ac.rad);
+
+
+    /* Increase BH mass by measured accretion rate * dt */
+    ac.mbh += ac.accr_rate_rss * g_dt * (1. - ac.eff);
+
+    /* Update Eddington luminosity - calculate after increasing BH mass */
+    ac.edd = EddingtonLuminosity(ac.mbh);
+
+
+}
+
+
+
 // TODO: Special case for spherical cases
 // NOTE: spherical cases for
 //       - SphericalSampledAccretion
@@ -133,7 +158,7 @@ int InSinkRegion(const double x1, const double x2, const double x3) {
 //
 
 /* ************************************************ */
-void SphericalSampledAccretion(const Data *d, Grid *grid) {
+double SphericalSampledAccretion(const Data *d, Grid *grid, const double radius) {
 
 /*!
  * Calculate the spherical accretion rate through the surface of a sphere.
@@ -143,7 +168,7 @@ void SphericalSampledAccretion(const Data *d, Grid *grid) {
     double rho, vs1;
     double vx1, vx2, vx3;
     double *x1, *x2, *x3;
-    double accr, accr_rate = 0;
+    double accr, accr_rate = 0, accr_rate_rss;
 //    int gcount = 0, lcount = 0;
 
     /* Determine number of sampling points to use */
@@ -158,7 +183,7 @@ void SphericalSampledAccretion(const Data *d, Grid *grid) {
     x1 = ARRAY_1D(npoints, double);
     x2 = ARRAY_1D(npoints, double);
     x3 = ARRAY_1D(npoints, double);
-    npoints = UniformSamplingSphericalSurface(npoints, ac.rad, x1, x2, x3);
+    npoints = UniformSamplingSphericalSurface(npoints, radius, x1, x2, x3);
     area_per_point = ac.area / npoints;
 
     /* Determine which variables to interpolate */
@@ -192,11 +217,11 @@ void SphericalSampledAccretion(const Data *d, Grid *grid) {
 
 
 #ifdef PARALLEL
-    MPI_Allreduce(&accr_rate, &ac.accr_rate_rss, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&accr_rate, &accr_rate_rss, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 //    MPI_Allreduce(&lcount, &gcount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
 #else
-    ac.accr_rate_rss = accr_rate;
+    accr_rate_rss = accr_rate;
 //    gcount = lcount;
 
 #endif
@@ -209,11 +234,84 @@ void SphericalSampledAccretion(const Data *d, Grid *grid) {
     FreeArray1D(x2);
     FreeArray1D(x3);
 
+    return accr_rate_rss;
+
 }
 
 
+//
+//double BondiAccretion(const Data *d, Grid *grid) {
+//
+//    /* For Bondi accretion */
+//    double prs, snd;
+//    double rho_acc = 0, snd_acc = 0, prs_acc = 0;
+//    double rho_acc_av, snd_acc_av, prs_acc_av;
+//    double tmp_far, snd_far;
+//
+//
+//    int i, j, k;
+//    DOM_LOOP(k, j, i) {
+//                /* Bondi accretion parameters */
+//                /* In principle, the bondi rate is not to be measured here, but
+//                 * at the Bondi radius. Need to write another SphereSurfaceIntersects
+//                 * condition for r = r_bondi, and calculate Bondi parameters there. */
+//                // TODO: Calculate Bondi accretion with values at Bondi radius
+//                prs = d->Vc[PRS][k][j][i];
+//                snd = sqrt(g_gamma * prs / rho);
+//
+//#if SIC_METHOD == SIC_HYBRID
+//                if (sicr && sicc) {
+//                    rho *= 2;
+//                    prs *= 2;
+//                    snd *= 2;
+//                }
+//#endif  // SIC_HYBRID
+//                rho_acc += rho;
+//                prs_acc += prs;
+//                snd_acc += snd;
+//            }
+//
+//
+//
+//        rho_acc /= 2;
+//        prs_acc /= 2;
+//        snd_acc /= 2;
+//
+//#if PARALLEL
+//    /* MPI reduce Bondi accretion parameters */
+//    MPI_Allreduce(&lcount, &gcount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+//    MPI_Allreduce(&rho_acc, &rho_acc_av, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+//    MPI_Allreduce(&prs_acc, &prs_acc_av, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+//    MPI_Allreduce(&snd_acc, &snd_acc_av, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+//
+//    rho_acc_av /= gcount;
+//    prs_acc_av /= gcount;
+//    snd_acc_av /= gcount;
+//
+//#else
+//
+//    rho_acc_av = rho_acc / lcount;
+//    prs_acc_av = prs_acc / lcount;
+//    snd_acc_av = snd_acc / lcount;
+//
+//#endif
+//
+//    /* Bondi accretion rate - calculate before increasing BH mass */
+//
+//    /* Bondi rate rewritten relating far-away density to density and sound speed in accretion region. */
+//    tmp_far = g_inputParam[PAR_HTMP] * ini_cgs[PAR_HTMP];
+//    snd_far = sqrt(g_gamma * CONST_kB * tmp_far / (MU_NORM * CONST_amu)) / vn.v_norm;
+//    ac.accr_rate_bondi = BondiAccretionRateLocal(ac.mbh, rho_acc_av, snd_acc_av, snd_far);
+//
+////            double accr_rate_bondi_msun_yr;
+////            accr_rate_bondi_msun_yr = ac.accr_rate_bondi * vn.mdot_norm / (CONST_Msun / (CONST_ly / CONST_c));
+//
+//}
+
+
+
 /* ************************************************ */
-void SphericalAccretion(const Data *d, Grid *grid) {
+double SphericalSelectedAccretion(const Data *d, Grid *grid, const double radius) {
 /*!
  * Calculate the spherical accretion rate through the surface of a sphere.
  *
@@ -227,32 +325,23 @@ void SphericalAccretion(const Data *d, Grid *grid) {
     double rho, vs1;
     double vx1, vx2, vx3;
     double *x1, *x2, *x3;
-    double accr, accr_rate = 0;
+    double accr, accr_rate = 0, accr_rate_sel;
     int gcount = 0, lcount = 0;
 
-    /* For Bondi accretion */
-#if MEASURE_BONDI_ACCRETION == YES
-    double prs, snd;
-    double rho_acc = 0, snd_acc = 0, prs_acc = 0;
-    double rho_acc_av, snd_acc_av, prs_acc_av;
-    double tmp_far, snd_far;
-#endif
 
 
-
-    /* Measure accretion rate through a spherical surface defined by ac->rad (ARAD) */
+    /* Measure accretion rate through a spherical surface defined by radius */
 
     // TODO: Probalby don't really need this condition. Just keeps some processors idle.
-//    if (SphereSurfaceIntersectsDomain(grid, ac.rad)) {
 
-        /* Get number of cells lying on spherical surface ac.rad. */
+        /* Get number of cells lying on spherical surface */
 
         static int once = 0;
         static int ncells;
         static double area_per_cell;
 
         if (!once) {
-            ncells = SphereSurfaceIntersectsNCells(grid[IDIR].dx[0], grid[JDIR].dx[0], grid[KDIR].dx[0], ac.rad);
+            ncells = SphereSurfaceIntersectsNCells(grid[IDIR].dx[0], grid[JDIR].dx[0], grid[KDIR].dx[0], radius);
             area_per_cell = ac.area / ncells;
             once = 1;
         }
@@ -272,13 +361,13 @@ void SphericalAccretion(const Data *d, Grid *grid) {
 #if SIC_METHOD == SIC_RADIUS || SIC_METHOD == SIC_HYBRID
                     sicr = SphereSurfaceIntersectsCellByRadius(x1[i], x2[j], x3[k],
                                                                grid[IDIR].dV[i], grid[JDIR].dV[j], grid[KDIR].dV[k],
-                                                               ac.rad);
+                                                               radius);
 #endif
 
 #if SIC_METHOD == SIC_CORNERS || SIC_METHOD == SIC_HYBRID
                     sicc = SphereSurfaceIntersectsCellByCorners(x1[i], x2[j], x3[k],
                                                                 grid[IDIR].dx[i], grid[JDIR].dx[j], grid[KDIR].dx[k],
-                                                                ac.rad);
+                                                                radius);
 #endif
                     /* Only for cells "on" the surface, where we measure the accretion rate. */
                     if (sicr || sicc) {
@@ -302,28 +391,6 @@ void SphericalAccretion(const Data *d, Grid *grid) {
                         accr_rate += accr;
 
 
-                        /* Bondi accretion parameters */
-                        /* In principle, the bondi rate is not to be measured here, but
-                         * at the Bondi radius. Need to write another SphereSurfaceIntersects
-                         * condition for r = r_bondi, and calculate Bondi parameters there. */
-                        // TODO: Calculate Bondi accretion with values at Bondi radius
-#if MEASURE_BONDI_ACCRETION == YES
-                        prs = d->Vc[PRS][k][j][i];
-                        snd = sqrt(g_gamma * prs / rho);
-
-#if SIC_METHOD == SIC_HYBRID
-                        if (sicr && sicc) {
-                            rho *= 2;
-                            prs *= 2;
-                            snd *= 2;
-                        }
-#endif  // SIC_HYBRID
-                        rho_acc += rho;
-                        prs_acc += prs;
-                        snd_acc += snd;
-
-#endif  // MEASURE_BONDI_ACCRETION
-
 
                         /* Count the number of cells actually found */
                         lcount++;
@@ -336,67 +403,29 @@ void SphericalAccretion(const Data *d, Grid *grid) {
 #if SIC_METHOD == SIC_HYBRID
         accr_rate /= 2;
 
-#if MEASURE_BONDI_ACCRETION == YES
-        rho_acc /= 2;
-        prs_acc /= 2;
-        snd_acc /= 2;
-#endif
-
 #endif // SIC_HYBRID
 
 //    } // if (SphereSurfaceIntersectsDomain)
-
 
 
     /* Reductions, including MPI reductions,
      * and calculation of other quantities. */
 
 #ifdef PARALLEL
-    MPI_Allreduce(&accr_rate, &ac.accr_rate, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-#if MEASURE_BONDI_ACCRETION == YES
-    /* MPI reduce Bondi accretion parameters */
-    MPI_Allreduce(&lcount, &gcount, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(&rho_acc, &rho_acc_av, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(&prs_acc, &prs_acc_av, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(&snd_acc, &snd_acc_av, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
-    rho_acc_av /= gcount;
-    prs_acc_av /= gcount;
-    snd_acc_av /= gcount;
-#endif
+    MPI_Allreduce(&accr_rate, &accr_rate_sel, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
 
 #else // If not parallel
 
-    ac.accr_rate = accr_rate;
-
-#if MEASURE_BONDI_ACCRETION == YES
-    rho_acc_av = rho_acc / lcount;
-    prs_acc_av = prs_acc / lcount;
-    snd_acc_av = snd_acc / lcount;
-#endif
+    accr_rate_sel = accr_rate;
 
 #endif // ifdef PARALLEL
 
-    /* Bondi accretion rate - calculate before increasing BH mass */
-#if MEASURE_BONDI_ACCRETION == YES
 
-    /* Bondi rate rewritten relating far-away density to density and sound speed in accretion region. */
-    tmp_far = g_inputParam[PAR_HTMP] * ini_cgs[PAR_HTMP];
-    snd_far = sqrt(g_gamma * CONST_kB * tmp_far / (MU_NORM * CONST_amu)) / vn.v_norm;
-    ac.accr_rate_bondi = BondiAccretionRateLocal(ac.mbh, rho_acc_av, snd_acc_av, snd_far);
-
-#endif
-
-    /* Increase BH mass by measured accretion rate * dt */
-    ac.mbh += ac.accr_rate * g_dt * (1. - ac.eff);
-
-    /* Update Eddington luminosity - calculate after increasing BH mass */
-    ac.edd = EddingtonLuminosity(ac.mbh);
-
+    return accr_rate_sel;
 
 }
+
 
 
 
@@ -442,13 +471,13 @@ void FederrathAccretion(const Data *d, Grid *grid) {
     /* MPI reductions and analysis */
 
 #ifdef PARALLEL
-        MPI_Allreduce(&accr_rate, &ac.accr_rate, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&accr_rate, &ac.accr_rate_sel, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 #else
         ac.accr_rate = accr_rate;
 #endif
 
     /* Increase BH mass by measured accretion rate * dt */
-    ac.mbh += ac.accr_rate * g_dt * (1. - ac.eff);
+    ac.mbh += ac.accr_rate_sel * g_dt * (1. - ac.eff);
 
     /* Update Eddington luminosity - calculate after increasing BH mass */
     ac.edd = EddingtonLuminosity(ac.mbh);
@@ -505,35 +534,18 @@ void SphericalAccretionOutput() {
         if (g_time > next_output) {
 
             /* Accretion rate in cgs */
-            double accr_rate_msun_yr = ac.accr_rate * vn.mdot_norm / (CONST_Msun / (CONST_ly / CONST_c));
+            double accr_rate_msun_yr = ac.accr_rate_sel * vn.mdot_norm / (CONST_Msun / (CONST_ly / CONST_c));
             double accr_rate_rss_msun_yr = ac.accr_rate_rss * vn.mdot_norm / (CONST_Msun / (CONST_ly / CONST_c));
 
-            // TODO: Move Bondi accretion to separate function.
-#if MEASURE_BONDI_ACCRETION == YES
 
-            double accr_rate_bondi_msun_yr;
-
-            accr_rate_bondi_msun_yr = ac.accr_rate_bondi * vn.mdot_norm / (CONST_Msun / (CONST_ly / CONST_c));
             fprintf(fp_acc, "%12.6e  %12.6e  %12.6e %12.6e %12.6e %12.6e %12.6e %12.6e \n",
                     g_time * vn.t_norm / (CONST_ly / CONST_c),            // time
                     g_dt * vn.t_norm / (CONST_ly / CONST_c),              // dt
                     accr_rate_msun_yr,                                    // measured acc rate
                     accr_rate_rss_msun_yr,                                // measured acc rate from rand sph smpl
-                    ac.accr_rate * vn.mdot_norm * CONST_c * CONST_c,      // measured acc power
-                    accr_rate_bondi_msun_yr,                              // bondi rate
+                    ac.accr_rate_sel * vn.mdot_norm * CONST_c * CONST_c,      // measured acc power
                     ac.mbh * vn.m_norm / CONST_Msun,                      // black hole mass
                     ac.edd * vn.power_norm);                              // Eddington power
-
-#else
-            fprintf(fp_acc, "%12.6e  %12.6e  %12.6e %12.6e %12.6e %12.6e %12.6e %12.6e \n",
-                    g_time * vn.t_norm / (CONST_ly / CONST_c),
-                    g_dt * vn.t_norm / (CONST_ly / CONST_c),
-                    accr_rate_msun_yr,
-                    accr_rate_rss_msun_yr,
-                    ac.accr_rate * vn.mdot_norm * CONST_c * CONST_c,
-                    ac.mbh * vn.m_norm / CONST_Msun,
-                    ac.edd * vn.power_norm);
-#endif
 
             next_output += ACCRETION_OUTPUT_RATE;
             fclose(fp_acc);
@@ -689,8 +701,8 @@ void BondiFlowInternalBoundary(const double x1, const double x2, const double x3
     sx3 = SPH3(x1, x2, x3);
 
     /* Decide if we are to take the measured rate or the theoretical Bondi accretion rate */
-    if (ac.accr_rate < ac.accr_rate_bondi) rho = ac.accr_rate_bondi;
-    else rho = ac.accr_rate;
+    if (ac.accr_rate_sel < ac.accr_rate_bondi) rho = ac.accr_rate_bondi;
+    else rho = ac.accr_rate_sel;
 
     /* Solution for g_gamma < 5/3 */
     if (g_gamma < 5 / 3) {

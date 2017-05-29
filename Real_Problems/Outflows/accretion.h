@@ -16,9 +16,9 @@ typedef struct {
     double eff;               // Fraction of accretion rate going into outflow
     double snk;               // Sink radius
     double area;              // Area of surface
-    double accr_rate;         // Mass accretion rate (global)
+    double accr_rate_sel;     // Mass accretion rate, cell selection method
+    double accr_rate_rss;     // Mass accretion rate, random spherical sampling
     double accr_rate_bondi;   // Bondi accretion rate
-    double accr_rate_rss;     // Mass accretion rate (random spherical sampling)
     double deboost;           // Deboost factor for outflow
     Nozzle nzi;               // Initial nozzle parameters
     OutflowState osi;         // Initial outflow state parameters
@@ -54,9 +54,13 @@ void VacuumInternalBoundary(double *result);
 
 double EddingtonLuminosity(const double mbh);
 
-void SphericalSampledAccretion(const Data *d, Grid *grid);
+double BondiAccretion(const Data *d, Grid *grid);
 
 void SphericalAccretion(const Data *d, Grid *grid);
+
+double SphericalSampledAccretion(const Data *d, Grid *grid, const double radius);
+
+double SphericalSelectedAccretion(const Data *d, Grid *grid, const double radius);
 
 void SphericalAccretionOutput();
 
