@@ -173,10 +173,11 @@ double SphericalSampledAccretion(const Data *d, Grid *grid, const double radius)
 
     /* Determine number of sampling points to use */
     int npoints;
-    static double area_per_point;
+    double area_per_point;
 
     double dl_min = grid[IDIR].dl_min;
-    npoints = (int) (ac.area / (dl_min * dl_min));
+    double area = 4 * CONST_PI * radius * radius;
+    npoints = (int) (area / (dl_min * dl_min));
 
     // TODO: make once only - no need to recreate same points every timestep.
     /* Get npoint points on spherical surface */
@@ -184,7 +185,7 @@ double SphericalSampledAccretion(const Data *d, Grid *grid, const double radius)
     x2 = ARRAY_1D(npoints, double);
     x3 = ARRAY_1D(npoints, double);
     npoints = UniformSamplingSphericalSurface(npoints, radius, x1, x2, x3);
-    area_per_point = ac.area / npoints;
+    area_per_point = area / npoints;
 
     /* Determine which variables to interpolate */
     double v[NVAR];
@@ -334,78 +335,75 @@ double SphericalSelectedAccretion(const Data *d, Grid *grid, const double radius
 
     // TODO: Probalby don't really need this condition. Just keeps some processors idle.
 
-        /* Get number of cells lying on spherical surface */
+    /* Get number of cells lying on spherical surface */
 
-        static int once = 0;
-        static int ncells;
-        static double area_per_cell;
+    static int once = 0;
+    static int ncells;
+    static double area, area_per_cell;
 
-        if (!once) {
-            ncells = SphereSurfaceIntersectsNCells(grid[IDIR].dx[0], grid[JDIR].dx[0], grid[KDIR].dx[0], radius);
-            area_per_cell = ac.area / ncells;
-            once = 1;
-        }
+    if (!once) {
+        ncells = SphereSurfaceIntersectsNCells(grid[IDIR].dx[0], grid[JDIR].dx[0], grid[KDIR].dx[0], radius);
+        area = 4 * CONST_PI * radius * radius;
+        area_per_cell = area / ncells;
+        once = 1;
+    }
 
 
-        /* These are the geometrical central points */
-        x1 = grid[IDIR].x;
-        x2 = grid[JDIR].x;
-        x3 = grid[KDIR].x;
+    /* These are the geometrical central points */
+    x1 = grid[IDIR].x;
+    x2 = grid[JDIR].x;
+    x3 = grid[KDIR].x;
 
-        /* Intersection "booleans" */
-        int sicr = 0;
-        int sicc = 0;
+    /* Intersection "booleans" */
+    int sicr = 0;
+    int sicc = 0;
 
-        DOM_LOOP(k, j, i) {
+    DOM_LOOP(k, j, i) {
 
 #if SIC_METHOD == SIC_RADIUS || SIC_METHOD == SIC_HYBRID
-                    sicr = SphereSurfaceIntersectsCellByRadius(x1[i], x2[j], x3[k],
-                                                               grid[IDIR].dV[i], grid[JDIR].dV[j], grid[KDIR].dV[k],
-                                                               radius);
+                sicr = SphereSurfaceIntersectsCellByRadius(x1[i], x2[j], x3[k],
+                                                           grid[IDIR].dV[i], grid[JDIR].dV[j], grid[KDIR].dV[k],
+                                                           radius);
 #endif
 
 #if SIC_METHOD == SIC_CORNERS || SIC_METHOD == SIC_HYBRID
-                    sicc = SphereSurfaceIntersectsCellByCorners(x1[i], x2[j], x3[k],
-                                                                grid[IDIR].dx[i], grid[JDIR].dx[j], grid[KDIR].dx[k],
-                                                                radius);
+                sicc = SphereSurfaceIntersectsCellByCorners(x1[i], x2[j], x3[k],
+                                                            grid[IDIR].dx[i], grid[JDIR].dx[j], grid[KDIR].dx[k],
+                                                            radius);
 #endif
-                    /* Only for cells "on" the surface, where we measure the accretion rate. */
-                    if (sicr || sicc) {
+                /* Only for cells "on" the surface, where we measure the accretion rate. */
+                if (sicr || sicc) {
 
-                        /* Calculate and sum accretion rate */
-                        rho = d->Vc[RHO][k][j][i];
-                        vx1 = vx2 = vx3 = 0;
-                        EXPAND(vx1 = d->Vc[VX1][k][j][i];,
-                               vx2 = d->Vc[VX2][k][j][i];,
-                               vx3 = d->Vc[VX3][k][j][i];);
-                        vs1 = VSPH1(x1[i], x2[j], x3[k], vx1, vx2, vx3);
-                        vs1 = fabs(MIN(vs1, 0));
+                    /* Calculate and sum accretion rate */
+                    rho = d->Vc[RHO][k][j][i];
+                    vx1 = vx2 = vx3 = 0;
+                    EXPAND(vx1 = d->Vc[VX1][k][j][i];,
+                           vx2 = d->Vc[VX2][k][j][i];,
+                           vx3 = d->Vc[VX3][k][j][i];);
+                    vs1 = VSPH1(x1[i], x2[j], x3[k], vx1, vx2, vx3);
+                    vs1 = fabs(MIN(vs1, 0));
 
-                        accr = rho * vs1 * area_per_cell;
+                    accr = rho * vs1 * area_per_cell;
 
-                        /* Count twice in hybrid mode */
+                    /* Count twice in hybrid mode */
 #if SIC_METHOD == SIC_HYBRID
-                        if (sicr && sicc) accr *= 2;
+                    if (sicr && sicc) accr *= 2;
 #endif
 
-                        accr_rate += accr;
+                    accr_rate += accr;
 
+                    /* Count the number of cells actually found */
+                    lcount++;
 
+                } // if sicr || sicc
 
-                        /* Count the number of cells actually found */
-                        lcount++;
+            }  // DOM_LOOP
 
-                    } // if sicr || sicc
-
-                }  // DOM_LOOP
-
-        /* Averaging in HYBRID mode */
+    /* Averaging in HYBRID mode */
 #if SIC_METHOD == SIC_HYBRID
-        accr_rate /= 2;
+    accr_rate /= 2;
 
 #endif // SIC_HYBRID
-
-//    } // if (SphereSurfaceIntersectsDomain)
 
 
     /* Reductions, including MPI reductions,
@@ -473,7 +471,7 @@ void FederrathAccretion(const Data *d, Grid *grid) {
 #ifdef PARALLEL
         MPI_Allreduce(&accr_rate, &ac.accr_rate_sel, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 #else
-        ac.accr_rate = accr_rate;
+        ac.accr_rate_sel = accr_rate;
 #endif
 
     /* Increase BH mass by measured accretion rate * dt */

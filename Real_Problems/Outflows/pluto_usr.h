@@ -64,18 +64,10 @@
 /* SUPERNOVAE implementations */
 // TODO: Implement different SN methods
 
+
 /* Clouds */
 /* Use a grid_in.out file to specify dimensions of cube 
  * Input files are rho.dbl, vx1.dbl, vx2.dbl, vx3.dbl, etc*/
-
-/* CLOUD_EXTRACT values. 
- * Method of cloud extraction 
- * DEFAULT is NONE
- * Shape of ELLIPSOID is determined by parameter WROT and WRAD
- * */
-// TODO: Test and debug CE_ELLIPSOID and CE_DENS
-#define CE_DENS              1
-#define CE_ELLIPSOID         2
 
 /* CLOUD_DENSITY values.
  * Cloud distribution 
@@ -285,8 +277,12 @@
 #define CUBE_ENDIANNESS "little"
 #endif
 
-#ifndef CLOUD_EXTRACT
-#define CLOUD_EXTRACT NONE
+#ifndef CLOUD_EXTRACT_ELLIPSOID
+#define CLOUD_EXTRACT_ELLIPSOID NONE
+#endif
+
+#ifndef CLOUD_EXTRACT_CENTRAL_BUFFER
+#define CLOUD_EXTRACT_CENTRAL_BUFFER NONE
 #endif
 
 /* A factor with which to underpressure clouds w.r.t. ambient medium (<1)*/

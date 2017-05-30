@@ -9,6 +9,7 @@
 #include "hot_halo.h"
 #include "interpolation.h"
 #include "read_grav_table.h"
+#include "init_tools.h"
 
 /* ************************************************************** */
 int CloudCubePixel(int *el, const double x1,
@@ -225,6 +226,91 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
 }
 
 /* ************************************************************** */
+double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, const double x3) {
+/*!
+ *
+**************************************************************** */
+
+    static int once01 = 0;
+    double r_cyl, rz;
+    double tanhfactor;
+    double ellipse, ellipse_i;
+    double wrot, wrad, wsmf;
+
+
+    /* The distances in physical space */
+    r_cyl = CYL1(x1, x2, x3);
+    rz    = CYL2(x1, x2, x3);
+
+    /* The ellipse equation */
+    wrot = g_inputParam[PAR_WROT] * ini_code[PAR_WROT];
+
+#if CLOUD_SCALE == CS_SCALE_HEIGHT
+    wrad = g_inputParam[PAR_WRAD] * ini_code[PAR_WRAD];
+
+#elif CLOUD_SCALE == CS_VELOCITY_DISPERSION
+    double wtrb_cgs = g_inputParam[PAR_WTRB] * ini_cgs[PAR_WTRB];
+    double wrho_cgs = g_inputParam[PAR_WRHO] * ini_cgs[PAR_WRHO];
+    double wrad_cgs = 3. * wtrb_cgs / (2. * sqrt(CONST_PI * CONST_G * wrho_cgs));
+    wrad = wrad_cgs / vn.l_norm;
+
+#endif
+
+    ellipse = (r_cyl * r_cyl * (1 - wrot * wrot) + rz * rz) /
+              (exp(-1) * wrad * wrad);
+
+    /* Smoothing region scale, hardcoded here. */
+    wsmf = 0.2;
+
+    /* The inner ellipse equation, beyond which smoothing region begins */
+    ellipse_i = (r_cyl * r_cyl * (1 - wrot * wrot) + rz * rz) /
+                ((1. - wsmf) * exp(-1) * wrad * wrad);
+
+
+    /* Exclude zone outside ellipsoid */
+    if ( ellipse > 1.){
+      fdratio = 1.;
+    }
+
+    /* The smoothing region */
+    else if ((ellipse_i > 1.) && (ellipse < 1.)){
+      tanhfactor = tanh(tan(-CONST_PI * (sqrt(ellipse) - (1. - 0.5 * wsmf)) / wsmf));
+      fdratio = 0.5 * (fdratio + 1) + 0.5 * tanhfactor * (fdratio - 1.);
+    }
+
+    if (!once01){
+      print1("> Cloud extraction: CLOUD_EXTRACTION_ELLIPSOID.\n\n");
+      once01 = 1;
+    }
+
+    return fdratio;
+
+}
+
+/* ************************************************************** */
+double CloudExtractCentralBuffer(double fdratio, const double x1, const double x2, const double x3) {
+/*!
+ *
+**************************************************************** */
+
+    /* Buffer factor around osph */
+    double incf = 1.5;
+    double rad  = SPH1(x1, x2, x3);
+
+    /* Inner hemisphere to keep free */
+    double osph = g_inputParam[PAR_OSPH] * ini_code[PAR_OSPH];
+    double inner_circ = rad / (incf * osph);
+
+    /* Exclude zone outside ellipsoid */
+    if (inner_circ < 1.) fdratio = 1.;
+
+    // TODO add some smoothing.
+
+    return fdratio;
+}
+
+
+/* ************************************************************** */
 int CloudExtract(double *cloud,
                  const double *halo,
                  const int *pixel,
@@ -247,87 +333,19 @@ int CloudExtract(double *cloud,
  **************************************************************** */
 {
 
-    int is_cloud = 0;
+
     double fdratio;
-    static int once01 = 0;
-
-#if CLOUD_EXTRACT == CE_ELLIPSOID
-
-    double rad, r_cyl, rz;
-    double tanhfactor;
-    double ellipse, ellipse_i, inner_circ;
-    double wrot, wrad, osph, wsmf, incf;
 
     fdratio = cloud[RHO] / halo[RHO];
 
-    /* The distances in physical space */
-    rad   = SPH1(x1, x2, x3);
-    r_cyl = CYL1(x1, x2, x3);
-    rz    = CYL2(x1, x2, x3);
-
-    /* The ellipse equation */
-    wrot = g_inputParam[PAR_WROT] * ini_code[PAR_WROT];
-    wrad = g_inputParam[PAR_WRAD] * ini_code[PAR_WRAD];
-    ellipse = (r_cyl * r_cyl * (1 - wrot * wrot) + rz * rz) /
-              (exp(-1) * wrad * wrad);
-
-    /* Smoothing region scale, wsmf, and buffer factor around osph */
-    wsmf = 0.2;
-    incf = 1.2;
-
-    /* The inner ellipse equation, beyond which smoothing region begins */
-    ellipse_i = (r_cyl * r_cyl * (1 - wrot * wrot) + rz * rz) /
-                ((1. - wsmf) * exp(-1) * wrad * wrad);
-
-    /* Inner hemisphere to keep free */
-    osph = g_inputParam[PAR_OSPH] * ini_code[PAR_OSPH];
-    inner_circ = rad / (incf * osph);
-
-    /* Exclude zone outside ellipsoid */
-    if ( ellipse > 1. || inner_circ < 1.){
-      fdratio = 1;
-      is_cloud = 0;
-    }
-
-    /* The smoothing region */
-    else if (!((ellipse_i < 1.) || (ellipse > 1.))){
-      tanhfactor = tanh(tan(-CONST_PI * (sqrt(ellipse) - (1. - 0.5 * wsmf)) / wsmf));
-      fdratio = 0.5 * (fdratio + 1) + 0.5 * tanhfactor * (fdratio - 1.);
-      is_cloud = 1;
-    }
-
-    /* Inside the fractal sphere */
-    else{
-      is_cloud = 1;
-    }
-
-    if (!once01){
-      print1("> Cloud extraction: CE_ELLIPSOID.\n\n");
-      once01 = 1;
-    }
-
-
-#elif CLOUD_EXTRACT == CE_DENS
-    /* A density based extraction method */
-
-    double dens_lim = 0.0
-    if (fd < dens_lim) {
-      fdratio = 1.;
-      is_cloud = 0;
-    }
-    fdratio = MAX(dens_lim, fdratio);
-    is_cloud = 1;
-
-#else
-    is_cloud = 1;
-    fdratio = cloud[RHO] / halo[RHO];
-
-    if (!once01) {
-        print1("> Cloud extraction: No special cloud extraction.\n\n");
-        once01 = 1;
-    }
-
+#if CLOUD_EXTRACT_ELLIPSOID == TRUE
+    fdratio = CloudExtractEllipsoid(fdratio, x1, x2, x3);
 #endif
+
+#if CLOUD_EXTRACT_CENTRAL_BUFFER == TRUE
+    fdratio = CloudExtractCentralBuffer(fdratio, x1, x2, x3);
+#endif
+
 
     /* The ratio of cloud to halo density for a cell
      * shouldn't really ever be < 1. */
@@ -336,7 +354,7 @@ int CloudExtract(double *cloud,
     /* Set to cloud density */
     cloud[RHO] = fdratio * halo[RHO];
 
-    return is_cloud;
+    return fdratio > 1. ? 1 : 0;
 }
 
 /* ************************************************************** */

@@ -16,6 +16,10 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
 int CloudExtract(double *cloud, const double *halo, const int *pixel,
                  const double x1, const double x2, const double x3);
 
+double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, const double x3);
+
+double CloudExtractCentralBuffer(double fdratio, const double x1, const double x2, const double x3);
+
 void CloudVelocity(double *cloud, double *halo, const double x1, const double x2, const double x3);
 
 int CloudPrimitives(double *cloud, const double x1, const double x2, const double x3);
