@@ -44,7 +44,7 @@ void SetNozzleGeometry(Nozzle * noz) {
 
     double ang, rad, sph, dir, dbh, omg, phi;
     double cbh, orig, area, vol, cone_height, cone_apex;
-    int is_fan, is_two_sided;
+    int is_fan, is_two_sided, is_halved;
 
     double small_angle = 1.e-12;
     double large = 1.e30;
@@ -61,6 +61,14 @@ void SetNozzleGeometry(Nozzle * noz) {
     if (FLOWAXIS(g_domBeg[IDIR], g_domBeg[JDIR], g_domBeg[KDIR]) < 0.) is_two_sided = 1;
 #endif
     else is_two_sided = 0;
+
+    /* Determine if nozzle is halved */
+#if GEOMETRY == SPHERICAL
+    if (g_domEnd[JDIR] > 5. * CONST_PI / 4.) is_halved = 0;
+#else
+    if (FLOWAXIS(g_domBeg[KDIR], g_domBeg[IDIR], g_domBeg[JDIR]) < 0.) is_halved = 0;
+#endif
+    else is_halved = 1;
 
 
 #if ACCRETION == YES && FEEDBACK_CYCLE == YES
@@ -148,7 +156,8 @@ void SetNozzleGeometry(Nozzle * noz) {
 
     }
 
-    /* Power should always be the total power injected into box */
+    /* Power should always be the total power injected into box
+     * (except for axis-symmetric cases, where volume and area still assume the full phi = 2 pi region) */
     // TODO: Make sure two-sided and one-sided cases are consistent.
     if (is_two_sided){
         area *= 2.;

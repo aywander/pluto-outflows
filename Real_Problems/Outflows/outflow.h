@@ -30,6 +30,7 @@ typedef struct {
                               // Can be positive or negative.
     int is_fan;               // Is the nozzle a fan (conical) or bullet-shaped (parallel)
     int is_two_sided;         // Is the nozzle two-sided?
+    int is_halved;            // Is the nozzle halved (for cylindrical symmetry?)
 } Nozzle;
 
 extern Nozzle nz;
