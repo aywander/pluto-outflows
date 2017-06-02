@@ -438,11 +438,14 @@ void SphericalAccretionOutput() {
         if (g_time > next_output) {
 
             /* Accretion rate in cgs */
-            double accr_rate_msun_yr = ac.accr_rate * vn.mdot_norm / (CONST_Msun / (CONST_ly / CONST_c));
+            double msun_yr = CONST_Msun / (CONST_ly / CONST_c);
+            double accr_rate_msun_yr = ac.accr_rate * vn.mdot_norm / msun_yr;
+            double accr_rate_bondi_msun_yr = ac.accr_rate_bondi * vn.mdot_norm / msun_yr;
 
-            fprintf(fp_acc, "%12.6e  %12.6e  %12.6e %12.6e %12.6e %12.6e %12.6e %12.6e \n",
+            fprintf(fp_acc, "%12.6e  %12.6e  %12.6e %12.6e %12.6e %12.6e \n",
                     g_time * vn.t_norm / (CONST_ly / CONST_c),            // time
-                    accr_rate_msun_yr,                                    // measured acc rate from rand sph smpl
+                    accr_rate_msun_yr,                                    // measured acc rate (flux)
+                    accr_rate_bondi_msun_yr,                              // measured bondi accretion rate
                     ac.accr_rate * vn.mdot_norm * CONST_c * CONST_c,      // measured acc power
                     ac.mbh * vn.m_norm / CONST_Msun,                      // black hole mass
                     ac.edd * vn.power_norm);                              // Eddington power
@@ -940,6 +943,8 @@ double BondiAccretion(const Data *d, Grid *grid) {
 
 #if TURBULENT_BONDI_ACCRETION
 
+                    /* Curl operation. */
+                    // TODO: Turn this into a function (or macro)
                     EXPAND(,
                            vort3 = CDIFF_X1(vx2, k, j, i) - CDIFF_X2(vx1, k, j, i);,
                            vort2 = CDIFF_X3(vx1, k, j, i) - CDIFF_X1(vx3, k, j, i);
