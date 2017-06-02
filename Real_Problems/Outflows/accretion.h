@@ -16,8 +16,7 @@ typedef struct {
     double eff;               // Fraction of accretion rate going into outflow
     double snk;               // Sink radius
     double area;              // Area of surface
-    double accr_rate_sel;     // Mass accretion rate, cell selection method
-    double accr_rate_rss;     // Mass accretion rate, random spherical sampling
+    double accr_rate;         // Mass accretion rate, random spherical sampling
     double accr_rate_bondi;   // Bondi accretion rate
     double deboost;           // Deboost factor for outflow
     Nozzle nzi;               // Initial nozzle parameters
@@ -46,6 +45,8 @@ double BondiAccretionRate(const double mbh, const double rho_far, const double s
 double BondiAccretionRateLocal(const double mbh, const double rho_acc, const double snd_acc, const double snd_far);
 
 double BondiLambda();
+
+double BondiRadius(double m, double *v);
 
 void BondiFlowInternalBoundary(const double x1, const double x2, const double x3, double *result);
 

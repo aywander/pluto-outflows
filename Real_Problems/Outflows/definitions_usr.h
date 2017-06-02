@@ -11,6 +11,7 @@
 #define SID_METHOD                        SID_REGIONS
 #define SINK_METHOD                       SINK_FREEFLOW
 #define MEASURE_BONDI_ACCRETION           YES
+#define TURBULENT_BONDI_ACCRETION         YES
 #define FEEDBACK_CYCLE                    NO
 #define FBC_DEBOOST_MODE                  FBC_DEBOOST_MODE_3
 
