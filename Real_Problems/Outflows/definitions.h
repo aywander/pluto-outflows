@@ -8,7 +8,7 @@
 #define  TIME_STEPPING           RK3
 #define  DIMENSIONAL_SPLITTING   NO
 #define  NTRACER                 2
-#define  USER_DEF_PARAMETERS     39
+#define  USER_DEF_PARAMETERS     41
 #define  USER_DEF_CONSTANTS      4
 
 /* -- physics dependent declarations -- */
@@ -32,35 +32,37 @@
 #define  PAR_ODIR                7
 #define  PAR_OOMG                8
 #define  PAR_OPHI                9
-#define  PAR_ARAD                10
-#define  PAR_AMBH                11
-#define  PAR_AEFF                12
-#define  PAR_ASNK                13
-#define  PAR_HRHO                14
-#define  PAR_HTMP                15
-#define  PAR_HVX1                16
-#define  PAR_HVX2                17
-#define  PAR_HVX3                18
-#define  PAR_HVRD                19
-#define  PAR_HRAD                20
-#define  PAR_WRHO                21
-#define  PAR_WTRB                22
-#define  PAR_WRAD                23
-#define  PAR_WROT                24
-#define  PAR_WX1L                25
-#define  PAR_WX1H                26
-#define  PAR_WX2L                27
-#define  PAR_WX2H                28
-#define  PAR_WX3L                29
-#define  PAR_WX3H                30
-#define  PAR_WVRD                31
-#define  PAR_WVPL                32
-#define  PAR_WVPP                33
-#define  PAR_WVAN                34
-#define  PAR_SGAV                35
-#define  PAR_NCLD                36
-#define  PAR_LOMX                37
-#define  PAR_LCMX                38
+#define  PAR_OEFF                10
+#define  PAR_ARAD                11
+#define  PAR_AMBH                12
+#define  PAR_AEFF                13
+#define  PAR_AMLD                14
+#define  PAR_ASNK                15
+#define  PAR_HRHO                16
+#define  PAR_HTMP                17
+#define  PAR_HVX1                18
+#define  PAR_HVX2                19
+#define  PAR_HVX3                20
+#define  PAR_HVRD                21
+#define  PAR_HRAD                22
+#define  PAR_WRHO                23
+#define  PAR_WTRB                24
+#define  PAR_WRAD                25
+#define  PAR_WROT                26
+#define  PAR_WX1L                27
+#define  PAR_WX1H                28
+#define  PAR_WX2L                29
+#define  PAR_WX2H                30
+#define  PAR_WX3L                31
+#define  PAR_WX3H                32
+#define  PAR_WVRD                33
+#define  PAR_WVPL                34
+#define  PAR_WVPP                35
+#define  PAR_WVAN                36
+#define  PAR_SGAV                37
+#define  PAR_NCLD                38
+#define  PAR_LOMX                39
+#define  PAR_LCMX                40
 
 /* [Beg] user-defined constants (do not change this line) */
 

@@ -33,6 +33,7 @@ void SetAccretionPhysics() {
     ac.rad = g_inputParam[PAR_ARAD] * ini_code[PAR_ARAD];
     ac.mbh = g_inputParam[PAR_AMBH] * ini_code[PAR_AMBH];
     ac.eff = g_inputParam[PAR_AEFF] * ini_code[PAR_AEFF];
+    ac.eff = g_inputParam[PAR_AMLD] * ini_code[PAR_AMLD];
     ac.snk = g_inputParam[PAR_ASNK] * ini_code[PAR_ASNK];
 
     /* Bondi Accretion parameters */
@@ -142,7 +143,7 @@ void SphericalAccretion(const Data *d, Grid *grid) {
 #endif
 
     /* Increase BH mass by measured accretion rate * dt */
-    ac.mbh += ac.accr_rate * g_dt * (1. - ac.eff);
+    ac.mbh += ac.accr_rate * g_dt * (1. - ac.eff) / (1. + ac.mld);
 
     /* Update Eddington luminosity - calculate after increasing BH mass */
     ac.edd = EddingtonLuminosity(ac.mbh);

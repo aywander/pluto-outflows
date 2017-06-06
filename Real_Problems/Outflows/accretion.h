@@ -14,6 +14,7 @@ typedef struct {
     double mbh;               // BH mass
     double edd;               // Eddington power
     double eff;               // Fraction of accretion rate going into outflow
+    double mld;               // Mass loading efficiency
     double snk;               // Sink radius
     double area;              // Area of surface
     double accr_rate;         // Mass accretion rate, random spherical sampling

@@ -106,9 +106,11 @@ void SetIniNormalization() {
     ini_cgs[PAR_OOMG] = 1. / (1.e6 * year);
     ini_cgs[PAR_OPHI] = degrad;
     ini_cgs[PAR_OSPH] = vn.l_norm;
+    ini_cgs[PAR_OEFF] = 1.;
     ini_cgs[PAR_ARAD] = vn.l_norm;
     ini_cgs[PAR_AMBH] = CONST_Msun;
     ini_cgs[PAR_AEFF] = 1.;
+    ini_cgs[PAR_AMLD] = 1.;
     ini_cgs[PAR_ASNK] = vn.l_norm;
     ini_cgs[PAR_HRHO] = vn.dens_norm;
     ini_cgs[PAR_HTMP] = 1;
@@ -151,9 +153,11 @@ void SetIniNormalization() {
     ini_code[PAR_OOMG] = ini_cgs[PAR_OOMG] * vn.t_norm;
     ini_code[PAR_OPHI] = ini_cgs[PAR_OPHI];
     ini_code[PAR_OSPH] = ini_cgs[PAR_OSPH] / vn.l_norm;
+    ini_code[PAR_OEFF] = ini_cgs[PAR_OEFF];
     ini_code[PAR_ARAD] = ini_cgs[PAR_ARAD] / vn.l_norm;
     ini_code[PAR_AMBH] = ini_cgs[PAR_AMBH] / vn.m_norm;
     ini_code[PAR_AEFF] = ini_cgs[PAR_AEFF];
+    ini_code[PAR_AMLD] = ini_cgs[PAR_AMLD];
     ini_code[PAR_ASNK] = ini_cgs[PAR_ASNK] / vn.l_norm;
     ini_code[PAR_HRHO] = ini_cgs[PAR_HRHO] / vn.dens_norm;
     ini_code[PAR_HTMP] = ini_cgs[PAR_HTMP] / vn.temp_norm;

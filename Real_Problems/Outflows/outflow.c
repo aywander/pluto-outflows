@@ -261,8 +261,11 @@ void SetJetState(OutflowState *ofs) {
     // TODO: Test accretion cycle
 #if ACCRETION == YES && FEEDBACK_CYCLE == YES
 
+    /* Jet coupling efficiency */
+    double oeff = g_inputParam[PAR_OEFF] * ini_code[PAR_OEFF];
+
     /* AGN power from accretion rate */
-    power = ac.eff * ac.accr_rate * CONST_c * CONST_c / vn.pot_norm;
+    power = (1. - ac.eff) / (1. + ac.mld) * oeff * ac.eff * ac.accr_rate * CONST_c * CONST_c / vn.pot_norm;
 
     /* Hot phase pressure */
     double hrho = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
@@ -270,12 +273,13 @@ void SetJetState(OutflowState *ofs) {
     double hprs = PresIdealEOS(hrho, htmp, MU_NORM);
 
     /* Maximum thermal pressure of AGN outflow */
+    /* For the jet, we always use the input lorentz factor at the nozzle */
     speed = Lorentz2Speed(lorentz);
     gmm1 = g_gamma / (g_gamma - 1.);
     pres = power / (gmm1 * lorentz * lorentz * speed * ac.nzi.area);
 
-    /* This is for initialization of reference outflow state struct
-     * in SetAccretionPhysics, contained within ac struct */
+    /* This is for initialization of reference outflow state struct contained in the ac struct,
+     * through SetAccretionPhysics at the beginning of Init. It does not affect dynamics of first timestep. */
     if (g_time == 0 && ac.deboost == 1) {
         power = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
         speed = Lorentz2Speed(lorentz);
@@ -284,7 +288,7 @@ void SetJetState(OutflowState *ofs) {
         dens = chi * gmm1 * pres;
     }
 
-    /* If insufficient power for pressure equilibrium, shut off AGN */
+    /* If time = 0, or insufficient power for pressure equilibrium, shut off AGN */
     else if ((pres < hprs) || (g_time == 0 )) {
         ac.deboost = 0;
         dens = g_smallDensity;
@@ -304,6 +308,7 @@ void SetJetState(OutflowState *ofs) {
         pres = power / (gmm1 * lorentz * lorentz * speed * ac.nzi.area * (1. + (lorentz - 1.) / lorentz * chi));
         dens = chi * gmm1 * pres;
 
+#if FBC_DEBOOST == YES
         /* ...but if insufficient heat with default Ekin, reduce (deboost) ...? */
         if (pres < hprs) {
 
@@ -350,7 +355,10 @@ void SetJetState(OutflowState *ofs) {
 
         } // Sufficient power for heat to ensure pressure equilibrium, i.e., need to deboost?
 
+#endif  // if FCB_DEBOOST
+
     } // Is AGN on or off (sufficient power to ensure pressure equilibrium ?)
+
 
 #else  // if not ACCRETION && FEEDBACK_CYCLE
 
@@ -386,7 +394,7 @@ void SetUfoState(OutflowState *ofs) {
  ************************************************** */
 
     double power, speed, mdot;
-    double heat, dens, pres;
+    double heat, dens, pres, kine;
 
     /* Input parameters, normalized in code units*/
 
@@ -396,20 +404,33 @@ void SetUfoState(OutflowState *ofs) {
     // TODO: Test accretion cycle
 #if ACCRETION == YES && FEEDBACK_CYCLE == YES
 
+    /* Wind coupling efficiency */
+    double oeff = g_inputParam[PAR_OEFF] * ini_code[PAR_OEFF];
+
     /* AGN power from accretion rate */
-    power = ac.eff * ac.accr_rate * CONST_c * CONST_c / vn.pot_norm;
+    power = (1. - ac.eff) / (1. + ac.mld) * oeff * ac.eff * ac.accr_rate * CONST_c * CONST_c / vn.pot_norm;
+
+    /* Mass outflow rate from accretion rate */
+    mdot = ac.accr_rate * g_dt * (1. - ac.eff) / (1. + ac.mld) * ac.mld;
+
+    /* Maximum speed (if all of the power was in kinetic form) = sqrt(2 * power / mdot). */
+    double vmax = (2. * oeff * ac.eff / ac.mld) * CONST_c / vn.v_norm;
+
+    /* Make the above speed a ceiling for the speed - this might make deboosting redundant */
+    speed = MIN(speed, vmax);
 
     /* Hot phase pressure */
     double hrho = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
     double htmp = g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP];
     double hprs = PresIdealEOS(hrho, htmp, MU_NORM);
 
-    /* Thermal pressure of AGN outflow */
+    /* Maximum ram pressure of AGN outflow (Ram pressure ~ 5 th. pressure, for gamma = 5/3) */
     /* Note, accretion struct must be initialized beforehand */
-    pres = power * (g_gamma - 1) / (g_gamma * ac.nzi.area * speed);
+    double ram_pres_max, thm_pres_max, pres_max;
+    ram_pres_max = 2 * power / ( ac.nzi.area * speed);
 
-    /* This is for initialization of reference outflow state struct
-     * in SetAccretionPhysics, contained within ac struct */
+    /* This is for initialization of reference outflow state struct contained in the ac struct,
+     * through SetAccretionPhysics at the beginning of Init. It does not affect dynamics of first timestep. */
     if (g_time == 0 && ac.deboost == 1) {
         power = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
         heat = power - 0.5 * mdot * speed * speed;
@@ -419,7 +440,7 @@ void SetUfoState(OutflowState *ofs) {
     }
 
     /* If insufficient power for pressure equilibrium, shut off AGN */
-    else if ((pres < hprs) || (g_time == 0)) {
+    else if ((ram_pres_max < hprs) || (g_time == 0)) {
         ac.deboost = 0;
         dens = g_smallDensity;
         pres = g_smallPressure;
@@ -435,12 +456,16 @@ void SetUfoState(OutflowState *ofs) {
          * pressure is be at least ambient pressure, hprs. */
 
         /* If sufficient power ... */
-        heat = power - 0.5 * mdot * speed * speed;
-        pres = heat * (g_gamma - 1) / (g_gamma * ac.nzi.area * speed);
+        kine = 0.5 * mdot * speed * speed;
+        heat = power - kine;
+        ram_pres_max = 2 * kine / (ac.nzi.area * speed);
+        thm_pres_max = heat * (g_gamma - 1) / (g_gamma * ac.nzi.area * speed);
+        pres_max = MAX(ram_pres_max, thm_pres_max);
         dens = mdot / (ac.nzi.area * speed);
 
+#if FBC_DEBOOST == YES
         /* ...but if insufficient heat with default Ekin, reduce (deboost) mdot and speed and area */
-        if (pres < hprs) {
+        if (pres_max < hprs) {
 
             /* Ensure pressure equilibrium */
             pres = hprs;
@@ -505,6 +530,8 @@ void SetUfoState(OutflowState *ofs) {
 #endif  // FBC_DEBOOST_MODE
 
         } // Sufficient power for heat to ensure pressure equilibrium, i.e., need to deboost?
+
+#endif
 
     } // Is AGN on or off (sufficient power to ensure pressure equilibrium ?)
 

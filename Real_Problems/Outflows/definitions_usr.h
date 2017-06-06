@@ -7,12 +7,11 @@
 #define ACCRETION                         YES
 #define ACCRETION_OUTPUT                  YES
 #define ACCRETION_OUTPUT_RATE             0.1
-#define SIC_METHOD                        SIC_HYBRID
-#define SID_METHOD                        SID_REGIONS
 #define SINK_METHOD                       SINK_FREEFLOW
 #define MEASURE_BONDI_ACCRETION           YES
 #define TURBULENT_BONDI_ACCRETION         YES
-#define FEEDBACK_CYCLE                    NO
+#define FEEDBACK_CYCLE                    YES
+#define FBC_DEBOOST                       FALSE
 #define FBC_DEBOOST_MODE                  FBC_DEBOOST_MODE_3
 
 #define GRAV_POTENTIAL                    GRAV_DOUBLE_ISOTHERMAL

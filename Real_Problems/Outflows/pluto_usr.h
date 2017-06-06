@@ -232,6 +232,10 @@
 
 /* Feedback cycle modes */
 
+#ifndef FBC_DEBOOST
+#define FBC_DEBOOST FALSE
+#endif
+
 #ifndef FBC_DEBOOST_MODE
 #define FBC_DEBOOST_MODE FBC_DEBOOST_MODE_1
 #endif
