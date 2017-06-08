@@ -230,6 +230,11 @@
 #define FEEDBACK_CYCLE FALSE
 #endif
 
+#if FEEDBACK_CYCLE == TRUE
+#undef ACCRETION
+#define ACCRETION TRUE
+#endif
+
 /* Feedback cycle modes */
 
 #ifndef FBC_DEBOOST

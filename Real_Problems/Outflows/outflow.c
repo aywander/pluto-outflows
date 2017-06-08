@@ -49,10 +49,12 @@ void SetNozzleGeometry(Nozzle * noz) {
     double small_angle = 1.e-12;
     double large = 1.e30;
 
+
     /* First determine if we are dealing with a cone or a parallel nozzle */
     ang = g_inputParam[PAR_OANG] * ini_code[PAR_OANG];
     if (ang > small_angle) is_fan = 1;
     else is_fan = 0;
+
 
     /* Determine if nozzle is one-sided */
 #if GEOMETRY == SPHERICAL
@@ -61,6 +63,7 @@ void SetNozzleGeometry(Nozzle * noz) {
     if (FLOWAXIS(g_domBeg[IDIR], g_domBeg[JDIR], g_domBeg[KDIR]) < 0.) is_two_sided = 1;
 #endif
     else is_two_sided = 0;
+
 
     /* Determine if nozzle is halved */
 #if GEOMETRY == SPHERICAL
@@ -71,28 +74,24 @@ void SetNozzleGeometry(Nozzle * noz) {
     else is_halved = 1;
 
 
-#if ACCRETION == YES && FEEDBACK_CYCLE == YES
-
-    /* Accretion struct must be initialized beforehand */
-
-    /* The angle and radius (ORAD) as input parameter defines the maximum angle */
-    if (g_time == 0 && ac.deboost == 1) {
-
-        /* Quantities from input parameters */
-        rad = g_inputParam[PAR_ORAD] * ini_code[PAR_ORAD];
+    /* One of the most important quantities: the radius of the nozzle */
+    if (os.is_on == 0) {
+        rad = 0;
     }
     else {
+        rad = g_inputParam[PAR_ORAD] * ini_code[PAR_ORAD];
 
-        /* Reduction of radius */
+    /* Reduction of nozzle area via radius for deboosting.
+       Accretion struct must be initialized beforehand */
+        // TODO: always make ACCRETION TRUE if FEEDBACK_CYCLE is on
+#if FEEDBACK_CYCLE == YES && FBC_DEBOOST == YES && \
+    (FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_0 || \
+     FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_2 || \
+     FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_3)
         rad = sin(ang) * sqrt( ac.nzi.area * ac.deboost / (2. * CONST_PI * (1. - cos(ang))) ) ;
+#endif
+
     }
-
-#else
-
-    /* Quantities from input parameters */
-    rad = g_inputParam[PAR_ORAD] * ini_code[PAR_ORAD];
-
-#endif   // whether ACCRETION and FEEDBACK_CYCLE
 
     /* Quantities from input parameters */
     ang = g_inputParam[PAR_OANG] * ini_code[PAR_OANG];
@@ -252,14 +251,14 @@ void SetJetState(OutflowState *ofs) {
 
     double power, chi, lorentz;
     double speed, dens, pres, gmm1;
+    int is_on;
 
     /* The parameters from ini, and normalize them */
     chi = g_inputParam[PAR_OMDT] * ini_code[PAR_OMDT];
     lorentz = g_inputParam[PAR_OSPD] * ini_code[PAR_OSPD];
 
-
     // TODO: Test accretion cycle
-#if ACCRETION == YES && FEEDBACK_CYCLE == YES
+#if FEEDBACK_CYCLE == YES
 
     /* Jet coupling efficiency */
     double oeff = g_inputParam[PAR_OEFF] * ini_code[PAR_OEFF];
@@ -286,6 +285,7 @@ void SetJetState(OutflowState *ofs) {
         gmm1 = g_gamma / (g_gamma - 1.);
         pres = power / (gmm1 * lorentz * lorentz * speed * nz.area * (1. + (lorentz - 1.) / lorentz * chi));
         dens = chi * gmm1 * pres;
+        is_on = 1;
     }
 
     /* If time = 0, or insufficient power for pressure equilibrium, shut off AGN */
@@ -296,6 +296,7 @@ void SetJetState(OutflowState *ofs) {
         lorentz = 0;
         chi = 0;
         power = 0;
+        is_on = 0;
     }
 
         /* If sufficient power, AGN is on */
@@ -307,6 +308,7 @@ void SetJetState(OutflowState *ofs) {
         /* If sufficient power ... */
         pres = power / (gmm1 * lorentz * lorentz * speed * ac.nzi.area * (1. + (lorentz - 1.) / lorentz * chi));
         dens = chi * gmm1 * pres;
+        is_on = 1;
 
 #if FBC_DEBOOST == YES
         /* ...but if insufficient heat with default Ekin, reduce (deboost) ...? */
@@ -360,15 +362,16 @@ void SetJetState(OutflowState *ofs) {
     } // Is AGN on or off (sufficient power to ensure pressure equilibrium ?)
 
 
-#else  // if not ACCRETION && FEEDBACK_CYCLE
+#else  // if not FEEDBACK_CYCLE
 
     power = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
     speed = Lorentz2Speed(lorentz);
     gmm1 = g_gamma / (g_gamma - 1.);
     pres = power / (gmm1 * lorentz * lorentz * speed * nz.area * (1. + (lorentz - 1.) / lorentz * chi));
     dens = chi * gmm1 * pres;
+    is_on = 1;
 
-#endif  // whether ACCRETION && FEEDBACK_CYCLE
+#endif  // whether FEEDBACK_CYCLE
 
     ofs->pow = power;
     ofs->mdt = chi;
@@ -379,6 +382,7 @@ void SetJetState(OutflowState *ofs) {
     ofs->prs = pres;
     ofs->eth = gmm1 * pres * speed * nz.area * lorentz * lorentz;
     ofs->kin = (lorentz - 1.) * lorentz * speed * nz.area * dens * CONST_c * CONST_c / (vn.v_norm * vn.v_norm);
+    ofs->is_on = is_on;
 
 }
 
@@ -395,6 +399,7 @@ void SetUfoState(OutflowState *ofs) {
 
     double power, speed, mdot;
     double heat, dens, pres, kine;
+    int is_on;
 
     /* Input parameters, normalized in code units*/
 
@@ -402,7 +407,7 @@ void SetUfoState(OutflowState *ofs) {
     mdot = g_inputParam[PAR_OMDT] * ini_code[PAR_OMDT];
 
     // TODO: Test accretion cycle
-#if ACCRETION == YES && FEEDBACK_CYCLE == YES
+#if FEEDBACK_CYCLE == YES
 
     /* Wind coupling efficiency */
     double oeff = g_inputParam[PAR_OEFF] * ini_code[PAR_OEFF];
@@ -426,7 +431,7 @@ void SetUfoState(OutflowState *ofs) {
 
     /* Maximum ram pressure of AGN outflow (Ram pressure ~ 5 th. pressure, for gamma = 5/3) */
     /* Note, accretion struct must be initialized beforehand */
-    double ram_pres_max, thm_pres_max, pres_max;
+    double ram_pres_max, pres_max;
     ram_pres_max = 2 * power / ( ac.nzi.area * speed);
 
     /* This is for initialization of reference outflow state struct contained in the ac struct,
@@ -436,6 +441,7 @@ void SetUfoState(OutflowState *ofs) {
         heat = power - 0.5 * mdot * speed * speed;
         pres = heat * (g_gamma - 1) / (g_gamma * nz.area * speed);
         dens = mdot / (nz.area * speed);
+        is_on = 1;
 
     }
 
@@ -447,6 +453,7 @@ void SetUfoState(OutflowState *ofs) {
         speed = 0;
         mdot = 0;
         power = 0;
+        is_on = 0;
     }
 
     /* If sufficient power, AGN is on */
@@ -458,13 +465,16 @@ void SetUfoState(OutflowState *ofs) {
         /* If sufficient power ... */
         kine = 0.5 * mdot * speed * speed;
         heat = power - kine;
-        ram_pres_max = 2 * kine / (ac.nzi.area * speed);
-        thm_pres_max = heat * (g_gamma - 1) / (g_gamma * ac.nzi.area * speed);
-        pres_max = MAX(ram_pres_max, thm_pres_max);
+        pres = heat * (g_gamma - 1) / (g_gamma * ac.nzi.area * speed);
         dens = mdot / (ac.nzi.area * speed);
+        ac.deboost = 1.0;
+        is_on = 1;
 
 #if FBC_DEBOOST == YES
         /* ...but if insufficient heat with default Ekin, reduce (deboost) mdot and speed and area */
+        ram_pres_max = 2 * kine / (ac.nzi.area * speed);
+        pres_max = MAX(ram_pres_max, pres);
+
         if (pres_max < hprs) {
 
             /* Ensure pressure equilibrium */
@@ -531,13 +541,14 @@ void SetUfoState(OutflowState *ofs) {
 
         } // Sufficient power for heat to ensure pressure equilibrium, i.e., need to deboost?
 
-#endif
+
+#endif // Whether FCB_DEBOOST is ON
 
     } // Is AGN on or off (sufficient power to ensure pressure equilibrium ?)
 
 
 
-#else   // if not ACCRETION and FEEDBACK_CYCLE
+#else   // if not FEEDBACK_CYCLE
 
     power = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
     heat = power - 0.5 * mdot * speed * speed;
@@ -545,7 +556,9 @@ void SetUfoState(OutflowState *ofs) {
     pres = heat * (g_gamma - 1) / (g_gamma * nz.area * speed);
     dens = mdot / (nz.area * speed);
 
-#endif  // if ACCRETION and FEEDBACK_CYCLE
+    is_on = 1;
+
+#endif  // if FEEDBACK_CYCLE
 
 
     /* Fill outflow struct */
@@ -556,6 +569,7 @@ void SetUfoState(OutflowState *ofs) {
     ofs->spd = speed;
     ofs->eth = pres * g_gamma / (g_gamma - 1);
     ofs->kin = 0.5 * dens * speed * speed;
+    ofs->is_on = is_on;
 
 }
 

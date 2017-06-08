@@ -44,6 +44,7 @@ typedef struct {
     double rho;               // Density as calculated from pow, mdt, and speed
     double eth;               // Enthalpy inj. rate as calculated from pow, mdt, and speed
     double kin;               // Initial kinetic energy inj. rate as calculated from pow, mdt, and speed
+    int  is_on;               // Whether outflow is on or not
 } OutflowState;
 
 extern OutflowState os;

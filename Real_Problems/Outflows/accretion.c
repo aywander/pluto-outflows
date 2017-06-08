@@ -33,7 +33,7 @@ void SetAccretionPhysics() {
     ac.rad = g_inputParam[PAR_ARAD] * ini_code[PAR_ARAD];
     ac.mbh = g_inputParam[PAR_AMBH] * ini_code[PAR_AMBH];
     ac.eff = g_inputParam[PAR_AEFF] * ini_code[PAR_AEFF];
-    ac.eff = g_inputParam[PAR_AMLD] * ini_code[PAR_AMLD];
+    ac.mld = g_inputParam[PAR_AMLD] * ini_code[PAR_AMLD];
     ac.snk = g_inputParam[PAR_ASNK] * ini_code[PAR_ASNK];
 
     /* Bondi Accretion parameters */
@@ -52,10 +52,10 @@ void SetAccretionPhysics() {
     /* Number of cells in the spherical surface of radius ac.rad is
      * calculated in Analysis analysis */
 
-
     /* Set deboost to 1 to trigger reference value calculations in
      * SetNozzleGeometry and SetOutflowState (used only in FEEDBACK_CYCLE mode) */
     ac.deboost = 1;
+    os.is_on = 1;
 
     /* Set outflow geometry struct with parameters of cone */
     SetNozzleGeometry(&(ac.nzi));
@@ -65,6 +65,7 @@ void SetAccretionPhysics() {
 
     /* Initial value deboosting factor for outflow (used only in FEEDBACK_CYCLE mode) */
     ac.deboost = 0;
+    os.is_on = 0;
 
 }
 
@@ -379,7 +380,7 @@ void FederrathAccretion(const Data *d, Grid *grid) {
     /* MPI reductions and analysis */
 
 #ifdef PARALLEL
-        MPI_Allreduce(&accr_rate, &ac.accr_rate_sel, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&accr_rate, &ac.accr_rate, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 #else
         ac.accr_rate = accr_rate;
 #endif
