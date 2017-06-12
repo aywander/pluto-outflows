@@ -83,5 +83,5 @@
 #define  ARTIFICIAL_VISC        NO
 #define  LIMITER                MC_LIM
 #define  SHOW_TIME_STEPS        YES
-#define  CHAR_LIMITING          NO
+#define  CHAR_LIMITING          YES
 #define  PPM_ORDER              4
