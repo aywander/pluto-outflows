@@ -345,8 +345,9 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
 #endif
 
-#endif
+#endif  // FEEDBACK_CUYCLE
 
+#endif  // ACCRETION
 
             TOT_LOOP(k, j, i) {
 
