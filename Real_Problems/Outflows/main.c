@@ -133,7 +133,7 @@ int main (int argc, char *argv[])
 
     Dts.cmax = ARRAY_1D(NMAX_POINT, double);
     Dts.inv_dta = 0.0;
-  Dts.inv_dtp  = 0.5e-38;
+    Dts.inv_dtp  = 0.5e-38;
     Dts.dt_cool = 1.e38;
     Dts.cfl = ini.cfl;
     Dts.cfl_par = ini.cfl_par;

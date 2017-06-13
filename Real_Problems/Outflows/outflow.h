@@ -69,6 +69,4 @@ int InNozzleRegion(const double x1, const double x2, const double x3);
 
 double Profile(const double x1, const double x2, const double x3);
 
-#include "init_tools.h"
-
 #endif //PLUTO_OUTFLOW_H

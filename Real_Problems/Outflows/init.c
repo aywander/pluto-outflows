@@ -340,13 +340,20 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
             /* Update outflow state according to accretion */
 #if FEEDBACK_CYCLE == YES
+
+            int is_on = os.is_on;
+
             SetOutflowState(&os);
             SetNozzleGeometry(&nz);
 
+            /* If the nozzle switches on, drastically reduce timestep */
+#if NOZZLE_FILL == NF_PRIMITIVE
+            if (is_on < os.is_on) g_dt *= 1.e-3;
 #endif
 
-#endif
+#endif  // FEEDBACK_CYCLE
 
+#endif  // ACCRETION
 
             TOT_LOOP(k, j, i) {
 
