@@ -75,16 +75,18 @@ void SetNozzleGeometry(Nozzle * noz) {
 
 
     /* One of the most important quantities: the radius of the nozzle */
+    rad = g_inputParam[PAR_ORAD] * ini_code[PAR_ORAD];
+
+#if FEEDBACK_CYCLE == YES
     if (os.is_on == 0) {
         rad = 0;
     }
     else {
-        rad = g_inputParam[PAR_ORAD] * ini_code[PAR_ORAD];
 
     /* Reduction of nozzle area via radius for deboosting.
        Accretion struct must be initialized beforehand */
         // TODO: always make ACCRETION TRUE if FEEDBACK_CYCLE is on
-#if FEEDBACK_CYCLE == YES && FBC_DEBOOST == YES && \
+#if FBC_DEBOOST == YES && \
     (FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_0 || \
      FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_2 || \
      FBC_DEBOOST_MODE == FBC_DEBOOST_MODE_3)
@@ -92,6 +94,7 @@ void SetNozzleGeometry(Nozzle * noz) {
 #endif
 
     }
+#endif
 
     /* Quantities from input parameters */
     ang = g_inputParam[PAR_OANG] * ini_code[PAR_OANG];

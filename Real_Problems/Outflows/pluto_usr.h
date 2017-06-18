@@ -157,6 +157,10 @@
 #define NOZZLE_FILL NF_PRIMITIVE
 #endif
 
+/* Maximum timestep when nozzle is activated in FEEDBACK_CYCLE model */
+#ifndef NOZZLE_DT
+#define NOZZLE_DT  1.e-3
+#endif
 
 /* Use a hemispherical cap?
  * By default, if INTERNAL_BOUNDARY is off, a hemispherical

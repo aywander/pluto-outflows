@@ -3,6 +3,7 @@
 #define NOZZLE                            NOZZLE_UFO
 #define NOZZLE_FILL                       NF_PRIMITIVE
 #define NOZZLE_CAP                        YES
+#define NOZZLE_DT                         1.e-2
 
 #define ACCRETION                         YES
 #define ACCRETION_OUTPUT                  YES

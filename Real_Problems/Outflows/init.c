@@ -343,12 +343,16 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
             int is_on = os.is_on;
 
+            /* Set outflow stat according to measured accretion rate */
             SetOutflowState(&os);
+
+            /* Call SetNozzleGeometry to adjust nozzle radius */
             SetNozzleGeometry(&nz);
 
             /* If the nozzle switches on, drastically reduce timestep */
 #if NOZZLE_FILL == NF_PRIMITIVE
-            if (is_on < os.is_on) g_dt *= 1.e-3;
+            if (is_on < os.is_on) g_dt = NOZZLE_DT;
+//            if (is_on < os.is_on) g_dt *= pow(10, 0.5 * log10(first_dt / g_dt)))
 #endif
 
 #endif  // FEEDBACK_CYCLE
