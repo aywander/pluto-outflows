@@ -213,7 +213,10 @@ double InterpolationWrapper(const double arg_arr[], const double val_arr[], cons
     val1 = val_arr[il];
     val2 = val_arr[il + 1];
     val3 = val_arr[il + 2];
-    return CubicCatmullRomInterpolate(val0, val1, val2, val3, frac);
+
+    // TODO: (Possibly) add choice of interpolator in argument of function
+//    return CubicCatmullRomInterpolate(val0, val1, val2, val3, frac);
+    return LinearInterpolate(val1, val2, frac);
 
 }
 

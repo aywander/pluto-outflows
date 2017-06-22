@@ -108,7 +108,7 @@ void Radiat (double *v, double *rhs)
     khi = ntab - 1;
 
     /* Limit temperature to maximum value in table */
-    T = MIN(T, T_tab[klo]);
+    T = MIN(T, T_tab[khi]);
 
     if (T > T_tab[khi] || T < T_tab[klo]) {
         print(" ! T out of range   %12.6e %12.6e %12.6e  %12.6e \n", T, prs, v[RHO], prs / v[RHO] * KELVIN * mu);

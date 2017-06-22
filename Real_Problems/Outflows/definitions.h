@@ -1,7 +1,7 @@
 #define  PHYSICS                 HD
-#define  DIMENSIONS              3
-#define  COMPONENTS              3
-#define  GEOMETRY                CARTESIAN
+#define  DIMENSIONS              2
+#define  COMPONENTS              2
+#define  GEOMETRY                SPHERICAL
 #define  BODY_FORCE              VECTOR
 #define  COOLING                 TABULATED
 #define  RECONSTRUCTION          PARABOLIC

@@ -197,7 +197,7 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
     if (ek2 > 0) {
 
         /* Now, the same for the cylindrical radius (in cgs) */
-        r_cyl = CYL1(x1, x2, x3);
+        r_cyl = fabs(CYL1(x1, x2, x3));
         phi_r0 = BodyForcePotential(r_cyl, 0, 0);
     }
     else {
@@ -294,7 +294,7 @@ double CloudExtractCentralBuffer(double fdratio, const double x1, const double x
 **************************************************************** */
 
     /* Buffer factor around osph */
-    double incf = 1.5;
+    double incf = 2.0;
     double rad  = SPH1(x1, x2, x3);
 
     /* Inner hemisphere to keep free */

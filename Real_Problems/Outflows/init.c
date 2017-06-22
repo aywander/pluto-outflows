@@ -126,6 +126,8 @@ void Init (double *v, double x1, double x2, double x3)
          }
      }
 
+#else
+    if (0) { }
 #endif
 
 #if INTERNAL_BOUNDARY == YES
@@ -166,7 +168,7 @@ void Init (double *v, double x1, double x2, double x3)
 
 #if COOLING
     g_minCoolingTemp = 3.e2;
-    g_maxCoolingRate = 0.9;
+    g_maxCoolingRate = 0.4;
 #endif
 
 #if PHYSICS == MHD || PHYSICS == RMHD
