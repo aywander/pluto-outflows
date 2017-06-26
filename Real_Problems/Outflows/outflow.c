@@ -18,6 +18,8 @@ Nozzle nz;
 OutflowState os;
 
 
+int FeedbackTrigger(double power, double speed);
+
 /* ************************************************ */
 void SetNozzleGeometry(Nozzle * noz) {
 /*
@@ -427,40 +429,38 @@ void SetUfoState(OutflowState *ofs) {
     /* Make the above speed a ceiling for the speed - this might make deboosting redundant */
     speed = MIN(speed, vmax);
 
-    /* Hot phase pressure */
-    double hrho = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
-    double htmp = g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP];
-    double hprs = PresIdealEOS(hrho, htmp, MU_NORM);
 
-    /* Maximum ram pressure of AGN outflow (Ram pressure ~ 5 th. pressure, for gamma = 5/3) */
-    /* Note, accretion struct must be initialized beforehand */
-    double ram_pres_max, pres_max;
-    ram_pres_max = 2 * power / ( ac.nzi.area * speed);
+    /* Special case for time = 0 */
+    if (g_time == 0) {
 
-    /* This is for initialization of reference outflow state struct contained in the ac struct,
-     * through SetAccretionPhysics at the beginning of Init. It does not affect dynamics of first timestep. */
-    if (g_time == 0 && ac.deboost == 1) {
-        power = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
-        heat = power - 0.5 * mdot * speed * speed;
-        pres = heat * (g_gamma - 1) / (g_gamma * nz.area * speed);
-        dens = mdot / (nz.area * speed);
-        is_on = 1;
+        /* This is for initialization of reference outflow state struct contained in the ac struct,
+         * through SetAccretionPhysics at the beginning of Init. It does not affect dynamics of first timestep. */
+        if (ac.deboost == 1) {
 
-    }
+            power = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
+            heat = power - 0.5 * mdot * speed * speed;
+            pres = heat * (g_gamma - 1) / (g_gamma * nz.area * speed);
+            dens = mdot / (nz.area * speed);
+            is_on = 1;
+        }
 
-    /* If insufficient power for pressure equilibrium, shut off AGN */
-    else if ((ram_pres_max < hprs) || (g_time == 0)) {
-        ac.deboost = 0;
-        dens = g_smallDensity;
-        pres = g_smallPressure;
-        speed = 0;
-        mdot = 0;
-        power = 0;
-        is_on = 0;
+        /* At time = 0, AGN is off */
+        else {
+
+            ac.deboost = 0;
+            dens = g_smallDensity;
+            pres = g_smallPressure;
+            speed = 0;
+            mdot = 0;
+            power = 0;
+            is_on = 0;
+
+        }
+
     }
 
     /* If sufficient power, AGN is on */
-    else {
+    else if (FeedbackTrigger(power, speed) && (g_time > 0)){
 
         /* Set pressure, density, and speed, adjusting parameters such that
          * pressure is be at least ambient pressure, hprs. */
@@ -547,7 +547,21 @@ void SetUfoState(OutflowState *ofs) {
 
 #endif // Whether FCB_DEBOOST is ON
 
+    }
+
+    /* Not enough power - AGN is off */
+    else {
+
+        ac.deboost = 0;
+        dens = g_smallDensity;
+        pres = g_smallPressure;
+        speed = 0;
+        mdot = 0;
+        power = 0;
+        is_on = 0;
+
     } // Is AGN on or off (sufficient power to ensure pressure equilibrium ?)
+
 
 
 
@@ -576,6 +590,29 @@ void SetUfoState(OutflowState *ofs) {
 
 }
 
+/* ************************************************ */
+int FeedbackTrigger(double power, double speed) {
+
+/*
+ * Trigger function for AGN Feedback in feedback cycle
+ *
+ ************************************************** */
+
+    /* Hot phase pressure */
+//    double hrho = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
+//    double htmp = g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP];
+//    double hprs = PresIdealEOS(hrho, htmp, MU_NORM);
+//
+//    /* Maximum ram pressure of AGN outflow (Ram pressure ~ 5 th. pressure, for gamma = 5/3) */
+//    /* Note, accretion struct must be initialized beforehand */
+//    double ram_pres_max, pres_max;
+//    ram_pres_max = 2 * power / ( ac.nzi.area * speed);
+
+//    return (ram_pres_max > hprs);
+
+    return (power * vn.power_norm > 1.e42);
+
+}
 
 /* ************************************************ */
 void NozzleFill(const Data *d, const Grid *grid) {
@@ -612,12 +649,12 @@ void NozzleFill(const Data *d, const Grid *grid) {
 
     // TODO: Adjust volume for the case below
     // NOTE: Volume is incorrectly calculated for spherical setups; nothing is dumped in the excluded x1_beg region.
-#if GEOMETRY == SPHERICAL
-    if (g_domBeg[IDIR] > 0.) {
-        print1("Error: NOZZLE_FILL CONSERVATIVE not supported if (GEOMETRY == SPHERICAL) && (g_domBeg[IDIR] > 0.).");
-        QUIT_PLUTO(1);
-    }
-#endif
+//#if GEOMETRY == SPHERICAL
+//    if (g_domBeg[IDIR] > 0.) {
+//        print1("Error: NOZZLE_FILL CONSERVATIVE not supported if (GEOMETRY == SPHERICAL) && (g_domBeg[IDIR] > 0.).");
+//        QUIT_PLUTO(1);
+//    }
+//#endif
 
     // TODO: Need both old and new timesteps here. Need to do this from main.c
     double dt_nf = g_dt;
