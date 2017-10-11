@@ -5,6 +5,7 @@
 #ifndef PLUTO_ACCRETION_H
 #define PLUTO_ACCRETION_H
 
+/* Need the following for the reference nozzle and outflow states */
 #include "init_tools.h"
 #include "outflow.h"
 
@@ -38,8 +39,6 @@ void SphericalFreeflow(double *prims, double ****VC, const double *x1, const dou
 void SphericalFreeflowInternalBoundary(const double ****Vc, int i, int j, int k, const double *x1, const double *x2,
                                        const double *x3, double *result);
 
-void FederrathAccretion(const Data *d, Grid *grid);
-
 
 double BondiAccretionRate(const double mbh, const double rho_far, const double snd_far);
 
@@ -56,7 +55,7 @@ void VacuumInternalBoundary(double *result);
 
 double EddingtonLuminosity(const double mbh);
 
-double BondiAccretion(const Data *d, Grid *grid);
+double BondiAccretion(const Data *d, Grid *grid, const double radius);
 
 void SphericalAccretion(const Data *d, Grid *grid);
 
@@ -64,18 +63,8 @@ double SphericalSampledAccretion(const Data *d, Grid *grid, const double radius)
 
 double SphericalSelectedAccretion(const Data *d, Grid *grid, const double radius);
 
+void BondiAccretionOutput();
+
 void SphericalAccretionOutput();
-
-double VirialParameter(const double * prim, const double mass,
-                       const double x1, const double x2, const double x3);
-
-double GravitationallyBound(const double *prim, const double mass, const double vol,
-                            const double x1, const double x2, const double x3);
-
-double JeansResolvedDensity(const double *prim);
-
-double FederrathSinkInternalBoundary(const double ****Vc, int i, int j, int k, const double *x1, const double *x2,
-                                     const double *x3, const double *dV1, const double *dV2, const double *dV3,
-                                     double *result);
 
 #endif //PLUTO_ACCRETION_H

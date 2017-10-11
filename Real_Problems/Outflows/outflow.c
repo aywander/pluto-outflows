@@ -10,6 +10,7 @@
 #include "accretion.h"
 #include "init_tools.h"
 #include "idealEOS.h"
+#include "io_tools.h"
 
 /* Global struct for nozzle */
 Nozzle nz;
@@ -460,7 +461,7 @@ void SetUfoState(OutflowState *ofs) {
     }
 
     /* If sufficient power, AGN is on */
-    else if (FeedbackTrigger(power, speed) && (g_time > 0)){
+    else if (FeedbackTrigger(power, speed)){
 
         /* Set pressure, density, and speed, adjusting parameters such that
          * pressure is be at least ambient pressure, hprs. */
@@ -584,8 +585,8 @@ void SetUfoState(OutflowState *ofs) {
     ofs->rho = dens;
     ofs->prs = pres;
     ofs->spd = speed;
-    ofs->eth = pres * g_gamma / (g_gamma - 1);
-    ofs->kin = 0.5 * dens * speed * speed;
+    ofs->eth = pres * g_gamma / (g_gamma - 1) * speed * nz.area;
+    ofs->kin = 0.5 * dens * speed * speed * speed * nz.area;
     ofs->is_on = is_on;
 
 }
@@ -615,7 +616,7 @@ int FeedbackTrigger(double power, double speed) {
 }
 
 /* ************************************************ */
-void NozzleFill(const Data *d, const Grid *grid) {
+void NozzleFill(Data *d, const Grid *grid) {
 /*
  * Dumps mass, momentum, and energy into nozzle region,
  * according to nozzle parameters.
@@ -978,5 +979,45 @@ double Profile(const double x1, const double x2, const double x3)
         /* Return smoothing factor */
         return 1.0 / cosh(pow(cr / nz.rad, n));
     }
+}
+
+
+/*********************************************************************** */
+void OutflowOutput() {
+/*!
+ * Perform output of spherical accretion calculations
+ *
+ *********************************************************************** */
+
+    if (prank == 0) {
+
+        FILE *fp_out;
+        char fname[512];
+        sprintf(fname, "outflow.dat");
+        static double next_output = -1;
+
+        next_output = OutputContextEnter(fname, &fp_out, next_output, OUTFLOW_OUTPUT_RATE);
+
+        /* Write data */
+        if (g_time > next_output) {
+
+
+            fprintf(fp_out, "%12.6e %2d %12.6e %12.6e %12.6e %12.6e %12.6e %12.6e \n",
+                    g_time * vn.t_norm / (CONST_ly / CONST_c),            // time (yr)
+                    os.is_on,                                             // Whether outflow is on
+                    os.pow * vn.power_norm,                               // Outflow power
+                    os.kin * vn.power_norm,                               // Outflow kinetic power
+                    os.eth * vn.power_norm,                               // Outflow enthalpy (inj. rate)
+                    os.rho,                                               // Outflow density (1/cm3)
+                    os.prs * vn.pres_norm / CONST_kB,                     // Outflow pressure (p/k)
+                    os.spd * vn.v_norm / 1.e5                             // Outflow speed (km/s)
+            );
+
+        }
+
+        next_output = OutputContextExit(&fp_out, next_output, OUTFLOW_OUTPUT_RATE);
+
+    }
+
 }
 

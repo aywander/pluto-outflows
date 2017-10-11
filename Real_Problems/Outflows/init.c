@@ -198,6 +198,11 @@ void Analysis (const Data *d, Grid *grid)
  *********************************************************************** */
 {
 
+    /* Modules -- Conservative source terms */
+
+    // TODO: Maybe even move this to boundaries
+    // TODO: Create a buffer data array in which changes are stored, whilst passing original d into functions
+
     /* Conservative NOZZLE_FILL Dump */
     // TODO: Move to separate function in outflows.c
     // NOTE: When modularizing, the nozzle filling should maybe be done in either rk_step or ctu_step, or in a rhs routine.
@@ -207,25 +212,53 @@ void Analysis (const Data *d, Grid *grid)
 
 #endif
 
+
+
+    /* Star-formation */
+    WarmPhaseStarFormationRate(d, grid);
+
+    /* Supernova feedback */
+
+
+    /* Analysis */
+
+    /* Warm phase statistics */
+#if CLOUD_OUTPUT
+    CloudAnalysis(d, grid);
+#endif
+
     /* Accretion */
-
 #if ACCRETION == YES
-
-#if SINK_METHOD == SINK_FEDERRATH
-    FederrathAccretion(d, grid);
-
-#else
     SphericalAccretion(d, grid);
 
 #endif
+
+
+    /* Analysis output */
+
+#if ACCRETION
 
 #if ACCRETION_OUTPUT == YES
     SphericalAccretionOutput();
 
 #endif
 
+#if BONDI_ACCRETION_OUTPUT == YES
+    BondiAccretionOutput();
+
+#endif
+
 #endif // if ACCRETION == YES
 
+#if OUTFLOW_OUTPUT == YES
+    OutflowOutput();
+
+#endif
+
+#if CLOUD_OUTPUT == YES
+    CloudOutput();
+
+#endif
 
 }
 
@@ -319,7 +352,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
             TOT_LOOP(k, j, i) {
 
                         /* Inject supernova energy cellwise */
-                        for (nv = 0; nv < NVAR; ++nv) result[nv] = d->Vc[nv][k][j][i] ;
+                        for (nv = 0; nv < NVAR; ++nv) result[nv] = d->Vc[nv][k][j][i];
                         InjectSupernovae(result, x1[i], x2[j], x3[k], sn_inj);
                         for (nv = 0; nv < NVAR; ++nv) d->Vc[nv][k][j][i] = result[nv];
                     }
@@ -336,7 +369,10 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
             // TODO: Separate ACCRETION from NOZZLE
             // TODO: Create a AGN switch, and change NOZZLE to AGN_NOZZLE
+            // TODO: Change ACCRETION -> AGN_ACCRETION
 #if ACCRETION == YES
+
+            // TODO: Perhaps make this available more generally
             /* Create buffer array for internal sink region solution */
             Vc_new = ARRAY_4D(NVAR, NX3_TOT, NX2_TOT, NX1_TOT, double);
 
@@ -446,7 +482,6 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
                         }
 
                     } // Update TOT_LOOP
-
 
             FreeArray4D((void *) Vc_new);
 

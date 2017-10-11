@@ -408,11 +408,21 @@ int UniformSamplingSphericalSurface(const int npoints, const double radius, doub
                 cx2 = 2. * rvar2 * scrh;
                 cx3 = rad_sc * rad_sc - 2. * r2;
 
+                // TODO: special cases for half galaxies etc (?... not sure it fits here)
+#if DIMENSIONS == 2 && GEOMETRY == SPHERICAL
+                // Cannot use macros for this case, because conversion must be done in 3D
+                double rad = sqrt(cx1 * cx1 + cx2 * cx2 + cx3 * cx3);
+                x1[lcount] = rad;
+                x2[lcount] = acos(cx2 / rad);
+
+#else
                 D_EXPAND(x1[lcount] = CART_1(cx1, cx2, cx3);,
                          x2[lcount] = CART_2(cx1, cx2, cx3);,
                          x3[lcount] = CART_3(cx1, cx2, cx3););
+#endif
 
                 lcount++;
+
 
                 if (lcount == npoints) break;
             }

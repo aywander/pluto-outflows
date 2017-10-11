@@ -104,8 +104,8 @@ int main (int argc, char *argv[])
     print1("> Basic data type:\n");
     print1("  sizeof (char)     = %d\n", sizeof(char));
     print1("  sizeof (uchar)    = %d\n", sizeof(unsigned char));
-  print1 ("  sizeof (short)    = %d\n", sizeof(short));
-  print1 ("  sizeof (ushort)   = %d\n", sizeof(unsigned short));
+    print1("  sizeof (short)    = %d\n", sizeof(short));
+    print1("  sizeof (ushort)   = %d\n", sizeof(unsigned short));
     print1("  sizeof (int)      = %d\n", sizeof(int));
     print1("  sizeof (*int)     = %d\n", sizeof(int_pnt));
     print1("  sizeof (float)    = %d\n", sizeof(float));

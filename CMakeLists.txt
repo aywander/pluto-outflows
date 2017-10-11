@@ -1,40 +1,18 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.4)
 
 project(PLUTO)
 
-#_______________________________________________________________________________________________________________________
+# ______________________________________________________________________________________________________________________
 # Set these
 
-set(PLUTO_SOURCE_DIR            /Users/ayw/dev/PLUTO)
+set(PROBLEM                     DynamicalFriction)
 set(PROBLEM_TYPE                Real)
-set(PROBLEM                     Outflows)
 
-set(WITH_PARALLEL               OFF)
-set(WITH_PNG                    OFF)
-set(WITH_HDF5                   ON)
-set(WITH_ASYNC_IO               OFF)
-set(WITH_CHOMBO                 OFF)
 
-set(WITH_PHYSICS                HD)
-set(WITH_COOLING                TABULATED)
-set(WITH_INTERPOLATION          PARABOLIC)
-set(WITH_TIME_STEPPING          RK3)
+# ______________________________________________________________________________________________________________________
+# PLUTO settings
 
-set(WITH_PARTICLES              OFF)
-set(WITH_FARGO                  OFF)
-set(WITH_SHEARING_BOX           OFF)
-set(WITH_RESISTIVITY            OFF)
-set(WITH_FD                     OFF)
-
-# -- physics dependent declarations --
-
-set(WITH_EOS                    IDEAL)
-set(WITH_THERMAL_CONDUCTION     OFF)
-set(WITH_VISCOSITY              OFF)
-set(WITH_ROTATING_FRAME         OFF)
-set(WITH_CT                     OFF)
-set(WITH_GLM                    OFF)
-
+set(PLUTO_SOURCE_DIR            /Users/ayw/dev/PLUTO)
 
 # -- Library paths --
 
@@ -48,12 +26,12 @@ set(WITH_MPI_COMPILER /usr/local/bin/mpicc)
 set(WITH_MPIXX_COMPILER /usr/local/bin/mpicxx)
 
 
-#_______________________________________________________________________________________________________________________
-# Main bit
+# ______________________________________________________________________________________________________________________
+# PLUTO source code files
 
-# The dependences of which files to build depending on which module can be found in the individual makefiles in the
-# module folders, and in AppendAdditionalFiles() in Tools/Python/define_problem.py .
 
+# NOTE: The dependences of which files to build depending on which module can be found in the individual makefiles
+# in the module folders, and in AppendAdditionalFiles() in Tools/Python/define_problem.py .
 
 
 # Directoiries
@@ -85,235 +63,91 @@ set(SOURCE_FILES
         ${PROBLEM_DIR}/init.c
         )
 
-if (PROBLEM_TYPE STREQUAL Real)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${PROBLEM_DIR}/definitions_usr.h
-            ${PROBLEM_DIR}/macros_usr.h
-            ${PROBLEM_DIR}/pluto_usr.h
-            )
-endif()
+
+# Include problem-dependent CMakeLists.txt
+
+include(${PROBLEM_DIR}/CMakeLists.txt)
 
 
-# Problem source files in problem directory
-# NOTE: Module dependent overwritten data can be found
-#       in the Module/Physics dependent part below.
+# Include all new files
 
-if (PROBLEM STREQUAL Outflows)
+foreach(FILE ${NEW_FILES})
 
-#     TODO: Automate necessary file link to run simulations
-    # Executable output location
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/Accretion/wind)
-#    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/IC5063)
-#    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/Outflow)
+    set(SOURCE_FILES ${SOURCE_FILES} ${PROBLEM_DIR}/${FILE})
 
-    # New files
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${PROBLEM_DIR}/accretion.c
-            ${PROBLEM_DIR}/accretion.h
-            ${PROBLEM_DIR}/clouds.c
-            ${PROBLEM_DIR}/clouds.h
-            ${PROBLEM_DIR}/grid_geometry.c
-            ${PROBLEM_DIR}/grid_geometry.h
-            ${PROBLEM_DIR}/hot_halo.c
-            ${PROBLEM_DIR}/hot_halo.h
-            ${PROBLEM_DIR}/idealEOS.c
-            ${PROBLEM_DIR}/idealEOS.h
-            ${PROBLEM_DIR}/init_tools.c
-            ${PROBLEM_DIR}/init_tools.h
-            ${PROBLEM_DIR}/interpolation.c
-            ${PROBLEM_DIR}/interpolation.h
-            ${PROBLEM_DIR}/mean_mol_weight.c
-            ${PROBLEM_DIR}/multicloud_init.c
-            ${PROBLEM_DIR}/multicloud_init.h
-            ${PROBLEM_DIR}/outflow.c
-            ${PROBLEM_DIR}/outflow.h
-            ${PROBLEM_DIR}/random.c
-            ${PROBLEM_DIR}/random.h
-            ${PROBLEM_DIR}/read_grav_table.c
-            ${PROBLEM_DIR}/read_grav_table.h
-            ${PROBLEM_DIR}/read_hot_table.c
-            ${PROBLEM_DIR}/read_hot_table.h
-            ${PROBLEM_DIR}/read_mu_table.c
-            ${PROBLEM_DIR}/read_mu_table.h
-#            ${PROBLEM_DIR}/supernovae.c
-#            ${PROBLEM_DIR}/supernovae.h
-            )
-
-    # Overridden files
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${PROBLEM_DIR}/cmd_line_opt.c
-            ${PROBLEM_DIR}/input_data.c
-            ${PROBLEM_DIR}/jet_domain.c
-            ${PROBLEM_DIR}/main.c
-            ${PROBLEM_DIR}/mappers3D.c       # Not confident about the modifications inside
-            ${PROBLEM_DIR}/set_grid.c
-            ${PROBLEM_DIR}/startup.c
-            ${PROBLEM_DIR}/userdef_output.c
-            )
+endforeach()
 
 
-elseif (PROBLEM STREQUAL SupernovaFeedback)
+# Include all source files and overrideen files
 
-    # Executable output location
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/SupernovaFeedback/Supernova)
-#    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/SupernovaFeedback/Starburst)
-
-    # New files
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            )
-
-    # Overridden files
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            )
-
-
-elseif (PROBLEM STREQUAL RadiativeShock)
-
-    # Executable output location
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/Radiative_Shocks/PLUTO_simulations/runs/ovi)
-
-    # New files
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${PROBLEM_DIR}/init_tools.c
-            ${PROBLEM_DIR}/init_tools.h
-            ${PROBLEM_DIR}/interpolation.c
-            ${PROBLEM_DIR}/interpolation.h
-            ${PROBLEM_DIR}/read_mu_table.c
-            ${PROBLEM_DIR}/read_mu_table.h
-            ${PROBLEM_DIR}/shock.c
-            ${PROBLEM_DIR}/shock.h
-            )
-
-    # Overridden files
-    # TODO: This was wrong (PROBLEM_DIR was SOURCE_DIR)! Might not compile now
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${PROBLEM_DIR}/cmd_line_opt.c
-            ${PROBLEM_DIR}/input_data.c
-            ${PROBLEM_DIR}/jet_domain.c
-            ${PROBLEM_DIR}/main.c
-            #${PROBLEM_DIR}/mappers3D.c
-            ${PROBLEM_DIR}/set_grid.c
-            ${PROBLEM_DIR}/startup.c
-            ${PROBLEM_DIR}/userdef_output.c
-            )
-
-elseif (PROBLEM STREQUAL HD/Jet)
-
-    # Executable output location
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PLUTO_SOURCE_DIR}/Test_Problems/${PROBLEM})
-
-    # TODO: Change the way problem-dependent overrides are handled. Not trivial as files in modules may be overridden.
-    # Non-overridden Src files
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/cmd_line_opt.c
-            ${SOURCE_DIR}/input_data.c
-            ${SOURCE_DIR}/jet_domain.c
-            ${SOURCE_DIR}/main.c
-            ${SOURCE_DIR}/set_grid.c
-            ${SOURCE_DIR}/startup.c
-            )
-
-    # Overridden files
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${PROBLEM_DIR}/userdef_output.c
-            )
-
-elseif (PROBLEM STREQUAL HD/Stellar_Wind)
-
-    # Executable output location
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PLUTO_SOURCE_DIR}/Test_Problems/${PROBLEM})
-
-    # TODO: Change the way problem-dependent overrides are handled. Not trivial as files in modules may be overridden.
-    # Non-overridden Src files
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/cmd_line_opt.c
-            ${SOURCE_DIR}/input_data.c
-            ${SOURCE_DIR}/jet_domain.c
-            ${SOURCE_DIR}/main.c
-            ${SOURCE_DIR}/set_grid.c
-            ${SOURCE_DIR}/startup.c
-            ${SOURCE_DIR}/userdef_output.c
-            )
-
-endif()
-
-
-
-# Files under SRC. Used for all problems
-
-# TODO: Change the way problem-dependent overrides are handled. Not trivial as files in modules may be overridden.
-set(SOURCE_FILES  ${SOURCE_FILES}
-        ${SOURCE_DIR}/adv_flux.c
-        ${SOURCE_DIR}/arrays.c
-        ${SOURCE_DIR}/bin_io.c
-        ${SOURCE_DIR}/boundary.c
-        #${SOURCE_DIR}/cartcoord.c                        # Never used
-        ${SOURCE_DIR}/check_states.c
-        #${SOURCE_DIR}/cmd_line_opt.c                     # Override
-        ${SOURCE_DIR}/colortable.c
-        #${SOURCE_DIR}/cooling_source.c                   # Override
-        ${SOURCE_DIR}/doxy-comment.c
-        ${SOURCE_DIR}/entropy_switch.c
-        #${SOURCE_DIR}/failsafe.c                         # Never used
-        ${SOURCE_DIR}/flag_shock.c
-        ${SOURCE_DIR}/get_nghost.c
-        ${SOURCE_DIR}/globals.h                           # Modified
-        ${SOURCE_DIR}/initialize.c
-        #${SOURCE_DIR}/input_data.c                       # Override
-        ${SOURCE_DIR}/int_bound_reset.c
-        #${SOURCE_DIR}/jet_domain.c                       # Override
-        ${SOURCE_DIR}/macros.h
-        #${SOURCE_DIR}/main.c                             # Override
-#        ${SOURCE_DIR}/mappers3D.c                         # Override
-#        ${SOURCE_DIR}/mean_mol_weight.c                  # Override
-        ${SOURCE_DIR}/parabolic_flux.c
-        ${SOURCE_DIR}/parabolic_rhs.c
-        ${SOURCE_DIR}/parse_file.c
-        ${SOURCE_DIR}/pluto.h                             # Modified
-        ${SOURCE_DIR}/prototypes.h
-        ${SOURCE_DIR}/rbox.c
-        ${SOURCE_DIR}/restart.c
-#        ${SOURCE_DIR}/rkc.c                              # Buggy (not used?)
-        ${SOURCE_DIR}/runtime_setup.c
-        ${SOURCE_DIR}/set_geometry.c
-        #${SOURCE_DIR}/set_grid.c                         # Overwritten
-        ${SOURCE_DIR}/set_image.c
-        ${SOURCE_DIR}/set_indexes.c
-        ${SOURCE_DIR}/set_output.c
-        ${SOURCE_DIR}/show_config.c
-        ${SOURCE_DIR}/split_source.c
-        #${SOURCE_DIR}/startup.c                          # Override
-        ${SOURCE_DIR}/structs.h                           # Modified
-        ${SOURCE_DIR}/sts.c
-        ${SOURCE_DIR}/tools.c
-        #${SOURCE_DIR}/userdef_output.c                   # Override
-        #${SOURCE_DIR}/userdef_output.dt.c                # Never used?
-        #${SOURCE_DIR}/userdef_output.shock_tracking.c    # Never used?
-        ${SOURCE_DIR}/var_names.c
-        ${SOURCE_DIR}/vec_pot_diff.c
-        ${SOURCE_DIR}/vec_pot_update.c
-        ${SOURCE_DIR}/write_data.c
-        ${SOURCE_DIR}/write_img.c
-        ${SOURCE_DIR}/write_tab.c
-        ${SOURCE_DIR}/write_vtk.c
-
-        ${SOURCE_DIR}/Math_Tools/math_interp.c
-        ${SOURCE_DIR}/Math_Tools/math_lu_decomp.c
-        ${SOURCE_DIR}/Math_Tools/math_misc.c
-        ${SOURCE_DIR}/Math_Tools/math_ode.c
-        ${SOURCE_DIR}/Math_Tools/math_qr_decomp.c
-        ${SOURCE_DIR}/Math_Tools/math_quadrature.c
-        ${SOURCE_DIR}/Math_Tools/math_root_finders.c
-        ${SOURCE_DIR}/Math_Tools/math_table2D.c
-        ${SOURCE_DIR}/Math_Tools/math_tools.h
-
-        ${SOURCE_DIR}/Time_Stepping/update_stage.c
-
-        ${SOURCE_DIR}/States/flatten.c
+set(SRC_FILES
+        adv_flux.c
+        arrays.c
+        bin_io.c
+        boundary.c
+        #cartcoord.c                        # Never used
+        check_states.c
+        cmd_line_opt.c
+        colortable.c
+        doxy-comment.c
+        entropy_switch.c
+        #failsafe.c                         # Never used
+        flag_shock.c
+        get_nghost.c
+        globals.h                           # Modified
+        initialize.c
+        input_data.c
+        int_bound_reset.c
+        jet_domain.c
+        macros.h
+        main.c
+        mappers3D.c
+        mean_mol_weight.c
+        parabolic_flux.c
+        parabolic_rhs.c
+        parse_file.c
+        pluto.h                             # Modified
+        prototypes.h
+        rbox.c
+        restart.c
+        #rkc.c                              # Buggy (Never used?)
+        runtime_setup.c
+        set_geometry.c
+        set_grid.c
+        set_image.c
+        set_indexes.c
+        set_output.c
+        show_config.c
+        split_source.c
+        startup.c
+        structs.h                           # Modified
+        sts.c
+        tools.c
+        userdef_output.c
+        #userdef_output.dt.c                # Never used?
+        #userdef_output.shock_tracking.c    # Never used?
+        var_names.c
+        vec_pot_diff.c
+        vec_pot_update.c
+        write_data.c
+        write_img.c
+        write_tab.c
+        write_vtk.c
         )
 
+foreach(FILE ${SRC_FILES})
 
+    if(FILE IN_LIST OVERRIDE_FILES)
 
+        set(SOURCE_FILES  ${SOURCE_FILES}  ${PROBLEM_DIR}/${FILE})
+
+    else()
+
+        set(SOURCE_FILES  ${SOURCE_FILES}  ${SOURCE_DIR}/${FILE})
+
+    endif()
+
+endforeach()
 
 
 # Module/Physics dependent part
@@ -330,12 +164,12 @@ if (WITH_PARALLEL)
 
     # OR (https://cmake.org/pipermail/cmake/2015-April/060252.html)
 
-#    find_package(MPI REQUIRED)
-#    set(CMAKE_C_COMPILE_FLAGS ${CMAKE_C_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
-#    set(CMAKE_C_LINK_FLAGS ${CMAKE_C_LINK_FLAGS} ${MPI_LINK_FLAGS})
-#    set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
-#    set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
-#    set(LINK_LIBRARIES ${LINK_LIBRARIES} ${MPI_LIBRARIES})
+    #find_package(MPI REQUIRED)
+    #set(CMAKE_C_COMPILE_FLAGS ${CMAKE_C_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
+    #set(CMAKE_C_LINK_FLAGS ${CMAKE_C_LINK_FLAGS} ${MPI_LINK_FLAGS})
+    #set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
+    #set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
+    #set(LINK_LIBRARIES ${LINK_LIBRARIES} ${MPI_LIBRARIES})
 
     # ----
 
@@ -365,7 +199,7 @@ if (WITH_PARALLEL)
             ${SOURCE_DIR}/Parallel/al_szptr_.c
             ${SOURCE_DIR}/Parallel/al_write_array_async.c
             )
-    else()
+else()
 
     set(CMAKE_C_COMPILER ${WITH_C_COMPILER})
 endif ()
@@ -461,9 +295,9 @@ if (WITH_PHYSICS STREQUAL HD)
             ${SOURCE_DIR}/HD/prim_eqn.c            # Only used for ChTr / Hancock (?)
             ${SOURCE_DIR}/MHD/rhs.c
             ${SOURCE_DIR}/MHD/rhs_source.c
-#            ${SOURCE_DIR}/HD/riemann_full.c       # Buggy (not used?)
+            #${SOURCE_DIR}/HD/riemann_full.c       # Buggy (not used?)
             ${SOURCE_DIR}/HD/roe.c
-#            ${SOURCE_DIR}/HD/rusanov-dw.c         # Don't need
+            #${SOURCE_DIR}/HD/rusanov-dw.c         # Don't need
             ${SOURCE_DIR}/HD/set_solver.c
             ${SOURCE_DIR}/HD/tvdlf.c
             ${SOURCE_DIR}/HD/two_shock.c
@@ -509,7 +343,7 @@ elseif (WITH_PHYSICS STREQUAL MHD)
             ${SOURCE_DIR}/MHD/prim_eqn.c
             ${SOURCE_DIR}/MHD/rhs.c
             ${SOURCE_DIR}/MHD/rhs_source.c
-#            ${SOURCE_DIR}/MHD/roe.bckfld.c          # Don't need
+            #${SOURCE_DIR}/MHD/roe.bckfld.c          # Don't need
             ${SOURCE_DIR}/MHD/roe.c
             ${SOURCE_DIR}/MHD/set_solver.c
             ${SOURCE_DIR}/MHD/source.c
@@ -533,11 +367,11 @@ elseif (WITH_PHYSICS STREQUAL RMHD)
             ${SOURCE_DIR}/RMHD/pressure_fix.c
             ${SOURCE_DIR}/RMHD/prim_eqn.c
             ${SOURCE_DIR}/RMHD/quartic.c
-#            ${SOURCE_DIR}/RMHD/quartic.devel1.c       # Not used
-#            ${SOURCE_DIR}/RMHD/quartic.new.c          # Not used
-#            ${SOURCE_DIR}/RMHD/quartic.old.c          # Not used
+            #${SOURCE_DIR}/RMHD/quartic.devel1.c       # Not used
+            #${SOURCE_DIR}/RMHD/quartic.new.c          # Not used
+            #${SOURCE_DIR}/RMHD/quartic.old.c          # Not used
             ${SOURCE_DIR}/RMHD/rhs.c
-#            ${SOURCE_DIR}/RMHD/rusanov-dw.c           # Not used
+            #${SOURCE_DIR}/RMHD/rusanov-dw.c           # Not used
             ${SOURCE_DIR}/RMHD/set_solver.c
             ${SOURCE_DIR}/RMHD/source.c
             ${SOURCE_DIR}/RMHD/tvdlf.c
@@ -723,6 +557,9 @@ endif ()
 
 # Time stepping
 
+set(SOURCE_FILES  ${SOURCE_FILES}
+        ${SOURCE_DIR}/Time_Stepping/update_stage.c
+        )
 
 if ((WITH_TIME_STEPPING STREQUAL RK2) OR (WITH_TIME_STEPPING STREQUAL RK3))
     set(SOURCE_FILES  ${SOURCE_FILES}
@@ -744,6 +581,10 @@ endif()
 
 
 # Interpolation
+
+set(SOURCE_FILES  ${SOURCE_FILES}
+        ${SOURCE_DIR}/States/flatten.c
+        )
 
 if (WITH_INTERPOLATION STREQUAL FLAT)
     set(SOURCE_FILES  ${SOURCE_FILES}
@@ -806,6 +647,21 @@ if (WITH_FD)
             ${SOURCE_DIR}/States/fd_states.c
             )
 endif ()
+
+
+# Math tools
+
+set(SOURCE_FILES  ${SOURCE_FILES}
+        ${SOURCE_DIR}/Math_Tools/math_interp.c
+        ${SOURCE_DIR}/Math_Tools/math_lu_decomp.c
+        ${SOURCE_DIR}/Math_Tools/math_misc.c
+        ${SOURCE_DIR}/Math_Tools/math_ode.c
+        ${SOURCE_DIR}/Math_Tools/math_qr_decomp.c
+        ${SOURCE_DIR}/Math_Tools/math_quadrature.c
+        ${SOURCE_DIR}/Math_Tools/math_root_finders.c
+        ${SOURCE_DIR}/Math_Tools/math_table2D.c
+        ${SOURCE_DIR}/Math_Tools/math_tools.h
+        )
 
 
 

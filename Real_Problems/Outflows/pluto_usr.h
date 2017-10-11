@@ -179,14 +179,6 @@
 #define ACCRETION NO
 #endif
 
-#ifndef ACCRETION_OUTPUT
-#define ACCRETION_OUTPUT NO
-#endif
-
-#ifndef ACCRETION_OUTPUT_RATE
-#define ACCRETION_OUTPUT_RATE 0
-#endif
-
 #ifndef SIC_METHOD
 #define SIC_METHOD SIC_RADIUS
 #endif
@@ -206,21 +198,13 @@
 #define SINK_METHOD SINK_FREEFLOW
 #endif
 
-/* Measure Bondi Accretion? */
-#ifndef MEASURE_BONDI_ACCRETION
-#define MEASURE_BONDI_ACCRETION  NO
-#endif
-
-#ifndef TURBULENT_BONDI_ACCRETION
-#define TURBULENT_BONDI_ACCRETION  NO
-#endif
 
 #if SINK_METHOD == SINK_BONDI
-#define MEASURE_BONDI_ACCRETION  YES
+#define BONDI_ACCRETION_OUTPUT  YES
 #endif
 #if SINK_METHOD == SINK_FEDERRATH
-#undef MEASURE_BONDI_ACCRETION
-#define MEASURE_BONDI_ACCRETION  NO
+#undef BONDI_ACCRETION_OUTPUT
+#define BONDI_ACCRETION_OUTPUT  NO
 #endif
 
 
@@ -370,6 +354,45 @@
   #endif
 #endif
 
+
+
+/* Analaysis */
+
+
+#ifndef OUTFLOW_OUTPUT
+#define ACCRETION_OUTPUT NO
+#endif
+
+#ifndef OUTFLOW_OUTPUT_RATE
+#define ACCRETION_OUTPUT_RATE 0
+#endif
+
+#ifndef ACCRETION_OUTPUT
+#define ACCRETION_OUTPUT NO
+#endif
+
+#ifndef ACCRETION_OUTPUT_RATE
+#define ACCRETION_OUTPUT_RATE 0
+#endif
+
+/* Measure Bondi Accretion? */
+#ifndef BONDI_ACCRETION_OUTPUT
+#define BONDI_ACCRETION_OUTPUT  NO
+#endif
+
+#ifndef TURBULENT_BONDI_ACCRETION
+#define TURBULENT_BONDI_ACCRETION  NO
+#endif
+
+#ifndef CLOUD_OUTPUT
+#define CLOUD_OUTPUT NO
+#endif
+
+#ifndef CLOUD_OUTPUT_RATE
+#define CLOUD_OUTPUT_RATE 0
+#endif
+
+/* Debug */
 
 /* Output in userdef_output for debugging of coordiante systems */
 #ifndef COORDINATE_SYSTEM_DEBUG

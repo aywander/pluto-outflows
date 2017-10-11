@@ -61,12 +61,14 @@ void SetJetState(OutflowState *ofs);
 
 void SetUfoState(OutflowState *ofs);
 
-void NozzleFill(const Data *d, const Grid *grid);
+void NozzleFill(Data *d, const Grid *grid);
 
 int InNozzleCap(const double x1, const double x2, const double x3);
 
 int InNozzleRegion(const double x1, const double x2, const double x3);
 
 double Profile(const double x1, const double x2, const double x3);
+
+void OutflowOutput();
 
 #endif //PLUTO_OUTFLOW_H

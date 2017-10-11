@@ -10,6 +10,15 @@
 #include "interpolation.h"
 #include "read_grav_table.h"
 #include "init_tools.h"
+#include "outflow.h"
+#include "grid_geometry.h"
+#include "sfr.h"
+#include "io_tools.h"
+#include "accretion.h"
+
+/* Global struct for cloud analytics */
+CloudAnalytics ca;
+
 
 /* ************************************************************** */
 int CloudCubePixel(int *el, const double x1,
@@ -255,6 +264,8 @@ double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, c
     wrad = wrad_cgs / vn.l_norm;
 
 #endif
+
+    wrad *= wrot;
 
     ellipse = (r_cyl * r_cyl * (1 - wrot * wrot) + rz * rz) /
               (exp(-1) * wrad * wrad);
@@ -648,3 +659,440 @@ int WarmTcrit(double *const warm)
     else return 1;
 
 }
+
+
+/* ********************************************************************* */
+void CloudAnalysis(Data *d, Grid *grid) {
+/*!
+ * Analysis of warm phase.
+ *
+ *********************************************************************** */
+
+    /* Radii at which to measure outflow rates */
+    ca.nrad = 3;
+    ca.radii[0] = 0.1;
+    ca.radii[1] = 0.3;
+    ca.radii[2] = 1.;
+
+    WarmOutflowRates(d, grid);
+    WarmPhaseMass(d, grid);
+    WarmPhasePorosity(d, grid);
+
+}
+
+/* ********************************************************************* */
+void WarmOutflowRates(Data *d, Grid *grid) {
+/*!
+ * Calculate warm phase mass outlfow rate, outflow power, and outflow momentum.
+ *
+ *********************************************************************** */
+
+    double rho, vs1, tr2;
+    double vx1, vx2, vx3;
+    double *x1, *x2, *x3;
+    double edot, pdot, mdot, vrho, wgt;
+    double edot_a, pdot_a, mdot_a, vrho_a, wgt_a;
+
+
+    /* Determine number of sampling points to use */
+    int npoints;
+    double oversample = 30;
+    double area, area_per_point;
+    double dl_min = grid[IDIR].dl_min;
+
+    double radius;
+
+    for (int irad = 0; irad < ca.nrad; irad ++) {
+
+        radius = ca.radii[irad];
+
+        /* Area through which accretion rate is measured.
+         * If nozzle is not two-sided, the accretion rate represents
+         * the accretion rate in one half of the galaxy. */
+        area = 4 * CONST_PI * radius * radius;
+        if (!nz.is_two_sided) area /= 2.;
+
+        npoints = (int) (area / (dl_min * dl_min) * oversample);
+#if DIMENSIONS == 2
+        npoints = (int) sqrt(npoints);
+#endif
+
+        /* Get npoint points on spherical surface */
+        x1 = ARRAY_1D(npoints, double);
+        x2 = ARRAY_1D(npoints, double);
+        x3 = ARRAY_1D(npoints, double);
+        npoints = UniformSamplingSphericalSurface(npoints, radius, x1, x2, x3);
+        area_per_point = area / npoints;
+
+        /* Determine which variables to interpolate */
+        double v[NVAR];
+        int vars[] = {RHO, ARG_EXPAND(VX1, VX2, VX3), TRC+1, -1};
+
+        /* Zero cumulative quantities */
+        edot_a = pdot_a = mdot_a = vrho_a = wgt_a = 0;
+
+        /* Calculate accretion rate at every point, if it is in the local domain */
+        for (int ipoint = 0; ipoint < npoints; ipoint++) {
+
+            if (PointInDomain(grid, x1[ipoint], x2[ipoint], x3[ipoint])) {
+
+                InterpolateGrid(d, grid, vars, x1[ipoint], x2[ipoint], x3[ipoint], v);
+
+                /* Calculate and sum outflow rate */
+                rho = v[RHO];
+                vx1 = vx2 = vx3 = 0;
+                EXPAND(vx1 = v[VX1];,
+                       vx2 = v[VX2];,
+                       vx3 = v[VX3];);
+                vs1 = VSPH1(x1[ipoint], x2[ipoint], x3[ipoint], vx1, vx2, vx3);
+                vs1 = fabs(MAX(vs1, 0));
+                tr2 = v[TRC+1];
+
+                wgt = tr2 * rho;
+                vrho = wgt * vs1;
+                mdot = vrho * area_per_point;
+                pdot = vrho * vs1 * area_per_point;
+                edot = 0.5 * vrho * vs1 * vs1 * area_per_point;
+
+                wgt_a += wgt;
+                vrho_a += vrho;
+                mdot_a += mdot;
+                pdot_a += pdot;
+                edot_a += edot;
+
+            }
+
+        }
+
+#ifdef PARALLEL
+        MPI_Allreduce(&wgt_a,  &wgt,  1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&vrho_a, &vrho, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&mdot_a, &mdot, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&pdot_a, &pdot, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&edot_a, &edot, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+#else
+
+        wgt = wgt_a;
+        vrho = vrho_a;
+        mdot = mdot_a;
+        pdot = pdot_a;
+        edot = edot_a;
+
+#endif
+
+        vrho /= wgt;
+
+        ca.vrho_out[irad] = vrho;
+        ca.mdot_out[irad] = mdot;
+        ca.pdot_out[irad] = pdot;
+        ca.edot_out[irad] = edot;
+
+        FreeArray1D(x1);
+        FreeArray1D(x2);
+        FreeArray1D(x3);
+
+    }
+
+
+    /* Total domain based estimates */
+
+    x1 = grid[IDIR].x;
+    x2 = grid[JDIR].x;
+    x3 = grid[KDIR].x;
+
+    double *dV1, *dV2, *dV3;
+    double cell_vol, cell_area, rad;
+    dV1 = grid[IDIR].dV;
+    dV2 = grid[JDIR].dV;
+    dV3 = grid[KDIR].dV;
+
+    /* Zero cumulative quantities */
+    edot_a = pdot_a = mdot_a = vrho_a = wgt_a = 0;
+
+    int i, j, k;
+    DOM_LOOP(k, j, i) {
+
+                if (! InSinkRegion(x1[i], x2[j], x3[k])) {
+
+                    rho = d->Vc[RHO][k][j][i];
+                    vx1 = vx2 = vx3 = 0;
+                    EXPAND(vx1 = d->Vc[VX1][k][j][i], ;
+                            vx2 = d->Vc[VX2][k][j][i], ;
+                                   vx3 = d->Vc[VX3][k][j][i];);
+                    vs1 = VSPH1(x1[i], x2[j], x3[k], vx1, vx2, vx3);
+                    vs1 = fabs(MAX(vs1, 0));
+                    tr2 = d->Vc[TRC + 1][k][j][i];
+
+                    rad = SPH1(x1[i], x2[j], x3[k]);
+                    cell_vol = D_EXPAND(dV1[i], *dV2[j], *dV3[k]);
+                    cell_area = D_SELECT(cell_vol;,
+                                         sqrt(cell_vol / CONST_PI) * 2 * CONST_PI * rad;,
+                                         pow(0.75 * cell_vol / CONST_PI, 2. / 3.) * CONST_PI;);
+
+                    wgt = tr2 * rho;
+                    vrho = wgt * vs1;
+                    mdot = vrho * cell_area;
+                    pdot = vrho * vs1 * cell_area;
+                    edot = 0.5 * vrho * vs1 * vs1 * cell_area;
+
+                    wgt_a += wgt;
+                    vrho_a += vrho;
+                    mdot_a += mdot;
+                    pdot_a += pdot;
+                    edot_a += edot;
+                }
+
+            }
+
+#ifdef PARALLEL
+        MPI_Allreduce(&wgt_a,  &wgt,  1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&vrho_a, &vrho, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&mdot_a, &mdot, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&pdot_a, &pdot, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&edot_a, &edot, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+#else
+
+        wgt = wgt_a;
+        vrho = vrho_a;
+        mdot = mdot_a;
+        pdot = pdot_a;
+        edot = edot_a;
+
+#endif
+
+        vrho /= wgt;
+
+        ca.vrho_out_dom = vrho;
+        ca.mdot_out_dom = mdot;
+        ca.pdot_out_dom = pdot;
+        ca.edot_out_dom = edot;
+
+}
+
+
+/* ********************************************************************* */
+void WarmPhaseMass(Data *d, Grid *grid) {
+/*!
+ * Calculate warm phase mass.
+ *
+ *********************************************************************** */
+
+    double rho, tr2, te;
+    double mass_tr2, mass_tr2_a = 0;
+    double mass_rtc, mass_rtc_a = 0;
+
+    /* Region in phase to consider as warm */
+    double rho_c = 1.e1;
+    double te_c = CLOUD_TCRIT;
+
+
+    /* Total mass in domain */
+
+    double *x1, *x2, *x3;
+    x1 = grid[IDIR].x;
+    x2 = grid[JDIR].x;
+    x3 = grid[KDIR].x;
+
+    double *dV1, *dV2, *dV3;
+    double cell_vol;
+    dV1 = grid[IDIR].dV;
+    dV2 = grid[JDIR].dV;
+    dV3 = grid[KDIR].dV;
+
+    int i, j, k;
+    DOM_LOOP(k, j, i) {
+
+                if (! InSinkRegion(x1[i], x2[j], x3[k])) {
+
+                    /* Primitives */
+                    rho = d->Vc[RHO][k][j][i];
+                    tr2 = d->Vc[TRC + 1][k][j][i];
+                    te = d->Vc[PRS][k][j][i] / rho * MU_NORM * KELVIN;
+
+                    cell_vol = D_EXPAND(dV1[i], *dV2[j], *dV3[k]);
+
+                    /* Mass by tracer */
+                    mass_tr2 = tr2 * rho * cell_vol;
+                    mass_tr2_a += mass_tr2;
+
+                    /* Mass by rho T cut */
+                    if (te < te_c && rho < rho_c) {
+                        mass_rtc = rho * cell_vol;
+                        mass_rtc_a += mass_rtc;
+                    }
+
+                }
+
+            }
+
+#ifdef PARALLEL
+        MPI_Allreduce(&mass_tr2_a, &mass_tr2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(&mass_rtc_a, &mass_rtc, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+#else
+
+        mass_tr2 = mass_tr2_a;
+        mass_rtc = mass_rtc_a;
+
+#endif
+    ca.mass_tr2_dom = mass_tr2;
+    ca.mass_rtc_dom = mass_rtc;
+
+}
+
+
+
+
+/* ********************************************************************* */
+void WarmPhaseStarFormationRate(Data *d, Grid *grid) {
+/*!
+ * Calculate total star-formation rate in clouds.
+ * Remove mass from cells.
+ *
+ *********************************************************************** */
+
+    double sfr, sfr_a = 0;
+
+    double ***delta_m;
+    delta_m = ARRAY_3D(NX3_TOT, NX2_TOT, NX1_TOT, double);
+
+    double *x1, *x2, *x3;
+    x1 = grid[IDIR].x;
+    x2 = grid[JDIR].x;
+    x3 = grid[KDIR].x;
+
+    double *dV1, *dV2, *dV3;
+    double cell_vol;
+    dV1 = grid[IDIR].dV;
+    dV2 = grid[JDIR].dV;
+    dV3 = grid[KDIR].dV;
+
+    int i, j, k;
+
+    DOM_LOOP(k, j, i) delta_m[k][j][i] = 0;
+
+    DOM_LOOP(k, j, i) {
+
+                if (! InSinkRegion(x1[i], x2[j], x3[k])) {
+
+                    sfr = StarFormationRateDensity(d, grid, i, j, k);
+
+                    cell_vol = dV1[i] * dV2[j] * dV3[k];
+
+                    sfr_a += sfr * cell_vol;
+
+                    delta_m[k][j][i] = sfr * g_dt;
+
+                }
+
+            }
+
+    /* Remove mass */
+    DOM_LOOP(k, j, i) {
+                d->Uc[k][j][i][RHO] -= delta_m[k][j][i];
+            }
+
+    FreeArray3D((void *) delta_m);
+
+
+#ifdef PARALLEL
+    MPI_Allreduce(&sfr_a, &sfr, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+#else
+    sfr = sfr_a;
+
+#endif
+
+    ca.sfr = sfr;
+
+}
+
+
+void WarmPhasePorosity(Data *d, Grid *grid) {
+
+    /* Region in phase to consider as warm */
+    double rho_c, te_c, tr2_c;
+    WarmPhaseConditions(&rho_c, &te_c, &tr2_c);
+
+    // TODO: Script this up.
+
+    ca.porosity = 1.;
+
+}
+
+
+
+void WarmPhaseConditions(double *rho_c, double *te_c, double *tr2_c) {
+
+    *rho_c = 1.e1;
+    *te_c = CLOUD_TCRIT;
+    *tr2_c = 0.98;
+
+}
+
+
+/*********************************************************************** */
+void CloudOutput() {
+/*!
+ * Perform output of spherical accretion calculations
+ *
+ *********************************************************************** */
+
+    if (prank == 0) {
+
+        FILE *fp_acc;
+        char fname[512];
+        sprintf(fname, "warm_phase.dat");
+        static double next_output = -1;
+
+        next_output = OutputContextEnter(fname, &fp_acc, next_output, CLOUD_OUTPUT_RATE);
+
+        double year = CONST_ly / CONST_c;
+
+        double itemsToPrint[17];
+
+
+        /* Write data */
+        if (g_time > next_output) {
+
+            fprintf(fp_acc, "%12.6e  "
+                            "%12.6e  %12.6e  %12.6e  %12.6e  "
+                            "%12.6e  %12.6e  %12.6e  %12.6e  "
+                            "%12.6e  %12.6e  %12.6e  %12.6e  "
+                            "%12.6e  %12.6e  %12.6e  %12.6e  "
+                            "%12.6e  %12.6e  "
+                            "%12.6e  %12.6e  "
+                            "\n",
+                    g_time * vn.t_norm / year,
+                    ca.vrho_out[0] * vn.v_norm / 1.e5,
+                    ca.vrho_out[1] * vn.v_norm / 1.e5,
+                    ca.vrho_out[2] * vn.v_norm / 1.e5,
+                    ca.vrho_out_dom * vn.v_norm / 1.e5,
+                    ca.mdot_out[0] * vn.mdot_norm / (CONST_Msun / year),
+                    ca.mdot_out[1] * vn.mdot_norm / (CONST_Msun / year),
+                    ca.mdot_out[2] * vn.mdot_norm / (CONST_Msun / year),
+                    ca.mdot_out_dom * vn.mdot_norm / (CONST_Msun / year),
+                    ca.pdot_out[0] * vn.power_norm / vn.v_norm,
+                    ca.pdot_out[1] * vn.power_norm / vn.v_norm,
+                    ca.pdot_out[2] * vn.power_norm / vn.v_norm,
+                    ca.pdot_out_dom * vn.power_norm / vn.v_norm,
+                    ca.edot_out[0] * vn.power_norm,
+                    ca.edot_out[1] * vn.power_norm,
+                    ca.edot_out[2] * vn.power_norm,
+                    ca.edot_out_dom * vn.power_norm,
+                    ca.mass_tr2_dom * vn.m_norm / CONST_Msun,
+                    ca.mass_rtc_dom * vn.m_norm / CONST_Msun,
+                    ca.porosity,
+                    ca.sfr * vn.mdot_norm / (CONST_Msun / year)
+            );
+
+        }
+
+        next_output = OutputContextExit(&fp_acc, next_output, CLOUD_OUTPUT_RATE);
+
+    }
+
+}
+

@@ -1,6 +1,8 @@
 #ifndef init_tools_h
 #define init_tools_h
 
+#include "pluto.h"
+
 double Lorentz2Speed(const double lorentz);
 
 double Speed2Lorentz(const double vel);

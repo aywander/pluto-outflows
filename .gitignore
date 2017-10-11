@@ -15,3 +15,5 @@ cmake-build-release/
 **/*log
 **/*xmf
 **/pluto
+
+Doc/userguide\.pdf

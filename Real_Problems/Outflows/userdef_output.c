@@ -45,7 +45,7 @@ void ComputeUserVar(const Data *d, Grid *grid)
     spd = GetUserVar("spd");
     lmd = GetUserVar("lmd");
 
-/* Change to v instead of u = lorentz v */
+    /* Change to v instead of u = lorentz v */
     EXPAND(v1 = GetUserVar("v1");,
            v2 = GetUserVar("v2");,
            v3 = GetUserVar("v3"););
