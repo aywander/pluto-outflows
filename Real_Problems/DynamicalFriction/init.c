@@ -44,64 +44,38 @@ void Init (double *v, double x1, double x2, double x3)
  *********************************************************************** */
 {
 
-  /* Some things that only need to be done once */
 
-  static int once01 = 0;
-
-  if (!once01) {
-
-    /* Initialize base normalization struct */
-    SetBaseNormalization();
-    PrintBaseNormalizations();
-
-    /* Set normalization factors for input parameters */
-    SetIniNormalization();
-
-    /* Done once now */
-    once01 = 1;
-  }
+    double vcx1, vcx2, vcx3;
+    double vx1, vx2, vx3;
+    double cx1, cx2, cx3;
 
 
-  double vcx1, vcx2, vcx3;
-  double vx1, vx2, vx3;
-  double cx1, cx2, cx3;
+    /* Velocity field in Cartesian. Units of c_sound = 1. */
+
+    vcx1 = vcx2 = vcx3 = 0;
+    D_SELECT(,
+            vcx2 = -g_inputParam[PAR_MACH];,
+            vcx3 = -g_inputParam[PAR_MACH];);
 
 
-  /* Velocity field in Cartesian */
+    /* Velocity field in current coordinates */
 
-  vcx1 = vcx2 = vcx3 = 0;
-  D_SELECT(,
-           vcx2 = -g_inputParam[PAR_MACH] * ini_code[PAR_MACH];,
-           vcx3 = -g_inputParam[PAR_MACH] * ini_code[PAR_MACH];);
+    D_EXPAND(cx1 = CART1(x1, x2, x3);,
+             cx2 = CART2(x1, x2, x3);,
+             cx3 = CART3(x1, x2, x3););
 
-
-  /* Velocity field in current coordinates */
-
-  D_EXPAND(cx1 = CART1(x1, x2, x3);,
-           cx2 = CART2(x1, x2, x3);,
-           cx3 = CART3(x1, x2, x3););
-
-  vx1 = vx2 = vx3 = 0;
-  D_EXPAND(vx1 = VCART_1(cx1, cx2, cx3, vcx1, vcx2, vcx3);,
-           vx2 = VCART_2(cx1, cx2, cx3, vcx1, vcx2, vcx3);,
-           vx3 = VCART_3(cx1, cx2, cx3, vcx1, vcx2, vcx3););
+    vx1 = vx2 = vx3 = 0;
+    D_EXPAND(vx1 = VCART_1(cx1, cx2, cx3, vcx1, vcx2, vcx3);,
+             vx2 = VCART_2(cx1, cx2, cx3, vcx1, vcx2, vcx3);,
+             vx3 = VCART_3(cx1, cx2, cx3, vcx1, vcx2, vcx3););
 
 
-  /* Fill primitive array */
-  v[RHO] = 1.;
-  v[VX1] = vx1;
-  v[VX2] = vx2;
-  v[VX3] = vx3;
-  v[PRS] = g_inputParam[PAR_PRES] * ini_code[PAR_PRES];
-
-  /* Print ambient medium parameters */
-  static int once02 = 0;
-  if (!once02) {
-    PrintInitData01(v);
-    once02 = 1;
-  }
-
-
+    /* Fill primitive array. Units of c_sound = 1. */
+    v[RHO] = g_inputParam[PAR_DENS];
+    v[VX1] = vx1;
+    v[VX2] = vx2;
+    v[VX3] = vx3;
+    v[PRS] = v[RHO] * g_gamma;
 
 }
 
@@ -139,7 +113,7 @@ void BackgroundField (double x1, double x2, double x3, double *B0)
 #endif
 
 /* ********************************************************************* */
-void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid) 
+void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 /*! 
  *  Assign user-defined boundary conditions.
  *
@@ -161,88 +135,115 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
  *
  *********************************************************************** */
 {
-  int   i, j, k, nv;
-  double  *x1, *x2, *x3;
+    int   i, j, k, nv;
+    double  *x1, *x2, *x3;
+    double v[NVAR];
 
-  x1 = grid[IDIR].x;
-  x2 = grid[JDIR].x;
-  x3 = grid[KDIR].x;
+    x1 = grid[IDIR].x;
+    x2 = grid[JDIR].x;
+    x3 = grid[KDIR].x;
 
-  if (side == 0) {    /* -- check solution inside domain -- */
-    DOM_LOOP(k,j,i){};
-  }
-
-  if (side == X1_BEG){  /* -- X1_BEG boundary -- */
-    if (box->vpos == CENTER) {
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X1FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X2FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X3FACE){
-      BOX_LOOP(box,k,j,i){  }
+    if (side == 0) {    /* -- check solution inside domain -- */
+        DOM_LOOP(k,j,i){};
     }
-  }
 
-  if (side == X1_END){  /* -- X1_END boundary -- */
-    if (box->vpos == CENTER) {
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X1FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X2FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X3FACE){
-      BOX_LOOP(box,k,j,i){  }
+    if (side == X1_BEG){  /* -- X1_BEG boundary -- */
+        if (box->vpos == CENTER) {
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X1FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X2FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X3FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }
     }
-  }
 
-  if (side == X2_BEG){  /* -- X2_BEG boundary -- */
-    if (box->vpos == CENTER) {
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X1FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X2FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X3FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }
-  }
+    if (side == X1_END){  /* -- X1_END boundary -- */
+        if (box->vpos == CENTER) {
+            BOX_LOOP(box,k,j,i){
 
-  if (side == X2_END){  /* -- X2_END boundary -- */
-    if (box->vpos == CENTER) {
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X1FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X2FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X3FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }
-  }
+#if GEOMETRY == SPHERICAL
 
-  if (side == X3_BEG){  /* -- X3_BEG boundary -- */
-    if (box->vpos == CENTER) {
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X1FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X2FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X3FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }
-  }
+                        /* Free-flow lower boundary */
+                        if ((g_time > 1.) && (x2[j] > CONST_PI / 2.)) {
+                            for (nv = 0; nv < NVAR; ++nv) {
+                                d->Vc[nv][k][j][i] = d->Vc[nv][k][j][IEND];
+                            }
+                        }
 
-  if (side == X3_END){  /* -- X3_END boundary -- */
-    if (box->vpos == CENTER) {
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X1FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X2FACE){
-      BOX_LOOP(box,k,j,i){  }
-    }else if (box->vpos == X3FACE){
-      BOX_LOOP(box,k,j,i){  }
+                        /* Fixed boundary upper half */
+                        else {
+                            Init(v, x1[i], x2[j], x3[k]);
+
+                            for (nv = 0; nv < NVAR; ++nv) {
+                                d->Vc[nv][k][j][i] = v[nv];
+                            }
+                        }
+
+#else
+                        for (nv = 0; nv < NVAR; ++nv) {
+                            d->Vc[nv][k][j][i] = d->Vc[nv][k][j][IEND];
+                        }
+#endif
+
+                    }
+        }else if (box->vpos == X1FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X2FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X3FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }
     }
-  }
+
+    if (side == X2_BEG){  /* -- X2_BEG boundary -- */
+        if (box->vpos == CENTER) {
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X1FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X2FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X3FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }
+    }
+
+    if (side == X2_END){  /* -- X2_END boundary -- */
+        if (box->vpos == CENTER) {
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X1FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X2FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X3FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }
+    }
+
+    if (side == X3_BEG){  /* -- X3_BEG boundary -- */
+        if (box->vpos == CENTER) {
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X1FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X2FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X3FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }
+    }
+
+    if (side == X3_END){  /* -- X3_END boundary -- */
+        if (box->vpos == CENTER) {
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X1FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X2FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }else if (box->vpos == X3FACE){
+            BOX_LOOP(box,k,j,i){  }
+        }
+    }
 }
 
 #if BODY_FORCE != NO
@@ -262,25 +263,27 @@ void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
  *********************************************************************** */
 {
 
-  double r, gr;
-  r = SPH1(x1, x2, x3);
+    /* Units of G = 1, and Mbh = 1. */
 
-  gr = - CONST_G / vn.newton_norm  * g_inputParam[PAR_MBH] * ini_code[PAR_MBH] / (r * r);
+    double r, gr;
+    r = SPH1(x1, x2, x3);
 
-  double sx1, sx2, sx3;
-  D_EXPAND(sx1 = SPH1(x1, x2, x3);,
-           sx2 = SPH2(x1, x2, x3);,
-           sx3 = SPH3(x1, x2, x3););
+    gr = - 1. / (r * r);
 
-  double g1, g2, g3;
-  g1 = g2 = g3 = 0;
-  EXPAND(g1 = VSPH_1(sx1, sx2, sx3, gr, 0, 0);,
-         g2 = VSPH_2(sx1, sx2, sx3, gr, 0, 0);,
-         g3 = VSPH_3(sx1, sx2, sx3, gr, 0, 0););
+    double sx1, sx2, sx3;
+    D_EXPAND(sx1 = SPH1(x1, x2, x3);,
+             sx2 = SPH2(x1, x2, x3);,
+             sx3 = SPH3(x1, x2, x3););
 
-  g[IDIR] = g1;
-  g[JDIR] = g2;
-  g[KDIR] = g3;
+    double g1, g2, g3;
+    g1 = g2 = g3 = 0;
+    EXPAND(g1 = VSPH_1(sx1, sx2, sx3, gr, 0, 0);,
+           g2 = VSPH_2(sx1, sx2, sx3, gr, 0, 0);,
+           g3 = VSPH_3(sx1, sx2, sx3, gr, 0, 0););
+
+    g[IDIR] = g1;
+    g[JDIR] = g2;
+    g[KDIR] = g3;
 
 }
 
@@ -298,11 +301,13 @@ double BodyForcePotential(double x1, double x2, double x3)
  *********************************************************************** */
 {
 
-  double r, pot;
-  r = SPH1(x1, x2, x3);
+    /* Units of G = 1, and Mbh = 1. */
 
-  pot = - CONST_G / vn.newton_norm  * g_inputParam[PAR_MBH] * ini_code[PAR_MBH] / r;
-  return pot;
+    double r, pot;
+    r = SPH1(x1, x2, x3);
+
+    pot = - 1. / r;
+    return pot;
 
 }
 #endif

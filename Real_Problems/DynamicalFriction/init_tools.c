@@ -90,13 +90,11 @@ void SetIniNormalization() {
     degrad = CONST_PI / 180.;
 
     ini_cgs[PAR_MACH] = 1.;
-    ini_cgs[PAR_MBH] = CONST_Msun;
-    ini_cgs[PAR_PRES] = CONST_kB;
+    ini_cgs[PAR_DENS] = 1.;
     ini_cgs[PAR_DRATIO] = 1.;
 
     ini_code[PAR_MACH] = 1.;
-    ini_code[PAR_MBH] = ini_cgs[PAR_MBH] / vn.m_norm;
-    ini_code[PAR_PRES] = ini_cgs[PAR_PRES] / vn.pres_norm;
+    ini_code[PAR_DENS] = 1.;
     ini_code[PAR_DRATIO] = 1.;
 
 

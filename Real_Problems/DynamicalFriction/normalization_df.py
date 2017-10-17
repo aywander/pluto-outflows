@@ -18,6 +18,7 @@ p = pres * pc.kboltz
 cs = pow(4 * gamma * G*G*G * m*m * p * np.pi / 3, 0.125)
 rdf = pc.newton * m / (cs * cs)
 dens = m / (4 * np.pi / 3.) / (rdf * rdf * rdf)
+#dens = m /  (rdf * rdf * rdf)
 
 print('Normalizations:')
 print('cs = ' + str(cs / 1.e5) + ' km / s')

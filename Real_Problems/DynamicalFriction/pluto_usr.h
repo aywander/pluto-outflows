@@ -1,38 +1,6 @@
 #ifndef PLUTO_USR_H
 #define PLUTO_USR_H
 
-/* For completeness, parameters which take arbitrary constants, 
- * or just YES or NO are listed here for reference in comments. */
-
-/* Cooling */
-
-/* MU_CALC values. Methods of calculating the mean molecular mass. */
-#define MU_CONST        0
-#define MU_TABLE        1
-#define MU_ANALYTIC     2
-#define MU_FRACTIONS    3
-#define MU_FNAME "mutable.dat"
-
-
-/* Inlet */
-
-/* NOZZLE values. 
- * Type of inlet nozzle 
- * This determines e.g. whether UfoPrimitives, 
- * JetPrimitives, etc are called.
- * */
-#define NOZZLE_JET      1
-#define NOZZLE_UFO      2
-
-/* NOZZLE_FILL values.
- * How nozzle region is set.
- * Either set primitives by overwriting them
- * or dump energy and mass as conservative quantities
- * */
-#define NF_PRIMITIVE    1
-#define NF_CONSERVATIVE 2
-
-
 /* Accretion */
 /* SIC_METHOD values.
  * See SphereSurfaceIntersectsCell function. */
@@ -50,58 +18,11 @@
 #define SINK_VACUUM 1
 #define SINK_FREEFLOW 2
 #define SINK_BONDI 3
-#define SINK_FEDERRATH 4
-
-/* Feedback Cycle */
-/* Feedback cycle modes */
-/* FBC_DEBOOST_MODE values. */
-#define FBC_DEBOOST_MODE_0  0
-#define FBC_DEBOOST_MODE_1  1
-#define FBC_DEBOOST_MODE_2  2
-#define FBC_DEBOOST_MODE_3  3
-
-/* Supernovae */
-/* SUPERNOVAE implementations */
-// TODO: Implement different SN methods
 
 
 /* Clouds */
-/* Use a grid_in.out file to specify dimensions of cube 
+/* Use a grid_in.out file to specify dimensions of cube
  * Input files are rho.dbl, vx1.dbl, vx2.dbl, vx3.dbl, etc*/
-
-/* CLOUD_DENSITY values.
- * Cloud distribution 
- * The density profile for the warm phase */
-#define CD_HOMOGENEOUS          0
-#define CD_KEPLERIAN            1
-#define CD_HERNQUIST            2
-
-/* CLOUD_VELOCITY values.
- * Cloud velocity distribution.
- * The velocity cube can be modified in different ways.
- * The units of velocity should be km/s.
- * Use ini_code[WTRB] to normalize */
-#define CV_ZERO          0
-#define CV_KEPLERIAN     1
-
-/* CLOUD_SCALE values.
- * Decide whether the cloud scale height is given by the velocity
- * dispersion or the radius */
-#define CS_SCALE_HEIGHT          0
-#define CS_VELOCITY_DISPERSION   1
-
-
-/* Static Gravity */
-
-/* GRAV_POTENTIAL values. 
- * Gravitational Potential shape 
- * NONE for no potential.
- * */
-#define GRAV_HOMOGENEOUS          1
-#define GRAV_HERNQUIST            2
-#define GRAV_HERNQUIST_NFW        3
-#define GRAV_SINGLE_ISOTHERMAL    4
-#define GRAV_DOUBLE_ISOTHERMAL    5
 
 
 /* JD_MODE values.
@@ -135,42 +56,12 @@
 #define DTMAX NONE
 #endif
 
-/* MU_CALC the method of calculating mu */
-#ifndef MU_CALC
-#define MU_CALC MU_CONST
-#endif
 
 /* MU_NORM . A default value for constant mean
  * molecular weight. From latest Mappings model of an ionized ISM
  * this is approximately 0.60364 */
 #ifndef MU_NORM
 #define MU_NORM 0.60364
-#endif
-
-
-#ifndef NOZZLE
-#define NOZZLE NOZZLE_JET
-#endif
-
-
-#ifndef NOZZLE_FILL
-#define NOZZLE_FILL NF_PRIMITIVE
-#endif
-
-/* Maximum timestep when nozzle is activated in FEEDBACK_CYCLE model */
-#ifndef NOZZLE_DT
-#define NOZZLE_DT  1.e-3
-#endif
-
-/* Use a hemispherical cap?
- * By default, if INTERNAL_BOUNDARY is off, a hemispherical
- * cap is used, and this cannot be overridden. However, in the
- * case of INTERNAL_BOUNDARY == YES, there is the choice of
- * whether to use a hemispherical cap to buffer the jet inlet,
- * or just use the spherical section above the cone from the
- * NozzleSphere as a buffer. */
-#ifndef NOZZLE_CAP
-#define NOZZLE_CAP YES
 #endif
 
 
@@ -189,8 +80,8 @@
 
 /* Smoothing parameter of BH potential
  * Eqn (18), Ruffert (1994) */
-#ifndef BH_POT_SMOOTH
-#define BH_POT_SMOOTH 4.0
+#ifndef BH_SCALE
+#define BH_SCALE 4.0
 #endif
 
 /* Sink */
@@ -202,59 +93,8 @@
 #if SINK_METHOD == SINK_BONDI
 #define BONDI_ACCRETION_OUTPUT  YES
 #endif
-#if SINK_METHOD == SINK_FEDERRATH
-#undef BONDI_ACCRETION_OUTPUT
-#define BONDI_ACCRETION_OUTPUT  NO
-#endif
 
 
-
-
-/* Feedback Cycle */
-
-/* Switch */
-
-#ifndef FEEDBACK_CYCLE
-#define FEEDBACK_CYCLE FALSE
-#endif
-
-#if FEEDBACK_CYCLE == TRUE
-#undef ACCRETION
-#define ACCRETION TRUE
-#endif
-
-/* Feedback cycle modes */
-
-#ifndef FBC_DEBOOST
-#define FBC_DEBOOST FALSE
-#endif
-
-#ifndef FBC_DEBOOST_MODE
-#define FBC_DEBOOST_MODE FBC_DEBOOST_MODE_1
-#endif
-
-
-/* Supernovae */
-
-#ifndef NSTARS_MAX
-#define NSTARS_MAX 1000
-#endif
-
-#ifndef SUPERNOVAE
-#define SUPERNOVAE NO
-#endif
-
-#if SUPERNOVAE == YES
-
-#ifndef SUPERNOVA_ENERGY
-#define SUPERNOVA_ENERGY  1.e51
-#endif
-
-#ifndef SUPERNOVA_RCELLS
-#define SUPERNOVA_RCELLS  3
-#endif
-
-#endif
 
 
 /* Clouds */
@@ -263,28 +103,8 @@
 #define CLOUDS NO
 #endif
 
-#ifndef CLOUD_DENSITY
-#define CLOUD_DENSITY CD_HOMOGENEOUS
-#endif
-
-#ifndef CLOUD_SCALE
-#define CLOUD_SCALE  CS_SCALE_HEIGHT
-#endif
-
-#ifndef CLOUD_VELOCITY
-#define CLOUD_VELOCITY NONE
-#endif
-
 #ifndef CUBE_ENDIANNESS
 #define CUBE_ENDIANNESS "little"
-#endif
-
-#ifndef CLOUD_EXTRACT_ELLIPSOID
-#define CLOUD_EXTRACT_ELLIPSOID NONE
-#endif
-
-#ifndef CLOUD_EXTRACT_CENTRAL_BUFFER
-#define CLOUD_EXTRACT_CENTRAL_BUFFER NONE
 #endif
 
 /* A factor with which to underpressure clouds w.r.t. ambient medium (<1)*/
@@ -306,6 +126,10 @@
 #define CLOUDS_MULTI NO
 #endif
 
+#ifndef CLOUDS_VELOCITY
+#define CLOUDS_VELOCITY NO
+#endif
+
 /* Turn off default cloud init if clouds_multi = yes to prevent double initialisation.
    Comment out lines below if both are needed for a set up.
 */
@@ -314,31 +138,7 @@
 #endif
 
 
-
-/* Parameters that accompany a particular potential */
-#ifndef GRAV_POTENTIAL
-#define GRAV_POTENTIAL NONE
-#endif
-
-
-/* Whether the gravity potential requires table */
-#if (GRAV_POTENTIAL == GRAV_HERNQUIST_NFW) || \
-    (GRAV_POTENTIAL == GRAV_SINGLE_ISOTHERMAL) || \
-    (GRAV_POTENTIAL == GRAV_DOUBLE_ISOTHERMAL)
-
-#define GRAV_TABLE
-
-/* Default gravity and hot halo filename */
-#ifndef GRAV_FNAME
-#define GRAV_FNAME            "gravtable.dat"
-#endif
-
-#ifndef HOT_FNAME
-#define HOT_FNAME             "hottable.dat"
-#endif
-
-#endif
-
+/* Jet domain */
 
 #ifndef JD_MODE
 #define JD_MODE JD_GRAD
@@ -357,15 +157,6 @@
 
 
 /* Analaysis */
-
-
-#ifndef OUTFLOW_OUTPUT
-#define ACCRETION_OUTPUT NO
-#endif
-
-#ifndef OUTFLOW_OUTPUT_RATE
-#define ACCRETION_OUTPUT_RATE 0
-#endif
 
 #ifndef ACCRETION_OUTPUT
 #define ACCRETION_OUTPUT NO
