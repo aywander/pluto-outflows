@@ -78,11 +78,13 @@ void ComputeUserVar(const Data *d, Grid *grid)
                 mu = MeanMolecularWeight(v);
                 te[k][j][i] = TempIdealEOS(rho[k][j][i], prs[k][j][i], mu) * vn.temp_norm;
 
+#if COOLING != NONE
                 /* Cooling rate */
                 v[RHOE] /= g_gamma - 1.;
                 Radiat(v, rhs);
                 double lmd_norm = vn.pres_norm / vn.t_norm;
                 lmd[k][j][i] = rhs[RHOE] * lmd_norm;
+#endif
 
                 /* Speed */
                 sp1 = sp2 = sp3 = 0;
