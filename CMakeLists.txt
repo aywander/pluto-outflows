@@ -5,7 +5,7 @@ project(PLUTO)
 # ______________________________________________________________________________________________________________________
 # Set these
 
-set(PROBLEM                     DynamicalFriction)
+set(PROBLEM                     Outflows)
 set(PROBLEM_TYPE                Real)
 
 

@@ -18,6 +18,9 @@
 #define CLOUD_OUTPUT_RATE                 1.0
 
 
+#define DEBUG_USING_USERDEF_VARS          NO
+
+
 /* --- Not usually changed ---- */
 
 #define CLOUD_TCRIT                       3.0e4

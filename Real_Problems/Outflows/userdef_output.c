@@ -16,9 +16,9 @@ void ComputeUserVar(const Data *d, Grid *grid)
  ***************************************************************** */
 {
     int i, j, k, nv;
-    double ***te, ***spd, ***lmd;
+    double ***rho, ***vx1, ***vx2, ***vx3, ***prs;
     double ***v1, ***v2, ***v3;
-    double ***prs, ***rho, ***vx1, ***vx2, ***vx3;
+    double ***te, ***spd, ***lmd;
     double mu, sp1, sp2, sp3;
     double v[NVAR], rhs[NVAR];
     double *x1, *x2, *x3;

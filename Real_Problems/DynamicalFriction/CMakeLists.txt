@@ -1,6 +1,6 @@
 # -- Simulation dependent settings --
 
-set(WITH_PARALLEL               ON)
+set(WITH_PARALLEL               OFF)
 set(WITH_PNG                    OFF)
 set(WITH_HDF5                   ON)
 set(WITH_ASYNC_IO               OFF)
@@ -35,11 +35,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/DynamicalFriction/PLUTO_simula
 set(NEW_FILES
         pluto_usr.h
         definitions_usr.h
+        friction.h
+        friction.c
         macros_usr.h
         init_tools.c
         init_tools.h
         interpolation.c
         interpolation.h
+        io_tools.c
+        io_tools.h
         )
 
 # Overridden files

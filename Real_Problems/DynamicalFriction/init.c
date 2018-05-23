@@ -12,8 +12,9 @@
 */
 /* ///////////////////////////////////////////////////////////////////// */
 #include "pluto.h"
-#include "macros_usr.h"
+#include "pluto_usr.h"
 #include "init_tools.h"
+#include "friction.h"
 
 /* ********************************************************************* */
 void Init (double *v, double x1, double x2, double x3)
@@ -44,18 +45,40 @@ void Init (double *v, double x1, double x2, double x3)
  *********************************************************************** */
 {
 
-
+    double mach, dens, dratio, rcore;
+    double vsound, beta;
     double vcx1, vcx2, vcx3;
     double vx1, vx2, vx3;
     double cx1, cx2, cx3;
 
+    static int once = 0;
 
-    /* Velocity field in Cartesian. Units of c_sound = 1. */
+    /* Some things that only need to be done once */
+    if (!once) {
+
+        /* Initialize base normalization struct */
+//        SetBaseNormalization();
+//        PrintBaseNormalizations();
+
+        /* Set normalization factors for input parameters */
+        SetIniNormalization();
+
+        /* Done once now */
+        once = 1;
+    }
+
+
+    /* Velocity field in Cartesian coordinates.
+     * Due to our chosen normalization, vsound = beta = 1 / √(1 - Mach^2). */
 
     vcx1 = vcx2 = vcx3 = 0;
+
+    mach = g_inputParam[PAR_MACH];
+    beta = vsound = 1. / sqrt(1. + mach * mach);
+
     D_SELECT(,
-            vcx2 = -g_inputParam[PAR_MACH];,
-            vcx3 = -g_inputParam[PAR_MACH];);
+            vcx2 = -vsound * mach;,
+            vcx3 = -vsound * mach;);
 
 
     /* Velocity field in current coordinates */
@@ -90,8 +113,17 @@ void Analysis (const Data *d, Grid *grid)
  *********************************************************************** */
 {
 
+    /* Calculate component-wise friction force */
+    FrictionForce(d, grid);
+
+
+    /* Output component-wise friction force to file */
+    FrictionForceOutput();
+    FrictionForceRadiusOutput();
+    FrictionForcePolarOutput();
 
 }
+
 #if PHYSICS == MHD
 /* ********************************************************************* */
 void BackgroundField (double x1, double x2, double x3, double *B0)
@@ -263,12 +295,14 @@ void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
  *********************************************************************** */
 {
 
+    /* Black hole is at (0, 0, 0) */
+
     /* Units of G = 1, and Mbh = 1. */
 
-    double r, gr;
+    double r, rc, gr;
     r = SPH1(x1, x2, x3);
-
-    gr = - 1. / (r * r);
+    rc = g_inputParam[PAR_RCORE];
+    gr = - 1. / (r * r + rc * rc);
 
     double sx1, sx2, sx3;
     D_EXPAND(sx1 = SPH1(x1, x2, x3);,
@@ -301,12 +335,17 @@ double BodyForcePotential(double x1, double x2, double x3)
  *********************************************************************** */
 {
 
+    /* Black hole is at (0, 0, 0) */
+
     /* Units of G = 1, and Mbh = 1. */
 
+    double rc;
     double r, pot;
-    r = SPH1(x1, x2, x3);
 
-    pot = - 1. / r;
+    rc = g_inputParam[PAR_RCORE];
+    r = SPH1(x1, x2, x3);
+    pot = - 1. / (r + rc);
+
     return pot;
 
 }

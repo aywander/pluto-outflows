@@ -1,5 +1,5 @@
 #include "pluto.h"
-#include "macros_usr.h"
+#include "pluto_usr.h"
 #include "init_tools.h"
 
 /* *************************************************************** */
@@ -15,17 +15,55 @@ void ComputeUserVar (const Data *d, Grid *grid)
  ***************************************************************** */
 {
     int i, j, k, nv;
-    double ***te, ***spd, ***lmd;
+    double ***rho, ***vx1, ***vx2, ***vx3, ***prs;
+    double ***fg1, ***fg2, ***fg3;
     double ***v1, ***v2, ***v3;
-    double ***prs, ***rho, ***vx1, ***vx2, ***vx3;
-    double mu, vs1, vs2, vs3;
-    double v[NVAR], rhs[NVAR];
+    double ***te, ***spd;
+    double mu, sp1, sp2, sp3;
+    double v[NVAR];
     double *x1, *x2, *x3;
+    double xc1, xc2, xc3;
+    double fg;
 
     /* New variables - names must exist under uservar */
+    fg1 = GetUserVar("fg1");
+    fg2 = GetUserVar("fg2");
+    fg3 = GetUserVar("fg3");
     te = GetUserVar("te");
+    spd = GetUserVar("spd");
 
-    /* Change to v instead of u = lorentz v */
+#if DEBUG_USING_USERDEF_VARS
+
+    double ***deltaV1, ***deltaV2, ***deltaV3;
+    deltaV1 = GetUserVar("dV1");
+    deltaV2 = GetUserVar("dV2");
+    deltaV3 = GetUserVar("dV3");
+
+    double ***deltax1, ***deltax2, ***deltax3;
+    deltax1 = GetUserVar("dx1");
+    deltax2 = GetUserVar("dx2");
+    deltax3 = GetUserVar("dx3");
+
+    double *dx1, *dx2, *dx3;
+    dx1 = grid[IDIR].dx;
+    dx2 = grid[JDIR].dx;
+    dx3 = grid[KDIR].dx;
+
+    double ***xcart1, ***xcart2, ***xcart3;
+    xcart1 = GetUserVar("xc1");
+    xcart2 = GetUserVar("xc2");
+    xcart3 = GetUserVar("xc3");
+
+    double ***xsph1, ***xsph2, ***xsph3;
+    xsph1 = GetUserVar("xs1");
+    xsph2 = GetUserVar("xs2");
+    xsph3 = GetUserVar("xs3");
+
+    double ***cV;
+    cV = GetUserVar("cV");
+
+#endif
+
     EXPAND(v1 = GetUserVar("v1");,
            v2 = GetUserVar("v2");,
            v3 = GetUserVar("v3"););
@@ -42,36 +80,80 @@ void ComputeUserVar (const Data *d, Grid *grid)
     x2 = grid[JDIR].x;
     x3 = grid[KDIR].x;
 
+    double cell_vol, rad;
+    double *dV1, *dV2, *dV3;
+    dV1 = grid[IDIR].dV;
+    dV2 = grid[JDIR].dV;
+    dV3 = grid[KDIR].dV;
+
     DOM_LOOP(k, j, i) {
+
+                /* Geometrical factors */
+                rad = SPH1(x1[i], x2[j], x3[k]);
+                cell_vol = dV1[i] * dV2[j] * dV3[k];
+
+#if DEBUG_USING_USERDEF_VARS
+
+                deltaV1[k][j][i] = dV1[i];
+                deltaV2[k][j][i] = dV2[j];
+                deltaV3[k][j][i] = dV3[k];
+
+                deltax1[k][j][i] = dx1[i];
+                deltax2[k][j][i] = dx2[j];
+                deltax3[k][j][i] = dx3[k];
+
+                xc1 = CART1(x1[i], x2[j], x3[k]);
+                xc2 = CART2(x1[i], x2[j], x3[k]);
+                xc3 = CART3(x1[i], x2[j], x3[k]);
+
+                xcart1[k][j][i] = xc1;
+                xcart2[k][j][i] = xc2;
+                xcart3[k][j][i] = xc3;
+
+                xsph1[k][j][i] = r;
+                xsph2[k][j][i] = SPH2(x1[i], x2[j], x3[k]);
+                xsph3[k][j][i] = SPH3(x1[i], x2[j], x3[k]);
+
+                cV[k][j][i] = cell_vol;
+#endif
+
+                /* Gravitational force */
+
+                fg = -rho[k][j][i] * cell_vol / (rad * rad);
+                fg1[k][j][i] = VSPH2CART1(x1[i], x2[j], x3[k], fg, 0, 0);
+                fg2[k][j][i] = VSPH2CART2(x1[i], x2[j], x3[k], fg, 0, 0);
+                fg3[k][j][i] = VSPH2CART3(x1[i], x2[j], x3[k], fg, 0, 0);
+
 
                 /* Temperature */
                 for (nv = 0; nv < NVAR; nv++) v[nv] = d->Vc[nv][k][j][i];
-                te[k][j][i] = prs[k][j][i] / rho[k][j][i] * MU_NORM * KELVIN;
+                mu = MeanMolecularWeight(v);
+                te[k][j][i] = prs[k][j][i] / rho[k][j][i] * mu;
 
-                vs1 = vs2 = vs3 = 0;
-                EXPAND(vs1 = vx1[k][j][i];,
-                       vs2 = vx2[k][j][i];,
-                       vs3 = vx3[k][j][i];);
+
+                /* Speed */
+                sp1 = sp2 = sp3 = 0;
+                EXPAND(sp1 = vx1[k][j][i];,
+                       sp2 = vx2[k][j][i];,
+                       sp3 = vx3[k][j][i];);
+                spd[k][j][i] = VMAG(x1[i], x2[j], x3[k], sp1, sp2, sp3);
 
 #if GEOMETRY == POLAR || GEOMETRY == SPHERICAL
                 /* This is useful in polar and spherical geometries, where the vectors are rotated. */
 
-                EXPAND(double vc1 = VCART1(x1[i], x2[j], x3[k], vs1, vs2, vs3);,
-                       double vc2 = VCART2(x1[i], x2[j], x3[k], vs1, vs2, vs3);,
-                       double vc3 = VCART3(x1[i], x2[j], x3[k], vs1, vs2, vs3););
+                EXPAND(double csp1 = VCART1(x1[i], x2[j], x3[k], sp1, sp2, sp3);,
+                       double csp2 = VCART2(x1[i], x2[j], x3[k], sp1, sp2, sp3);,
+                       double csp3 = VCART3(x1[i], x2[j], x3[k], sp1, sp2, sp3););
 
-                EXPAND(vs1 = vc1;,
-                       vs2 = vc2;,
-                       vs3 = vc3;);
+                EXPAND(sp1 = csp1;,
+                       sp2 = csp2;,
+                       sp3 = csp3;);
 
 #endif
 
-                /* vs[123] is now always cartesian */
-
-                /* Normalize to km / s */
-                EXPAND(v1[k][j][i] = vs1 * vn.v_norm / 1.e5;,
-                       v2[k][j][i] = vs2 * vn.v_norm / 1.e5;,
-                       v3[k][j][i] = vs3 * vn.v_norm / 1.e5;);
+                EXPAND(v1[k][j][i] = sp1;,
+                       v2[k][j][i] = sp2;,
+                       v3[k][j][i] = sp3);
 
             }
 

@@ -771,6 +771,7 @@
 #define ARG_FLOWAXIS(a, b) FLOWAXIS1(a, b), FLOWAXIS2(a, b), FLOWAXIS3(a, b)
 
 
+
 /* Add normal transverse loops. Cf TRANSVERSE_LOOP in pluto.h */
 #define KTDOM_LOOP(in,k,j,i) k = in; JDOM_LOOP(j) IDOM_LOOP(i)
 #define JTDOM_LOOP(in,k,j,i) j = in; KDOM_LOOP(k) IDOM_LOOP(i)
@@ -784,29 +785,29 @@ ITDOM_LOOP(IBEG,k,j,i) {command} ITDOM_LOOP(IEND,k,j,i) {command}
 
 /* The Box surface loop, adapted from BOX_LOOP */
 #define BOX_SURF_LOOP(B,k,j,i,command) \
- k = (B)->kb;\
- for ((B)->dj = ((j=(B)->jb) <= (B)->je ? 1:-1); j != (B)->je+(B)->dj; j += (B)->dj)\
- for ((B)->di = ((i=(B)->ib) <= (B)->ie ? 1:-1); i != (B)->ie+(B)->di; i += (B)->di)\
+ (k) = (B)->kb;\
+ for ((B)->dj = (((j)=(B)->jb) <= (B)->je ? 1:-1); (j) != (B)->je+(B)->dj; (j) += (B)->dj)\
+ for ((B)->di = (((i)=(B)->ib) <= (B)->ie ? 1:-1); (i) != (B)->ie+(B)->di; (i) += (B)->di)\
  {command}\
- k = (B)->ke;\
- for ((B)->dj = ((j=(B)->jb) <= (B)->je ? 1:-1); j != (B)->je+(B)->dj; j += (B)->dj)\
- for ((B)->di = ((i=(B)->ib) <= (B)->ie ? 1:-1); i != (B)->ie+(B)->di; i += (B)->di)\
+ (k) = (B)->ke;\
+ for ((B)->dj = (((j)=(B)->jb) <= (B)->je ? 1:-1); (j) != (B)->je+(B)->dj; (j) += (B)->dj)\
+ for ((B)->di = (((i)=(B)->ib) <= (B)->ie ? 1:-1); (i) != (B)->ie+(B)->di; (i) += (B)->di)\
  {command}\
- j = (B)->jb;\
- for ((B)->dk = ((k=(B)->kb) <= (B)->ke ? 1:-1); k != (B)->ke+(B)->dk; k += (B)->dk)\
- for ((B)->di = ((i=(B)->ib) <= (B)->ie ? 1:-1); i != (B)->ie+(B)->di; i += (B)->di)\
+ (j) = (B)->jb;\
+ for ((B)->dk = (((k)=(B)->kb) <= (B)->ke ? 1:-1); (k) != (B)->ke+(B)->dk; (k) += (B)->dk)\
+ for ((B)->di = (((i)=(B)->ib) <= (B)->ie ? 1:-1); (i) != (B)->ie+(B)->di; (i) += (B)->di)\
  {command}\
- j = (B)->je;\
- for ((B)->dk = ((k=(B)->kb) <= (B)->ke ? 1:-1); k != (B)->ke+(B)->dk; k += (B)->dk)\
- for ((B)->di = ((i=(B)->ib) <= (B)->ie ? 1:-1); i != (B)->ie+(B)->di; i += (B)->di)\
+ (j) = (B)->je;\
+ for ((B)->dk = (((k)=(B)->kb) <= (B)->ke ? 1:-1); (k) != (B)->ke+(B)->dk; (k) += (B)->dk)\
+ for ((B)->di = (((i)=(B)->ib) <= (B)->ie ? 1:-1); (i) != (B)->ie+(B)->di; (i) += (B)->di)\
  {command}\
- i = (B)->ib;\
- for ((B)->dk = ((k=(B)->kb) <= (B)->ke ? 1:-1); k != (B)->ke+(B)->dk; k += (B)->dk)\
- for ((B)->dj = ((j=(B)->jb) <= (B)->je ? 1:-1); j != (B)->je+(B)->dj; j += (B)->dj)\
+ (i) = (B)->ib;\
+ for ((B)->dk = (((k)=(B)->kb) <= (B)->ke ? 1:-1); (k) != (B)->ke+(B)->dk; (k) += (B)->dk)\
+ for ((B)->dj = (((j)=(B)->jb) <= (B)->je ? 1:-1); (j) != (B)->je+(B)->dj; (j) += (B)->dj)\
  {command}\
- i = (B)->ie;\
- for ((B)->dk = ((k=(B)->kb) <= (B)->ke ? 1:-1); k != (B)->ke+(B)->dk; k += (B)->dk)\
- for ((B)->dj = ((j=(B)->jb) <= (B)->je ? 1:-1); j != (B)->je+(B)->dj; j += (B)->dj)\
+ (i) = (B)->ie;\
+ for ((B)->dk = (((k)=(B)->kb) <= (B)->ke ? 1:-1); (k) != (B)->ke+(B)->dk; (k) += (B)->dk)\
+ for ((B)->dj = (((j)=(B)->jb) <= (B)->je ? 1:-1); (j) != (B)->je+(B)->dj; (j) += (B)->dj)\
  {command}
 
 

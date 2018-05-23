@@ -1,12 +1,12 @@
 *.sw*
 **/*.sw*
 **/*.pyc
-Doxygen
 Lib/
 Lab/
 .idea/
 cmake-build-debug/
 cmake-build-release/
+Doxygen
 **/*h5
 **/*flt
 **/*out

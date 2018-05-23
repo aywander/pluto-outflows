@@ -92,10 +92,12 @@ void SetIniNormalization() {
     ini_cgs[PAR_MACH] = 1.;
     ini_cgs[PAR_DENS] = 1.;
     ini_cgs[PAR_DRATIO] = 1.;
+    ini_cgs[PAR_RCORE] = 1.;
 
     ini_code[PAR_MACH] = 1.;
     ini_code[PAR_DENS] = 1.;
     ini_code[PAR_DRATIO] = 1.;
+    ini_code[PAR_RCORE] = 1.;
 
 
     print1("> Ini parameter normalization array initialized.\n\n");

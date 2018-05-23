@@ -8,7 +8,7 @@
 #define  TIME_STEPPING           RK3
 #define  DIMENSIONAL_SPLITTING   YES
 #define  NTRACER                 0
-#define  USER_DEF_PARAMETERS     3
+#define  USER_DEF_PARAMETERS     4
 
 /* -- physics dependent declarations -- */
 
@@ -23,6 +23,7 @@
 #define  PAR_MACH             0
 #define  PAR_DENS             1
 #define  PAR_DRATIO           2
+#define  PAR_RCORE            3
 
 /* [Beg] user-defined constants (do not change this line) */
 

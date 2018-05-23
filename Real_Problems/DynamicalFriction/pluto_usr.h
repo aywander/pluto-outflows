@@ -186,8 +186,8 @@
 /* Debug */
 
 /* Output in userdef_output for debugging of coordiante systems */
-#ifndef COORDINATE_SYSTEM_DEBUG
-#define COORDINATE_SYSTEM_DEBUG FALSE
+#ifndef DEBUG_USING_USERDEF_VARS
+#define DEBUG_USING_USERDEF_VARS          NO
 #endif
 
 
