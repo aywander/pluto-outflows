@@ -267,8 +267,8 @@ if (WITH_CHOMBO)
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/src/BoxTools)
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/src/BaseTools)
 
+    set(LINK_DIRECTORIES ${LINK_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib)
 
-set(LINK_DIRECTORIES ${LINK_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib)
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${SOURCE_DIR}/hdf5_io.vChombo3.1.c
             ${SOURCE_DIR}/hdf5_io.c
