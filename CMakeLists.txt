@@ -252,9 +252,23 @@ endif ()
 
 
 if (WITH_CHOMBO)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_HDF5")
+    add_definitions(-DCH_LANG_CC)
+    add_definitions(-DUSE_HDF5)
+    add_definitions(-DCH_SPACEDIM=3)
+
+    if (WITH_PARALLEL)
+        add_definitions(-DCH_MPI)
+    endif()
+
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Chombo)
-    set(LINK_DIRECTORIES ${LINK_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib)
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/include)
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/src/AMRTimeDependent)
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/src/AMRTools)
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/src/BoxTools)
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/src/BaseTools)
+
+
+set(LINK_DIRECTORIES ${LINK_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib)
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${SOURCE_DIR}/hdf5_io.vChombo3.1.c
             ${SOURCE_DIR}/hdf5_io.c

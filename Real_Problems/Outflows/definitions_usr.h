@@ -1,25 +1,25 @@
 /* -- Own definitions choices -- */
 
 #define NOZZLE                            NOZZLE_UFO
-#define NOZZLE_FILL                       NF_CONSERVATIVE
+#define NOZZLE_FILL                       NF_PRIMITIVE
 #define NOZZLE_CAP                        YES
 #define NOZZLE_DT                         1.e-5
 
-#define ACCRETION                         YES
+#define ACCRETION                         NO
 #define SINK_METHOD                       SINK_FREEFLOW
 
-#define FEEDBACK_CYCLE                    YES
+#define FEEDBACK_CYCLE                    NO
 #define FBC_DEBOOST                       NO
 #define FBC_DEBOOST_MODE                  FBC_DEBOOST_MODE_3
 
 #define GRAV_POTENTIAL                    GRAV_DOUBLE_ISOTHERMAL
 
-#define CLOUDS                            YES
+#define CLOUDS                            NO
 #define CLOUD_REPEAT	                  NO
 #define CLOUDS_MULTI   	                  NO
 
-#define CLOUD_DENSITY                     CD_KEPLERIAN
-#define CLOUD_VELOCITY                    CV_KEPLERIAN
+#define CLOUD_DENSITY                     NONE
+#define CLOUD_VELOCITY                    NONE
 #define CLOUD_SCALE                       CS_VELOCITY_DISPERSION
 #define CLOUD_EXTRACT_ELLIPSOID           YES
 #define CLOUD_EXTRACT_CENTRAL_BUFFER      YES

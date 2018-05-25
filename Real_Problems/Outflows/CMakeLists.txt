@@ -1,6 +1,7 @@
 # -- Simulation dependent settings --
 
 set(WITH_PARALLEL               OFF)
+set(WITH_DIMENSIONS             3)
 set(WITH_PNG                    OFF)
 set(WITH_HDF5                   ON)
 set(WITH_ASYNC_IO               OFF)
@@ -53,7 +54,6 @@ set(NEW_FILES
         io_tools.c
         io_tools.h
         macros_usr.h
-        mean_mol_weight.c
         multicloud_init.c
         multicloud_init.h
         outflow.c
@@ -80,6 +80,7 @@ set(OVERRIDE_FILES
         jet_domain.c
         main.c
         mappers3D.c       # Not confident about the modifications inside
+        mean_mol_weight.c
         set_grid.c
         startup.c
         userdef_output.c
