@@ -25,6 +25,9 @@ set(WITH_C_COMPILER /usr/bin/gcc)
 set(WITH_MPI_COMPILER /usr/local/bin/mpicc)
 set(WITH_MPIXX_COMPILER /usr/local/bin/mpicxx)
 
+# -- For Chombo --
+
+set(CHOMBO_CONFIG 3d.Darwin.64.g++.gfortran.OPT)
 
 # ______________________________________________________________________________________________________________________
 # PLUTO source code files
@@ -70,6 +73,7 @@ include(${PROBLEM_DIR}/CMakeLists.txt)
 
 
 # Include all new files
+# TODO: instead of foreach, can also do string replacement (see https://cmake.org/cmake/help/v3.0/command/string.html)
 
 foreach(FILE ${NEW_FILES})
 
@@ -80,7 +84,14 @@ endforeach()
 
 # Include all source files and overrideen files
 
-set(SRC_FILES
+if (WITH_CHOMBO)
+    set(SRC_FILES    Chombo/amrPluto.cpp)
+else()
+    set(SRC_FILES    main.c)
+endif()
+
+
+set(SRC_FILES ${SRC_FILES}
         adv_flux.c
         arrays.c
         bin_io.c
@@ -100,7 +111,6 @@ set(SRC_FILES
         int_bound_reset.c
         jet_domain.c
         macros.h
-        main.c
         mappers3D.c
         mean_mol_weight.c
         parabolic_flux.c
@@ -252,34 +262,73 @@ endif ()
 
 
 if (WITH_CHOMBO)
+
+    # Parse the CHOMBO_CONFIG variable to set some parameters
+
+    string(SUBSTRING ${CHOMBO_CONFIG} 0 1 CHOMBO_DIM)
+
+    string(REGEX MATCH MPI CHOMBO_MPI ${CHOMBO_CONFIG})
+    if (CHOMBO_MPI STREQUAL MPI)
+        set(CHOMBO_PARALLEL ON)
+    else()
+        set(CHOMBO_PARALLEL OFF)
+    endif()
+
+    string(REGEX MATCH DEBUG CHOMBO_DEBUG ${CHOMBO_CONFIG})
+    if (CHOMBO_DEBUG STREQUAL DEBUG)
+        set(CHOMBO_DEBUG ON)
+    else()
+        set(CHOMBO_DEBUG OFF)
+    endif()
+
+
+    # Add definitions
+
     add_definitions(-DCH_LANG_CC)
     add_definitions(-DUSE_HDF5)
-    add_definitions(-DCH_SPACEDIM=3)
-
-    if (WITH_PARALLEL)
+    add_definitions(-DCH_SPACEDIM=${CHOMBO_DIM})
+    if (CHOMBO_PARALLEL)
         add_definitions(-DCH_MPI)
     endif()
 
+
+    # Libraries include
+
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Chombo)
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/include)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/src/AMRTimeDependent)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/src/AMRTools)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/src/BoxTools)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/src/BaseTools)
+
+    # The following is in Makefile.chombo, but not needed. Just keeping for reference.
+    # set(CHOMBO_LIBNAMES AMRTimeDependent AMRTools BoxTools BaseTools)
+    #foreach(LIBNAME ${CHOMBO_LIBNAMES})
+    #    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/src/${LIBNAME})
+    #endforeach()
+
+
+    # Libraries link directory
 
     set(LINK_DIRECTORIES ${LINK_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib)
 
+
+    # Link libraries
+
+    # TODO: just use string replacement rather than loop (see https://cmake.org/cmake/help/v3.0/command/string.html)
+    set(CHOMBO_LIBNAMES AMRTimeDependent AMRTools BoxTools BaseTools)
+    foreach(LIBNAME ${CHOMBO_LIBNAMES})
+        string(TOLOWER ${LIBNAME} LIBNAME)
+        set(LINK_LIBRARIES ${LINK_LIBRARIES} ${LIBNAME}${CHOMBO_CONFIG})
+    endforeach()
+
+
+    # PLUTO CHOMBO source files
+
     set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/hdf5_io.vChombo3.1.c
-            ${SOURCE_DIR}/hdf5_io.c
             ${SOURCE_DIR}/Chombo/AMRLevelPluto.cpp
             ${SOURCE_DIR}/Chombo/AMRLevelPluto.H
             ${SOURCE_DIR}/Chombo/AMRLevelPlutoFactory.cpp
             ${SOURCE_DIR}/Chombo/AMRLevelPlutoFactory.H
-            ${SOURCE_DIR}/Chombo/amrPluto.cpp
             ${SOURCE_DIR}/Chombo/LevelPluto.cpp
             ${SOURCE_DIR}/Chombo/LevelPluto.H
-            ${SOURCE_DIR}/Chombo/PatchCTU.cpp
+#            ${SOURCE_DIR}/Chombo/PatchCTU.cpp   # Not used
             ${SOURCE_DIR}/Chombo/PatchEuler.cpp
             ${SOURCE_DIR}/Chombo/PatchGrid.H
             ${SOURCE_DIR}/Chombo/PatchPluto.cpp
@@ -288,6 +337,7 @@ if (WITH_CHOMBO)
             ${SOURCE_DIR}/Chombo/PatchTools.cpp
             ${SOURCE_DIR}/Chombo/TagCells.cpp
             )
+
 endif ()
 
 

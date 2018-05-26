@@ -1,11 +1,10 @@
 # -- Simulation dependent settings --
 
 set(WITH_PARALLEL               OFF)
-set(WITH_DIMENSIONS             3)
 set(WITH_PNG                    OFF)
 set(WITH_HDF5                   ON)
 set(WITH_ASYNC_IO               OFF)
-set(WITH_CHOMBO                 OFF)
+set(WITH_CHOMBO                 ON)
 
 set(WITH_PHYSICS                HD)
 set(WITH_COOLING                NONE)
