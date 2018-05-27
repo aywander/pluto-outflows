@@ -166,7 +166,7 @@ void ChangeDumpVar()
 #endif
     SetDumpVar("te", VTK_OUTPUT, YES);
     SetDumpVar("spd", VTK_OUTPUT, YES);
-    SetDumpVar("lmd", VTK_OUTPUT, YES);
+    SetDumpVar("lmd", VTK_OUTPUT, NO);
 
 
     /* FLT output */
@@ -183,7 +183,7 @@ void ChangeDumpVar()
 #endif
     SetDumpVar("te", FLT_OUTPUT, YES);
     SetDumpVar("spd", FLT_OUTPUT, YES);
-    SetDumpVar("lmd", FLT_OUTPUT, YES);
+    SetDumpVar("lmd", FLT_OUTPUT, NO);
 
 
     /* FLT H5 output */
@@ -200,7 +200,7 @@ void ChangeDumpVar()
 #endif
     SetDumpVar("te", FLT_H5_OUTPUT, YES);
     SetDumpVar("spd", FLT_H5_OUTPUT, YES);
-    SetDumpVar("lmd", FLT_H5_OUTPUT, YES);
+    SetDumpVar("lmd", FLT_H5_OUTPUT, NO);
 
 
     /* PNG output */
@@ -217,7 +217,7 @@ void ChangeDumpVar()
 #endif
     SetDumpVar("te", PNG_OUTPUT, YES);
     SetDumpVar("spd", PNG_OUTPUT, YES);
-    SetDumpVar("lmd", PNG_OUTPUT, YES);
+    SetDumpVar("lmd", PNG_OUTPUT, NO);
 
 
 

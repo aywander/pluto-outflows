@@ -4,9 +4,9 @@ set(WITH_PARALLEL               OFF)
 set(WITH_PNG                    OFF)
 set(WITH_HDF5                   ON)
 set(WITH_ASYNC_IO               OFF)
-set(WITH_CHOMBO                 ON)
+set(WITH_CHOMBO                 OFF)
 
-set(WITH_PHYSICS                HD)
+set(WITH_PHYSICS                RHD)
 set(WITH_COOLING                NONE)
 set(WITH_INTERPOLATION          PARABOLIC)
 set(WITH_TIME_STEPPING          RK3)
@@ -29,9 +29,7 @@ set(WITH_GLM                    OFF)
 
 
 # Executable output location
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/Accretion/wind)
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/IC5063)
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/Outflow)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/4C31.04/pluto-runs)
 
 # New files
 set(NEW_FILES

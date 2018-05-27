@@ -1,6 +1,6 @@
 /* -- Own definitions choices -- */
 
-#define NOZZLE                            NOZZLE_UFO
+#define NOZZLE                            NOZZLE_JET
 #define NOZZLE_FILL                       NF_PRIMITIVE
 #define NOZZLE_CAP                        YES
 #define NOZZLE_DT                         1.e-5

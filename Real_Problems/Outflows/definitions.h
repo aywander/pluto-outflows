@@ -1,13 +1,13 @@
-#define  PHYSICS                 HD
-#define  DIMENSIONS              3
-#define  COMPONENTS              3
-#define  GEOMETRY                CARTESIAN
+#define  PHYSICS                 RHD
+#define  DIMENSIONS              2
+#define  COMPONENTS              2
+#define  GEOMETRY                SPHERICAL
 #define  BODY_FORCE              NONE
 #define  COOLING                 NONE
 #define  RECONSTRUCTION          PARABOLIC
 #define  TIME_STEPPING           RK3
 #define  DIMENSIONAL_SPLITTING   NO
-#define  NTRACER                 2
+#define  NTRACER                 1
 #define  USER_DEF_PARAMETERS     41
 #define  USER_DEF_CONSTANTS      4
 
