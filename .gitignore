@@ -6,7 +6,7 @@ Lab/
 .idea/
 cmake-build-debug/
 cmake-build-release/
-Doxygen
+Doxygen*/
 **/*h5
 **/*flt
 **/*out
