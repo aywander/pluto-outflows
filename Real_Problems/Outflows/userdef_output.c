@@ -43,7 +43,9 @@ void ComputeUserVar(const Data *d, Grid *grid)
     /* New variables - names must exist under uservar */
     te = GetUserVar("te");
     spd = GetUserVar("spd");
+#if COOLING != NONE
     lmd = GetUserVar("lmd");
+#endif
 
     /* Change to v instead of u = lorentz v */
     EXPAND(v1 = GetUserVar("v1");,
