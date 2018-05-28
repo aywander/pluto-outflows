@@ -80,6 +80,7 @@ set(OVERRIDE_FILES
         main.c
         mappers3D.c       # Not confident about the modifications inside
         mean_mol_weight.c
+        runtime_setup.c
         set_grid.c
         startup.c
         userdef_output.c
