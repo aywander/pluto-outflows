@@ -77,45 +77,12 @@ int RuntimeSetup (Runtime *runtime, Cmd_Line *cmd_line, char *ini_file)
       runtime->patch_left_node[idim][ip] = atof(ParamFileGet(glabel[idim], ++ipos));
       runtime->patch_npoint[idim][ip]    = atoi(ParamFileGet(glabel[idim], ++ipos));
 
-
-      /* AYW -- Compute and overwrite number of points in patches for spherical polars in
-       * idim = JDIR (theta direction), but only if patch_npoints[JDIR][ip] < 0.
-       * The actual value of |patch_npoints| indicates which reference patch to use (-1 would be first patch).
-       * The reference IDIR patch (set by npoints in JDIR patch) may be different for each JDIR patch.
-       * In most cases, npatch = 1 for (>1D) radially logarithmic spherical polars.
-       * Note, in SetGrid, idim comes from a manual loop from 0 to 3, rather than a DIM_LOOP */
-#if GEOMETRY == SPHERICAL
-
-      int npoint = runtime->patch_npoint[idim][ip];
-
-      if (idim == JDIR && npoint < 0) {
-
-        int ref_ip, npoint_sph1;
-        double xL, xR, xL_sph1, xR_sph1, dx_sph1;
-
-        xL = runtime->patch_left_node[idim][ip];
-        xR = runtime->patch_left_node[idim][ip + 1];
-
-        ref_ip = abs(npoint);
-        xL_sph1 = runtime->patch_left_node[IDIR][ref_ip];
-        xR_sph1 = runtime->patch_left_node[IDIR][ref_ip + 1];
-
-        npoint_sph1 = runtime->patch_npoint[IDIR][ip];
-
-        dx_sph1 = xL_sph1 * (pow(xR_sph1 / xL_sph1, 1. / npoint_sph1) - 1.);
-        npoint = (int) ((xR - xL) / atan(dx_sph1 / xL_sph1));
-
-        runtime->patch_npoint[idim][ip] = npoint;
-
-      }
-
-#endif
+      /* AYW -- */
+      // runtime->npoint[idim]             += runtime->patch_npoint[idim][ip];
       /* -- AYW */
 
-      runtime->npoint[idim]             += runtime->patch_npoint[idim][ip];
       runtime->grid_is_uniform[idim]     = 0;
-
-      strcpy (str_var, ParamFileGet(glabel[idim], ++ipos)); 
+      strcpy (str_var, ParamFileGet(glabel[idim], ++ipos));
 /*
 printf ("%f  %d %s\n",runtime->patch_left_node[idim][ip],runtime->patch_npoint[idim][ip],str_var);
 */
@@ -133,8 +100,45 @@ printf ("%f  %d %s\n",runtime->patch_left_node[idim][ip],runtime->patch_npoint[i
                 ini_file);
         QUIT_PLUTO(1);
       }
+
+      /* AYW -- Compute and overwrite number of points in patches for spherical polars in
+       * idim = JDIR (theta direction), but only if patch_npoints[JDIR][ip] < 0.
+       * The actual value of |patch_npoints| indicates which reference patch to use (-1 would be first patch).
+       * The reference IDIR patch (set by npoints in JDIR patch) may be different for each JDIR patch.
+       * In most cases, npatch = 1 for (>1D) radially logarithmic spherical polars.
+       * Note, in SetGrid, idim comes from a manual loop from 0 to 3, rather than a DIM_LOOP */
+#if GEOMETRY == SPHERICAL
+
+      int npoint = runtime->patch_npoint[idim][ip];
+
+      if (idim == JDIR && npoint < 0) {
+
+        int ref_ip, npoint_sph1;
+        double xL, xR, xL_sph1, xR_sph1, dx_sph1;
+
+        xL = runtime->patch_left_node[idim][ip];
+        xR = atof(ParamFileGet(glabel[idim], ++ipos));
+        --ipos;
+
+        ref_ip = abs(npoint);
+        xL_sph1 = runtime->patch_left_node[IDIR][ref_ip];
+        xR_sph1 = runtime->patch_left_node[IDIR][ref_ip + 1];
+
+        npoint_sph1 = runtime->patch_npoint[IDIR][ip];
+
+        dx_sph1 = xL_sph1 * (pow(xR_sph1 / xL_sph1, 1. / npoint_sph1) - 1.);
+        npoint = (int) ((xR - xL) / atan(dx_sph1 / xL_sph1));
+
+        runtime->patch_npoint[idim][ip] = npoint;
+
+      }
+
+#endif
+
+    runtime->npoint[idim]             += runtime->patch_npoint[idim][ip];
+      /* -- AYW */
     }
-    
+
     runtime->patch_left_node[idim][ip] = atof(ParamFileGet(glabel[idim], ++ipos));
 
     if ( (ipos+1) != (runtime->npatch[idim]*3 + 3)) {
