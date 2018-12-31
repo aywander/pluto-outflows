@@ -15,9 +15,6 @@
 
 #define  EOS                     IDEAL
 #define  ENTROPY_SWITCH          YES
-#define  THERMAL_CONDUCTION      NO
-#define  VISCOSITY               NO
-#define  ROTATING_FRAME          NO
 
 /* -- user-defined parameters (labels) -- */
 

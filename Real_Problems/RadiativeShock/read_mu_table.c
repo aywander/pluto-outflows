@@ -29,7 +29,7 @@ void ReadMuTable() {
 
     /* Open file */
     if ((f = fopen(MU_FNAME, "r")) == NULL) {
-        print1("Error: rMuData: Unable to open file");
+        print("Error: rMuData: Unable to open file");
         exit(1);
     }
 

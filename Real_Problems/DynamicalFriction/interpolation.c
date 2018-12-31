@@ -47,15 +47,15 @@ int hunter(const double *arr, const int narr, const double val) {
 
     /* Bounds check */
     if (val < arrb) {
-        print1("Error: interpolation.c: hunter: interpolation out of (lower) bounds.\n");
-        print1("val :  %e\n", val);
-        print1("arrb:  %e\n", arrb);
+        print("Error: interpolation.c: hunter: interpolation out of (lower) bounds.\n");
+        print("val :  %e\n", val);
+        print("arrb:  %e\n", arrb);
         exit(1);
     }
     else if (val > arre) {
-        print1("Error: interpolation.c: hunter: interpolation out of (upper) bounds.\n");
-        print1("val  %e\n", val);
-        print1("arre %e\n", arre);
+        print("Error: interpolation.c: hunter: interpolation out of (upper) bounds.\n");
+        print("val  %e\n", val);
+        print("arre %e\n", arre);
         exit(1);
     }
 
@@ -263,9 +263,9 @@ void x3u_3d_extrapol(double ***a, int kb, int i, int j, int k, Grid *grid)
     double *x1, *x2, *x3;
     double y0, y1, y2, z0, z1, z2;
 
-    x1 = grid[IDIR].x;
-    x2 = grid[JDIR].x;
-    x3 = grid[KDIR].x;
+    x1 = grid->x[IDIR];
+    x2 = grid->x[JDIR];
+    x3 = grid->x[KDIR];
 
     y0 = a[kb][j][i];
     y1 = a[kb - 1][j][i];
@@ -295,9 +295,9 @@ void x2l_3d_extrapol (double ***a, int jb, int i, int j, int k, Grid *grid)
     double *x1, *x2, *x3;
     double y0, y1, y2, z0, z1, z2;
 
-    x1 = grid[IDIR].x;
-    x2 = grid[JDIR].x;
-    x3 = grid[KDIR].x;
+    x1 = grid->x[IDIR];
+    x2 = grid->x[JDIR];
+    x3 = grid->x[KDIR];
 
     y0 = a[k][jb][i];
     y1 = a[k][jb + 1][i];
@@ -319,17 +319,17 @@ void InterpolateGrid(const Data *data, const Grid *grid, int *vars, double x1, d
 
     /* Get domain data and range */
 
-    D_EXPAND(int gr_nx1 = grid[IDIR].np_tot;,
-             int gr_nx2 = grid[JDIR].np_tot;,
-             int gr_nx3 = grid[KDIR].np_tot;);
-    D_EXPAND(double * gr_x1 = grid[IDIR].x;,
-             double * gr_x2 = grid[JDIR].x;,
-             double * gr_x3 = grid[KDIR].x;);
+    D_EXPAND(int gr_nx1 = grid->np_tot[IDIR];,
+             int gr_nx2 = grid->np_tot[JDIR];,
+             int gr_nx3 = grid->np_tot[KDIR];);
+    D_EXPAND(double * gr_x1 = grid->x[IDIR];,
+             double * gr_x2 = grid->x[JDIR];,
+             double * gr_x3 = grid->x[KDIR];);
 
     /* Find left indices */
-    int il = grid[IDIR].lbeg;
-    int jl = grid[JDIR].lbeg;
-    int kl = grid[KDIR].lbeg;
+    int il = grid->lbeg[IDIR];
+    int jl = grid->lbeg[JDIR];
+    int kl = grid->lbeg[KDIR];
     D_EXPAND(il = hunter2(gr_x1, gr_nx1, x1);,
              jl = hunter2(gr_x2, gr_nx2, x2);,
              kl = hunter2(gr_x3, gr_nx3, x3););

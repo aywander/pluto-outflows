@@ -252,19 +252,19 @@ void readgridfile (struct InGrid *Gin)
 
     fp_cldlist = fopen("cloud_pos_list.dat", "w");
     if (fp_cldlist == NULL) {
-        print1("Can't open cloud_pos_list.dat \n");
+        print("Can't open cloud_pos_list.dat \n");
         QUIT_PLUTO(1);
     }
 
     if (Nclouds <= 0) {
-        print1("PAR_NCLD should be >=1 \n");
+        print("PAR_NCLD should be >=1 \n");
         QUIT_PLUTO(1);
     }
 
 /*
   #if CLOUD_DENSITY == CD_TURB_ISOTH_HYDROSTATIC
 
-  if (gr_ndata <=0) {print1("Something wrong in gen_cldlist. gr_ndata=%d \n"); QUIT_PLUTO(1);}
+  if (gr_ndata <=0) {print("Something wrong in gen_cldlist. gr_ndata=%d \n"); QUIT_PLUTO(1);}
 
   double sigma2, hx, norm, uran;
   double rad, phi, theta, cphi, ctheta;

@@ -8,7 +8,7 @@
   It is automatically searched for by the makefile.
 
   \author A. Mignone (mignone@ph.unito.it)
-  \date   Sept 10, 2012
+  \date   March 5, 2017
 */
 /* ///////////////////////////////////////////////////////////////////// */
 #include "pluto.h"
@@ -45,8 +45,8 @@ void Init (double *v, double x1, double x2, double x3)
  *********************************************************************** */
 {
 
-    double mach, dens, dratio, rcore;
-    double vsound, beta;
+    double mach, rho, prs, dratio, rcore;
+    double vsound;
     double vcx1, vcx2, vcx3;
     double vx1, vx2, vx3;
     double cx1, cx2, cx3;
@@ -57,8 +57,8 @@ void Init (double *v, double x1, double x2, double x3)
     if (!once) {
 
         /* Initialize base normalization struct */
-//        SetBaseNormalization();
-//        PrintBaseNormalizations();
+        SetBaseNormalization();
+        PrintBaseNormalizations();
 
         /* Set normalization factors for input parameters */
         SetIniNormalization();
@@ -74,7 +74,10 @@ void Init (double *v, double x1, double x2, double x3)
     vcx1 = vcx2 = vcx3 = 0;
 
     mach = g_inputParam[PAR_MACH];
-    beta = vsound = 1. / sqrt(1. + mach * mach);
+
+    /* Choose normalization */
+//     vsound = 1. / sqrt(1. + mach * mach);
+    vsound = 1.;
 
     D_SELECT(,
             vcx2 = -vsound * mach;,
@@ -93,13 +96,30 @@ void Init (double *v, double x1, double x2, double x3)
              vx3 = VCART_3(cx1, cx2, cx3, vcx1, vcx2, vcx3););
 
 
-    /* Fill primitive array. Units of c_sound = 1. */
-    v[RHO] = g_inputParam[PAR_DENS];
+    rho = g_inputParam[PAR_DENS];
+    prs = vsound * vsound * rho / g_gamma;
+
+    /* Fill primitive array. */
+    v[RHO] = rho;
     v[VX1] = vx1;
     v[VX2] = vx2;
     v[VX3] = vx3;
-    v[PRS] = v[RHO] * g_gamma;
+    v[PRS] = prs;
 
+}
+
+
+/* ********************************************************************* */
+void InitDomain (Data *d, Grid *grid)
+/*!
+ * Assign initial condition by looping over the computational domain.
+ * Called after the usual Init() function to assign initial conditions
+ * on primitive variables.
+ * Value assigned here will overwrite those prescribed during Init().
+ *
+ *
+ *********************************************************************** */
+{
 }
 
 /* ********************************************************************* */
@@ -114,13 +134,22 @@ void Analysis (const Data *d, Grid *grid)
 {
 
     /* Calculate component-wise friction force */
+    SetFriction(grid);
+
     FrictionForce(d, grid);
+    FrictionForceOutput();
+
+    FrictionForceRadius(d, grid);
+    FrictionForceRadiusOutput();
+
+//    FrictionForcePolar(d, grid);
+//    FrictionForcePolarOutput();
+
+//    FrictionForceSlab(d, grid);
+//    FrictionForceSlabOutput();
 
 
     /* Output component-wise friction force to file */
-    FrictionForceOutput();
-    FrictionForceRadiusOutput();
-    FrictionForcePolarOutput();
 
 }
 
@@ -171,9 +200,9 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
     double  *x1, *x2, *x3;
     double v[NVAR];
 
-    x1 = grid[IDIR].x;
-    x2 = grid[JDIR].x;
-    x3 = grid[KDIR].x;
+  x1 = grid->x[IDIR];
+  x2 = grid->x[JDIR];
+  x3 = grid->x[KDIR];
 
     if (side == 0) {    /* -- check solution inside domain -- */
         DOM_LOOP(k,j,i){};
@@ -297,7 +326,7 @@ void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
 
     /* Black hole is at (0, 0, 0) */
 
-    /* Units of G = 1, and Mbh = 1. */
+    /* Units of G * Mbh = 1. */
 
     double r, rc, gr;
     r = SPH1(x1, x2, x3);
@@ -337,7 +366,7 @@ double BodyForcePotential(double x1, double x2, double x3)
 
     /* Black hole is at (0, 0, 0) */
 
-    /* Units of G = 1, and Mbh = 1. */
+    /* Units of G * Mbh = 1. */
 
     double rc;
     double r, pot;

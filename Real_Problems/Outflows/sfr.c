@@ -7,6 +7,7 @@
 #include "clouds.h"
 #include "sfr.h"
 #include "accretion.h"
+#include "grid_geometry.h"
 #include "idealEOS.h"
 
 /*********************************************************************** */
@@ -21,25 +22,23 @@ void FederrathAccretion(Data *d, const Grid *grid) {
     /* Accretion - General variables */
     int i, j, k;
     double *x1, *x2, *x3;
-    double *dV1, *dV2, *dV3;
+    double ***vol;
     double accr, accr_rate = 0;
     double result[NVAR];
 
 
     /* These are the geometrical central points */
-    x1 = grid[IDIR].x;
-    x2 = grid[JDIR].x;
-    x3 = grid[KDIR].x;
+    x1 = grid->x[IDIR];
+    x2 = grid->x[JDIR];
+    x3 = grid->x[KDIR];
 
     /* These are cell volumes */
-    dV1 = grid[IDIR].dV;
-    dV2 = grid[JDIR].dV;
-    dV3 = grid[KDIR].dV;
+    vol = grid->dV;
 
 
     DOM_LOOP(k, j, i) {
                 /* Remove mass according to Federrath's sink particle method */
-                accr = FederrathSinkInternalBoundary(d->Vc, i, j, k, x1, x2, x3, dV1, dV2, dV3, result);
+                accr = FederrathSinkInternalBoundary(d->Vc, i, j, k, x1, x2, x3, vol, result);
                 accr /= g_dt;
                 accr_rate += accr;
             }
@@ -79,8 +78,7 @@ double JeansResolvedDensity(const double *prim){
 
 /* ************************************************ */
 double FederrathSinkInternalBoundary(const double ****Vc, int i, int j, int k, const double *x1, const double *x2,
-                                     const double *x3, const double *dV1, const double *dV2, const double *dV3,
-                                     double *result) {
+                                     const double *x3, const double ***vol, double *result) {
 /*!
  * Remove delta_mass in cells so as to satisfy the Jeans criterion
  * that the Jeans length should be
@@ -117,7 +115,8 @@ double FederrathSinkInternalBoundary(const double ****Vc, int i, int j, int k, c
     if (delta_rho < 0) return 0;
 
     /* Accreted Mass */
-    cell_vol = dV1[i] * dV2[j] * dV3[k];
+
+    cell_vol = ElevateVolume(vol[k][j][i]);
     delta_mass = delta_rho * cell_vol;
 
     /* Check whether gas mass is gravitationally bound */

@@ -38,9 +38,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
     /* These are the geometrical central points */
     double x1, x2, x3;
     double x1_inside, x2_inside, x3_inside;
-    x1 = grid[IDIR].x[i];
-    x2 = grid[JDIR].x[j];
-    x3 = grid[KDIR].x[k];
+    x1 = grid->x[IDIR][i];
+    x2 = grid->x[JDIR][j];
+    x3 = grid->x[KDIR][k];
 
 
     /* Get velocity, density, and prs from data, just inside the domain. */
@@ -51,9 +51,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
                    vx3 = d->Vc[VX3][k][j][IBEG];);
             rho = d->Vc[RHO][k][j][IBEG];
             prs = d->Vc[PRS][k][j][IBEG];
-            x1_inside = grid[IDIR].x[IBEG];
-            x2_inside = grid[JDIR].x[j];
-            x3_inside = grid[KDIR].x[k];
+            x1_inside = grid->x[IDIR][IBEG];
+            x2_inside = grid->x[JDIR][j];
+            x3_inside = grid->x[KDIR][k];
             break;
         case X1_END:
             EXPAND(vx1 = d->Vc[VX1][k][j][IEND];,
@@ -61,9 +61,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
                    vx3 = d->Vc[VX3][k][j][IEND];);
             rho = d->Vc[RHO][k][j][IEND];
             prs = d->Vc[PRS][k][j][IEND];
-            x1_inside = grid[IDIR].x[IEND];
-            x2_inside = grid[JDIR].x[j];
-            x3_inside = grid[KDIR].x[k];
+            x1_inside = grid->x[IDIR][IEND];
+            x2_inside = grid->x[JDIR][j];
+            x3_inside = grid->x[KDIR][k];
             break;
         case X2_BEG:
             EXPAND(vx1 = d->Vc[VX1][k][JBEG][i];,
@@ -71,9 +71,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
                    vx3 = d->Vc[VX3][k][JBEG][i];);
             rho = d->Vc[RHO][k][JBEG][i];
             prs = d->Vc[PRS][k][JBEG][i];
-            x1_inside = grid[IDIR].x[i];
-            x2_inside = grid[JDIR].x[JBEG];
-            x3_inside = grid[KDIR].x[k];
+            x1_inside = grid->x[IDIR][i];
+            x2_inside = grid->x[JDIR][JBEG];
+            x3_inside = grid->x[KDIR][k];
             break;
         case X2_END:
             EXPAND(vx1 = d->Vc[VX1][k][JEND][i];,
@@ -81,9 +81,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
                    vx3 = d->Vc[VX3][k][JEND][i];);
             rho = d->Vc[RHO][k][JEND][i];
             prs = d->Vc[PRS][k][JEND][i];
-            x1_inside = grid[IDIR].x[i];
-            x2_inside = grid[JDIR].x[JEND];
-            x3_inside = grid[KDIR].x[k];
+            x1_inside = grid->x[IDIR][i];
+            x2_inside = grid->x[JDIR][JEND];
+            x3_inside = grid->x[KDIR][k];
             break;
         case X3_BEG:
             EXPAND(vx1 = d->Vc[VX1][KBEG][j][i];,
@@ -91,9 +91,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
                    vx3 = d->Vc[VX3][KBEG][j][i];);
             rho = d->Vc[RHO][KBEG][j][i];
             prs = d->Vc[PRS][KBEG][j][i];
-            x1_inside = grid[IDIR].x[i];
-            x2_inside = grid[JDIR].x[j];
-            x3_inside = grid[KDIR].x[KBEG];
+            x1_inside = grid->x[IDIR][i];
+            x2_inside = grid->x[JDIR][j];
+            x3_inside = grid->x[KDIR][KBEG];
             break;
         case X3_END:
             EXPAND(vx1 = d->Vc[VX1][KEND][j][i];,
@@ -101,9 +101,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
                    vx3 = d->Vc[VX3][KEND][j][i];);
             rho = d->Vc[RHO][KEND][j][i];
             prs = d->Vc[PRS][KEND][j][i];
-            x1_inside = grid[IDIR].x[i];
-            x2_inside = grid[JDIR].x[j];
-            x3_inside = grid[KDIR].x[KEND];
+            x1_inside = grid->x[IDIR][i];
+            x2_inside = grid->x[JDIR][j];
+            x3_inside = grid->x[KDIR][KEND];
             break;
         default:
             QUIT_PLUTO(1);
@@ -306,7 +306,7 @@ void HotHaloPrimitives(double *halo,
 
     /* A message for having initialized halo with potential*/
     if (!once01) {
-        print1("> Initializing hot halo distribution of type: %d\n\n", GRAV_POTENTIAL);
+        print("> Initializing hot halo distribution of type: \n\n");
         once01 = 1;
     }
 

@@ -1,9 +1,9 @@
-#include "pluto.h"
+#include"pluto.h"
 
 /* ********************************************************************** */
 // AYW does not conform to Riemann_Solver call signature
-void AUSMp_Solver (const State_1D *state, int beg, int end, real *cmax, Grid *grid)
-//void AUSMp_Solver (const State_1D *state, real *cmax, Grid *grid)
+void AUSMp_Solver (const Sweep *sweep, int beg, int end, real *cmax, Grid *grid)
+//void AUSMp_Solver (const Sweep *sweep, real *cmax, Grid *grid)
 /*
  *
  * PURPOSE
@@ -45,15 +45,15 @@ void AUSMp_Solver (const State_1D *state, int beg, int end, real *cmax, Grid *gr
     ur = array_2D(NMAX_POINT, NVAR);
   }
 
-  PrimToCons (state->vL, ul, beg, end);
-  PrimToCons (state->vR, ur, beg, end);
+  PrimToCons (sweep->vL, ul, beg, end);
+  PrimToCons (sweep->vR, ur, beg, end);
 
   Ku = 0.75; Kp = 0.25; sigma = 1.0;
 
   for (i = beg; i <= end; i++)  {
 
-    vL = state->vL[i];
-    vR = state->vR[i];
+    vL = sweep->vL[i];
+    vR = sweep->vR[i];
 
     uL = ul[i];
     uR = ur[i];
@@ -153,13 +153,13 @@ void AUSMp_Solver (const State_1D *state, int beg, int end, real *cmax, Grid *gr
                      Compute fluxes 
      ------------------------------------------------------------- */
 
-    state->press[i]  = Pp5L*vL[PRS] + Pm5R*vR[PRS];
-    state->press[i] -= Ku*Pp5L*Pm5R*(vL[RHO] + vR[RHO])*fa*a*(vR[VXn] - vL[VXn]);
+    sweep->press[i]  = Pp5L*vL[PRS] + Pm5R*vR[PRS];
+    sweep->press[i] -= Ku*Pp5L*Pm5R*(vL[RHO] + vR[RHO])*fa*a*(vR[VXn] - vL[VXn]);
 
     if (m > 0.0){
-      for (nv = NFLX; nv--;   ) state->flux[i][nv] = m*phiL[nv];
+      for (nv = NFLX; nv--;   ) sweep->flux[i][nv] = m*phiL[nv];
     }else{
-      for (nv = NFLX; nv--;   ) state->flux[i][nv] = m*phiR[nv];
+      for (nv = NFLX; nv--;   ) sweep->flux[i][nv] = m*phiR[nv];
     }
  
   /*  ----  get max eigenvalue  ----  */

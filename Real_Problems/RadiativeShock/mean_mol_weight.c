@@ -111,6 +111,16 @@
 */
 /* ///////////////////////////////////////////////////////////////////// */
 #include "pluto.h"
+/* AYW --
+ * Support variable mu from tabular data.
+ * Support custom 1D interpolation routines.
+ * Support normalization struct (vn) from init_tools. */
+#include "pluto_usr.h"
+#include "read_mu_table.h"
+#include "interpolation.h"
+#include "init_tools.h"
+/* -- AYW */
+
 //#if (COOLING == SNEq) || (COOLING == MINEq) || (COOLING == H2_COOL)
 #if (COOLING == MINEq)
   #include "cooling_defs.h"
@@ -138,7 +148,6 @@ double MeanMolecularWeight(double *v)
 
 #if MU_CALC == MU_TABLE
 
-    int il;
     double por;
 
     if (mu_por == NULL) {
@@ -146,7 +155,7 @@ double MeanMolecularWeight(double *v)
     }
 
     /* Value of p/rho in code units */
-    por = V[PRS] / V[RHO];
+    por = v[PRS] / v[RHO];
 
     /* Interpolate */
     return InterpolationWrapper(mu_por, mu_mu, mu_ndata, por);
@@ -161,7 +170,7 @@ double MeanMolecularWeight(double *v)
 
     /* Value of log10(p/rho) in cgs units */
     double por;
-    por = log10(V[PRS] / V[RHO] * vn.pres_norm / vn.dens_norm);
+    por = log10(v[PRS] / v[RHO] * vn.pres_norm / vn.dens_norm);
 
     static double a = 11.48648535;
     static double w = 0.62276904;
@@ -269,6 +278,29 @@ double MeanMolecularWeight(double *v)
   }
   
   mu = mmw1/mmw2;
+
+#elif COOLING == KROME
+  int i;
+  double numden[NIONS], mfsum, n_sum;
+  mu = 0.0;
+  n_sum = 0.0;
+  mfsum = 0.0;
+
+  //The mu is computed using number fractions.
+  NIONS_LOOP(nv) mfsum += v[nv];
+  NIONS_LOOP(nv) v[nv] /= mfsum;
+  NIONS_LOOP(nv) numden[nv-NFLX] = v[RHO]*UNIT_DENSITY*(v[nv]/molmass[nv-NFLX]);
+
+  for(i = 0; i < NIONS; i++){
+    mu += numden[i]*molmass[i];
+  }
+
+  for(i=0;i<NIONS; i++){
+    n_sum += numden[i];
+  }
+
+  mu  /= (CONST_mp*n_sum); // KROME divides with proton mass.
+
 
 #endif
     

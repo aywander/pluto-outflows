@@ -56,9 +56,6 @@ void Init (double *v, double x1, double x2, double x3)
 
     int nv;
     double halo_primitives[NVAR], out_primitives[NVAR];
-#if CLOUDS
-    double cloud_primitives[NVAR];
-#endif
     static int once01 = 0;
 
 
@@ -141,28 +138,11 @@ void Init (double *v, double x1, double x2, double x3)
     }
 #endif
 
-        /* Initialize halo. Hot, and warm, if included */
+        /* Initialize halo */
     else {
 
-        /* First get primitives array for hot halo */
         HotHaloPrimitives(halo_primitives, x1, x2, x3);
-
-#if CLOUDS && CLOUDS_MULTI == NO
-
-        /* If we're in the domain of the clouds cube */
-        if (CloudPrimitives(cloud_primitives, x1, x2, x3)){
-          for (nv = 0; nv < NVAR; ++nv) v[nv] = cloud_primitives[nv];
-        }
-        /* If not a cloud pixel then use hot halo primitives*/
-        else{
-          for (nv = 0; nv < NVAR; ++nv) v[nv] = halo_primitives[nv];
-        }
-
-#else
-
-        /* Hot halo */
         for (nv = 0; nv < NVAR; ++nv) v[nv] = halo_primitives[nv];
-#endif
 
     }
 
@@ -180,6 +160,76 @@ void Init (double *v, double x1, double x2, double x3)
     v[AX1] = 0.0;
     v[AX2] = 0.0;
     v[AX3] = 0.0;
+
+#endif
+
+}
+
+
+/* ********************************************************************* */
+void InitDomain(Data *d, Grid *grid)
+/*!
+ * Assign initial condition by looping over the computational domain.
+ * Called after the usual Init() function to assign initial conditions
+ * on primitive variables.
+ * Value assigned here will overwrite those prescribed during Init().
+ *
+ *
+ *********************************************************************** */
+{
+
+#if CLOUDS
+    double halo_primitives[NVAR], cloud_primitives[NVAR];
+
+    int i, j, k, nv, id;
+
+    double *x1 = grid->x[IDIR];
+    double *x2 = grid->x[JDIR];
+    double *x3 = grid->x[KDIR];
+
+    id = InputDataOpen("./input-rho.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
+    TOT_LOOP(k,j,i) d->Vc[RHO][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
+    InputDataClose(id);
+
+#if CLOUD_VELOCITY
+
+    id = InputDataOpen("./input-vx1.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
+    TOT_LOOP(k,j,i) d->Vc[VX1][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
+    InputDataClose(id);
+
+    id = InputDataOpen("./input-vx2.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
+    TOT_LOOP(k,j,i) d->Vc[VX2][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
+    InputDataClose(id);
+
+    id = InputDataOpen("./input-vx3.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
+    TOT_LOOP(k,j,i) d->Vc[VX3][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
+    InputDataClose(id);
+
+    double ***v1 = d->Vc[VX1];
+    double ***v2 = d->Vc[VX2];
+    double ***v3 = d->Vc[VX3];
+    InputDataCoordTransformVector(id, x1, x2, x3, v1, v2, v3);
+
+#endif
+
+    /* Do Clouds apodization */
+    TOT_LOOP(k, j, i){
+
+                /* First get primitives array for hot halo */
+                HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
+
+                // TODO: Redo and check CLOUDS_MULTI
+
+                /* If we're in the domain of the clouds cube */
+                if (CloudPrimitives(cloud_primitives, x1[i], x2[j], x3[k])){
+                    for (nv = 0; nv < NVAR; ++nv) d->Vc[nv][k][j][i] = cloud_primitives[nv];
+                }
+                    /* If not a cloud pixel then use hot halo primitives*/
+                else{
+                    for (nv = 0; nv < NVAR; ++nv) d->Vc[nv][k][j][i] = halo_primitives[nv];
+                }
+            }
+
 
 #endif
 
@@ -311,7 +361,6 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
     // TODO: After all the modules are isolated, move the below variables into the respective module sections
     int i, j, k, nv;
     double *x1, *x2, *x3;
-    double *dV1, *dV2, *dV3;
     double vc;
     double out_primitives[NVAR], halo_primitives[NVAR], result[NVAR], mirror[NVAR];
     double * prim_buffer = mirror;
@@ -321,15 +370,9 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 #endif
 
     /* These are the geometrical central points */
-    x1 = grid[IDIR].x;
-    x2 = grid[JDIR].x;
-    x3 = grid[KDIR].x;
-
-    /* These are cell volumes */
-    dV1 = grid[IDIR].dV;
-    dV2 = grid[JDIR].dV;
-    dV3 = grid[KDIR].dV;
-
+    x1 = grid->x[IDIR];
+    x2 = grid->x[JDIR];
+    x3 = grid->x[KDIR];
 
 #if INTERNAL_BOUNDARY == YES
     if (side == 0) {    /* -- check solution inside domain -- */
@@ -441,7 +484,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 #elif SINK_METHOD == SINK_FEDERRATH
 
                                 /* Remove mass according to Federrath's sink particle method */
-                                FederrathSinkInternalBoundary(d->Vc, i, j, k, x1, x2, x3, dV1, dV2, dV3, result);
+                                FederrathSinkInternalBoundary(d->Vc, i, j, k, x1, x2, x3, grid->dV, result);
 
 // TODO: Create HOT_HALO sink method:just use hot halo fixed boundaries.
 

@@ -1,6 +1,6 @@
 # -- Simulation dependent settings --
 
-set(WITH_PARALLEL               OFF)
+set(WITH_PARALLEL               ON)
 set(WITH_PNG                    OFF)
 set(WITH_HDF5                   ON)
 set(WITH_ASYNC_IO               OFF)
@@ -12,6 +12,7 @@ set(WITH_INTERPOLATION          PARABOLIC)
 set(WITH_TIME_STEPPING          RK3)
 
 set(WITH_PARTICLES              OFF)
+set(WITH_FORCED_TURB            OFF)
 set(WITH_FARGO                  OFF)
 set(WITH_SHEARING_BOX           OFF)
 set(WITH_RESISTIVITY            OFF)
@@ -23,9 +24,13 @@ set(WITH_FD                     OFF)
 set(WITH_EOS                    IDEAL)
 set(WITH_THERMAL_CONDUCTION     OFF)
 set(WITH_VISCOSITY              OFF)
+set(WITH_AMBIPOLAR_DIFFUSION    OFF)
 set(WITH_ROTATING_FRAME         OFF)
 set(WITH_CT                     OFF)
 set(WITH_GLM                    OFF)
+set(WITH_HALL_MHD               OFF)
+set(WITH_FORCED_TURB            OFF)
+set(WITH_DUST_FLUID             OFF)
 
 
 # Executable output location
@@ -50,11 +55,7 @@ set(NEW_FILES
 set(OVERRIDE_FILES
         cmd_line_opt.c
         input_data.c
-        jet_domain.c
-        main.c
-        #mappers3D.c
-        startup.c
-        set_grid.c
+        runtime_setup.c
         userdef_output.c
         )
 

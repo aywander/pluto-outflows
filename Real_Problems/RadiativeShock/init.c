@@ -124,7 +124,7 @@ void Init (double *v, double x1, double x2, double x3)
   }
 
   if (mach <= 1) {
-    print1("Solution unphysical: Mach number <= 1.");
+    print("Solution unphysical: Mach number <= 1.");
     QUIT_PLUTO(1);
   }
 
@@ -268,9 +268,9 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
   int   i, j, k, nv;
   double  *x1, *x2, *x3;
 
-  x1 = grid[IDIR].x;
-  x2 = grid[JDIR].x;
-  x3 = grid[KDIR].x;
+  x1 = grid->x[IDIR];
+  x2 = grid->x[JDIR];
+  x3 = grid->x[KDIR];
 
   if (side == 0) {    /* -- check solution inside domain -- */
     DOM_LOOP(k,j,i){};

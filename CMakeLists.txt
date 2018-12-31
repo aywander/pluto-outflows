@@ -12,18 +12,16 @@ set(PROBLEM_TYPE                Real)
 # ______________________________________________________________________________________________________________________
 # PLUTO settings
 
-set(PLUTO_SOURCE_DIR            /Users/ayw/dev/PLUTO)
-
 # -- Library paths --
 
-set(HDF5_PATH_PAR ${PLUTO_SOURCE_DIR}/Lib/hdf5-parallel)
-set(HDF5_PATH_SER ${PLUTO_SOURCE_DIR}/Lib/hdf5-serial)
+set(HDF5_PATH_PAR Lib/hdf5-parallel)
+set(HDF5_PATH_SER Lib/hdf5-serial)
 
 # -- Compilers --
 
-set(WITH_C_COMPILER /usr/bin/gcc)
-set(WITH_MPI_COMPILER /usr/local/bin/mpicc)
-set(WITH_MPIXX_COMPILER /usr/local/bin/mpicxx)
+#set(WITH_C_COMPILER /usr/bin/gcc)
+#set(WITH_MPI_COMPILER /usr/local/bin/mpicc)
+#set(WITH_MPIXX_COMPILER /usr/local/bin/mpicxx)
 
 # -- For Chombo --
 
@@ -39,8 +37,8 @@ set(CHOMBO_CONFIG 3d.Darwin.64.g++.gfortran.OPT)
 
 # Directoiries
 
-set(PROBLEM_DIR  ${PLUTO_SOURCE_DIR}/${PROBLEM_TYPE}_Problems/${PROBLEM})
-set(SOURCE_DIR   ${PLUTO_SOURCE_DIR}/Src)
+set(PROBLEM_DIR  ${PROBLEM_TYPE}_Problems/${PROBLEM})
+set(SOURCE_DIR   Src)
 
 
 # Included in all cases
@@ -113,14 +111,16 @@ set(SRC_FILES ${SRC_FILES}
         macros.h
         mappers3D.c
         mean_mol_weight.c
-        parabolic_flux.c
-        parabolic_rhs.c
+        mpi_sub_decomp.c
+        output_log.c
         parse_file.c
+        parabolic_update.c
         pluto.h                             # Modified
         prototypes.h
         rbox.c
         restart.c
-        #rkc.c                              # Buggy (Never used?)
+        rkc.c                              # Buggy (Never used?)
+        rkl.c                              # Buggy (Never used?)
         runtime_setup.c
         set_geometry.c
         set_grid.c
@@ -130,6 +130,7 @@ set(SRC_FILES ${SRC_FILES}
         show_config.c
         split_source.c
         startup.c
+        #startup_old.c
         structs.h                           # Modified
         sts.c
         tools.c
@@ -138,11 +139,13 @@ set(SRC_FILES ${SRC_FILES}
         #userdef_output.shock_tracking.c    # Never used?
         var_names.c
         vec_pot_diff.c
+        #vec_pot_diff_old.c
         vec_pot_update.c
         write_data.c
         write_img.c
         write_tab.c
         write_vtk.c
+        write_vtk_proc.c
         )
 
 foreach(FILE ${SRC_FILES})
@@ -295,18 +298,18 @@ if (WITH_CHOMBO)
     # Libraries include
 
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Chombo)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/include)
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} Lib/Chombo-3.2/lib/include)
 
     # The following is in Makefile.chombo, but not needed. Just keeping for reference.
     # set(CHOMBO_LIBNAMES AMRTimeDependent AMRTools BoxTools BaseTools)
     #foreach(LIBNAME ${CHOMBO_LIBNAMES})
-    #    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib/src/${LIBNAME})
+    #    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} Lib/Chombo-3.2/lib/src/${LIBNAME})
     #endforeach()
 
 
     # Libraries link directory
 
-    set(LINK_DIRECTORIES ${LINK_DIRECTORIES} ${PLUTO_SOURCE_DIR}/Lib/Chombo-3.2/lib)
+    set(LINK_DIRECTORIES ${LINK_DIRECTORIES} Lib/Chombo-3.2/lib)
 
 
     # Link libraries
@@ -350,7 +353,7 @@ if (WITH_PHYSICS STREQUAL HD)
             #${SOURCE_DIR}/HD/ausm_up.c           # Buggy (don't need)
             ${SOURCE_DIR}/HD/eigenv.c
             ${SOURCE_DIR}/HD/fluxes.c
-            ${SOURCE_DIR}/MHD/get_area_flux.c
+            ${SOURCE_DIR}/MHD/get_current.c
             ${SOURCE_DIR}/HD/hll.c
             ${SOURCE_DIR}/HD/hll_speed.c
             ${SOURCE_DIR}/HD/hllc.c
@@ -397,7 +400,7 @@ elseif (WITH_PHYSICS STREQUAL MHD)
             ${SOURCE_DIR}/MHD/bckgrnd_field.c
             ${SOURCE_DIR}/MHD/eigenv.c
             ${SOURCE_DIR}/MHD/fluxes.c
-            ${SOURCE_DIR}/MHD/get_area_flux.c
+            ${SOURCE_DIR}/MHD/get_current.c
             ${SOURCE_DIR}/MHD/hll.c
             ${SOURCE_DIR}/MHD/hll_speed.c
             ${SOURCE_DIR}/MHD/hllc.c
@@ -421,6 +424,7 @@ elseif (WITH_PHYSICS STREQUAL RMHD)
             ${SOURCE_DIR}/RMHD/energy_solve.c
             ${SOURCE_DIR}/RMHD/entropy_solve.c
             ${SOURCE_DIR}/RMHD/fluxes.c
+            ${SOURCE_DIR}/RMHD/gmusta1.c
             ${SOURCE_DIR}/RMHD/four_vel.c
             ${SOURCE_DIR}/RMHD/hll.c
             ${SOURCE_DIR}/RMHD/hll_speed.c
@@ -431,9 +435,6 @@ elseif (WITH_PHYSICS STREQUAL RMHD)
             ${SOURCE_DIR}/RMHD/pressure_fix.c
             ${SOURCE_DIR}/RMHD/prim_eqn.c
             ${SOURCE_DIR}/RMHD/quartic.c
-            #${SOURCE_DIR}/RMHD/quartic.devel1.c       # Not used
-            #${SOURCE_DIR}/RMHD/quartic.new.c          # Not used
-            #${SOURCE_DIR}/RMHD/quartic.old.c          # Not used
             ${SOURCE_DIR}/RMHD/rhs.c
             #${SOURCE_DIR}/RMHD/rusanov-dw.c           # Not used
             ${SOURCE_DIR}/RMHD/set_solver.c
@@ -452,6 +453,7 @@ if (WITH_THERMAL_CONDUTION)
             ${SOURCE_DIR}/Thermal_Conduction/tc_flux.c
             ${SOURCE_DIR}/Thermal_Conduction/tc_functions.c
             ${SOURCE_DIR}/Thermal_Conduction/tc_kappa.c
+            ${SOURCE_DIR}/Thermal_Conduction/tc_rhs.c
             )
 endif ()
 
@@ -461,6 +463,7 @@ if (WITH_VISCOSITY)
             ${SOURCE_DIR}/Viscosity/visc_nu.c
             ${SOURCE_DIR}/Viscosity/viscosity.h
             ${SOURCE_DIR}/Viscosity/viscous_flux.c
+            ${SOURCE_DIR}/Viscosity/viscous_rhs.c
             )
 endif ()
 
@@ -481,19 +484,20 @@ if (WITH_RESISTIVITY)
             ${SOURCE_DIR}/MHD/Resistive/res_eta.c
             ${SOURCE_DIR}/MHD/Resistive/res_flux.c
             ${SOURCE_DIR}/MHD/Resistive/res_functions.c
+            ${SOURCE_DIR}/MHD/Resistive/res_rhs.c
             )
 endif ()
 
 if (WITH_CT)
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/MHD/CT)
     set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/MHD/CT/ct.c
             ${SOURCE_DIR}/MHD/CT/ct.h
             ${SOURCE_DIR}/MHD/CT/ct_emf.c
             ${SOURCE_DIR}/MHD/CT/ct_emf_average.c
             ${SOURCE_DIR}/MHD/CT/ct_field_average.c
             ${SOURCE_DIR}/MHD/CT/ct_fill_mag_field.c
             ${SOURCE_DIR}/MHD/CT/ct_stag_slopes.c
+            ${SOURCE_DIR}/MHD/CT/ct_update.c
             ${SOURCE_DIR}/MHD/CT/emf_boundary.c
             ${SOURCE_DIR}/MHD/CT/emf_userdef.c
             )
@@ -505,6 +509,17 @@ if (WITH_GLM)
             ${SOURCE_DIR}/MHD/GLM/analysis.c
             ${SOURCE_DIR}/MHD/GLM/glm.c
             ${SOURCE_DIR}/MHD/GLM/glm.h
+            )
+endif ()
+
+if (WITH_HALL_MHD)
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/MHD/Hall_MHD)
+    set(SOURCE_FILES  ${SOURCE_FILES}
+            ${SOURCE_DIR}/MHD/Hall_MHD/hall_flux.c
+            ${SOURCE_DIR}/MHD/Hall_MHD/hall_mhd.h
+            ${SOURCE_DIR}/MHD/Hall_MHD/hall_ne.c
+            ${SOURCE_DIR}/MHD/Hall_MHD/hall_whistler_speed.c
+            ${SOURCE_DIR}/MHD/Hall_MHD/hall_whistler_speed.c
             )
 endif ()
 
@@ -567,11 +582,80 @@ elseif (WITH_COOLING STREQUAL SNEQ)
             ${SOURCE_DIR}/Cooling/SNEq/radiat.modified_by_Bhargav.c
             )
 
-else ()
-    if (PROBLEM_TYPE STREQUAL Real)
-        set(SOURCE_FILES ${SOURCE_FILES}
-                )
-    endif()
+endif ()
+
+
+# Particles
+
+if (WITH_PARTICLES)
+
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Particles)
+    set(SOURCE_FILES  ${SOURCE_FILES}
+            ${SOURCE_DIR}/Particles/particles.h
+            ${SOURCE_DIR}/Particles/particles_boundary.c
+            ${SOURCE_DIR}/Particles/particles_deposit.c
+            ${SOURCE_DIR}/Particles/particles_distrib_regular.c
+            ${SOURCE_DIR}/Particles/particles_init.c
+            ${SOURCE_DIR}/Particles/particles_load.c
+            ${SOURCE_DIR}/Particles/particles_mpi_datatype.c
+            ${SOURCE_DIR}/Particles/particles_restart.c
+            ${SOURCE_DIR}/Particles/particles_set.c
+            ${SOURCE_DIR}/Particles/particles_set_output.c
+            ${SOURCE_DIR}/Particles/particles_tools.c
+            ${SOURCE_DIR}/Particles/particles_write_bin.c
+            ${SOURCE_DIR}/Particles/particles_write_data.c
+            ${SOURCE_DIR}/Particles/particles_write_trajectory.c
+            ${SOURCE_DIR}/Particles/particles_write_vtk.c
+            ${SOURCE_DIR}/Particles/plist_tools.c
+            )
+
+if (WITH_PARTICLES STREQUAL LAGRANGIAN)
+
+    set(SOURCE_FILES  ${SOURCE_FILES}
+            ${SOURCE_DIR}/Particles/particles_lp_tools.c
+            ${SOURCE_DIR}/Particles/particles_lp_update.c
+            )
+
+elseif (WITH_PARTICLES STREQUAL COSMIC_RAYS)
+
+    set(SOURCE_FILES  ${SOURCE_FILES}
+            ${SOURCE_DIR}/Particles/particles_cr_feedback.c
+            ${SOURCE_DIR}/Particles/particles_cr_force.c
+            ${SOURCE_DIR}/Particles/particles_cr_update.c
+            ${SOURCE_DIR}/Particles/particles_cr_update_test.c
+            )
+
+elseif (WITH_PARTICLES STREQUAL DUST)
+
+    set(SOURCE_FILES  ${SOURCE_FILES}
+            )
+
+endif ()
+
+endif ()
+
+
+# Dust Fluid
+
+if (WITH_DUST_FLUID)
+
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Dust)
+    set(SOURCE_FILES  ${SOURCE_FILES}
+            ${SOURCE_DIR}/Dust/dust.h
+            ${SOURCE_DIR}/Dust/dust.c
+            )
+endif ()
+
+
+# Forced turbulence
+
+if (WITH_FORCED_TURB)
+
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Forced_Turb)
+    set(SOURCE_FILES  ${SOURCE_FILES}
+            ${SOURCE_DIR}/Forced_Turb/forced_turb.h
+            ${SOURCE_DIR}/Forced_Turb/forced_turb.c
+            )
 
 endif ()
 
@@ -696,14 +780,6 @@ if (WITH_FARGO)
             )
 endif ()
 
-if (WITH_PARTICLES)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Particles)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Particles/particles.h
-            ${SOURCE_DIR}/Particles/setparticles.c
-            )
-endif ()
-
 if (WITH_FD)
     set(SOURCE_FILES  ${SOURCE_FILES}
             ${SOURCE_DIR}/fd_flux.c
@@ -722,6 +798,8 @@ set(SOURCE_FILES  ${SOURCE_FILES}
         ${SOURCE_DIR}/Math_Tools/math_ode.c
         ${SOURCE_DIR}/Math_Tools/math_qr_decomp.c
         ${SOURCE_DIR}/Math_Tools/math_quadrature.c
+        ${SOURCE_DIR}/Math_Tools/math_rand_mt19937-64.c
+        ${SOURCE_DIR}/Math_Tools/math_random.c
         ${SOURCE_DIR}/Math_Tools/math_root_finders.c
         ${SOURCE_DIR}/Math_Tools/math_table2D.c
         ${SOURCE_DIR}/Math_Tools/math_tools.h

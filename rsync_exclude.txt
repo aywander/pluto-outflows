@@ -1,6 +1,0 @@
-.DS_Store
-.git/
-.gitignore
-.idea/
-cmake-build-debug/
-cmake-build-release/

@@ -173,7 +173,7 @@ double SphericalSampledAccretion(const Data *d, Grid *grid, const double radius)
     int npoints;
     double oversample = 30;
     double area, area_per_point;
-    double dl_min = grid[IDIR].dl_min;
+    double dl_min = grid->dl_min[IDIR];
 //    int ipoints = 0, gpoints;
 
     /* Area through which accretion rate is measured.
@@ -234,7 +234,7 @@ double SphericalSampledAccretion(const Data *d, Grid *grid, const double radius)
 
 #endif
 
-//    print1("%7d  %7d\n", gpoints, npoints);
+//    print("%7d  %7d\n", gpoints, npoints);
     FreeArray1D(x1);
     FreeArray1D(x2);
     FreeArray1D(x3);
@@ -267,9 +267,9 @@ double SphericalSelectedAccretion(const Data *d, Grid *grid, const double radius
 
 
     /* These are the geometrical central points */
-    x1 = grid[IDIR].x;
-    x2 = grid[JDIR].x;
-    x3 = grid[KDIR].x;
+    x1 = grid->x[IDIR];
+    x2 = grid->x[JDIR];
+    x3 = grid->x[KDIR];
 
     /* Intersection "booleans" */
     int sicr = 0;
@@ -279,13 +279,13 @@ double SphericalSelectedAccretion(const Data *d, Grid *grid, const double radius
 
 #if SIC_METHOD == SIC_RADIUS || SIC_METHOD == SIC_HYBRID
                 sicr = SphereSurfaceIntersectsCellByRadius(x1[i], x2[j], x3[k],
-                                                           grid[IDIR].dV[i], grid[JDIR].dV[j], grid[KDIR].dV[k],
+                                                           grid->dV[k][j][i],
                                                            radius);
 #endif
 
 #if SIC_METHOD == SIC_CORNERS || SIC_METHOD == SIC_HYBRID
                 sicc = SphereSurfaceIntersectsCellByCorners(x1[i], x2[j], x3[k],
-                                                            grid[IDIR].dx[i], grid[JDIR].dx[j], grid[KDIR].dx[k],
+                                                            grid->dx[IDIR][i], grid->dx[JDIR][j], grid->dx[KDIR][k],
                                                             radius);
 #endif
                 /* Only for cells "on" the surface, where we measure the accretion rate. */
@@ -704,9 +704,9 @@ double BondiAccretion(const Data *d, Grid *grid, const double radius) {
     int lcount = 0, gcount;
     double halo[NVAR];
 
-    x1 = grid[IDIR].x;
-    x2 = grid[JDIR].x;
-    x3 = grid[KDIR].x;
+    x1 = grid->x[IDIR];
+    x2 = grid->x[JDIR];
+    x3 = grid->x[KDIR];
 
     /* Get Bondi radius */
     tmp = g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP];

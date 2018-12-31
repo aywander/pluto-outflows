@@ -60,9 +60,9 @@ void ComputeUserVar(const Data *d, Grid *grid)
            vx3 = d->Vc[VX3];);
 
     /* These are the geometrical central points */
-    x1 = grid[IDIR].x;
-    x2 = grid[JDIR].x;
-    x3 = grid[KDIR].x;
+    x1 = grid->x[IDIR];
+    x2 = grid->x[JDIR];
+    x3 = grid->x[KDIR];
 
     DOM_LOOP(k, j, i) {
 
@@ -142,7 +142,7 @@ void ComputeUserVar(const Data *d, Grid *grid)
 
 
 /* ************************************************************* */
-void ChangeDumpVar()
+void ChangeOutputVar ()
 /* 
  *
  * 
@@ -153,71 +153,71 @@ void ChangeDumpVar()
     /* HDF5 output cannot be controlled yet. Everything is output.*/
 
     /* VTK output */
-    EXPAND(SetDumpVar("v1", VTK_OUTPUT, YES);,
-           SetDumpVar("v2", VTK_OUTPUT, YES);,
-           SetDumpVar("v3", VTK_OUTPUT, YES););
-    EXPAND(SetDumpVar("vx1", VTK_OUTPUT, NO);,
-           SetDumpVar("vx2", VTK_OUTPUT, NO);,
-           SetDumpVar("vx3", VTK_OUTPUT, NO););
-    SetDumpVar("prs", VTK_OUTPUT, YES);
-    SetDumpVar("tr1", VTK_OUTPUT, YES);
+    EXPAND(SetOutputVar("v1", VTK_OUTPUT, YES);,
+           SetOutputVar("v2", VTK_OUTPUT, YES);,
+           SetOutputVar("v3", VTK_OUTPUT, YES););
+    EXPAND(SetOutputVar("vx1", VTK_OUTPUT, NO);,
+           SetOutputVar("vx2", VTK_OUTPUT, NO);,
+           SetOutputVar("vx3", VTK_OUTPUT, NO););
+    SetOutputVar("prs", VTK_OUTPUT, YES);
+    SetOutputVar("tr1", VTK_OUTPUT, YES);
 #if CLOUDS == YES
-    SetDumpVar("tr2", VTK_OUTPUT, YES);
+    SetOutputVar("tr2", VTK_OUTPUT, YES);
 #endif
-    SetDumpVar("te", VTK_OUTPUT, YES);
-    SetDumpVar("spd", VTK_OUTPUT, YES);
-    SetDumpVar("lmd", VTK_OUTPUT, NO);
+    SetOutputVar("te", VTK_OUTPUT, YES);
+    SetOutputVar("spd", VTK_OUTPUT, YES);
+    SetOutputVar("lmd", VTK_OUTPUT, NO);
 
 
     /* FLT output */
-    EXPAND(SetDumpVar("v1", FLT_OUTPUT, YES);,
-           SetDumpVar("v2", FLT_OUTPUT, YES);,
-           SetDumpVar("v3", FLT_OUTPUT, YES););
-    EXPAND(SetDumpVar("vx1", FLT_OUTPUT, NO);,
-           SetDumpVar("vx2", FLT_OUTPUT, NO);,
-           SetDumpVar("vx3", FLT_OUTPUT, NO););
-    SetDumpVar("prs", FLT_OUTPUT, YES);
-    SetDumpVar("tr1", FLT_OUTPUT, YES);
+    EXPAND(SetOutputVar("v1", FLT_OUTPUT, YES);,
+           SetOutputVar("v2", FLT_OUTPUT, YES);,
+           SetOutputVar("v3", FLT_OUTPUT, YES););
+    EXPAND(SetOutputVar("vx1", FLT_OUTPUT, NO);,
+           SetOutputVar("vx2", FLT_OUTPUT, NO);,
+           SetOutputVar("vx3", FLT_OUTPUT, NO););
+    SetOutputVar("prs", FLT_OUTPUT, YES);
+    SetOutputVar("tr1", FLT_OUTPUT, YES);
 #if CLOUDS == YES
-    SetDumpVar("tr2", FLT_OUTPUT, YES);
+    SetOutputVar("tr2", FLT_OUTPUT, YES);
 #endif
-    SetDumpVar("te", FLT_OUTPUT, YES);
-    SetDumpVar("spd", FLT_OUTPUT, YES);
-    SetDumpVar("lmd", FLT_OUTPUT, NO);
+    SetOutputVar("te", FLT_OUTPUT, YES);
+    SetOutputVar("spd", FLT_OUTPUT, YES);
+    SetOutputVar("lmd", FLT_OUTPUT, NO);
 
 
     /* FLT H5 output */
-    EXPAND(SetDumpVar("v1", FLT_H5_OUTPUT, YES);,
-           SetDumpVar("v2", FLT_H5_OUTPUT, YES);,
-           SetDumpVar("v3", FLT_H5_OUTPUT, YES););
-    EXPAND(SetDumpVar("vx1", FLT_H5_OUTPUT, NO);,
-           SetDumpVar("vx2", FLT_H5_OUTPUT, NO);,
-           SetDumpVar("vx3", FLT_H5_OUTPUT, NO););
-    SetDumpVar("prs", FLT_H5_OUTPUT, YES);
-    SetDumpVar("tr1", FLT_H5_OUTPUT, YES);
+    EXPAND(SetOutputVar("v1", FLT_H5_OUTPUT, YES);,
+           SetOutputVar("v2", FLT_H5_OUTPUT, YES);,
+           SetOutputVar("v3", FLT_H5_OUTPUT, YES););
+    EXPAND(SetOutputVar("vx1", FLT_H5_OUTPUT, NO);,
+           SetOutputVar("vx2", FLT_H5_OUTPUT, NO);,
+           SetOutputVar("vx3", FLT_H5_OUTPUT, NO););
+    SetOutputVar("prs", FLT_H5_OUTPUT, YES);
+    SetOutputVar("tr1", FLT_H5_OUTPUT, YES);
 #if CLOUDS == YES
-    SetDumpVar("tr2", FLT_H5_OUTPUT, YES);
+    SetOutputVar("tr2", FLT_H5_OUTPUT, YES);
 #endif
-    SetDumpVar("te", FLT_H5_OUTPUT, YES);
-    SetDumpVar("spd", FLT_H5_OUTPUT, YES);
-    SetDumpVar("lmd", FLT_H5_OUTPUT, NO);
+    SetOutputVar("te", FLT_H5_OUTPUT, YES);
+    SetOutputVar("spd", FLT_H5_OUTPUT, YES);
+    SetOutputVar("lmd", FLT_H5_OUTPUT, NO);
 
 
     /* PNG output */
-    EXPAND(SetDumpVar("v1", PNG_OUTPUT, YES);,
-           SetDumpVar("v2", PNG_OUTPUT, YES);,
-           SetDumpVar("v3", PNG_OUTPUT, YES););
-    EXPAND(SetDumpVar("vx1", PNG_OUTPUT, NO);,
-           SetDumpVar("vx2", PNG_OUTPUT, NO);,
-           SetDumpVar("vx3", PNG_OUTPUT, NO););
-    SetDumpVar("prs", PNG_OUTPUT, YES);
-    SetDumpVar("tr1", PNG_OUTPUT, YES);
+    EXPAND(SetOutputVar("v1", PNG_OUTPUT, YES);,
+           SetOutputVar("v2", PNG_OUTPUT, YES);,
+           SetOutputVar("v3", PNG_OUTPUT, YES););
+    EXPAND(SetOutputVar("vx1", PNG_OUTPUT, NO);,
+           SetOutputVar("vx2", PNG_OUTPUT, NO);,
+           SetOutputVar("vx3", PNG_OUTPUT, NO););
+    SetOutputVar("prs", PNG_OUTPUT, YES);
+    SetOutputVar("tr1", PNG_OUTPUT, YES);
 #if CLOUDS == YES
-    SetDumpVar("tr2", PNG_OUTPUT, YES);
+    SetOutputVar("tr2", PNG_OUTPUT, YES);
 #endif
-    SetDumpVar("te", PNG_OUTPUT, YES);
-    SetDumpVar("spd", PNG_OUTPUT, YES);
-    SetDumpVar("lmd", PNG_OUTPUT, NO);
+    SetOutputVar("te", PNG_OUTPUT, YES);
+    SetOutputVar("spd", PNG_OUTPUT, YES);
+    SetOutputVar("lmd", PNG_OUTPUT, NO);
 
 
 
@@ -266,6 +266,15 @@ void ChangeDumpVar()
 #endif
 #endif
 
+#ifdef PARTICLES
+  //SetOutputVar ("energy",PARTICLES_FLT_OUTPUT, NO);
+//  SetOutputVar ("x1",    PARTICLES_FLT_OUTPUT, NO);
+  //SetOutputVar ("vx1",   PARTICLES_FLT_OUTPUT, NO);
+#endif
 
 }
+
+
+
+
 

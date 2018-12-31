@@ -27,9 +27,7 @@ extern CloudAnalytics ca;
 
 int CloudCubePixel(int *el, const double x1, const double x2, const double x3);
 
-void ReadFractalData();
-
-void GetFractalData(double *cloud, const double x1, const double x2, const double x3);
+void NormalizeFractalData(double *cloud, const double x1, const double x2, const double x3);
 
 void CloudDensity(double *cloud, const double x1, const double x2, const double x3);
 

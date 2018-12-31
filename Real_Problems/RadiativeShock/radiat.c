@@ -31,12 +31,12 @@ void Radiat (double *v, double *rhs)
    ------------------------------------------- */
 
     if (T_tab == NULL) {
-        print1(" > Reading table from disk...\n");
+        print(" > Reading table from disk...\n");
 
         /*  Read in input table with 1st column as P/rho in cgs and second column being Lambda */
         fcool = fopen("cooltable.dat", "r");
         if (fcool == NULL) {
-            print1("! Radiat: cooltable.dat could not be found.\n");
+            print("! Radiat: cooltable.dat could not be found.\n");
             QUIT_PLUTO(1);
         }
         L_tab = ARRAY_1D(20000, double);
@@ -70,8 +70,8 @@ void Radiat (double *v, double *rhs)
     T = prs / v[RHO] * UNIT_VELOCITY * UNIT_VELOCITY;
 
     if (T != T) {
-        print1(" ! Nan found in radiat \n");
-        print1(" ! rho = %12.6e, prs = %12.6e\n", v[RHO], prs);
+        print(" ! Nan found in radiat \n");
+        print(" ! rho = %12.6e, prs = %12.6e\n", v[RHO], prs);
         QUIT_PLUTO(1);
     }
 

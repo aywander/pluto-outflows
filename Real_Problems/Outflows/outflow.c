@@ -132,13 +132,12 @@ void SetNozzleGeometry(Nozzle * noz) {
 
         /* Volume of nozzle. It is the 3D (revolved) volume. */
         // TODO: The volume is only valid in the case of two-sided galaxies, where dbh = 0.
-        // TODO: This does not exclude the spherical hole in SPHERICAL geometries
 #if INTERNAL_BOUNDARY == YES
         double spherical_cone_volume = area * cone_side / 3.;
         double overlap_rad = rad * (1. - cbh / cone_height);
         double overlap_volume = CONST_PI * overlap_rad * overlap_rad * (cone_height - cbh) / 3.;
-        vol = spherical_cone_volume - overlap_volume ;
-#else
+        vol = spherical_cone_volume - overlap_volume;
+#else // If half galaxy
         vol = 0;
 #endif
 
@@ -152,7 +151,6 @@ void SetNozzleGeometry(Nozzle * noz) {
 
         /* Volume of nozzle */
         // TODO: The volume is only valid in the case of two-sided galaxies, where dbh = 0.
-        // TODO: This does not exclude the spherical hole in SPHERICAL geometries
 #if INTERNAL_BOUNDARY == YES
         vol = area * cbh;
 #else
@@ -160,6 +158,15 @@ void SetNozzleGeometry(Nozzle * noz) {
 #endif
 
     }
+
+/* Remove inner spherical volume in the case of SPHERICAL geometry */
+#if GEOMETRY == SPHERICAL
+#if INTERNAL_BOUNDARY == YES
+    vol -= 4. * CONST_PI / 3. * (g_domBeg[IDIR] * g_domBeg[IDIR] * g_domBeg[IDIR]);
+#else
+    vol -= 2. * CONST_PI / 3. * (g_domBeg[IDIR] * g_domBeg[IDIR] * g_domBeg[IDIR]);
+#endif
+#endif
 
     /* Power should always be the total power injected into box
      * (except for axis-symmetric cases, where volume and area still assume the full phi = 2 pi region) */
@@ -175,11 +182,11 @@ void SetNozzleGeometry(Nozzle * noz) {
     /* Currently we require the BH location to be at 0,0,0  and noz.dbh = 0*/
 
     if (0 > dbh || dbh > 0) {
-        print1("Warning: If INTERNAL_BOUNDARY == YES, ODBH = 0. Setting noz.dbh to 0.");
+        print("Warning: If INTERNAL_BOUNDARY == YES, ODBH = 0. Setting noz.dbh to 0.");
         dbh = 0;
     }
     if (sph < rad) {
-        print1("Error: OSPH must be larger than ORAD");
+        print("Error: OSPH must be larger than ORAD");
         QUIT_PLUTO(1);
     }
     /* This check is for avoiding the cone of the nozzle to be buried in the
@@ -188,7 +195,7 @@ void SetNozzleGeometry(Nozzle * noz) {
 
         if (acos(1 - ((sph - cbh) * (sph - cbh) + rad * rad) /
                      (2 * sph * sph)) + dir > CONST_PI / 2) {
-            print1("Error: OSPH is too small. It must be at least...");
+            print("Error: OSPH is too small. It must be at least...");
             QUIT_PLUTO(1);
             // TODO: Calculate minimum OSPH
         }
@@ -198,7 +205,7 @@ void SetNozzleGeometry(Nozzle * noz) {
 
 #if NOZZLE_FILL == NF_CONSERVATIVE
 
-    print1("Error: INTERNAL_BOUNDARY must be TRUE if NOZZLE_FILL == NF_CONSERVATIVE.");
+    print("Error: INTERNAL_BOUNDARY must be TRUE if NOZZLE_FILL == NF_CONSERVATIVE.");
     QUIT_PLUTO(1);
 
 #endif
@@ -215,6 +222,7 @@ void SetNozzleGeometry(Nozzle * noz) {
     noz->cbh = cbh;
     noz->orig = orig;
     noz->area = area;
+    // TODO: Do we even need vol? If not, we don't need to calculat ite
     noz->vol = vol;
     noz->cone_height = cone_height;
     noz->cone_apex = cone_apex;
@@ -356,7 +364,7 @@ void SetJetState(OutflowState *ofs) {
              * The expression for this is too complicated.
              * */
 
-            print1("Error in SetJetState for Feedback cycle FBC_DEBOOST_MODE3 not supported.");
+            print("Error in SetJetState for Feedback cycle FBC_DEBOOST_MODE3 not supported.");
             QUIT_PLUTO(1);
 
 #endif  // FCB_DEBOOST_MODE
@@ -623,11 +631,12 @@ void NozzleFill(Data *d, const Grid *grid) {
  *
  ************************************************** */
 
-    RBox *box = GetRBox(DOM, CENTER);
+    RBox box;
+    RBoxDefine (IBEG, IEND, JBEG, JEND, KBEG, KEND, CENTER, &box);
 
     // Just for initialization, need to convert primitives to conservatives
     // TODO: This may not be needed if this is modularized and attached somewhere else in main.c
-    if (g_time <= 0.) PrimToCons3D(d->Vc, d->Uc, box);
+    if (g_time <= 0.) PrimToCons3D(d->Vc, d->Uc, &box);
 
     double *x1, *x2, *x3;
     double out_conservatives[NVAR];
@@ -637,14 +646,14 @@ void NozzleFill(Data *d, const Grid *grid) {
     VAR_LOOP(nv) out_conservatives[nv] = 0.;
 
     /* These are the geometrical central points */
-    x1 = grid[IDIR].x;
-    x2 = grid[JDIR].x;
-    x3 = grid[KDIR].x;
+    x1 = grid->x[IDIR];
+    x2 = grid->x[JDIR];
+    x3 = grid->x[KDIR];
 
 
     // TODO: Relativistic version
 #if (PHYSICS == RHD) || (PHYSICS == RMHD)
-    print1("Error: NOZZLE_FILL CONSERVATIVE not supported if PHYSICS is RHD or RMHD.");
+    print("Error: NOZZLE_FILL CONSERVATIVE not supported if PHYSICS is RHD or RMHD.");
     QUIT_PLUTO(1);
 #endif
 
@@ -652,7 +661,7 @@ void NozzleFill(Data *d, const Grid *grid) {
     // NOTE: Volume is incorrectly calculated for spherical setups; nothing is dumped in the excluded x1_beg region.
 //#if GEOMETRY == SPHERICAL
 //    if (g_domBeg[IDIR] > 0.) {
-//        print1("Error: NOZZLE_FILL CONSERVATIVE not supported if (GEOMETRY == SPHERICAL) && (g_domBeg[IDIR] > 0.).");
+//        print("Error: NOZZLE_FILL CONSERVATIVE not supported if (GEOMETRY == SPHERICAL) && (g_domBeg[IDIR] > 0.).");
 //        QUIT_PLUTO(1);
 //    }
 //#endif
@@ -691,7 +700,7 @@ void NozzleFill(Data *d, const Grid *grid) {
             }
 
     /* Update primitives */
-    ConsToPrim3D(d->Uc, d->Vc, d->flag, box);
+    ConsToPrim3D(d->Uc, d->Vc, d->flag, &box);
 }
 
 
@@ -715,8 +724,6 @@ void OutflowPrimitives(double *out_primitives, const double x1, const double x2,
     out_primitives[TRC + 1] = 0.0;
 #endif
     OutflowVelocity(out_primitives, os.spd, x1, x2, x3);
-
-    return;
 
 }
 

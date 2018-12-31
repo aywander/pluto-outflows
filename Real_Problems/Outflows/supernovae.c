@@ -91,7 +91,7 @@ void InjectSupernovae(double *result, const double x1, const double x2, const do
         /* Inject supernova(e) in region around (0,0,0) within a given radius */
         if (r < sn_inj) {
 
-            double vol = D_EXPAND(2. * sn_inj, / 2. * sn_inj * CONST_PI, *4. / 3. * sn_inj);
+            double vol = 4 * CONST_PI  / 3. * sn_inj * sn_inj * sn_inj;
 
             result[PRS] += sn.en1 / vol * (g_gamma - 1.);
             result[TRC] = 1;

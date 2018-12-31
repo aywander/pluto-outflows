@@ -24,15 +24,15 @@ int hunter(const double arr[], const int narr, const double val) {
 
     /* Bounds check */
     if (val < arrb) {
-        print1("Error: interpolation.c: hunter: interpolation out of (lower) bounds.\n");
-        print1("val :  %e\n", val);
-        print1("arrb:  %e\n", arrb);
+        print("Error: interpolation.c: hunter: interpolation out of (lower) bounds.\n");
+        print("val :  %e\n", val);
+        print("arrb:  %e\n", arrb);
         exit(1);
     }
     else if (val > arre) {
-        print1("Error: interpolation.c: hunter: interpolation out of (upper) bounds.\n");
-        print1("val  %e\n", val);
-        print1("arre %e\n", arre);
+        print("Error: interpolation.c: hunter: interpolation out of (upper) bounds.\n");
+        print("val  %e\n", val);
+        print("arre %e\n", arre);
         exit(1);
     }
 
@@ -237,9 +237,9 @@ void x3u_3d_extrapol(double ***a, int kb, int i, int j, int k, Grid *grid)
     double *x1, *x2, *x3;
     double y0, y1, y2, z0, z1, z2;
 
-    x1 = grid[IDIR].xgc;
-    x2 = grid[JDIR].xgc;
-    x3 = grid[KDIR].xgc;
+    x1 = grid->xgc[IDIR];
+    x2 = grid->xgc[JDIR];
+    x3 = grid->xgc[KDIR];
 
     y0 = a[kb][j][i];
     y1 = a[kb - 1][j][i];
@@ -269,9 +269,9 @@ void x2l_3d_extrapol (double ***a, int jb, int i, int j, int k, Grid *grid)
     double *x1, *x2, *x3;
     double y0, y1, y2, z0, z1, z2;
 
-    x1 = grid[IDIR].xgc;
-    x2 = grid[JDIR].xgc;
-    x3 = grid[KDIR].xgc;
+    x1 = grid->xgc[IDIR];
+    x2 = grid->xgc[JDIR];
+    x3 = grid->xgc[KDIR];
 
     y0 = a[k][jb][i];
     y1 = a[k][jb + 1][i];

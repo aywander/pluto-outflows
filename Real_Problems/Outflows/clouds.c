@@ -81,52 +81,17 @@ int CloudCubePixel(int *el, const double x1,
 }
 
 /* ************************************************************** */
-void ReadFractalData()
+void NormalizeFractalData(double *cloud, const double x1, const double x2, const double x3)
 /*!
- * This routine reads the Fractal cube data once.
+ *  This routine is just used to noramlize the data
+ *  The input density cube has a normalized lognormal density
+ *  distribution about 1 (which is later multiplied by WRHO)
+ *  and the input velocity cube has a mean of 0
+ *  and is assumed to be in units of km / s.
  *
  **************************************************************** */
 {
 
-//---DM 22feb, 2015: update definition of get_var for cloud velocities---
-
-    static int once01 = 0;
-
-    if (!once01) {
-
-#if CLOUD_VELOCITY != NONE
-        int get_var[] = {RHO, ARG_EXPAND(VX1, VX2, VX3), -1};
-
-#else
-        int get_var[] = {RHO, -1};
-
-#endif
-
-        /* Read cloud data from external file */
-        InputDataSet("./grid_in.out", get_var);
-        InputDataRead("./input.flt", CUBE_ENDIANNESS);
-        once01 = 1;
-    }
-
-}
-
-/* ************************************************************** */
-void GetFractalData(double *cloud, const double x1, const double x2, const double x3)
-/*!
- *  This routine is just a wrapper to InputDataInterpolate.
- *  The input cube has a normalized density distribution about 1
- *  (which is later multiplied by WRHO) and
- *
- *
- **************************************************************** */
-{
-
-    double x, y, z;
-    int nv, inv;
-
-    InputDataInterpolate(cloud, x1, x2, x3);
-
-    // TODO: Add condition for whether CLOUD_INPUT_DATA is used
     /* Normalize velocities to code units here */
     EXPAND(cloud[VX1] *= ini_code[PAR_WTRB];,
            cloud[VX2] *= ini_code[PAR_WTRB];,
@@ -290,7 +255,7 @@ double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, c
     }
 
     if (!once01){
-      print1("> Cloud extraction: CLOUD_EXTRACTION_ELLIPSOID.\n\n");
+      print("> Cloud extraction: CLOUD_EXTRACTION_ELLIPSOID.\n\n");
       once01 = 1;
     }
 
@@ -387,7 +352,6 @@ void CloudVelocity(double *cloud, double *halo,
  **************************************************************** */
 {
 
-    /* The clouds at this point are in km/s, as they come in read from the cube */
     double v1, v2, v3;
 
 #if CLOUD_VELOCITY == CV_KEPLERIAN
@@ -565,7 +529,6 @@ int CloudPrimitives(double *cloud,
  * This function returns 1 if cell is cloud material, 0 if not.
  *
  * The array *cloud is filled in the process that involves three steps:
- * 0) Reading cloud data once. ReadFractalData.
  * 1) Check that we're inside fractal cube domain. CloudCubePixel.
  * 2) Get the cloud values for the current coordinates. GetFractalData.
  * 3) Apodization step. Currently supported are
@@ -590,16 +553,11 @@ int CloudPrimitives(double *cloud,
     int nv, cube_pixel[DIMENSIONS];
     int is_cloud = 0;
 
-    /* Read in fractal data (once) and put into memory.
-     * This needs to happen here because CloudCubePixel
-     * requires cube data domain extents. */
-    ReadFractalData();
-
     /* Get cloud pixel coordinates */
     if (CloudCubePixel(cube_pixel, x1, x2, x3)) {
 
         /* Get the fractal factor for this cell */
-        GetFractalData(cloud, x1, x2, x3);
+        NormalizeFractalData(cloud, x1, x2, x3);
 
         /* Cloud density profile. Apodize with a mean density profile */
         CloudDensity(cloud, x1, x2, x3);
@@ -610,6 +568,7 @@ int CloudPrimitives(double *cloud,
         /* Extract w.r.t. hot halo. Halo primitives are required
          * for this step. */
         HotHaloPrimitives(halo, x1, x2, x3);
+
         if (CloudExtract(cloud, halo, cube_pixel, x1, x2, x3)) {
 
             /* Cloud pressure
@@ -698,7 +657,7 @@ void WarmOutflowRates(Data *d, Grid *grid) {
     int npoints;
     double oversample = 30;
     double area, area_per_point;
-    double dl_min = grid[IDIR].dl_min;
+    double dl_min = grid->dl_min[IDIR];
 
     double radius;
 
@@ -797,15 +756,11 @@ void WarmOutflowRates(Data *d, Grid *grid) {
 
     /* Total domain based estimates */
 
-    x1 = grid[IDIR].x;
-    x2 = grid[JDIR].x;
-    x3 = grid[KDIR].x;
+    x1 = grid->x[IDIR];
+    x2 = grid->x[JDIR];
+    x3 = grid->x[KDIR];
 
-    double *dV1, *dV2, *dV3;
     double cell_vol, cell_area, rad;
-    dV1 = grid[IDIR].dV;
-    dV2 = grid[JDIR].dV;
-    dV3 = grid[KDIR].dV;
 
     /* Zero cumulative quantities */
     edot_a = pdot_a = mdot_a = vrho_a = wgt_a = 0;
@@ -825,10 +780,8 @@ void WarmOutflowRates(Data *d, Grid *grid) {
                     tr2 = d->Vc[TRC + 1][k][j][i];
 
                     rad = SPH1(x1[i], x2[j], x3[k]);
-                    cell_vol = D_EXPAND(dV1[i], *dV2[j], *dV3[k]);
-                    cell_area = D_SELECT(cell_vol;,
-                                         sqrt(cell_vol / CONST_PI) * 2 * CONST_PI * rad;,
-                                         pow(0.75 * cell_vol / CONST_PI, 2. / 3.) * CONST_PI;);
+                    cell_vol = ElevateVolume(grid->dV[k][j][i]);
+                    cell_area = pow(0.75 * cell_vol / CONST_PI, 2. / 3.) * CONST_PI;
 
                     wgt = tr2 * rho;
                     vrho = wgt * vs1;
@@ -891,15 +844,11 @@ void WarmPhaseMass(Data *d, Grid *grid) {
     /* Total mass in domain */
 
     double *x1, *x2, *x3;
-    x1 = grid[IDIR].x;
-    x2 = grid[JDIR].x;
-    x3 = grid[KDIR].x;
+    x1 = grid->x[IDIR];
+    x2 = grid->x[JDIR];
+    x3 = grid->x[KDIR];
 
-    double *dV1, *dV2, *dV3;
     double cell_vol;
-    dV1 = grid[IDIR].dV;
-    dV2 = grid[JDIR].dV;
-    dV3 = grid[KDIR].dV;
 
     int i, j, k;
     DOM_LOOP(k, j, i) {
@@ -911,7 +860,7 @@ void WarmPhaseMass(Data *d, Grid *grid) {
                     tr2 = d->Vc[TRC + 1][k][j][i];
                     te = d->Vc[PRS][k][j][i] / rho * MU_NORM * KELVIN;
 
-                    cell_vol = D_EXPAND(dV1[i], *dV2[j], *dV3[k]);
+                    cell_vol = ElevateVolume(grid->dV[k][j][i]);
 
                     /* Mass by tracer */
                     mass_tr2 = tr2 * rho * cell_vol;
@@ -959,15 +908,11 @@ void WarmPhaseStarFormationRate(Data *d, Grid *grid) {
     delta_m = ARRAY_3D(NX3_TOT, NX2_TOT, NX1_TOT, double);
 
     double *x1, *x2, *x3;
-    x1 = grid[IDIR].x;
-    x2 = grid[JDIR].x;
-    x3 = grid[KDIR].x;
+    x1 = grid->x[IDIR];
+    x2 = grid->x[JDIR];
+    x3 = grid->x[KDIR];
 
-    double *dV1, *dV2, *dV3;
     double cell_vol;
-    dV1 = grid[IDIR].dV;
-    dV2 = grid[JDIR].dV;
-    dV3 = grid[KDIR].dV;
 
     int i, j, k;
 
@@ -979,7 +924,7 @@ void WarmPhaseStarFormationRate(Data *d, Grid *grid) {
 
                     sfr = StarFormationRateDensity(d, grid, i, j, k);
 
-                    cell_vol = dV1[i] * dV2[j] * dV3[k];
+                    cell_vol = ElevateVolume(grid->dV[k][j][i]);
 
                     sfr_a += sfr * cell_vol;
 

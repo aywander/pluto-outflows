@@ -124,7 +124,7 @@ void InputDataSet (char *grid_fname, int *get_var)
     FILE *fp;
 
 #if CLOUDS_MULTI != YES
-    print1("> Input data:\n\n");
+    print("> Input data:\n\n");
 #endif
 
 /* --------------------------------------------------------------------- */
@@ -135,7 +135,7 @@ void InputDataSet (char *grid_fname, int *get_var)
 
     fp = fopen(grid_fname, "r");
     if (fp == NULL) {
-        print1("! InputDataSet: grid file %s not found\n", grid_fname);
+        print("! InputDataSet: grid file %s not found\n", grid_fname);
         QUIT_PLUTO(1);
     }
     success = 0;
@@ -157,13 +157,13 @@ void InputDataSet (char *grid_fname, int *get_var)
     else if (!strcmp(sub_str, "POLAR")) id_geom = POLAR;
     else if (!strcmp(sub_str, "SPHERICAL")) id_geom = SPHERICAL;
     else {
-        print1("! InputDataSet: unknown geometry\n");
+        print("! InputDataSet: unknown geometry\n");
         QUIT_PLUTO(1);
     }
 
 #if CLOUDS_MULTI != YES
-    print1("  Input grid file:       %s\n", grid_fname);
-    print1("  Input grid geometry:   %s\n", sub_str);
+    print("  Input grid file:       %s\n", grid_fname);
+    print("  Input grid geometry:   %s\n", sub_str);
 #endif
 
 /* --------------------------------------------------------------------- */
@@ -241,11 +241,11 @@ void InputDataSet (char *grid_fname, int *get_var)
 
 
 #if CLOUDS_MULTI != YES
-    print1("  Input grid extension:  x1 = [%12.3e, %12.3e] (%d points)\n",
+    print("  Input grid extension:  x1 = [%12.3e, %12.3e] (%d points)\n",
            id_x1[0], id_x1[id_nx1 - 1], id_nx1);
-    print1("\t\t\t x2 = [%12.3e, %12.3e] (%d points)\n",
+    print("\t\t\t x2 = [%12.3e, %12.3e] (%d points)\n",
            id_x2[0], id_x2[id_nx2 - 1], id_nx2);
-    print1("\t\t\t x3 = [%12.3e, %12.3e] (%d points)\n",
+    print("\t\t\t x3 = [%12.3e, %12.3e] (%d points)\n",
            id_x3[0], id_x3[id_nx3 - 1], id_nx3);
 #endif
 
@@ -267,7 +267,7 @@ void InputDataSet (char *grid_fname, int *get_var)
     }
 
 #if CLOUDS_MULTI != YES
-    print1("  Number of variables:   %d\n", id_nvar);
+    print("  Number of variables:   %d\n", id_nvar);
 #endif
 
     /* AYW -- 2014-06-03 20:08 JST
@@ -313,7 +313,7 @@ void InputDataRead (char *data_fname, char *endianity)
     }
 
 #if CLOUDS_MULTI != YES
-    print1("  Input data file:       %s (endianity: %s) \n",
+    print("  Input data file:       %s (endianity: %s) \n",
            data_fname, endianity);
 #endif
 
@@ -326,16 +326,16 @@ void InputDataRead (char *data_fname, char *endianity)
 
     if (!strcmp(ext, "dbl")) {
 #if CLOUDS_MULTI != YES
-        print1("  Precision:             (double)\n");
+        print("  Precision:             (double)\n");
 #endif
         dsize = sizeof(double);
     } else if (!strcmp(ext, "flt")) {
 #if CLOUDS_MULTI != YES
-        print1("  Precision:             (single)\n");
+        print("  Precision:             (single)\n");
 #endif
         dsize = sizeof(float);
     } else {
-        print1("! InputDataRead: unsupported data type '%s'\n", ext);
+        print("! InputDataRead: unsupported data type '%s'\n", ext);
         QUIT_PLUTO(1);
     }
 
@@ -345,7 +345,7 @@ void InputDataRead (char *data_fname, char *endianity)
 
     fp = fopen(data_fname, "rb");
     if (fp == NULL) {
-        print1("! InputDataRead: file %s does not exist\n", data_fname);
+        print("! InputDataRead: file %s does not exist\n", data_fname);
         QUIT_PLUTO(1);
     }
     for (nv = 0; nv < id_nvar; nv++) {
@@ -359,7 +359,7 @@ void InputDataRead (char *data_fname, char *endianity)
                 for (j = 0; j < id_nx2; j++) {
                     for (i = 0; i < id_nx1; i++) {
                         if (fread(&udbl, dsize, dcount, fp) != dcount) {
-                            print1("! InputDataRead: error reading data %d.\n", nv);
+                            print("! InputDataRead: error reading data %d.\n", nv);
                             break;
                         }
                         if (swap_endian) SWAP_VAR(udbl);
@@ -372,7 +372,7 @@ void InputDataRead (char *data_fname, char *endianity)
                 for (j = 0; j < id_nx2; j++) {
                     for (i = 0; i < id_nx1; i++) {
                         if (fread(&uflt, dsize, dcount, fp) != dcount) {
-                            print1("! InputDataRead: error reading data %d.\n", nv);
+                            print("! InputDataRead: error reading data %d.\n", nv);
                             break;
                         }
                         if (swap_endian) SWAP_VAR(uflt);
@@ -386,7 +386,7 @@ void InputDataRead (char *data_fname, char *endianity)
     fclose(fp);
 
 #if CLOUDS_MULTI != YES
-    print1("\n");
+    print("\n");
 #endif
 }
 
@@ -508,7 +508,7 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
 //
 //     x1 = r; x2 = theta; x3 = phi;
 //   }else{
-//     print1 ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
+//     print ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
 //     QUIT_PLUTO(1);
 //   }
 //  #elif GEOMETRY == CYLINDRICAL
@@ -526,7 +526,7 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
 //
 //     x1 = r; x2 = theta; x3 = phi;
 //   }else{
-//     print1 ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
+//     print ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
 //     QUIT_PLUTO(1);
 //   }
 //  #elif GEOMETRY == POLAR
@@ -542,7 +542,7 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
 //
 //     x1 = x; x2 = y; x3 = z;
 //   }else{
-//     print1 ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
+//     print ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
 //     QUIT_PLUTO(1);
 //   }
 //  #elif GEOMETRY == SPHERICAL
@@ -559,7 +559,7 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
 //
 //     x1 = x; x2 = y; x3 = z;
 //   }else{
-//     print1 ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
+//     print ("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
 //     QUIT_PLUTO(1);
 //   }
 //  #endif
@@ -743,7 +743,7 @@ void InputDataInterpolate (double *vs, double x1, double x2, double x3)
         }
 
         else {
-            print1("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
+            print("! InputDataInterpolate: invalid or unsupported coordinate transformation.\n");
             QUIT_PLUTO(1);
         }
 

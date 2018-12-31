@@ -44,7 +44,7 @@ void ComputeUserVar (const Data *d, Grid *grid)
 }
 
 /* ************************************************************* */
-void ChangeDumpVar ()
+void ChangeOutputVar ()
 /* 
  *
  * 
@@ -55,15 +55,22 @@ void ChangeDumpVar ()
   /* HDF5 output cannot be controlled yet. Everything is output.*/
 
   /* VTK output */
-  SetDumpVar("prs",  VTK_OUTPUT, NO);
-  SetDumpVar("te",   VTK_OUTPUT, YES);
-  SetDumpVar("lmd",  VTK_OUTPUT, YES);
+  SetOutputVar("prs",  VTK_OUTPUT, NO);
+  SetOutputVar("te",   VTK_OUTPUT, YES);
+  SetOutputVar("lmd",  VTK_OUTPUT, YES);
 
 
   /* FLT output */
-  SetDumpVar("prs",  FLT_OUTPUT, NO);
-  SetDumpVar("te",   FLT_OUTPUT, YES);
-  SetDumpVar("lmd",  FLT_OUTPUT, YES);
+  SetOutputVar("prs",  FLT_OUTPUT, NO);
+  SetOutputVar("te",   FLT_OUTPUT, YES);
+  SetOutputVar("lmd",  FLT_OUTPUT, YES);
+
+
+#ifdef PARTICLES
+  //SetOutputVar ("energy",PARTICLES_FLT_OUTPUT, NO);
+//  SetOutputVar ("x1",    PARTICLES_FLT_OUTPUT, NO);
+  //SetOutputVar ("vx1",   PARTICLES_FLT_OUTPUT, NO);
+#endif
 
 }
 

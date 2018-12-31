@@ -2,6 +2,7 @@
 // Created by Alexander Y. Wagner on 6/30/16.
 //
 
+#include <math.h>
 #include "random.h"
 
 

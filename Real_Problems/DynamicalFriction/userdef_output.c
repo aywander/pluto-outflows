@@ -34,20 +34,15 @@ void ComputeUserVar (const Data *d, Grid *grid)
 
 #if DEBUG_USING_USERDEF_VARS
 
-    double ***deltaV1, ***deltaV2, ***deltaV3;
-    deltaV1 = GetUserVar("dV1");
-    deltaV2 = GetUserVar("dV2");
-    deltaV3 = GetUserVar("dV3");
-
     double ***deltax1, ***deltax2, ***deltax3;
     deltax1 = GetUserVar("dx1");
     deltax2 = GetUserVar("dx2");
     deltax3 = GetUserVar("dx3");
 
     double *dx1, *dx2, *dx3;
-    dx1 = grid[IDIR].dx;
-    dx2 = grid[JDIR].dx;
-    dx3 = grid[KDIR].dx;
+    dx1 = grid->dx[IDIR];
+    dx2 = grid->dx[JDIR];
+    dx3 = grid->dx[KDIR];
 
     double ***xcart1, ***xcart2, ***xcart3;
     xcart1 = GetUserVar("xc1");
@@ -59,8 +54,8 @@ void ComputeUserVar (const Data *d, Grid *grid)
     xsph2 = GetUserVar("xs2");
     xsph3 = GetUserVar("xs3");
 
-    double ***cV;
-    cV = GetUserVar("cV");
+    double ***vol;
+    vol = GetUserVar("vol");
 
 #endif
 
@@ -76,27 +71,19 @@ void ComputeUserVar (const Data *d, Grid *grid)
            vx3 = d->Vc[VX3];);
 
     /* These are the geometrical central points */
-    x1 = grid[IDIR].x;
-    x2 = grid[JDIR].x;
-    x3 = grid[KDIR].x;
+    x1 = grid->x[IDIR];
+    x2 = grid->x[JDIR];
+    x3 = grid->x[KDIR];
 
     double cell_vol, rad;
-    double *dV1, *dV2, *dV3;
-    dV1 = grid[IDIR].dV;
-    dV2 = grid[JDIR].dV;
-    dV3 = grid[KDIR].dV;
 
     DOM_LOOP(k, j, i) {
 
                 /* Geometrical factors */
                 rad = SPH1(x1[i], x2[j], x3[k]);
-                cell_vol = dV1[i] * dV2[j] * dV3[k];
+                cell_vol = grid->dV[k][j][i]
 
 #if DEBUG_USING_USERDEF_VARS
-
-                deltaV1[k][j][i] = dV1[i];
-                deltaV2[k][j][i] = dV2[j];
-                deltaV3[k][j][i] = dV3[k];
 
                 deltax1[k][j][i] = dx1[i];
                 deltax2[k][j][i] = dx2[j];
@@ -114,7 +101,7 @@ void ComputeUserVar (const Data *d, Grid *grid)
                 xsph2[k][j][i] = SPH2(x1[i], x2[j], x3[k]);
                 xsph3[k][j][i] = SPH3(x1[i], x2[j], x3[k]);
 
-                cV[k][j][i] = cell_vol;
+                vol[k][j][i] = cell_vol;
 #endif
 
                 /* Gravitational force */
@@ -160,13 +147,19 @@ void ComputeUserVar (const Data *d, Grid *grid)
 }
 
 /* ************************************************************* */
-void ChangeDumpVar ()
+void ChangeOutputVar ()
 /* 
  *
  * 
  *************************************************************** */
 { 
   Image *image;
+
+#ifdef PARTICLES
+  //SetOutputVar ("energy",PARTICLES_FLT_OUTPUT, NO);
+//  SetOutputVar ("x1",    PARTICLES_FLT_OUTPUT, NO);
+  //SetOutputVar ("vx1",   PARTICLES_FLT_OUTPUT, NO);
+#endif
 
 }
 

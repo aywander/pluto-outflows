@@ -166,8 +166,7 @@ int SphereSurfaceIntersectsNCells(const double dx1, const double dx2, const doub
 
 
 /* ************************************************ */
-int SphereSurfaceIntersectsCellByRadius(const double x1, const double x2, const double x3,
-                                        const double dV1, const double dV2, const double dV3,
+int SphereSurfaceIntersectsCellByRadius(const double x1, const double x2, const double x3, const double vol,
                                         const double r) {
 /*
  * Returns 1 if sphere surface intersects a cartesian cell.
@@ -178,11 +177,6 @@ int SphereSurfaceIntersectsCellByRadius(const double x1, const double x2, const 
  * Sphere is assumed to be at (0, 0, 0) and has a radius
  * of rad. Also assumes that (0, 0, 0) is a corner point.
  ************************************************** */
-
-
-
-    /* Get volume of cell */
-    double vol = D_EXPAND(dV1, * dV2, * dV3);
 
     /* Equivalent volume spherical radius of cell */
     double rad = D_SELECT(vol, sqrt(vol / CONST_PI), pow(vol * 3 / (4 * CONST_PI), 1/3.));
@@ -248,7 +242,7 @@ int SphereSurfaceIntersectsCellByCorners(const double x1, const double x2, const
 }
 
 /* ************************************************ */
-int SphereSurfaceIntersectsDomain(const struct GRID *grid, double r) {
+int SphereSurfaceIntersectsDomain(const Grid *grid, double r) {
 /*
  * Returns 1 if sphere surface intersects local domain.
  * Only for INTERNAL_BOUNDARY YES
@@ -265,12 +259,12 @@ int SphereSurfaceIntersectsDomain(const struct GRID *grid, double r) {
     if (SphereIntersectsDomain(grid, r)) {
 
         /* The local domain limits */
-        double x1i = grid[IDIR].xi;
-        double x1f = grid[IDIR].xf;
-        double x2i = grid[JDIR].xi;
-        double x2f = grid[JDIR].xf;
-        double x3i = grid[KDIR].xi;
-        double x3f = grid[KDIR].xf;
+        double x1i = grid->xbeg[IDIR];
+        double x1f = grid->xend[IDIR];
+        double x2i = grid->xbeg[JDIR];
+        double x2f = grid->xend[JDIR];
+        double x3i = grid->xbeg[KDIR];
+        double x3f = grid->xend[KDIR];
 
         /* Check if at least one of the corners is outside of sphere */
         if (SPH1(x1i, x2i, x3i) > r) return 1;
@@ -291,7 +285,7 @@ int SphereSurfaceIntersectsDomain(const struct GRID *grid, double r) {
 }
 
 /* ************************************************ */
-int SphereIntersectsDomain(const struct GRID *grid, const double r) {
+int SphereIntersectsDomain(const Grid *grid, const double r) {
 /*
  * Returns 1 if solid sphere intersects local domain.
  * This considers the entire sphere, surface and body.
@@ -308,12 +302,12 @@ int SphereIntersectsDomain(const struct GRID *grid, const double r) {
 
 
     /* The local domain limits */
-    double x1i = grid[IDIR].xi;
-    double x1f = grid[IDIR].xf;
-    double x2i = grid[JDIR].xi;
-    double x2f = grid[JDIR].xf;
-    double x3i = grid[KDIR].xi;
-    double x3f = grid[KDIR].xf;
+    double x1i = grid->xbeg[IDIR];
+    double x1f = grid->xend[IDIR];
+    double x2i = grid->xbeg[JDIR];
+    double x2f = grid->xend[JDIR];
+    double x3i = grid->xbeg[KDIR];
+    double x3f = grid->xend[KDIR];
 
     /* The local domain center */
     double x1c = (x1f + x1i) / 2.;
@@ -376,9 +370,9 @@ int SphereIntersectsDomain(const struct GRID *grid, const double r) {
 
     /* These are the geometrical central points */
     int i, j, k;
-    double *x1 = grid[IDIR].x;
-    double *x2 = grid[JDIR].x;
-    double *x3 = grid[JDIR].x;
+    double *x1 = grid->x[IDIR];
+    double *x2 = grid->x[JDIR];
+    double *x3 = grid->x[JDIR];
 
     DOM_SURF_LOOP(k, j, i, if (SPH1(x1[i], x2[j], x3[k]) < r) {return 1; } );
 
@@ -510,7 +504,7 @@ int SphereIntersectsDomain(const struct GRID *grid, const double r) {
 }
 
 /* ************************************************ */
-int BoxIntersectsDomain(const struct GRID *grid,
+int BoxIntersectsDomain(const Grid *grid,
                         const double b1i, const double b1f,
                         const double b2i, const double b2f,
                         const double b3i, const double b3f){
@@ -524,12 +518,12 @@ int BoxIntersectsDomain(const struct GRID *grid,
 
 
     /* The local domain limits */
-    double x1i = grid[IDIR].xi;
-    double x1f = grid[IDIR].xf;
-    double x2i = grid[JDIR].xi;
-    double x2f = grid[JDIR].xf;
-    double x3i = grid[KDIR].xi;
-    double x3f = grid[KDIR].xf;
+    double x1i = grid->xbeg[IDIR];
+    double x1f = grid->xend[IDIR];
+    double x2i = grid->xbeg[JDIR];
+    double x2f = grid->xend[JDIR];
+    double x3i = grid->xbeg[KDIR];
+    double x3f = grid->xend[KDIR];
 
     /* The local domain center */
     double x1c = (x1f + x1i) / 2.;
@@ -560,7 +554,7 @@ int BoxIntersectsDomain(const struct GRID *grid,
 }
 
 /* ************************************************ */
-int PointInDomain(const struct GRID *grid, const double x1, const double x2, const double x3) {
+int PointInDomain(const Grid *grid, const double x1, const double x2, const double x3) {
 /*!
  * Check whether Point is in Domain
  * grid is an array of grid structures
@@ -571,12 +565,12 @@ int PointInDomain(const struct GRID *grid, const double x1, const double x2, con
 
 
     /* The local domain limits */
-    D_EXPAND(double x1i = grid[IDIR].xi;
-             double x1f = grid[IDIR].xf;,
-             double x2i = grid[JDIR].xi;
-             double x2f = grid[JDIR].xf;,
-             double x3i = grid[KDIR].xi;
-             double x3f = grid[KDIR].xf;);
+    D_EXPAND(double x1i = grid->xbeg[IDIR];
+             double x1f = grid->xend[IDIR];,
+             double x2i = grid->xbeg[JDIR];
+             double x2f = grid->xend[JDIR];,
+             double x3i = grid->xbeg[KDIR];
+             double x3f = grid->xend[KDIR];);
 
     /* Check whether box is in domain */
     if (D_EXPAND(x1i < x1 && x1 <= x1f, &&
@@ -612,4 +606,94 @@ double FindDxMax(const Grid *grid) {
     for (int idim = 1; idim < DIMENSIONS; idim++) dx_max = MAX(dx_max, dxmax[idim]);
 
     return dx_max;
+}
+
+
+/* ****************************************************** */
+double ElevateCellVolume(Grid *grid, int i, int j, int k){
+/*!
+ *   Elevate cell volume to 3D. For sherical coordinates, e.g.,
+ *   calculate revolved cell volume. Mostly used for
+ *   axis-symmetric situations in spherical coordinates.
+ *   For spherical geometry, perform...
+ *   no revolution in 3D, a cylindrical revolution in 2D,
+ *   and a spherical revolution in 1D
+ *
+ *
+ * ****************************************************** */
+
+
+    double vol = grid->dV[k][j][i];
+    double int_dphi = 2. * CONST_PI;  // integral of phi from 0 to 2 pi is 2 pi
+    double dmu = grid->dmu[j];        // integral of sin(theta) d theta.
+                                      // Equal to 2 if integral is from 0 to pi is 2
+                                      // Note, limits in this coordinate must be correctly set in pluto.ini
+
+    double int_x1 = grid->xend_glob[IDIR] - grid->xbeg_glob[IDIR];
+    double int_x2 = grid->xend_glob[JDIR] - grid->xbeg_glob[JDIR];
+    double int_x3 = grid->xend_glob[KDIR] - grid->xbeg_glob[KDIR];
+
+    /* Revolved cell volumes */
+#if GEOMETRY == SPHERICAL
+    vol *= D_SELECT(int_dmu * int_dphi;, int_dphi ;, 1.;);
+
+#elif GEOMETRY == POLAR
+    vol *= D_SELECT(int_dphi * int_x3;, int_x3;, 1.;);
+
+#elif GEOMETRY == CYLINDRICAL
+    vol *= D_SELECT(int_dphi * int_x2;, int_dphi;, 1.;);
+
+#elif GEOMETRY == CARTESIAN
+    vol *= D_SELECT(int_x2 * int_x3;, int_x3;, 1.;);
+
+#endif
+
+    return vol;
+
+}
+
+
+/* ****************************************************** */
+double ElevateVolume(double vol){
+/*!
+ *   Elevate volume to 3D. For sherical coordinates, e.g.,
+ *   calculate revolved cell volume. Mostly used for
+ *   axis-symmetric situations in spherical coordinates.
+ *   For spherical geometry, perform...
+ *   no revolution in 3D, a cylindrical revolution in 2D,
+ *   and a spherical revolution in 1D
+ *
+ *   This is the same asd RevolvedCellVolume,
+ *   but doesn't make use of the Grid structure.
+ *   vol is still assumed to be an element in grid->dV[][][]
+ *
+ *
+ * ****************************************************** */
+
+
+    double int_dphi = 2. * CONST_PI;  // integral of phi from 0 to 2 pi is 2 pi
+    double int_dmu = 2.;              // integral of sin(theta) d theta.
+                                      // Equal to 2 if integral is from 0 to pi is 2
+
+    double int_x1 = g_domEnd[IDIR] - g_domBeg[IDIR];
+    double int_x2 = g_domEnd[JDIR] - g_domBeg[JDIR];
+    double int_x3 = g_domEnd[KDIR] - g_domBeg[KDIR];
+
+    /* Revolved cell volumes */
+#if GEOMETRY == SPHERICAL
+    vol *= D_SELECT(int_dmu * int_dphi;, int_dphi ;, 1.;);
+
+#elif GEOMETRY == POLAR
+    vol *= D_SELECT(int_dphi * int_x3;, int_x3;, 1.;);
+
+#elif GEOMETRY == CYLINDRICAL
+    vol *= D_SELECT(int_dphi * int_x2;, int_dphi;, 1.;);
+
+#elif GEOMETRY == CARTESIAN
+    vol *= D_SELECT(int_x2 * int_x3;, int_x3;, 1.;);
+
+#endif
+
+    return vol;
+
 }

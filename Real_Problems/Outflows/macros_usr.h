@@ -784,29 +784,29 @@ ITDOM_LOOP(IBEG,k,j,i) {command} ITDOM_LOOP(IEND,k,j,i) {command}
 
 /* The Box surface loop, adapted from BOX_LOOP */
 #define BOX_SURF_LOOP(B,k,j,i,command) \
- k = (B)->kb;\
- for ((B)->dj = ((j=(B)->jb) <= (B)->je ? 1:-1); j != (B)->je+(B)->dj; j += (B)->dj)\
- for ((B)->di = ((i=(B)->ib) <= (B)->ie ? 1:-1); i != (B)->ie+(B)->di; i += (B)->di)\
+ k = (B)->kbeg;\
+ for ((B)->dj = ((j=(B)->jbeg) <= (B)->jend ? 1:-1); j != (B)->jend+(B)->dj; j += (B)->dj)\
+ for ((B)->di = ((i=(B)->ibeg) <= (B)->iend ? 1:-1); i != (B)->iend+(B)->di; i += (B)->di)\
  {command}\
- k = (B)->ke;\
- for ((B)->dj = ((j=(B)->jb) <= (B)->je ? 1:-1); j != (B)->je+(B)->dj; j += (B)->dj)\
- for ((B)->di = ((i=(B)->ib) <= (B)->ie ? 1:-1); i != (B)->ie+(B)->di; i += (B)->di)\
+ k = (B)->kend;\
+ for ((B)->dj = ((j=(B)->jbeg) <= (B)->jend ? 1:-1); j != (B)->jend+(B)->dj; j += (B)->dj)\
+ for ((B)->di = ((i=(B)->ibeg) <= (B)->iend ? 1:-1); i != (B)->iend+(B)->di; i += (B)->di)\
  {command}\
- j = (B)->jb;\
- for ((B)->dk = ((k=(B)->kb) <= (B)->ke ? 1:-1); k != (B)->ke+(B)->dk; k += (B)->dk)\
- for ((B)->di = ((i=(B)->ib) <= (B)->ie ? 1:-1); i != (B)->ie+(B)->di; i += (B)->di)\
+ j = (B)->jbeg;\
+ for ((B)->dk = ((k=(B)->kbeg) <= (B)->kend ? 1:-1); k != (B)->kend+(B)->dk; k += (B)->dk)\
+ for ((B)->di = ((i=(B)->ibeg) <= (B)->iend ? 1:-1); i != (B)->iend+(B)->di; i += (B)->di)\
  {command}\
- j = (B)->je;\
- for ((B)->dk = ((k=(B)->kb) <= (B)->ke ? 1:-1); k != (B)->ke+(B)->dk; k += (B)->dk)\
- for ((B)->di = ((i=(B)->ib) <= (B)->ie ? 1:-1); i != (B)->ie+(B)->di; i += (B)->di)\
+ j = (B)->jend;\
+ for ((B)->dk = ((k=(B)->kbeg) <= (B)->kend ? 1:-1); k != (B)->kend+(B)->dk; k += (B)->dk)\
+ for ((B)->di = ((i=(B)->ibeg) <= (B)->iend ? 1:-1); i != (B)->iend+(B)->di; i += (B)->di)\
  {command}\
- i = (B)->ib;\
- for ((B)->dk = ((k=(B)->kb) <= (B)->ke ? 1:-1); k != (B)->ke+(B)->dk; k += (B)->dk)\
- for ((B)->dj = ((j=(B)->jb) <= (B)->je ? 1:-1); j != (B)->je+(B)->dj; j += (B)->dj)\
+ i = (B)->ibeg;\
+ for ((B)->dk = ((k=(B)->kbeg) <= (B)->kend ? 1:-1); k != (B)->kend+(B)->dk; k += (B)->dk)\
+ for ((B)->dj = ((j=(B)->jbeg) <= (B)->jend ? 1:-1); j != (B)->jend+(B)->dj; j += (B)->dj)\
  {command}\
- i = (B)->ie;\
- for ((B)->dk = ((k=(B)->kb) <= (B)->ke ? 1:-1); k != (B)->ke+(B)->dk; k += (B)->dk)\
- for ((B)->dj = ((j=(B)->jb) <= (B)->je ? 1:-1); j != (B)->je+(B)->dj; j += (B)->dj)\
+ i = (B)->iend;\
+ for ((B)->dk = ((k=(B)->kbeg) <= (B)->kend ? 1:-1); k != (B)->kend+(B)->dk; k += (B)->dk)\
+ for ((B)->dj = ((j=(B)->jbeg) <= (B)->jend ? 1:-1); j != (B)->jend+(B)->dj; j += (B)->dj)\
  {command}
 
 
@@ -841,7 +841,7 @@ ITDOM_LOOP(IBEG,k,j,i) {command} ITDOM_LOOP(IEND,k,j,i) {command}
 // TODO: Add prologation
 // TODO: Add Laplacian
 // TODO: Probably don't need W_AVERAGE, but leaving as reference for LAPLACIAN or related macros
-// TODO: ALL the below should be functions.
+// TODO: All the below should be functions.
 
 #if DIMENSIONS == 1
 

@@ -30,7 +30,7 @@ void ReadGravTable() {
 
   /* Open file */
   if ((f = fopen(GRAV_FNAME, "r")) == NULL) {
-    print1("Error: ReadGravData: Unable to open file");
+    print("Error: ReadGravData: Unable to open file");
     exit(1);
   }
 

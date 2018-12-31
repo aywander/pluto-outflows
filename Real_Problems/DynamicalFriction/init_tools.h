@@ -39,6 +39,7 @@ typedef struct {
     double acc_norm;
     double n_norm;
     double m_norm;
+    double force_norm;
 } VarNorm;
 
 extern VarNorm vn;

@@ -30,13 +30,13 @@ void PrintInitData01(const double *prim) {
  *
  **************************************************************** */
 
-    print1("\n");
-    print1("> Conditions of ambient medium:\n");
-    print1("\n");
-    print1("  rho   %14g 1/cm3\n", prim[RHO] * vn.dens_norm / (MU_NORM * CONST_amu));
-    print1("  te    %14g K\n", prim[PRS] / prim[RHO] * MU_NORM * KELVIN);
-    print1("  cs    %14g km/s\n", sqrt(g_gamma * prim[PRS] / prim[RHO]) * vn.v_norm / 1.e5);
-    print1("\n");
+    print("\n");
+    print("> Conditions of ambient medium:\n");
+    print("\n");
+    print("  rho   %14g 1/cm3\n", prim[RHO] * vn.dens_norm / (MU_NORM * CONST_amu));
+    print("  te    %14g K\n", prim[PRS] / prim[RHO] * MU_NORM * KELVIN);
+    print("  cs    %14g km/s\n", sqrt(g_gamma * prim[PRS] / prim[RHO]) * vn.v_norm / 1.e5);
+    print("\n");
 }
 
 
@@ -51,9 +51,18 @@ void SetBaseNormalization() {
  *
  **************************************************************** */
 
+//    vn.l_norm = UNIT_LENGTH;
+//    vn.dens_norm = UNIT_DENSITY;
+//    vn.v_norm = UNIT_VELOCITY;
+//    vn.temp_norm = KELVIN;
+
+    double beta, mach;
+    mach = g_inputParam[PAR_MACH];
+    beta = 1. / sqrt(1. + mach * mach);
+
     vn.l_norm = UNIT_LENGTH;
     vn.dens_norm = UNIT_DENSITY;
-    vn.v_norm = UNIT_VELOCITY;
+    vn.v_norm = beta;
     vn.temp_norm = KELVIN;
 
     /* Derived normalizations */
@@ -69,8 +78,9 @@ void SetBaseNormalization() {
     vn.acc_norm = vn.v_norm / vn.t_norm;
     vn.n_norm = 1. / (vn.l_norm * vn.l_norm * vn.l_norm);
     vn.m_norm = vn.dens_norm * vn.l_norm * vn.l_norm * vn.l_norm;
+    vn.force_norm = vn.pres_norm * vn.l_norm * vn.l_norm;
 
-    print1("> Base normalization initialized.\n\n");
+    print("> Base normalization initialized.\n\n");
 
     return;
 }
@@ -100,7 +110,7 @@ void SetIniNormalization() {
     ini_code[PAR_RCORE] = 1.;
 
 
-    print1("> Ini parameter normalization array initialized.\n\n");
+    print("> Ini parameter normalization array initialized.\n\n");
 
     return;
 
@@ -117,47 +127,47 @@ void PrintGridStruct(Grid *grid, int show_for_rank, int k, int j, int i) {
      *
      ************************************************** */
 
-    if (prank == show_for_rank) {
-        printf("\n");
-        printf("Printing members of GRID structure on rank %d\n", prank);
-        printf("                        IDIR             JDIR              KDIR\n");
-        printf("grid[].xi          = %16e %16e %16e\n", grid[IDIR].xi,          grid[JDIR].xi,          grid[KDIR].xi);
-        printf("grid[].xf          = %16e %16e %16e\n", grid[IDIR].xf,          grid[JDIR].xf,          grid[KDIR].xf);
-        printf("grid[].x[]         = %16e %16e %16e\n", grid[IDIR].x[i],        grid[JDIR].x[j],        grid[KDIR].x[k]);
-        printf("grid[].x_glob[]    = %16e %16e %16e\n", grid[IDIR].x_glob[i],   grid[JDIR].x_glob[j],   grid[KDIR].x_glob[k]);
-        printf("grid[].xr[]        = %16e %16e %16e\n", grid[IDIR].xr[i],       grid[JDIR].xr[j],       grid[KDIR].xr[k]);
-        printf("grid[].xr_glob[]   = %16e %16e %16e\n", grid[IDIR].xr_glob[i],  grid[JDIR].xr_glob[j],  grid[KDIR].xr_glob[k]);
-        printf("grid[].xl[]        = %16e %16e %16e\n", grid[IDIR].xl[i],       grid[JDIR].xl[j],       grid[KDIR].xl[k]);
-        printf("grid[].xl_glob[]   = %16e %16e %16e\n", grid[IDIR].xl_glob[i],  grid[JDIR].xl_glob[j],  grid[KDIR].xl_glob[k]);
-        printf("grid[].dx[]        = %16e %16e %16e\n", grid[IDIR].dx[i],       grid[JDIR].dx[j],       grid[KDIR].dx[k]);
-        printf("grid[].dx_glob[]   = %16e %16e %16e\n", grid[IDIR].dx_glob[i],  grid[JDIR].dx_glob[j],  grid[KDIR].dx_glob[k]);
-        printf("grid[].xgc[]       = %16e %16e %16e\n", grid[IDIR].xgc[i],      grid[JDIR].xgc[j],      grid[KDIR].xgc[k]);
-        printf("grid[].dV[]        = %16e %16e %16e\n", grid[IDIR].dV[i],       grid[JDIR].dV[j],       grid[KDIR].dV[k]);
-        printf("grid[].A[]         = %16e %16e %16e\n", grid[IDIR].A[i],        grid[JDIR].A[j],        grid[KDIR].A[k]);
-        printf("grid[].r_1[]       = %16e %16e %16e\n", grid[IDIR].r_1[i],      grid[JDIR].r_1[j],      grid[KDIR].r_1[k]);
-        printf("grid[].ct[]        = %16e %16e %16e\n", grid[IDIR].ct[i],       grid[JDIR].ct[j],       grid[KDIR].ct[k]);
-        printf("grid[].inv_dx[]    = %16e %16e %16e\n", grid[IDIR].inv_dx[i],   grid[JDIR].inv_dx[j],   grid[KDIR].inv_dx[k]);
-        printf("grid[].inv_dxi[]   = %16e %16e %16e\n", grid[IDIR].inv_dxi[i],  grid[JDIR].inv_dxi[j],  grid[KDIR].inv_dxi[k]);
-        printf("grid[].dl_min      = %16e %16e %16e\n", grid[IDIR].dl_min,      grid[JDIR].dl_min,      grid[KDIR].dl_min);
-        printf("grid[].np_tot_glob = %16d %16d %16d\n", grid[IDIR].np_tot_glob, grid[JDIR].np_tot_glob, grid[KDIR].np_tot_glob);
-        printf("grid[].np_int_glob = %16d %16d %16d\n", grid[IDIR].np_int_glob, grid[JDIR].np_int_glob, grid[KDIR].np_int_glob);
-        printf("grid[].np_tot      = %16d %16d %16d\n", grid[IDIR].np_tot,      grid[JDIR].np_tot,      grid[KDIR].np_tot);
-        printf("grid[].np_int      = %16d %16d %16d\n", grid[IDIR].np_int,      grid[JDIR].np_int,      grid[KDIR].np_int);
-        printf("grid[].nghost      = %16d %16d %16d\n", grid[IDIR].nghost,      grid[JDIR].nghost,      grid[KDIR].nghost);
-        printf("grid[].lbound      = %16d %16d %16d\n", grid[IDIR].lbound,      grid[JDIR].lbound,      grid[KDIR].lbound);
-        printf("grid[].rbound      = %16d %16d %16d\n", grid[IDIR].rbound,      grid[JDIR].rbound,      grid[KDIR].rbound);
-        printf("grid[].gbeg        = %16d %16d %16d\n", grid[IDIR].gbeg,        grid[JDIR].gbeg,        grid[KDIR].gbeg);
-        printf("grid[].gend        = %16d %16d %16d\n", grid[IDIR].gend,        grid[JDIR].gend,        grid[KDIR].gend);
-        printf("grid[].beg         = %16d %16d %16d\n", grid[IDIR].beg,         grid[JDIR].beg,         grid[KDIR].beg);
-        printf("grid[].end         = %16d %16d %16d\n", grid[IDIR].end,         grid[JDIR].end,         grid[KDIR].end);
-        printf("grid[].lbeg        = %16d %16d %16d\n", grid[IDIR].lbeg,        grid[JDIR].lbeg,        grid[KDIR].lbeg);
-        printf("grid[].lend        = %16d %16d %16d\n", grid[IDIR].lend,        grid[JDIR].lend,        grid[KDIR].lend);
-        printf("grid[].uniform     = %16d %16d %16d\n", grid[IDIR].uniform,     grid[JDIR].uniform,     grid[KDIR].uniform);
-        printf("grid[].nproc       = %16d %16d %16d\n", grid[IDIR].nproc,       grid[JDIR].nproc,       grid[KDIR].nproc);
-        printf("grid[].rank_coord  = %16d %16d %16d\n", grid[IDIR].rank_coord,  grid[JDIR].rank_coord,  grid[KDIR].rank_coord);
-        printf("grid[].level       = %16d %16d %16d\n", grid[IDIR].level,       grid[JDIR].level,       grid[KDIR].level);
-
-    }
+    print("\n");
+    print("Printing members of GRID structure on rank %d\n", prank);
+    print("                        IDIR             JDIR              KDIR\n");
+    print("grid[]->xbeg        = %16e %16e %16e\n", grid->xbeg[IDIR],        grid->xbeg[JDIR],        grid->xbeg[KDIR]);
+    print("grid[]->xend        = %16e %16e %16e\n", grid->xend[IDIR],        grid->xend[JDIR],        grid->xend[KDIR]);
+    print("grid[]->xbeg_glob   = %16e %16e %16e\n", grid->xbeg_glob[IDIR],   grid->xbeg_glob[JDIR],   grid->xbeg_glob[KDIR]);
+    print("grid[]->xend_glob   = %16e %16e %16e\n", grid->xend_glob[IDIR],   grid->xend_glob[JDIR],   grid->xend_glob[KDIR]);
+    print("grid[]->x[]         = %16e %16e %16e\n", grid->x[IDIR][i],        grid->x[JDIR][j],        grid->x[KDIR][k]);
+    print("grid[]->x_glob[]    = %16e %16e %16e\n", grid->x_glob[IDIR][i],   grid->x_glob[JDIR][j],   grid->x_glob[KDIR][k]);
+    print("grid[]->xr[]        = %16e %16e %16e\n", grid->xr[IDIR][i],       grid->xr[JDIR][j],       grid->xr[KDIR][k]);
+    print("grid[]->xr_glob[]   = %16e %16e %16e\n", grid->xr_glob[IDIR][i],  grid->xr_glob[JDIR][j],  grid->xr_glob[KDIR][k]);
+    print("grid[]->xl[]        = %16e %16e %16e\n", grid->xl[IDIR][i],       grid->xl[JDIR][j],       grid->xl[KDIR][k]);
+    print("grid[]->xl_glob[]   = %16e %16e %16e\n", grid->xl_glob[IDIR][i],  grid->xl_glob[JDIR][j],  grid->xl_glob[KDIR][k]);
+    print("grid[]->dx[]        = %16e %16e %16e\n", grid->dx[IDIR][i],       grid->dx[JDIR][j],       grid->dx[KDIR][k]);
+    print("grid[]->dx_glob[]   = %16e %16e %16e\n", grid->dx_glob[IDIR][i],  grid->dx_glob[JDIR][j],  grid->dx_glob[KDIR][k]);
+    print("grid[]->xgc[]       = %16e %16e %16e\n", grid->xgc[IDIR][i],      grid->xgc[JDIR][j],      grid->xgc[KDIR][k]);
+    print("grid[]->dV[][][]    = %16e          \n", grid->dV[k][j][i]);
+    print("grid[]->A[][][]     = %16e %16e %16e\n", grid->A[IDIR][k][j][i],  grid->A[JDIR][k][j][i],  grid->A[KDIR][k][j][i]);
+    print("grid[]->rt          = %16e          \n", grid->rt[i]);
+    print("grid[]->sp, s, dmu  = %16e %16e %16e\n", grid->sp[j],             grid->s[j],              grid->dmu[j]);
+    print("grid[]->inv_dx[]    = %16e %16e %16e\n", grid->inv_dx[IDIR][i],   grid->inv_dx[JDIR][j],   grid->inv_dx[KDIR][k]);
+    print("grid[]->inv_dxi[]   = %16e %16e %16e\n", grid->inv_dxi[IDIR][i],  grid->inv_dxi[JDIR][j],  grid->inv_dxi[KDIR][k]);
+    print("grid[]->dl_min      = %16e %16e %16e\n", grid->dl_min[IDIR],      grid->dl_min[JDIR],      grid->dl_min[KDIR]);
+    print("grid[]->np_tot_glob = %16d %16d %16d\n", grid->np_tot_glob[IDIR], grid->np_tot_glob[JDIR], grid->np_tot_glob[KDIR]);
+    print("grid[]->np_int_glob = %16d %16d %16d\n", grid->np_int_glob[IDIR], grid->np_int_glob[JDIR], grid->np_int_glob[KDIR]);
+    print("grid[]->np_tot      = %16d %16d %16d\n", grid->np_tot[IDIR],      grid->np_tot[JDIR],      grid->np_tot[KDIR]);
+    print("grid[]->np_int      = %16d %16d %16d\n", grid->np_int[IDIR],      grid->np_int[JDIR],      grid->np_int[KDIR]);
+    print("grid[]->nghost      = %16d %16d %16d\n", grid->nghost[IDIR],      grid->nghost[JDIR],      grid->nghost[KDIR]);
+    print("grid[]->lbound      = %16d %16d %16d\n", grid->lbound[IDIR],      grid->lbound[JDIR],      grid->lbound[KDIR]);
+    print("grid[]->rbound      = %16d %16d %16d\n", grid->rbound[IDIR],      grid->rbound[JDIR],      grid->rbound[KDIR]);
+    print("grid[]->gbeg        = %16d %16d %16d\n", grid->gbeg[IDIR],        grid->gbeg[JDIR],        grid->gbeg[KDIR]);
+    print("grid[]->gend        = %16d %16d %16d\n", grid->gend[IDIR],        grid->gend[JDIR],        grid->gend[KDIR]);
+    print("grid[]->beg         = %16d %16d %16d\n", grid->beg[IDIR],         grid->beg[JDIR],         grid->beg[KDIR]);
+    print("grid[]->end         = %16d %16d %16d\n", grid->end[IDIR],         grid->end[JDIR],         grid->end[KDIR]);
+    print("grid[]->lbeg        = %16d %16d %16d\n", grid->lbeg[IDIR],        grid->lbeg[JDIR],        grid->lbeg[KDIR]);
+    print("grid[]->lend        = %16d %16d %16d\n", grid->lend[IDIR],        grid->lend[JDIR],        grid->lend[KDIR]);
+    print("grid[]->uniform     = %16d %16d %16d\n", grid->uniform[IDIR],     grid->uniform[JDIR],     grid->uniform[KDIR]);
+    print("grid[]->nproc       = %16d %16d %16d\n", grid->nproc[IDIR],       grid->nproc[JDIR],       grid->nproc[KDIR]);
+    print("grid[]->rank_coord  = %16d %16d %16d\n", grid->rank_coord[IDIR],  grid->rank_coord[JDIR],  grid->rank_coord[KDIR]);
+    print("grid[]->level       = %16d          \n", grid->level);
+    print("\n");
 
 }
 
@@ -171,24 +181,24 @@ void PrintBaseNormalizations() {
      *
      ************************************************** */
 
-    print1("vn.l_norm      = %16e \n", vn.l_norm );
-    print1("vn.dens_norm   = %16e \n", vn.dens_norm );
-    print1("vn.v_norm      = %16e \n", vn.v_norm );
-    print1("vn.temp_norm   = %16e \n", vn.temp_norm );
-    print1("vn.t_norm      = %16e \n", vn.t_norm );
-    print1("vn.area_norm   = %16e \n", vn.area_norm );
-    print1("vn.pres_norm   = %16e \n", vn.pres_norm );
-    print1("vn.power_norm  = %16e \n", vn.power_norm );
-    print1("vn.eflux_norm  = %16e \n", vn.eflux_norm );
-    print1("vn.eint_norm   = %16e \n", vn.eint_norm );
-    print1("vn.mdot_norm   = %16e \n", vn.mdot_norm );
-    print1("vn.newton_norm = %16e \n", vn.newton_norm );
-    print1("vn.pot_norm    = %16e \n", vn.pot_norm );
-    print1("vn.acc_norm    = %16e \n", vn.acc_norm );
-    print1("vn.n_norm      = %16e \n", vn.n_norm );
-    print1("vn.m_norm      = %16e \n", vn.m_norm );
-    print1("\n");
-    print1("\n");
-    print1("\n");
+    print("vn.l_norm      = %16e \n", vn.l_norm );
+    print("vn.dens_norm   = %16e \n", vn.dens_norm );
+    print("vn.v_norm      = %16e \n", vn.v_norm );
+    print("vn.temp_norm   = %16e \n", vn.temp_norm );
+    print("vn.t_norm      = %16e \n", vn.t_norm );
+    print("vn.area_norm   = %16e \n", vn.area_norm );
+    print("vn.pres_norm   = %16e \n", vn.pres_norm );
+    print("vn.power_norm  = %16e \n", vn.power_norm );
+    print("vn.eflux_norm  = %16e \n", vn.eflux_norm );
+    print("vn.eint_norm   = %16e \n", vn.eint_norm );
+    print("vn.mdot_norm   = %16e \n", vn.mdot_norm );
+    print("vn.newton_norm = %16e \n", vn.newton_norm );
+    print("vn.pot_norm    = %16e \n", vn.pot_norm );
+    print("vn.acc_norm    = %16e \n", vn.acc_norm );
+    print("vn.n_norm      = %16e \n", vn.n_norm );
+    print("vn.m_norm      = %16e \n", vn.m_norm );
+    print("\n");
+    print("\n");
+    print("\n");
 
 }

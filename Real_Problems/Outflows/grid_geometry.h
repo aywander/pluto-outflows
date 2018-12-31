@@ -13,27 +13,28 @@ int RotateNozzle2Grid(const double cx1, const double cx2, const double cx3,
 
 int SphereSurfaceIntersectsNCells(const double dx1, const double dx2, const double dx3, const double r);
 
-int SphereSurfaceIntersectsCellByRadius(const double x1, const double x2, const double x3,
-                                        const double dV1, const double dV2, const double dV3,
+int SphereSurfaceIntersectsCellByRadius(const double x1, const double x2, const double x3, const double vol,
                                         const double r);
 
 int SphereSurfaceIntersectsCellByCorners(const double x1, const double x2, const double x3,
                                          const double dx1, const double dx2, const double dx3,
                                          const double r);
 
-int SphereSurfaceIntersectsDomain(const struct GRID *grid, double r);
+int SphereSurfaceIntersectsDomain(const Grid *grid, double r);
 
-int SphereIntersectsDomain(const struct GRID *grid, const double r);
+int SphereIntersectsDomain(const Grid *grid, const double r);
 
-int BoxIntersectsDomain(const struct GRID *grid,
+int BoxIntersectsDomain(const Grid *grid,
                         const double x1i, const double x1f,
                         const double x2i, const double x2f,
                         const double x3i, const double x3f);
 
-int PointInDomain(const struct GRID *grid, const double x1, const double x2, const double x3);
+int PointInDomain(const Grid *grid, const double x1, const double x2, const double x3);
 
 double FindDxMax(const Grid *grid);
 
-#include "init_tools.h"
+double ElevateCellVolume(Grid *grid, int i, int j, int k);
+
+double ElevateVolume(double vol);
 
 #endif //PLUTO_GRID_GEOMETRY_H

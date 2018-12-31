@@ -29,7 +29,7 @@ void ReadHotTable() {
 
     /* Open file */
     if ((f = fopen(HOT_FNAME, "r")) == NULL) {
-        print1("Error: ReadHotData: Unable to open file");
+        print("Error: ReadHotData: Unable to open file");
         exit(1);
     }
 

@@ -1,4 +1,5 @@
 /* -- Own definitions choices -- */
+//TODO: Change some of the below to ini files, use https://github.com/benhoyt/inih as ini parser.
 
 #define NOZZLE                            NOZZLE_JET
 #define NOZZLE_FILL                       NF_PRIMITIVE
@@ -14,12 +15,12 @@
 
 #define GRAV_POTENTIAL                    NONE
 
-#define CLOUDS                            NO
+#define CLOUDS                            YES
 #define CLOUD_REPEAT	                  NO
 #define CLOUDS_MULTI   	                  NO
 
-#define CLOUD_DENSITY                     NONE
-#define CLOUD_VELOCITY                    NONE
+#define CLOUD_DENSITY                     CD_KEPLERIAN
+#define CLOUD_VELOCITY                    CV_KEPLERIAN
 #define CLOUD_SCALE                       CS_VELOCITY_DISPERSION
 #define CLOUD_EXTRACT_ELLIPSOID           YES
 #define CLOUD_EXTRACT_CENTRAL_BUFFER      YES
@@ -42,5 +43,4 @@
 #define CLOUD_MUCRIT                      0.6212407755077543
 #define JD_MODE                           JD_GRAD
 #define BH_POT_SMOOTH                     4.0
-
 

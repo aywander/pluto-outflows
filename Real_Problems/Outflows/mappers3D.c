@@ -55,43 +55,35 @@ void ConsToPrim3D (Data_Arr U, Data_Arr V, unsigned char ***flag, RBox *box)
     proper call to ConsToPrim()
    ----------------------------------------------- */
 
-  ibeg = (box->ib <= box->ie) ? (iend=box->ie, box->ib):(iend=box->ib, box->ie);
-  jbeg = (box->jb <= box->je) ? (jend=box->je, box->jb):(jend=box->jb, box->je);
-  kbeg = (box->kb <= box->ke) ? (kend=box->ke, box->kb):(kend=box->kb, box->ke);
+  ibeg = (box->ibeg <= box->iend) ? (iend=box->iend, box->ibeg):(iend=box->ibeg, box->iend);
+  jbeg = (box->jbeg <= box->jend) ? (jend=box->jend, box->jbeg):(jend=box->jbeg, box->jend);
+  kbeg = (box->kbeg <= box->kend) ? (kend=box->kend, box->kbeg):(kend=box->kbeg, box->kend);
 
   for (k = kbeg; k <= kend; k++){ g_k = k;
-  for (j = jbeg; j <= jend; j++){ g_j = j;
-
-#ifdef CHOMBO
-    for (i = ibeg; i <= iend; i++) NVAR_LOOP(nv) u[i][nv] = U[nv][k][j][i];
-    #if COOLING == MINEq || COOLING == H2_COOL
-    if (g_intStage == 1) for (i = ibeg; i <= iend; i++) NormalizeIons(u[i]);
-    #endif
-    err = ConsToPrim (u, v, ibeg, iend, flag[k][j]);
-
-  /* -------------------------------------------------------------
-      Ensure any change to 1D conservative arrays is not lost.
-      Note: Conversion must be done even when err = 0 in case
-            ENTROPY_SWITCH is employed.
-     ------------------------------------------------------------- */
-
-    for (i = ibeg; i <= iend; i++) NVAR_LOOP(nv) U[nv][k][j][i] = u[i][nv];
-#else
-    err = ConsToPrim (U[k][j], v, ibeg, iend, flag[k][j]);
+  for (j = jbeg; j <= jend; j++) {
+      g_j = j;
+#if (defined CHOMBO) && (COOLING == MINEq || COOLING == H2_COOL)
+      if (g_intStage == 1) {
+        for (i = ibeg; i <= iend; i++)  NormalizeIons(U[k][j][i]);
+      }
 #endif
-    for (i = ibeg; i <= iend; i++) NVAR_LOOP(nv) {
+      err = ConsToPrim(U[k][j], v, ibeg, iend, flag[k][j]);
+      for (i = ibeg; i <= iend; i++) NVAR_LOOP(nv) V[nv][k][j][i] = v[i][nv];
+  }}
 
-            //-----DM 26feb,2015: fix negative pressure, density, energy----//
 
-            /* AYW --
-             * This routine has changed a lot from PLUTO 4.1 to 4.2.
-             * Simplified the smoothing here - macros RHO_FAIL, PRS_FAIL etc, don't exist anymore.
-             * Instead, there is a FLAG_CONS2PRIM_FAIL, for all cases.
-             * So we smooth density and pressure for this cell. */
+  /* AYW --
+   * Based on modifications by DM in 2015.
+   * This routine has changed a lot from PLUTO 4.1 to 4.2.
+   * Simplified the smoothing here - macros RHO_FAIL, PRS_FAIL etc, don't exist anymore.
+   * Instead, there is a FLAG_CONS2PRIM_FAIL, for all cases.
+   * So we smooth density and pressure for this cell. */
 
-            // TODO: AYW -- extract as method (?)
-            // TODO: AYW -- Is it correct to be using V, rather than v here?
+  for (k = kbeg; k <= kend; k++) { g_k = k;
+  for (j = jbeg; j <= jend; j++) { g_j = j;
+  for (i = ibeg; i <= iend; i++) {
 
+            // TODO: AYW -- This is probalby not the best way of doing this.
 
             if ((flag[k][j][i] & FLAG_CONS2PRIM_FAIL) == FLAG_CONS2PRIM_FAIL) {
 
@@ -100,12 +92,12 @@ void ConsToPrim3D (Data_Arr U, Data_Arr V, unsigned char ***flag, RBox *box)
                 rhofix = BURY(V[RHO], k, j, i);
 
                 if (rhofix <= 0.0) {
-                    print1("RHO still negative [%d,%d,%d] \n", i, j, k);
+                    print("RHO still negative [%d,%d,%d] \n", i, j, k);
                     rhofix = g_smallDensity;
                 }
 
                 if (rhofix != rhofix) {
-                    print1("RHO is NAN [%d,%d,%d] \n", i, j, k);
+                    print("RHO is NAN [%d,%d,%d] \n", i, j, k);
                     rhofix = g_smallDensity;
                 }
 
@@ -116,12 +108,12 @@ void ConsToPrim3D (Data_Arr U, Data_Arr V, unsigned char ***flag, RBox *box)
                 prsfix = BURY(V[PRS], k, j, i);
 
                 if (prsfix <= 0.0) {
-                    print1("PRS still neg [%d,%d,%d] \n", i, j, k);
+                    print("PRS still negative [%d,%d,%d] \n", i, j, k);
                     prsfix = g_smallPressure;
                 }
 
                 if (prsfix != prsfix) {
-                    print1("PRS is NAN [%d,%d,%d] \n", i, j, k);
+                    print("PRS is NAN [%d,%d,%d] \n", i, j, k);
                     prsfix = g_smallPressure;
                 }
 
@@ -129,10 +121,7 @@ void ConsToPrim3D (Data_Arr U, Data_Arr V, unsigned char ***flag, RBox *box)
 
 
             } // CONS2PRIM_FAIL
-
-            V[nv][k][j][i] = v[i][nv];
-        }
-  }}
+  }}} // k, j, i-loops
   g_dir = current_dir;
 
 }
@@ -171,19 +160,14 @@ void PrimToCons3D (Data_Arr V, Data_Arr U, RBox *box)
     proper call to ConsToPrim()
    ----------------------------------------------- */
 
-  ibeg = (box->ib <= box->ie) ? (iend=box->ie, box->ib):(iend=box->ib, box->ie);
-  jbeg = (box->jb <= box->je) ? (jend=box->je, box->jb):(jend=box->jb, box->je);
-  kbeg = (box->kb <= box->ke) ? (kend=box->ke, box->kb):(kend=box->kb, box->ke);
+  ibeg = (box->ibeg <= box->iend) ? (iend=box->iend, box->ibeg):(iend=box->ibeg, box->iend);
+  jbeg = (box->jbeg <= box->jend) ? (jend=box->jend, box->jbeg):(jend=box->jbeg, box->jend);
+  kbeg = (box->kbeg <= box->kend) ? (kend=box->kend, box->kbeg):(kend=box->kbeg, box->kend);
 
   for (k = kbeg; k <= kend; k++){ g_k = k;
   for (j = jbeg; j <= jend; j++){ g_j = j;
-    for (i = ibeg; i <= iend; i++) VAR_LOOP(nv) v[i][nv] = V[nv][k][j][i];
-#ifdef CHOMBO
-    PrimToCons(v, u, ibeg, iend);
-    for (i = ibeg; i <= iend; i++) VAR_LOOP(nv) U[nv][k][j][i] = u[i][nv];
-#else
+    for (i = ibeg; i <= iend; i++) NVAR_LOOP(nv) v[i][nv] = V[nv][k][j][i];
     PrimToCons (v, U[k][j], ibeg, iend);
-#endif
   }}
     g_dir = current_dir; /* restore current direction */
 }
