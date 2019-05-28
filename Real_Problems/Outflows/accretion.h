@@ -6,8 +6,8 @@
 #define PLUTO_ACCRETION_H
 
 /* Need the following for the reference nozzle and outflow states */
-#include "init_tools.h"
 #include "outflow.h"
+#include "nozzle.h"
 
 /* Structure for accretion physics. All are kept in code units. */
 typedef struct {

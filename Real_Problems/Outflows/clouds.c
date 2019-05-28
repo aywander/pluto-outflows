@@ -15,6 +15,7 @@
 #include "sfr.h"
 #include "io_tools.h"
 #include "accretion.h"
+#include "nozzle.h"
 
 /* Global struct for cloud analytics */
 CloudAnalytics ca;
@@ -996,9 +997,6 @@ void CloudOutput() {
 
         double year = CONST_ly / CONST_c;
 
-        double itemsToPrint[17];
-
-
         /* Write data */
         if (g_time > next_output) {
 
@@ -1041,3 +1039,62 @@ void CloudOutput() {
 
 }
 
+
+/*********************************************************************** */
+void InputDataClouds(const Data *d, const Grid *grid) {
+/*!
+ * Routine that puts clouds into grid using PLUTO's input data mechanism.
+ *
+ *********************************************************************** */
+
+    int i, j, k, nv, id, vol;
+    double *x1, *x2, *x3;
+    double halo_primitives[NVAR], cloud_primitives[NVAR];
+
+    x1 = grid->x[IDIR];
+    x2 = grid->x[JDIR];
+    x3 = grid->x[KDIR];
+
+    id = InputDataOpen("./input-rho.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
+    TOT_LOOP(k,j,i) d->Vc[RHO][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
+    InputDataClose(id);
+
+#if CLOUD_VELOCITY
+
+    id = InputDataOpen("./input-vx1.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
+    TOT_LOOP(k,j,i) d->Vc[VX1][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
+    InputDataClose(id);
+
+    id = InputDataOpen("./input-vx2.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
+    TOT_LOOP(k,j,i) d->Vc[VX2][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
+    InputDataClose(id);
+
+    id = InputDataOpen("./input-vx3.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
+    TOT_LOOP(k,j,i) d->Vc[VX3][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
+    InputDataClose(id);
+
+    double ***v1 = d->Vc[VX1];
+    double ***v2 = d->Vc[VX2];
+    double ***v3 = d->Vc[VX3];
+    InputDataCoordTransformVector(id, x1, x2, x3, v1, v2, v3);
+
+#endif
+
+    /* Do Clouds apodization */
+    TOT_LOOP(k, j, i) {
+
+                /* First get primitives array for hot halo */
+                HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
+
+                // TODO: Redo and check CLOUDS_MULTI
+
+                /* If we're in the domain of the clouds cube */
+                if (CloudPrimitives(cloud_primitives, x1[i], x2[j], x3[k])){
+                    for (nv = 0; nv < NVAR; ++nv) d->Vc[nv][k][j][i] = cloud_primitives[nv];
+                }
+                    /* If not a cloud pixel then use hot halo primitives*/
+                else{
+                    for (nv = 0; nv < NVAR; ++nv) d->Vc[nv][k][j][i] = halo_primitives[nv];
+                }
+            }
+}

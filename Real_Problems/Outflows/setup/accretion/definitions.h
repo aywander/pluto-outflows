@@ -9,7 +9,6 @@
 #define  DIMENSIONAL_SPLITTING   YES
 #define  NTRACER                 2
 #define  USER_DEF_PARAMETERS     44
-#define  USER_DEF_CONSTANTS      4
 
 /* -- physics dependent declarations -- */
 

@@ -22,8 +22,8 @@ void Init (double *us, double x1, double x2, double x3)
   int  zeroflux;	
 
   #ifndef SHEARINGBOX
-   print1 ("! ShearingBox module has not been included.\n");
-   print1 ("! Cannot continue.\n");
+   print ("! ShearingBox module has not been included.\n");
+   print ("! Cannot continue.\n");
    QUIT_PLUTO(1);
   #endif
   
@@ -414,7 +414,7 @@ void Analysis (const Data *d, Grid *grid)
 					sprintf (fname,"average.%05d.dat",nfile);
 					fp = fopen(fname,"r");
 					if (fp == NULL){
-						print1 ("! Analysis: could not find file number. Setting nfile=0\n");
+						print ("! Analysis: could not find file number. Setting nfile=0\n");
 						nfile = 0;
 						break;
 					}

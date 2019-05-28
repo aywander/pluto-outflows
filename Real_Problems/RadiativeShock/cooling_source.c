@@ -106,7 +106,7 @@ void CoolingSource (const Data *d, double dt, Time_Step *Dts, Grid *GXYZ)
           density, pressure and concentrations.
          ---------------------------------------------- */
     
-    VAR_LOOP(nv) v0[nv] = v1[nv] = d->Vc[nv][k][j][i];
+    NVAR_LOOP(nv) v0[nv] = v1[nv] = d->Vc[nv][k][j][i];
     prs = v0[PRS];
     mu0 = MeanMolecularWeight(v0);
     T0  = v0[PRS]/v0[RHO]*KELVIN*mu0;
@@ -177,7 +177,7 @@ void CoolingSource (const Data *d, double dt, Time_Step *Dts, Grid *GXYZ)
         if (fabs(t/dt - 1.0) < 1.e-9) break;
 
         v0[RHOE] = v1[RHOE];
-        for (nv = NFLX; nv < (NFLX + NIONS); nv++) v0[nv] = v1[nv];
+        NIONS_LOOP(nv) v0[nv] = v1[nv];
 
         Radiat(v0, k1);
         dtsub = MIN (dtnew, dt - t);
@@ -192,7 +192,7 @@ void CoolingSource (const Data *d, double dt, Time_Step *Dts, Grid *GXYZ)
 
   /* -- Constrain ions to lie between [0,1] -- */
 
-    for (nv = NFLX; nv < NFLX + NIONS; nv++){
+    NIONS_LOOP(nv){
       v1[nv] = MAX(v1[nv], 0.0);
       v1[nv] = MIN(v1[nv], 1.0);
     }
@@ -229,7 +229,7 @@ void CoolingSource (const Data *d, double dt, Time_Step *Dts, Grid *GXYZ)
     #if COOLING == MINEq
      for (nv = NFLX; nv < NFLX + NIONS - Fe_IONS; nv++) 
     #else
-     for (nv = NFLX; nv < NFLX + NIONS; nv++) 
+       NIONS_LOOP(nv)
     #endif
       err = MAX(err, fabs(d->Vc[nv][k][j][i] - v1[nv]));
 
@@ -240,7 +240,7 @@ void CoolingSource (const Data *d, double dt, Time_Step *Dts, Grid *GXYZ)
   /* ---- Update solution array ---- */
 
     d->Vc[PRS][k][j][i] = prs;
-    for (nv = NFLX; nv < NFLX + NIONS; nv++) d->Vc[nv][k][j][i] = v1[nv];
+    NIONS_LOOP(nv) d->Vc[nv][k][j][i] = v1[nv];
 
   } /* -- end loop on points -- */
 }

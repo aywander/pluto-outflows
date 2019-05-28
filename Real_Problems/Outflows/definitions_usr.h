@@ -1,10 +1,9 @@
 /* -- Own definitions choices -- */
 //TODO: Change some of the below to ini files, use https://github.com/benhoyt/inih as ini parser.
 
-#define NOZZLE                            NOZZLE_JET
+#define NOZZLE                            NOZZLE_UFO
 #define NOZZLE_FILL                       NF_PRIMITIVE
 #define NOZZLE_CAP                        YES
-#define NOZZLE_DT                         1.e-5
 
 #define ACCRETION                         NO
 #define SINK_METHOD                       SINK_FREEFLOW
@@ -12,15 +11,16 @@
 #define FEEDBACK_CYCLE                    NO
 #define FBC_DEBOOST                       NO
 #define FBC_DEBOOST_MODE                  FBC_DEBOOST_MODE_3
+#define FBC_NOZZLE_DT                     1.e-5
 
-#define GRAV_POTENTIAL                    NONE
+#define GRAV_POTENTIAL                    GRAV_DOUBLE_ISOTHERMAL
 
 #define CLOUDS                            YES
 #define CLOUD_REPEAT	                  NO
 #define CLOUDS_MULTI   	                  NO
 
 #define CLOUD_DENSITY                     CD_KEPLERIAN
-#define CLOUD_VELOCITY                    CV_KEPLERIAN
+#define CLOUD_VELOCITY                    NO
 #define CLOUD_SCALE                       CS_VELOCITY_DISPERSION
 #define CLOUD_EXTRACT_ELLIPSOID           YES
 #define CLOUD_EXTRACT_CENTRAL_BUFFER      YES

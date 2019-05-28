@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.12)
 
 project(PLUTO)
 
@@ -14,14 +14,14 @@ set(PROBLEM_TYPE                Real)
 
 # -- Library paths --
 
-set(HDF5_PATH_PAR Lib/hdf5-parallel)
-set(HDF5_PATH_SER Lib/hdf5-serial)
+set(HDF5_PATH_PAR Lib/hdf5-1.10.4-parallel)
+set(HDF5_PATH_SER Lib/hdf5-1.10.4-serial)
 
 # -- Compilers --
 
-#set(WITH_C_COMPILER /usr/bin/gcc)
-#set(WITH_MPI_COMPILER /usr/local/bin/mpicc)
-#set(WITH_MPIXX_COMPILER /usr/local/bin/mpicxx)
+set(WITH_C_COMPILER /usr/local/bin/gcc-8)
+set(WITH_MPI_COMPILER /usr/local/bin/mpicc)
+set(WITH_MPIXX_COMPILER /usr/local/bin/mpicxx)
 
 # -- For Chombo --
 
@@ -80,7 +80,7 @@ foreach(FILE ${NEW_FILES})
 endforeach()
 
 
-# Include all source files and overrideen files
+# Include all source files and overridden files
 
 if (WITH_CHOMBO)
     set(SRC_FILES    Chombo/amrPluto.cpp)
@@ -111,7 +111,6 @@ set(SRC_FILES ${SRC_FILES}
         macros.h
         mappers3D.c
         mean_mol_weight.c
-        mpi_sub_decomp.c
         output_log.c
         parse_file.c
         parabolic_update.c
@@ -119,8 +118,7 @@ set(SRC_FILES ${SRC_FILES}
         prototypes.h
         rbox.c
         restart.c
-        rkc.c                              # Buggy (Never used?)
-        rkl.c                              # Buggy (Never used?)
+#        rkc.c                              # Buggy (Never used?)
         runtime_setup.c
         set_geometry.c
         set_grid.c
@@ -132,7 +130,6 @@ set(SRC_FILES ${SRC_FILES}
         startup.c
         #startup_old.c
         structs.h                           # Modified
-        sts.c
         tools.c
         userdef_output.c
         #userdef_output.dt.c                # Never used?
@@ -211,6 +208,7 @@ if (WITH_PARALLEL)
             ${SOURCE_DIR}/Parallel/al_sz_set.c
             ${SOURCE_DIR}/Parallel/al_szptr_.c
             ${SOURCE_DIR}/Parallel/al_write_array_async.c
+            ${SOURCE_DIR}/mpi_sub_decomp.c     # Not sure this is needed
             )
 else()
 
@@ -353,7 +351,7 @@ if (WITH_PHYSICS STREQUAL HD)
             #${SOURCE_DIR}/HD/ausm_up.c           # Buggy (don't need)
             ${SOURCE_DIR}/HD/eigenv.c
             ${SOURCE_DIR}/HD/fluxes.c
-            ${SOURCE_DIR}/MHD/get_current.c
+#            ${SOURCE_DIR}/MHD/get_current.c      # Don't need?
             ${SOURCE_DIR}/HD/hll.c
             ${SOURCE_DIR}/HD/hll_speed.c
             ${SOURCE_DIR}/HD/hllc.c
@@ -449,6 +447,8 @@ endif ()
 if (WITH_THERMAL_CONDUTION)
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Thermal_Conduction)
     set(SOURCE_FILES  ${SOURCE_FILES}
+            ${SOURCE_DIR}/sts.c
+            ${SOURCE_DIR}/rkl.c
             ${SOURCE_DIR}/Thermal_Conduction/tc.h
             ${SOURCE_DIR}/Thermal_Conduction/tc_flux.c
             ${SOURCE_DIR}/Thermal_Conduction/tc_functions.c
@@ -460,6 +460,8 @@ endif ()
 if (WITH_VISCOSITY)
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Viscosity)
     set(SOURCE_FILES  ${SOURCE_FILES}
+            ${SOURCE_DIR}/sts.c
+            ${SOURCE_DIR}/rkl.c
             ${SOURCE_DIR}/Viscosity/visc_nu.c
             ${SOURCE_DIR}/Viscosity/viscosity.h
             ${SOURCE_DIR}/Viscosity/viscous_flux.c
@@ -480,6 +482,8 @@ endif ()
 if (WITH_RESISTIVITY)
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/MHD/Resistive)
     set(SOURCE_FILES  ${SOURCE_FILES}
+            ${SOURCE_DIR}/sts.c
+            ${SOURCE_DIR}/rkl.c
             ${SOURCE_DIR}/MHD/Resistive/res.h
             ${SOURCE_DIR}/MHD/Resistive/res_eta.c
             ${SOURCE_DIR}/MHD/Resistive/res_flux.c

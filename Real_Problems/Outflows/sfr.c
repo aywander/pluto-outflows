@@ -9,6 +9,7 @@
 #include "accretion.h"
 #include "grid_geometry.h"
 #include "idealEOS.h"
+#include "init_tools.h"
 
 /*********************************************************************** */
 void FederrathAccretion(Data *d, const Grid *grid) {
@@ -77,8 +78,8 @@ double JeansResolvedDensity(const double *prim){
 }
 
 /* ************************************************ */
-double FederrathSinkInternalBoundary(const double ****Vc, int i, int j, int k, const double *x1, const double *x2,
-                                     const double *x3, const double ***vol, double *result) {
+double FederrathSinkInternalBoundary(double ****Vc, int i, int j, int k, double *x1, double *x2,
+                                     double *x3, double ***vol, double *result) {
 /*!
  * Remove delta_mass in cells so as to satisfy the Jeans criterion
  * that the Jeans length should be

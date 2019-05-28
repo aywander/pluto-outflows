@@ -35,13 +35,13 @@
 #include "pluto.h"
 
 /* ********************************************************************* */
-void CoolingSource (const Data *d, double dt, Time_Step *Dts, Grid *GXYZ)
+void CoolingSource (const Data *d, double dt, timeStep *Dts, Grid *GXYZ)
 /*!
  * Integrate cooling and reaction source terms.
  *
  * \param [in,out]  d   pointer to Data structure
  * \param [in]     dt   the time step to be taken
- * \param [out]    Dts  pointer to the Time_Step structure
+ * \param [out]    Dts  pointer to the timeStep structure
  * \param [in]    GXYZ  pointer to an array of Grid structures
  *
  *********************************************************************** */

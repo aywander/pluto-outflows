@@ -13,6 +13,7 @@
 #include "accretion.h"
 #include "grid_geometry.h"
 #include "interpolation.h"
+#include "nozzle.h"
 
 
 /* ************************************************ */

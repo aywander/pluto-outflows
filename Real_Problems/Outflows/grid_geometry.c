@@ -7,6 +7,7 @@
 #include "pluto_usr.h"
 #include "grid_geometry.h"
 #include "outflow.h"
+#include "nozzle.h"
 
 
 /* ************************************************ */

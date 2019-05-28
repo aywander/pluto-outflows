@@ -13,10 +13,10 @@ import datetime
 fname = 'grid_in.out'
 
 # All the data needed to write. Ghost cells are ignored, i think.
-dim, geom = 2, 'CARTESIAN'
-x1_beg, x1_end, nx1, ngh1 = 0, 1.5, 64, 4
-x2_beg, x2_end, nx2, ngh2 = -0.5, 0.5, 128, 4
-x3_beg, x3_end, nx3, ngh3 = -0.1875, 0.1875, 16, 4
+dim, geom = 3, 'CARTESIAN'
+x1_beg, nx1, x1_end, ngh1 = 0, 1.5, 64, 4
+x2_beg, nx2, x2_end, ngh2 = -0.5, 0.5, 128, 4
+x3_beg, nx3, x3_end, ngh3 = -0.1875, 0.1875, 16, 4
 
 
 

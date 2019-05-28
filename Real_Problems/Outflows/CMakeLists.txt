@@ -7,7 +7,7 @@ set(WITH_ASYNC_IO               OFF)
 set(WITH_CHOMBO                 OFF)
 
 set(WITH_PHYSICS                HD)
-set(WITH_COOLING                NONE)
+set(WITH_COOLING                TABULATED)
 set(WITH_INTERPOLATION          PARABOLIC)
 set(WITH_TIME_STEPPING          CHARACTERISTIC_TRACING)
 
@@ -57,6 +57,8 @@ set(NEW_FILES
         macros_usr.h
         multicloud_init.c
         multicloud_init.h
+        nozzle.c
+        nozzle.h
         outflow.c
         outflow.h
         pluto_usr.h

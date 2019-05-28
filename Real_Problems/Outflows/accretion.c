@@ -12,6 +12,7 @@
 #include "init_tools.h"
 #include "hot_halo.h"
 #include "io_tools.h"
+#include "nozzle.h"
 
 
 /* Global struct for accretion */

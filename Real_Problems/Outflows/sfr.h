@@ -9,11 +9,11 @@ void FederrathAccretion(Data *d, const Grid *grid);
 
 double JeansResolvedDensity(const double *prim);
 
-double FederrathSinkInternalBoundary(const double ****Vc, int i, int j, int k, const double *x1, const double *x2,
-                                     const double *x3, const double ***vol, double *result);
+double FederrathSinkInternalBoundary(double ****Vc, int i, int j, int k, double *x1, double *x2,
+                                     double *x3, double ***vol, double *result);
 
-double VirialParameter(const double * prim, const double mass,
-                       const double x1, const double x2, const double x3);
+double VirialParameter(const double * prim, double mass,
+                       double x1, double x2, double x3);
 
 double GravitationallyBound(const double *prim, const double mass, const double vol,
                             const double x1, const double x2, const double x3);

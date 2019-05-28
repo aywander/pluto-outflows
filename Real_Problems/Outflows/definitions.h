@@ -4,13 +4,12 @@
 #define  GEOMETRY                CARTESIAN
 #define  BODY_FORCE              POTENTIAL
 #define  FORCED_TURB             NO
-#define  COOLING                 NONE
+#define  COOLING                 TABULATED
 #define  RECONSTRUCTION          PARABOLIC
 #define  TIME_STEPPING           RK3
 #define  DIMENSIONAL_SPLITTING   NO
 #define  NTRACER                 1
 #define  USER_DEF_PARAMETERS     41
-#define  USER_DEF_CONSTANTS      4
 
 /* -- physics dependent declarations -- */
 
@@ -69,25 +68,24 @@
 #define  UNIT_VELOCITY           CONST_c
 
 #define  ARTIFICIAL_VISC         NO
-#define  ASSIGN_VECTOR_POTENTIAL YES
+//#define  ASSIGN_VECTOR_POTENTIAL YES
 #define  CHAR_LIMITING           YES
-#define  CT_EN_CORRECTION        YES
+//#define  CT_EN_CORRECTION        YES
 #define  ID_NZ_MAX               4
 #define  INITIAL_SMOOTHING       NO
 #define  INTERNAL_BOUNDARY       YES
 #define  LIMITER                 MC_LIM
-#define  PRINT_TO_FILE           YES
 #define  RECONSTRUCT_4VEL        NO
 #define  SHOCK_FLATTENING        MULTID
 #define  PPM_ORDER               4
-#define  UPDATE_VECTOR_POTENTIAL YES
+//#define  UPDATE_VECTOR_POTENTIAL YES
 #define  WARNING_MESSAGES        NO
 
-#define  FORCED_TURB_ENERGY      2.e-3
-#define  FORCED_TURB_DECAY       0.5
-#define  FORCED_TURB_KMIN        (2 * CONST_PI)
-#define  FORCED_TURB_KMAX        (6 * CONST_PI)
-#define  FORCED_TURB_WEIGHT      0.3
+//#define  FORCED_TURB_ENERGY      2.e-3
+//#define  FORCED_TURB_DECAY       0.5
+//#define  FORCED_TURB_KMIN        (2 * CONST_PI)
+//#define  FORCED_TURB_KMAX        (6 * CONST_PI)
+//#define  FORCED_TURB_WEIGHT      0.3
 
 #define  SHOW_TIME_STEPS         YES
 #define  SHOW_TIMING             YES

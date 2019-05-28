@@ -23,6 +23,7 @@
 #include "hot_halo.h"
 #include "outflow.h"
 #include "supernovae.h"
+#include "nozzle.h"
 
 
 /* ********************************************************************* */
@@ -178,58 +179,20 @@ void InitDomain(Data *d, Grid *grid)
  *********************************************************************** */
 {
 
-#if CLOUDS
-    double halo_primitives[NVAR], cloud_primitives[NVAR];
 
-    int i, j, k, nv, id;
+    int i, j, k, nv, id, vol;
+    double *x1, *x2, *x3;
 
-    double *x1 = grid->x[IDIR];
-    double *x2 = grid->x[JDIR];
-    double *x3 = grid->x[KDIR];
-
-    id = InputDataOpen("./input-rho.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
-    TOT_LOOP(k,j,i) d->Vc[RHO][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
-    InputDataClose(id);
-
-#if CLOUD_VELOCITY
-
-    id = InputDataOpen("./input-vx1.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
-    TOT_LOOP(k,j,i) d->Vc[VX1][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
-    InputDataClose(id);
-
-    id = InputDataOpen("./input-vx2.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
-    TOT_LOOP(k,j,i) d->Vc[VX2][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
-    InputDataClose(id);
-
-    id = InputDataOpen("./input-vx3.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
-    TOT_LOOP(k,j,i) d->Vc[VX3][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
-    InputDataClose(id);
-
-    double ***v1 = d->Vc[VX1];
-    double ***v2 = d->Vc[VX2];
-    double ***v3 = d->Vc[VX3];
-    InputDataCoordTransformVector(id, x1, x2, x3, v1, v2, v3);
+    /* Measure Nozzle volume by counting cells. This is the volume into which
+     * mass, momentum, energy are dumped. We therefore use DOM_LOOP */
+#if NOZZLE
+    NozzleVolume(d, grid);
 
 #endif
 
-    /* Do Clouds apodization */
-    TOT_LOOP(k, j, i){
-
-                /* First get primitives array for hot halo */
-                HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
-
-                // TODO: Redo and check CLOUDS_MULTI
-
-                /* If we're in the domain of the clouds cube */
-                if (CloudPrimitives(cloud_primitives, x1[i], x2[j], x3[k])){
-                    for (nv = 0; nv < NVAR; ++nv) d->Vc[nv][k][j][i] = cloud_primitives[nv];
-                }
-                    /* If not a cloud pixel then use hot halo primitives*/
-                else{
-                    for (nv = 0; nv < NVAR; ++nv) d->Vc[nv][k][j][i] = halo_primitives[nv];
-                }
-            }
-
+    /* Input data for clouds initialization */
+#if CLOUDS
+    InputDataClouds(d, grid);
 
 #endif
 
@@ -261,7 +224,6 @@ void Analysis (const Data *d, Grid *grid)
     NozzleFill(d, grid);
 
 #endif
-
 
 
     /* Star-formation */
@@ -407,9 +369,6 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
         /* Accretion and Nozzle */
 
-        // TODO: Probalby don't really need this condition. Just keeps some processors idle.
-//        if (SphereIntersectsDomain(grid, nz.sph)) {
-
             // TODO: Separate ACCRETION from NOZZLE
             // TODO: Create a AGN switch, and change NOZZLE to AGN_NOZZLE
             // TODO: Change ACCRETION -> AGN_ACCRETION
@@ -432,7 +391,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
             /* If the nozzle switches on, drastically reduce timestep */
 #if NOZZLE_FILL == NF_PRIMITIVE
-            if (is_on < os.is_on) g_dt = NOZZLE_DT;
+            if (is_on < os.is_on) g_dt = FBC_NOZZLE_DT;
 //            if (is_on < os.is_on) g_dt *= pow(10, 0.5 * log10(first_dt / g_dt)))
 #endif
 
@@ -529,8 +488,6 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
             FreeArray4D((void *) Vc_new);
 
 #endif   // If Accretion
-
-//        } // SphereIntersectsDomain
 
 
     } // side == 0

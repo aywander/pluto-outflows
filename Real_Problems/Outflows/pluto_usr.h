@@ -158,8 +158,8 @@
 #endif
 
 /* Maximum timestep when nozzle is activated in FEEDBACK_CYCLE model */
-#ifndef NOZZLE_DT
-#define NOZZLE_DT  1.e-3
+#ifndef FBC_NOZZLE_DT
+#define FBC_NOZZLE_DT  1.e-3
 #endif
 
 /* Use a hemispherical cap?
@@ -310,7 +310,7 @@
    Comment out lines below if both are needed for a set up.
 */
 #if CLOUDS_MULTI == YES
-#define CLOUDS NO
+//#define CLOUDS NO
 #endif
 
 

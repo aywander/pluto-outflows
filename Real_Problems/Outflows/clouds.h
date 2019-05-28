@@ -60,6 +60,6 @@ void WarmPhasePorosity(Data *d, Grid *grid);
 
 void CloudOutput();
 
-//#include "init_tools.h"
+void InputDataClouds(const Data *d, const Grid *grid);
 
 #endif //PLUTO_CLOUDS_H

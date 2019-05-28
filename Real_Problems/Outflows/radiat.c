@@ -26,7 +26,7 @@ void Radiat (double *v, double *rhs)
 
     FILE *fcool;
 
-/* ------------------------------------7XhPmOk%-------
+/* -------------------------------------------
         Read tabulated cooling function
    ------------------------------------------- */
 
@@ -91,7 +91,7 @@ void Radiat (double *v, double *rhs)
 
 
     // NOTE: This is not consistent with the value of mu from the cooling table, if MU_CALC = MU_CONST
-    // AYW -- Add gentle heating below instead of rhs[RHOE] = 0
+    // AYW -- Add gentle heating (see below) instead of rhs[RHOE] = 0
 //  if (T < g_minCoolingTemp) {
 //    if (Te < g_minCoolingTemp) {
 //        rhs[RHOE] = 0.0;
