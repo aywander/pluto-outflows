@@ -1,8 +1,8 @@
 # -- Simulation dependent settings --
 
-set(WITH_PARALLEL               OFF)
-set(WITH_PNG                    OFF)
-set(WITH_HDF5                   ON)
+set(WITH_PARALLEL               ON)
+set(WITH_PNG                    ON)
+set(WITH_HDF5                   OFF)
 set(WITH_ASYNC_IO               OFF)
 set(WITH_CHOMBO                 OFF)
 
@@ -33,7 +33,8 @@ set(WITH_DUST_FLUID             OFF)
 
 
 # Executable output location
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/4C31.04/pluto-runs)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/Outflow/EnergyMomentum/PLUTO_simulations/runs/spherical_settling)
+
 
 # New files
 set(NEW_FILES

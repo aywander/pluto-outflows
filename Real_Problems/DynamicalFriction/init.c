@@ -228,7 +228,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
                         /* Free-flow lower boundary */
                         if ((g_time > 1.) && (x2[j] > CONST_PI / 2.)) {
-                            for (nv = 0; nv < NVAR; ++nv) {
+                            NVAR_LOOP(nv) {
                                 d->Vc[nv][k][j][i] = d->Vc[nv][k][j][IEND];
                             }
                         }
@@ -237,13 +237,13 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
                         else {
                             Init(v, x1[i], x2[j], x3[k]);
 
-                            for (nv = 0; nv < NVAR; ++nv) {
+                            NVAR_LOOP(nv) {
                                 d->Vc[nv][k][j][i] = v[nv];
                             }
                         }
 
 #else
-                        for (nv = 0; nv < NVAR; ++nv) {
+                        NVAR_LOOP(nv) {
                             d->Vc[nv][k][j][i] = d->Vc[nv][k][j][IEND];
                         }
 #endif

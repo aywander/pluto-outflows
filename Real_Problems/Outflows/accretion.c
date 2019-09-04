@@ -413,7 +413,7 @@ void SphericalFreeflow(double *prims, double ****Vc, const double *x1, const dou
     weights = 0;
 
     /* Zero primitives array */
-    for (nv = 0; nv < NVAR; nv++) prims[nv] = 0;
+    NVAR_LOOP(nv) prims[nv] = 0;
 
     for (kk = MAX(k - e, 0); kk < MIN(k + e + 1, NX3_TOT); kk++) {
         for (jj = MAX(j - e, 0); jj < MIN(j + e + 1, NX2_TOT); jj++) {
@@ -426,7 +426,7 @@ void SphericalFreeflow(double *prims, double ****Vc, const double *x1, const dou
                         weight = 1. / rad;
                         weights += weight;
 
-                        for (nv = 0; nv < NVAR; nv++) {
+                        NVAR_LOOP(nv) {
                             prims[nv] += weight * Vc[nv][kk][jj][ii];
                         }
 
@@ -437,7 +437,7 @@ void SphericalFreeflow(double *prims, double ****Vc, const double *x1, const dou
         }
     }
 
-    for (nv = 0; nv < NVAR; nv++) {
+    NVAR_LOOP(nv) {
         if (weights > 0) {
             prims[nv] /= weights;
         }
@@ -598,7 +598,7 @@ void BondiFlowInternalBoundary(const double x1, const double x2, const double x3
 
 
     /* Copy quantities to primitives array */
-    for (nv = 0; nv < NVAR; ++nv) result[nv] = 0;
+    NVAR_LOOP(nv) result[nv] = 0;
     result[RHO] = rho;
     result[PRS] = prs;
 
@@ -641,7 +641,7 @@ void SphericalFreeflowInternalBoundary(const double ****Vc, int i, int j, int k,
     vs3 = VSPH3(x1[i], x2[j], x3[k], vx1, vx2, vx3);
     vs1 = MIN(vs1, 0);
 
-    for (nv = 0; nv < NVAR; ++nv) result[nv] = prims[nv];
+    NVAR_LOOP(nv) result[nv] = prims[nv];
 
     EXPAND(result[VX1] = VSPH_1(sx1, sx2, sx3, vs1, vs2, vs3);,
            result[VX2] = VSPH_2(sx1, sx2, sx3, vs1, vs2, vs3);,
@@ -667,7 +667,7 @@ void VacuumInternalBoundary(double *result) {
 
     int nv;
 
-    for (nv = 0; nv < NVAR; ++nv) result[nv] = 0;
+    NVAR_LOOP(nv) result[nv] = 0;
     result[RHO] = g_smallDensity;
     result[PRS] = g_smallPressure;
 

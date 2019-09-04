@@ -208,7 +208,7 @@ if (WITH_PARALLEL)
             ${SOURCE_DIR}/Parallel/al_sz_set.c
             ${SOURCE_DIR}/Parallel/al_szptr_.c
             ${SOURCE_DIR}/Parallel/al_write_array_async.c
-            ${SOURCE_DIR}/mpi_sub_decomp.c     # Not sure this is needed
+#            ${SOURCE_DIR}/mpi_sub_decomp.c     # Probably shouldn't be there
             )
 else()
 

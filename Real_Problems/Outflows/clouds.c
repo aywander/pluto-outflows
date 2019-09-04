@@ -589,7 +589,7 @@ int CloudPrimitives(double *cloud,
     /* Fill cloud array with halo primitves if not a cloud cell. This is not
      * strictly necessary, since it is done outside CloudPrimitives, but we
      * do it anyway for completeness. */
-    if (is_cloud == 0) for (nv = 0; nv < NVAR; ++nv) cloud[nv] = halo[nv];
+    if (is_cloud == 0) NVAR_LOOP(nv) cloud[nv] = halo[nv];
 
     return is_cloud;
 }
@@ -1086,15 +1086,18 @@ void InputDataClouds(const Data *d, const Grid *grid) {
                 /* First get primitives array for hot halo */
                 HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
 
+                /* Fill cloud_primitives array */
+                NVAR_LOOP(nv) cloud_primitives[nv] = d->Vc[nv][k][j][i];
+
                 // TODO: Redo and check CLOUDS_MULTI
 
                 /* If we're in the domain of the clouds cube */
                 if (CloudPrimitives(cloud_primitives, x1[i], x2[j], x3[k])){
-                    for (nv = 0; nv < NVAR; ++nv) d->Vc[nv][k][j][i] = cloud_primitives[nv];
+                    NVAR_LOOP(nv) d->Vc[nv][k][j][i] = cloud_primitives[nv];
                 }
                     /* If not a cloud pixel then use hot halo primitives*/
                 else{
-                    for (nv = 0; nv < NVAR; ++nv) d->Vc[nv][k][j][i] = halo_primitives[nv];
+                    NVAR_LOOP(nv) d->Vc[nv][k][j][i] = halo_primitives[nv];
                 }
             }
 }

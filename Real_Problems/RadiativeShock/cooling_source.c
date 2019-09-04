@@ -268,7 +268,7 @@ void Numerical_Jacobian (double *v, double **J)
 
 /* -- partial derivs with respect to pressure -- */
 
-  for (nv = 0; nv < NVAR; nv++){
+  NVAR_LOOP(nv){
     vp[nv] = vm[nv] = v[nv];
   }
   vp[PRS] *= 1.0 + eps;
@@ -286,7 +286,7 @@ void Numerical_Jacobian (double *v, double **J)
 
   for (l = 0; l < n - 1; l++){
 
-    for (nv = 0; nv < NVAR; nv++){
+    NVAR_LOOP(nv){
       vp[nv] = vm[nv] = v[nv];
     }
     vp [l + NFLX] = v[l + NFLX] + eps;

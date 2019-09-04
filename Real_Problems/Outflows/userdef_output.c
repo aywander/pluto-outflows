@@ -76,7 +76,7 @@ void ComputeUserVar(const Data *d, Grid *grid)
 #endif
 
                 /* Temperature */
-                for (nv = 0; nv < NVAR; nv++) v[nv] = d->Vc[nv][k][j][i];
+                NVAR_LOOP(nv) v[nv] = d->Vc[nv][k][j][i];
                 mu = MeanMolecularWeight(v);
                 te[k][j][i] = TempIdealEOS(rho[k][j][i], prs[k][j][i], mu) * vn.temp_norm;
 
@@ -210,10 +210,10 @@ void ChangeOutputVar ()
     EXPAND(SetOutputVar("vx1", PNG_OUTPUT, NO);,
            SetOutputVar("vx2", PNG_OUTPUT, NO);,
            SetOutputVar("vx3", PNG_OUTPUT, NO););
-    SetOutputVar("prs", PNG_OUTPUT, YES);
-    SetOutputVar("tr1", PNG_OUTPUT, YES);
+    SetOutputVar("prs", PNG_OUTPUT, NO);
+    SetOutputVar("tr1", PNG_OUTPUT, NO);
 #if CLOUDS == YES
-    SetOutputVar("tr2", PNG_OUTPUT, YES);
+    SetOutputVar("tr2", PNG_OUTPUT, NO);
 #endif
     SetOutputVar("te", PNG_OUTPUT, YES);
     SetOutputVar("spd", PNG_OUTPUT, YES);
@@ -227,44 +227,44 @@ void ChangeOutputVar ()
     image->slice_plane = X13_PLANE;
     image->slice_coord = 0.0;
 #endif
-    image->max = image->min = 0.;
+    image->max = 1.e3; image->min = 1.e-2;
     image->logscale = 1;
 
-    /* density slice */
-    image = GetImage("prs");
+    /* pressure slice */
+    image = GetImage("te");
 #if COMPONENTS > 2
     image->slice_plane = X13_PLANE;
     image->slice_coord = 0.0;
 #endif
-    image->max = image->min = 0.;
+    image->max = 1.e7; image->min = 100.;
     image->logscale = 1;
+    image->colormap = "br";
 
 
     /* first tracer slice */
 #if NTRACER > 0
-    image = GetImage("tr1");
+    image = GetImage("spd");
 #if COMPONENTS > 2
     image->slice_plane = X13_PLANE;
     image->slice_coord = 0.0;
 #endif
-    image->max = 1.;
-    image->min = 0.;
+    image->max = 1.e5; image->min = 10;
     image->logscale = 1;
+    image->colormap = "bw";
 #endif
 
-#if CLOUDS
-    /* second tracer slice */
-#if NTRACER > 1
-    image = GetImage("tr2");
-#if COMPONENTS > 2
-    image->slice_plane = X13_PLANE;
-    image->slice_coord = 0.0;
-#endif
-    image->max = 1.;
-    image->min = 0.;
-    image->logscale = 1;
-#endif
-#endif
+//#if CLOUDS
+//    /* second tracer slice */
+//#if NTRACER > 1
+//    image = GetImage("tr2");
+//#if COMPONENTS > 2
+//    image->slice_plane = X13_PLANE;
+//    image->slice_coord = 0.0;
+//#endif
+//    image->max = 1.; image->min = 0.;
+//    image->logscale = 0;
+//#endif
+//#endif
 
 #ifdef PARTICLES
   //SetOutputVar ("energy",PARTICLES_FLT_OUTPUT, NO);
@@ -273,8 +273,5 @@ void ChangeOutputVar ()
 #endif
 
 }
-
-
-
 
 

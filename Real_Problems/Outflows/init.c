@@ -118,7 +118,7 @@ void Init (double *v, double x1, double x2, double x3)
          OutflowPrimitives(out_primitives, x1, x2, x3);
          HotHaloPrimitives(halo_primitives, x1, x2, x3);
 
-         for (nv = 0; nv < NVAR; ++nv) {
+         NVAR_LOOP(nv) {
              v[nv] = halo_primitives[nv] +
                      (out_primitives[nv] - halo_primitives[nv]) * Profile(x1, x2, x3);
          }
@@ -133,9 +133,7 @@ void Init (double *v, double x1, double x2, double x3)
 
         HotHaloPrimitives(halo_primitives, x1, x2, x3);
 
-        for (nv = 0; nv < NVAR; ++nv) {
-            v[nv] = halo_primitives[nv];
-        }
+        NVAR_LOOP(nv) v[nv] = halo_primitives[nv];
     }
 #endif
 
@@ -143,7 +141,7 @@ void Init (double *v, double x1, double x2, double x3)
     else {
 
         HotHaloPrimitives(halo_primitives, x1, x2, x3);
-        for (nv = 0; nv < NVAR; ++nv) v[nv] = halo_primitives[nv];
+        NVAR_LOOP(nv) v[nv] = halo_primitives[nv];
 
     }
 
@@ -357,9 +355,9 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
             TOT_LOOP(k, j, i) {
 
                         /* Inject supernova energy cellwise */
-                        for (nv = 0; nv < NVAR; ++nv) result[nv] = d->Vc[nv][k][j][i];
+                        NVAR_LOOP(nv) result[nv] = d->Vc[nv][k][j][i];
                         InjectSupernovae(result, x1[i], x2[j], x3[k], sn_inj);
-                        for (nv = 0; nv < NVAR; ++nv) d->Vc[nv][k][j][i] = result[nv];
+                        NVAR_LOOP(nv) d->Vc[nv][k][j][i] = result[nv];
                     }
         }
 
@@ -409,7 +407,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
                             OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k]);
 
-                            for (nv = 0; nv < NVAR; ++nv) {
+                            NVAR_LOOP(nv) {
                                 vc = d->Vc[nv][k][j][i];
                                 d->Vc[nv][k][j][i] = vc + (out_primitives[nv] - vc) *
                                                           Profile(x1[i], x2[j], x3[k]);
@@ -450,7 +448,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 #endif  // SINK_METHOD
 
                                 /* Copy results to temporary solution array */
-                                for (nv = 0; nv < NVAR; ++nv) Vc_new[nv][k][j][i] = result[nv];
+                                NVAR_LOOP(nv) Vc_new[nv][k][j][i] = result[nv];
 
                                 d->flag[k][j][i] |= FLAG_INTERNAL_BOUNDARY;
 
@@ -461,9 +459,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
                             HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
 
-                            for (nv = 0; nv < NVAR; ++nv) {
-                                d->Vc[nv][k][j][i] = halo_primitives[nv];
-                            }
+                            NVAR_LOOP(nv) d->Vc[nv][k][j][i] = halo_primitives[nv];
                             d->flag[k][j][i] |= FLAG_INTERNAL_BOUNDARY;
 
                         } // InFlankRegion
@@ -478,9 +474,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
             TOT_LOOP(k, j, i) {
 
                         if (InSinkRegion(x1[i], x2[j], x3[k])) {
-                            for (nv = 0; nv < NVAR; ++nv) {
-                                d->Vc[nv][k][j][i] = Vc_new[nv][k][j][i];
-                            }
+                            NVAR_LOOP(nv) d->Vc[nv][k][j][i] = Vc_new[nv][k][j][i];
                         }
 
                     } // Update TOT_LOOP
@@ -580,7 +574,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
                         else { // half galaxy
 
                             /* Reflective boundary */
-                            for (nv = 0; nv < NVAR; ++nv) {
+                            NVAR_LOOP(nv) {
                                 mirror[nv] = d->Vc[nv]
                                 FLOWAXIS([k][j][2 * IBEG - i - 1],
                                          [k][2 * JBEG - j - 1][i],
@@ -590,23 +584,21 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
                             mirror[FLOWAXIS(VX1, VX2, VX3)] *= -1.0;
 
 #if (NOZZLE == NONE) || (NOZZLE_FILL == NF_CONSERVATIVE)
-                            for (nv = 0; nv < NVAR; ++nv) {
-                                    d->Vc[nv][k][j][i] = mirror[nv];
-                                }
+                            NVAR_LOOP(nv) d->Vc[nv][k][j][i] = mirror[nv];
 #else
 
                             if (InNozzleRegion(x1[i], x2[j], x3[k])) {
 
                                 OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k]);
 
-                                for (nv = 0; nv < NVAR; ++nv) {
+                                NVAR_LOOP(nv) {
                                     d->Vc[nv][k][j][i] = mirror[nv] + (out_primitives[nv] - mirror[nv]) *
                                                                       Profile(x1[i], x2[j], x3[k]);
                                 }
 
                             }
                             else {
-                                for (nv = 0; nv < NVAR; ++nv) {
+                                NVAR_LOOP(nv) {
                                     d->Vc[nv][k][j][i] = mirror[nv];
                                 }
                             }

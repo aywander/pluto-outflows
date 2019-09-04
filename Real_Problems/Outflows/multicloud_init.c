@@ -26,7 +26,7 @@ void Init_multiclds (double *v, double x1, double x2, double x3, struct cld_doma
         OutflowPrimitives(out_primitives, x1, x2, x3);
         HotHaloPrimitives(halo_primitives, x1, x2, x3);
 
-        for (nv = 0; nv < NVAR; ++nv) {
+        NVAR_LOOP(nv) {
             v[nv] = halo_primitives[nv] +
                     (out_primitives[nv] - halo_primitives[nv]) * Profile_cap(x1, x2, x3);
         }
@@ -41,11 +41,11 @@ void Init_multiclds (double *v, double x1, double x2, double x3, struct cld_doma
 
         /* If we're in the domain of the clouds cube */
         if (MultiCloudPrimitives(cloud_primitives, x1, x2, x3, cld)) {
-            for (nv = 0; nv < NVAR; ++nv) v[nv] = cloud_primitives[nv];
+            NVAR_LOOP(nv) v[nv] = cloud_primitives[nv];
         }
             /* If not a cloud pixel then use hot halo primitives*/
         else {
-            for (nv = 0; nv < NVAR; ++nv) v[nv] = halo_primitives[nv];
+            NVAR_LOOP(nv) v[nv] = halo_primitives[nv];
         }
 
 
@@ -54,7 +54,7 @@ void Init_multiclds (double *v, double x1, double x2, double x3, struct cld_doma
 #if INTERNAL_BOUNDARY == YES
     if (InNozzleSphere(x1, x2, x3) && (g_inputParam[FLAG_JET] > 0)) {
         HotHaloPrimitives(halo_primitives, x1, x2, x3);
-        for (nv = 0; nv < NVAR; ++nv) {
+        NVAR_LOOP(nv) {
             v[nv] = halo_primitives[nv];
         }
     }
@@ -132,7 +132,7 @@ int MultiCloudPrimitives(double* cloud,
     /* Fill cloud array with halo primitves if not a cloud cell. This is not
      * strictly necessary, since it is done outside CloudPrimitives, but we
      * do it anyway for completeness. */
-    if (is_cloud == 0) { for (nv = 0; nv < NVAR; ++nv) cloud[nv] = halo[nv]; }
+    if (is_cloud == 0) { NVAR_LOOP(nv) cloud[nv] = halo[nv]; }
 
     return is_cloud;
 }

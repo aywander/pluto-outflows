@@ -7,12 +7,14 @@ OBJ += init_tools.o
 OBJ += interpolation.o
 OBJ += io_tools.o
 OBJ += multicloud_init.o
+OBJ += nozzle.c
 OBJ += outflow.o
 OBJ += random.o
 OBJ += read_grav_table.o
 OBJ += read_hot_table.o
 OBJ += read_mu_table.o
 OBJ += sfr.o
+#OBJ += supernovae.c
 
 HEADER += macros_usr.h
 HEADER += multicloud_init.h
@@ -25,6 +27,7 @@ HEADER += idealEOS.h
 HEADER += init_tools.h
 HEADER += interpolation.h
 HEADER += io_tools.h
+HEADER += nozzle.h
 HEADER += outflow.h
 HEADER += pluto_usr.h
 HEADER += random.h
@@ -32,5 +35,5 @@ HEADER += read_grav_table.h
 HEADER += read_hot_table.h
 HEADER += read_mu_table.h
 HEADER += sfr.h
-
+#HEADER += supernovae.h
 
