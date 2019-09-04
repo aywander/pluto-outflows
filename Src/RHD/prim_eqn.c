@@ -143,7 +143,7 @@ void PrimSource (const State *state, double **src, int beg, int end, Grid *grid)
 
   /* AYW -- */
   double hscale; /* scale factor */
-  double *v, *vp, r_inv, ct;
+  double *vp, r_inv, ct;
   double *x1p, *x2p, *x3p;
   double *dx1, *dx2, *dx3;
   static double *phi_p;
