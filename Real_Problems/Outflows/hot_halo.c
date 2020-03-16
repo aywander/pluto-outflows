@@ -229,7 +229,9 @@ void HotHaloPrimitives(double *halo,
 
 #elif defined(GRAV_TABLE)
 
-    /* The density from the table is in units of cm^-3 */
+    /* The density from the table is in units of cm^-3
+     * The density can be scaled, by PAR_HRHO, but make sure PAR_HTMP
+     * is the same as that used to generate the hot halo profile. */
     double r = SPH1(x1, x2, x3);
     halo[RHO] = InterpolationWrapper(hot_rad, hot_rho, hot_ndata, r);
     halo[RHO] *= g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
