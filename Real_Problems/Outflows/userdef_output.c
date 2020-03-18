@@ -181,8 +181,8 @@ void ChangeOutputVar ()
 #if CLOUDS == YES
     SetOutputVar("tr2", FLT_OUTPUT, YES);
 #endif
-    SetOutputVar("te", FLT_OUTPUT, YES);
-    SetOutputVar("spd", FLT_OUTPUT, YES);
+    SetOutputVar("te", FLT_OUTPUT, NO);
+    SetOutputVar("spd", FLT_OUTPUT, NO);
     SetOutputVar("lmd", FLT_OUTPUT, NO);
 
 

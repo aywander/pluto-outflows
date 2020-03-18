@@ -1,15 +1,15 @@
 # -- Simulation dependent settings --
 
-set(WITH_PARALLEL               ON)
-set(WITH_PNG                    ON)
 set(WITH_HDF5                   OFF)
+set(WITH_PNG                    ON)
+set(WITH_PARALLEL               OFF)
 set(WITH_ASYNC_IO               OFF)
 set(WITH_CHOMBO                 OFF)
 
 set(WITH_PHYSICS                HD)
 set(WITH_COOLING                TABULATED)
 set(WITH_INTERPOLATION          PARABOLIC)
-set(WITH_TIME_STEPPING          CHARACTERISTIC_TRACING)
+set(WITH_TIME_STEPPING          RK3)
 
 set(WITH_PARTICLES              OFF)
 set(WITH_FORCED_TURB            OFF)
@@ -33,7 +33,8 @@ set(WITH_DUST_FLUID             OFF)
 
 
 # Executable output location
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/Outflow/EnergyMomentum/PLUTO_simulations/runs/spherical_settling)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/Outflow/EnergyMomentum/PLUTO_simulations/runs/spherical_settling)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /home/ayw/lab/AGN_Feedback/Mach_2D_winds)
 
 
 # New files

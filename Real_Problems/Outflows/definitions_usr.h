@@ -22,7 +22,7 @@
 #define CLOUD_DENSITY                     CD_KEPLERIAN
 #define CLOUD_VELOCITY                    CV_KEPLERIAN
 #define CLOUD_SCALE                       CS_VELOCITY_DISPERSION
-#define CLOUD_EXTRACT_ELLIPSOID           NO
+#define CLOUD_EXTRACT_ELLIPSOID           YES
 #define CLOUD_EXTRACT_CENTRAL_BUFFER      NO
 
 #define ACCRETION_OUTPUT                  NO

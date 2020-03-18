@@ -6,8 +6,8 @@
 #define  FORCED_TURB             NO
 #define  COOLING                 TABULATED
 #define  RECONSTRUCTION          PARABOLIC
-#define  TIME_STEPPING           CHARACTERISTIC_TRACING
-#define  DIMENSIONAL_SPLITTING   NO
+#define  TIME_STEPPING           RK3
+#define  DIMENSIONAL_SPLITTING   YES
 #define  NTRACER                 2
 #define  USER_DEF_PARAMETERS     41
 
@@ -18,14 +18,14 @@
 
 /* -- user-defined parameters (labels) -- */
 
-#define  PAR_OPOW                0
-#define  PAR_OSPD                1
-#define  PAR_OMDT                2
-#define  PAR_OANG                3
-#define  PAR_ORAD                4
-#define  PAR_ODBH                5
-#define  PAR_OSPH                6
-#define  PAR_ODIR                7
+#define  PAR_OPOW                0      // AGN wind/jet power   (erg / s)
+#define  PAR_OSPD                1      // AGN wind speed (c) | jet bulk Lorentz factor
+#define  PAR_OMDT                2      // AGN wind mass outflow rate (Msun / yr) | jet proper mass parameter
+#define  PAR_OANG                3      // AGN wind/jet opening half-angle
+#define  PAR_ORAD                4      // AGN wind/jet cross-sectional radius
+#define  PAR_ODBH                5      // AGN wind/jet nozzle distance to black hole (tilt/precession axis)
+#define  PAR_OSPH                6      // Size of spherical inner boudnary region.
+#define  PAR_ODIR                7      // AGN wind/jet nozzle orientation (directino)
 #define  PAR_OOMG                8
 #define  PAR_OPHI                9
 #define  PAR_OEFF                10

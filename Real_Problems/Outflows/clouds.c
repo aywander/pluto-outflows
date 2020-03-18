@@ -118,6 +118,10 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
     double r1, r2, y0, y1, y2, y3, frac;
     double r_sph, r_cyl, phi_rz, phi_r0, phi_00;
     double dens, sigma_g2, wrho, wrho_cgs, wrad_cgs, wtrb, ek2;
+    double wtrb_cgs;
+    static int once01 = 0;
+
+
 
     /* The following are only some
      * profiles for the warm phase that produce
@@ -158,6 +162,16 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
     /* External initialisation of turbulent velocity dispersion */
     wtrb = g_inputParam[PAR_WTRB] * ini_code[PAR_WTRB];
     sigma_g2 = wtrb * wtrb;
+
+    /* Print out scale height of clouds */
+    if (!once01) {
+        wtrb_cgs = g_inputParam[PAR_WTRB] * ini_cgs[PAR_WTRB];
+        wrho_cgs = g_inputParam[PAR_WRHO] * ini_cgs[PAR_WRHO];
+        wrad_cgs = 1.5 * wtrb_cgs / sqrt(CONST_PI * CONST_G * wrho_cgs);
+        print("  Cloud scale height is %12.6f pc.\n\n", wrad_cgs / (1000. * CONST_pc));
+
+        once01 = 1;
+    }
 
 #endif
 
@@ -220,21 +234,25 @@ double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, c
     /* The ellipse equation */
     wrot = g_inputParam[PAR_WROT] * ini_code[PAR_WROT];
 
-#if CLOUD_SCALE == CS_SCALE_HEIGHT
+    /* Always just use WRAD paramter here so that we can control the apodization
+     * and ellipsoid extraction separately */
+//#if CLOUD_SCALE == CS_SCALE_HEIGHT
     wrad = g_inputParam[PAR_WRAD] * ini_code[PAR_WRAD];
 
-#elif CLOUD_SCALE == CS_VELOCITY_DISPERSION
-    double wtrb_cgs = g_inputParam[PAR_WTRB] * ini_cgs[PAR_WTRB];
-    double wrho_cgs = g_inputParam[PAR_WRHO] * ini_cgs[PAR_WRHO];
-    double wrad_cgs = 3. * wtrb_cgs / (2. * sqrt(CONST_PI * CONST_G * wrho_cgs));
-    wrad = wrad_cgs / vn.l_norm;
+//#elif CLOUD_SCALE == CS_VELOCITY_DISPERSION
+//    double wtrb_cgs = g_inputParam[PAR_WTRB] * ini_cgs[PAR_WTRB];
+//    double wrho_cgs = g_inputParam[PAR_WRHO] * ini_cgs[PAR_WRHO];
+//    double wrad_cgs = 3. * wtrb_cgs / (2. * sqrt(CONST_PI * CONST_G * wrho_cgs));
+//    wrad = wrad_cgs / vn.l_norm;
+//
+//#endif
 
-#endif
+    /* This may  have been good for discs, so leaving it here while preparing spherical runs */
+//    ellipse = (r_cyl * r_cyl * (1 - wrot * wrot) + rz * rz) /
+//              (exp(-1) * wrad * wrad);
 
-    wrad *= wrot;
+    ellipse = (r_cyl * r_cyl * (1 - wrot * wrot) + rz * rz) / (wrad * wrad);
 
-    ellipse = (r_cyl * r_cyl * (1 - wrot * wrot) + rz * rz) /
-              (exp(-1) * wrad * wrad);
 
     /* Smoothing region scale, hardcoded here. */
     wsmf = 0.2;

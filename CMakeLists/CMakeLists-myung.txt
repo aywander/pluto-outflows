@@ -19,7 +19,7 @@ set(HDF5_PATH_SER Lib/hdf5-1.10.4-serial)
 
 # -- Compilers --
 
-set(WITH_C_COMPILER /usr/bin/gcc)
+set(WITH_C_COMPILER /usr/local/bin/gcc-8)
 set(WITH_MPI_COMPILER /usr/local/bin/mpicc)
 set(WITH_MPIXX_COMPILER /usr/local/bin/mpicxx)
 
@@ -54,8 +54,7 @@ set(INCLUDE_DIRECTORIES
 
 set(LINK_DIRECTORIES)
 
-#set(LINK_LIBRARIES m z)
-set(LINK_LIBRARIES m)
+set(LINK_LIBRARIES m z)
 
 
 # Setup-dependent / Problem-type dependent files
@@ -209,7 +208,7 @@ if (WITH_PARALLEL)
             ${SOURCE_DIR}/Parallel/al_sz_set.c
             ${SOURCE_DIR}/Parallel/al_szptr_.c
             ${SOURCE_DIR}/Parallel/al_write_array_async.c
-#            ${SOURCE_DIR}/mpi_sub_decomp.c     # Probably shouldn't be there
+            ${SOURCE_DIR}/mpi_sub_decomp.c     # Not sure this is needed
             )
 else()
 

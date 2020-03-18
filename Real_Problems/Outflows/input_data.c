@@ -574,7 +574,10 @@ ncall = 0;
 ncall++;
 */
 
-
+/* AYW -- There is a bug here in that if id->nx3 - kl < ID_NZ_MAX the slice is still read,
+ * even though the InputDataReadSlice routine would try to read slices at kl > id->nx3,
+ * resulting in read errors.
+ */
   if ( (kl >= id->klast + ID_NZ_MAX - 1) || (id->klast == -1) ){
     InputDataReadSlice(indx, kl);
   }
@@ -636,8 +639,14 @@ void InputDataReadSlice(int indx, int kslice)
 /* -----------------------------------------------------
    2. Read binary data at specified position.
    ----------------------------------------------------- */
-   
-  kmax = MIN(id->nx3,ID_NZ_MAX);
+
+/* AYW -- There is a bug here in that if id->nx3 - kl < ID_NZ_MAX the slice is still read,
+ * even though the InputDataReadSlice routine would try to read slices at kl > id->nx3,
+ * resulting in read errors.
+ */
+//  kmax = MIN(id->nx3,ID_NZ_MAX);
+  kmax = MIN(id->nx3 - kslice, ID_NZ_MAX);
+  /* -- AYW */
   if (id->dsize == sizeof(double)){
 
     for (k = 0; k < kmax   ; k++){   /* Read at most 2 planes */  

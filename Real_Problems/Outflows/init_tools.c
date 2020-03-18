@@ -32,17 +32,42 @@ void PrintInitData01(const double *out_primitives,
  **************************************************************** */
 
 
+    float rho_a, prs_a, a_a;
+    float rho_w, prs_w, a_w, vel_w, power_w, mdot_w;
+    float mach_i, mach_e, fkin;
+
+    rho_w = out_primitives[RHO];
+    prs_w = out_primitives[PRS];
+    vel_w = g_inputParam[PAR_OSPD] * ini_code[PAR_OSPD];
+    a_w = sqrt(g_gamma * prs_w / rho_w);
+    mach_i = vel_w / a_w;
+
+    rho_a = halo_primitives[RHO];
+    prs_a = halo_primitives[PRS];
+    a_a = sqrt(g_gamma * prs_a / rho_a);
+    mach_e = vel_w / a_a;
+
+    power_w = g_inputParam[PAR_OPOW] * ini_code[PAR_OPOW];
+    mdot_w = g_inputParam[PAR_OMDT] * ini_code[PAR_OMDT];
+    fkin = 0.5 * mdot_w * vel_w * vel_w / power_w;
+
+
     print("\n");
-    print("> Conditions at (0, 0, 0):\n");
+    print("> Conditions in nozzle:\n");
     print("\n");
     print("        %14s  %14s  %14s\n",
-           "Nozzle primitives", "Hot halo prim", "ratio");
+           "Nozzle primitives", "Hot halo prim", "ratio", "Mach_i", "Mach_e");
     print("  rho   %14g  %14g  %14g\n",
            out_primitives[RHO], halo_primitives[RHO],
            out_primitives[RHO] / halo_primitives[RHO]);
     print("  pr    %14g  %14g  %14g\n",
            out_primitives[PRS], halo_primitives[PRS],
            out_primitives[PRS] / halo_primitives[PRS]);
+    print("\n");
+
+    print("%16s %16s %16s\n",
+          "Internal Mach #", "External Mach #", "fkin");
+    print("%16g %16g %16g\n", mach_i, mach_e, fkin);
     print("\n");
 }
 
