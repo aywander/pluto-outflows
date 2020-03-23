@@ -1,0 +1,31 @@
+# Double isothermal parameters
+# Range in kpc
+nr = 10000
+r2 = 10.0
+r1lin = r2 / nr
+r1log = 1.e-3
+
+# Potential parameters
+kappa = np.sqrt(3./2.)
+lam = 10.
+rd = 5.  # in kpc
+mbh = 0.0  # in Msun
+
+# Thermodynamic parameters.
+# thot is chosen to be thot ~ tvir_DM, but not necessarily equal
+rho_hot = 0.1  # in 1/cm3 (cgs)
+thot = 8.e6  # in K
+sigmab = 250.  # in km/s
+
+
+# Fractal cubes
+kmin = 12, or 20
+nx = 256
+ny = nx
+nz = nx
+sigma = 250
+
+
+# Masses.
+Using this setup gives a total gas mass ~ 1.76 10^9 Msun
+within the computational volume of 2 kpc^2 at a resolution of 128^3

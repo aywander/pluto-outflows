@@ -223,7 +223,7 @@ double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, c
     static int once01 = 0;
     double r_cyl, rz;
     double tanhfactor;
-    double ellipse, ellipse_i;
+    double ellipse;
     double wrot, wrad, wsmf;
 
 
@@ -247,31 +247,21 @@ double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, c
 //
 //#endif
 
-    /* This may  have been good for discs, so leaving it here while preparing spherical runs */
-//    ellipse = (r_cyl * r_cyl * (1 - wrot * wrot) + rz * rz) /
-//              (exp(-1) * wrad * wrad);
 
     ellipse = (r_cyl * r_cyl * (1 - wrot * wrot) + rz * rz) / (wrad * wrad);
 
 
     /* Smoothing region scale, hardcoded here. */
-    wsmf = 0.2;
-
-    /* The inner ellipse equation, beyond which smoothing region begins */
-    ellipse_i = (r_cyl * r_cyl * (1 - wrot * wrot) + rz * rz) /
-                ((1. - wsmf) * exp(-1) * wrad * wrad);
-
-
-    /* Exclude zone outside ellipsoid */
-    if ( ellipse > 1.){
-      fdratio = 1.;
-    }
+    /* For discs a factor 1/e was good, for spherical distributions, 0.1.
+     * We interpolate between these. */
+    wsmf = 0.1 + (exp(-1) - 0.1) * wrot;
 
     /* The smoothing region */
-    else if ((ellipse_i > 1.) && (ellipse < 1.)){
-      tanhfactor = tanh(tan(-CONST_PI * (sqrt(ellipse) - (1. - 0.5 * wsmf)) / wsmf));
-      fdratio = 0.5 * (fdratio + 1) + 0.5 * tanhfactor * (fdratio - 1.);
-    }
+    double offset = sqrt(ellipse) - 1;
+    offset = MIN(offset, 0.5 * wsmf);
+    offset = MAX(offset, -0.5 * wsmf);
+    tanhfactor = tanh(tan(-CONST_PI * offset / wsmf));
+    fdratio = 0.5 * (fdratio + 1) + 0.5 * tanhfactor * (fdratio - 1.);
 
     if (!once01){
       print("> Cloud extraction: CLOUD_EXTRACTION_ELLIPSOID.\n\n");

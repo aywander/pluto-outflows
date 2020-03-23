@@ -43,9 +43,9 @@ void ParseCmdLineArgs (int argc, char *argv[], char *ini_file,
   cmd->makegrid  = NO; 
   cmd->jet       = -1; /* -- means no direction -- */
   cmd->xres      = -1; /* -- means no grid resizing -- */
-  /* AYW -- 2012-06-19 09:21 JST 
-   maxtime default - 0 means no limit set*/
-  cmd->maxtime = 0 ;
+  /* AYW -- 2012-06-19 09:21 JST
+   maxtime default. -1 means no limit set*/
+  cmd->maxtime = -1 ;
   /* --AYW */
 
   cmd->nproc[IDIR] = -1; /* means autodecomp will be used */
@@ -117,18 +117,50 @@ void ParseCmdLineArgs (int argc, char *argv[], char *ini_file,
      * maxtime */
     }else if (!strcmp(argv[i],"-maxtime")){
 
-      if ((++i) >= argc){
-        printf ("! You must specify -maxtime tt\n");
-        QUIT_PLUTO(1);
-      }else{
-        cmd->maxtime = atof(argv[i]);
-        if (cmd->maxtime == 0.0) {
-          printf ("! You must specify -maxtime tt, with tt > 0 \n");
-          QUIT_PLUTO(0)
-        }
-      }
-      /* -- AYW */
+        if ((++i) >= argc){
+            printf ("! You must specify -maxtime tt\n");
+            QUIT_PLUTO(1);
+        }else{
 
+            char *str;
+            int len, nhrs, nmin, nsec;
+            float dclock;
+
+            str = argv[i];
+            len = strlen(str);
+            if (str[len-1] == 'h'){
+                dclock = atof(str);    /* clock interval in hours */
+                nhrs = (int) dclock;    /* integer part */
+                nmin = (int) ((dclock - nhrs)*100.0); /* remainder in minutes */
+                if (nmin >= 60){
+                    printf ("! ParseCmdLineArgs: number of minutes exceeds 60 in %s output\n",
+                            "dbl");
+                    QUIT_PLUTO(1);
+                }
+                dclock = nhrs*3600.0 + nmin*60;  /* convert to seconds */
+            }else if (str[len-1] == 'm'){
+                dclock = atof(str);      /* clock interval in minutes */
+                nmin = (int) dclock;      /* integer part */
+                nsec = (int)((dclock - nmin)*100.0); /* remainder in seconds */
+                if (nsec >= 60){
+                    printf ("! ParseCmdLineArgs: number of seconds exceeds 60 in %s output\n",
+                            "dbl");
+                    QUIT_PLUTO(1);
+                }
+                dclock = nmin*60.0 + nsec;
+            }else if (str[len-1] == 's'){
+                dclock = atof(str);           /* clock interval in seconds */
+            }else{
+                dclock = -1.0;
+            }
+
+            cmd->maxtime = dclock;
+            if (cmd->maxtime < 0.0) {
+                printf ("! You must specify -maxtime tt, with tt >= 0 \n");
+                QUIT_PLUTO(0)
+            }
+        }
+        /* -- AYW */
 
     }else if (!strcmp(argv[i],"-no-write")) {
 

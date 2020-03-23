@@ -6,8 +6,9 @@ project(PLUTO)
 # Set these
 
 set(PROBLEM                     Outflows)
-set(PROBLEM_TYPE                Real)
+set(SETUP                       clouds_settling)
 
+set(PROBLEM_TYPE                Real)
 
 # ______________________________________________________________________________________________________________________
 # PLUTO settings
@@ -59,16 +60,31 @@ set(LINK_LIBRARIES m)
 
 
 # Setup-dependent / Problem-type dependent files
+# and include problem-dependent CMakeLists.txt
 
-set(SOURCE_FILES
-        ${PROBLEM_DIR}/definitions.h
-        ${PROBLEM_DIR}/init.c
-        )
+if(SETUP)
+    set(SOURCE_FILES
+            ${PROBLEM_DIR}/setup/${SETUP}/definitions.h
+            ${PROBLEM_DIR}/setup/${SETUP}/init.c
+            )
 
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES}
+            ${PROBLEM_DIR}/setup/${SETUP}
+            )
 
-# Include problem-dependent CMakeLists.txt
+    include(${PROBLEM_DIR}/setup/${SETUP}/CMakeLists.txt)
 
-include(${PROBLEM_DIR}/CMakeLists.txt)
+else()
+
+    set(SOURCE_FILES
+            ${PROBLEM_DIR}/definitions.h
+            ${PROBLEM_DIR}/init.c
+            )
+
+    include(${PROBLEM_DIR}/CMakeLists.txt)
+
+endif()
+
 
 
 # Include all new files
@@ -538,7 +554,6 @@ if (WITH_COOLING STREQUAL H2_COOL)
             ${SOURCE_DIR}/Cooling/H2_COOL/cooling.h
             ${SOURCE_DIR}/Cooling/H2_COOL/jacobian.c
             ${SOURCE_DIR}/Cooling/H2_COOL/maxrate.c
-            ${SOURCE_DIR}/Cooling/H2_COOL/pluto.ini
             ${SOURCE_DIR}/Cooling/H2_COOL/radiat.c
             )
 

@@ -166,8 +166,7 @@ void ChangeOutputVar ()
 #endif
     SetOutputVar("te", VTK_OUTPUT, YES);
     SetOutputVar("spd", VTK_OUTPUT, YES);
-    SetOutputVar("lmd", VTK_OUTPUT, NO);
-
+    SetOutputVar("lmd", VTK_OUTPUT, YES);
 
     /* FLT output */
     EXPAND(SetOutputVar("v1", FLT_OUTPUT, YES);,

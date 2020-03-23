@@ -31,11 +31,8 @@ set(WITH_GLM                    OFF)
 set(WITH_HALL_MHD               OFF)
 set(WITH_DUST_FLUID             OFF)
 
-
 # Executable output location
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /Users/ayw/lab/AGN_Feedback/Outflow/EnergyMomentum/PLUTO_simulations/runs/spherical_settling)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /home/ayw/lab/AGN_Feedback/Mach_2D_winds)
-
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /home/ayw/lab/AGN_Feedback/clouds_settling)
 
 # New files
 set(NEW_FILES
@@ -43,7 +40,7 @@ set(NEW_FILES
         accretion.h
         clouds.c
         clouds.h
-        definitions_usr.h
+        setup/${SETUP}/definitions_usr.h
         grid_geometry.c
         grid_geometry.h
         hot_halo.c
@@ -82,6 +79,7 @@ set(NEW_FILES
 set(OVERRIDE_FILES
         cmd_line_opt.c
         input_data.c
+        main.c
         mappers3D.c       # Not confident about the modifications inside
         mean_mol_weight.c
         runtime_setup.c
