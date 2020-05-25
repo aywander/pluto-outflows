@@ -39,12 +39,14 @@ void ComputeUserVar(const Data *d, Grid *grid)
 #endif
 
 
+// TODO: check also whether a variable exists under uservar.
 
     /* New variables - names must exist under uservar */
     te = GetUserVar("te");
     spd = GetUserVar("spd");
+
 #if COOLING != NONE
-    lmd = GetUserVar("lmd");
+//    lmd = GetUserVar("lmd");
 #endif
 
     /* Change to v instead of u = lorentz v */
@@ -82,10 +84,10 @@ void ComputeUserVar(const Data *d, Grid *grid)
 
 #if COOLING != NONE
                 /* Cooling rate */
-                v[RHOE] /= g_gamma - 1.;
-                Radiat(v, rhs);
-                double lmd_norm = vn.pres_norm / vn.t_norm;
-                lmd[k][j][i] = rhs[RHOE] * lmd_norm;
+//                v[RHOE] /= g_gamma - 1.;
+//                Radiat(v, rhs);
+//                double lmd_norm = vn.pres_norm / vn.t_norm;
+//                lmd[k][j][i] = rhs[RHOE] * lmd_norm;
 #endif
 
                 /* Speed */
@@ -153,28 +155,28 @@ void ChangeOutputVar ()
     /* HDF5 output cannot be controlled yet. Everything is output.*/
 
     /* VTK output */
-    EXPAND(SetOutputVar("v1", VTK_OUTPUT, YES);,
-           SetOutputVar("v2", VTK_OUTPUT, YES);,
-           SetOutputVar("v3", VTK_OUTPUT, YES););
-    EXPAND(SetOutputVar("vx1", VTK_OUTPUT, NO);,
-           SetOutputVar("vx2", VTK_OUTPUT, NO);,
-           SetOutputVar("vx3", VTK_OUTPUT, NO););
+    EXPAND(SetOutputVar("v1", VTK_OUTPUT, NO);,
+           SetOutputVar("v2", VTK_OUTPUT, NO);,
+           SetOutputVar("v3", VTK_OUTPUT, NO););
+    EXPAND(SetOutputVar("vx1", VTK_OUTPUT, YES);,
+           SetOutputVar("vx2", VTK_OUTPUT, YES);,
+           SetOutputVar("vx3", VTK_OUTPUT,YES););
     SetOutputVar("prs", VTK_OUTPUT, YES);
     SetOutputVar("tr1", VTK_OUTPUT, YES);
 #if CLOUDS == YES
     SetOutputVar("tr2", VTK_OUTPUT, YES);
 #endif
-    SetOutputVar("te", VTK_OUTPUT, YES);
-    SetOutputVar("spd", VTK_OUTPUT, YES);
-    SetOutputVar("lmd", VTK_OUTPUT, YES);
+    SetOutputVar("te", VTK_OUTPUT, NO);
+    SetOutputVar("spd", VTK_OUTPUT, NO);
+//    SetOutputVar("lmd", VTK_OUTPUT, NO);
 
     /* FLT output */
-    EXPAND(SetOutputVar("v1", FLT_OUTPUT, YES);,
-           SetOutputVar("v2", FLT_OUTPUT, YES);,
-           SetOutputVar("v3", FLT_OUTPUT, YES););
-    EXPAND(SetOutputVar("vx1", FLT_OUTPUT, NO);,
-           SetOutputVar("vx2", FLT_OUTPUT, NO);,
-           SetOutputVar("vx3", FLT_OUTPUT, NO););
+    EXPAND(SetOutputVar("v1", FLT_OUTPUT, NO);,
+           SetOutputVar("v2", FLT_OUTPUT, NO);,
+           SetOutputVar("v3", FLT_OUTPUT, NO););
+    EXPAND(SetOutputVar("vx1", FLT_OUTPUT, YES);,
+           SetOutputVar("vx2", FLT_OUTPUT, YES);,
+           SetOutputVar("vx3", FLT_OUTPUT, YES););
     SetOutputVar("prs", FLT_OUTPUT, YES);
     SetOutputVar("tr1", FLT_OUTPUT, YES);
 #if CLOUDS == YES
@@ -182,7 +184,7 @@ void ChangeOutputVar ()
 #endif
     SetOutputVar("te", FLT_OUTPUT, NO);
     SetOutputVar("spd", FLT_OUTPUT, NO);
-    SetOutputVar("lmd", FLT_OUTPUT, NO);
+//    SetOutputVar("lmd", FLT_OUTPUT, NO);
 
 
     /* FLT H5 output */
@@ -199,7 +201,7 @@ void ChangeOutputVar ()
 #endif
     SetOutputVar("te", FLT_H5_OUTPUT, YES);
     SetOutputVar("spd", FLT_H5_OUTPUT, YES);
-    SetOutputVar("lmd", FLT_H5_OUTPUT, NO);
+//    SetOutputVar("lmd", FLT_H5_OUTPUT, NO);
 
 
     /* PNG output */
@@ -216,7 +218,7 @@ void ChangeOutputVar ()
 #endif
     SetOutputVar("te", PNG_OUTPUT, YES);
     SetOutputVar("spd", PNG_OUTPUT, YES);
-    SetOutputVar("lmd", PNG_OUTPUT, NO);
+//    SetOutputVar("lmd", PNG_OUTPUT, NO);
 
 
 
@@ -247,8 +249,8 @@ void ChangeOutputVar ()
     image->slice_plane = X13_PLANE;
     image->slice_coord = 0.0;
 #endif
-    image->max = 1.e5; image->min = 10;
-    image->logscale = 1;
+    image->max = 3.e2; image->min = 10;
+    image->logscale = 0;
     image->colormap = "bw";
 #endif
 

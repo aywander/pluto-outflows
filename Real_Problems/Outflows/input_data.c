@@ -574,7 +574,7 @@ ncall = 0;
 ncall++;
 */
 
-/* AYW -- There is a bug here in that if id->nx3 - kl < ID_NZ_MAX the slice is still read,
+/* AYW -- There was a bug here in that if id->nx3 - kl < ID_NZ_MAX the slice is still read,
  * even though the InputDataReadSlice routine would try to read slices at kl > id->nx3,
  * resulting in read errors.
  */

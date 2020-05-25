@@ -225,7 +225,7 @@ void Analysis (const Data *d, Grid *grid)
 
 
     /* Star-formation */
-    WarmPhaseStarFormationRate(d, grid);
+//    WarmPhaseStarFormationRate(d, grid);
 
     /* Supernova feedback */
 

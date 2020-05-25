@@ -1,102 +1,110 @@
 #!/bin/bash
 #PBS -P n72
 #PBS -q normal
-#PBS -l walltime=01:00:00
-#PBS -l mem=1028GB
-#PBS -l ncpus=256
+#PBS -l walltime=02:00:00
+#PBS -l mem=960GB
+#PBS -l ncpus=240
 #PBS -lstorage=scratch/n72+gdata/n72
 #PBS -r y
-#PBS -wd
+#PBS -l wd
 #PBS -m abe
 #PBS -M alexander.y.wagner@gmail.com
 
-##_______________________________________________________
-## Gadi limits (48 cores with 192 GB memory per node)
-##
-## 48 hours for 1-255 cores
-## 24 hours for 256-511 cores
-## 10 hours for 512-1023 cores
-## 5 hours for 1024-56960 cores
-##_______________________________________________________
-## Some user settings
+#_______________________________________________________
+# Gadi limits (48 cores with 192 GB memory per node)
+#
+# 48 hours for 1-255 cores
+# 24 hours for 256-511 cores
+# 10 hours for 512-1023 cores
+# 5 hours for 1024-56960 cores
+#_______________________________________________________
+# Some user settings
 
-## PLUTO arguments
-PLUTOARGS=""
+# TODO: Add EXEC variable for different names of pluto executable (under inifile)
 
-## The value to the pluto -maxsteps option. Leave both
-## empty if this option is not desired. If
-## MAXSTEPS_PER_SUBMIT is specified, then the value to
-## the -maxsteps option will be NJOB x MAXSTEPS_PER_SUBMIT.
-## If only MAXSTEPS is specified, then the value to the
-## option will be MAXSTEPS. If both are specified then
-## the value will be NJOB x MAXSTEPS_PER_SUBMIT,
-## except if NJOB x MAXSTEPS_PER_SUBMIT >= MAXSTEPS in which
-## the value will be MAXSTEPS and no further restarts occur.
+# PLUTO arguments
+PLUTOARGS=()
+
+# The value to the pluto -maxsteps option. Leave both
+# empty if this option is not desired. If
+# MAXSTEPS_PER_SUBMIT is specified, then the value to
+# the -maxsteps option will be NJOB x MAXSTEPS_PER_SUBMIT.
+# If only MAXSTEPS is specified, then the value to the
+# option will be MAXSTEPS. If both are specified then
+# the value will be NJOB x MAXSTEPS_PER_SUBMIT,
+# except if NJOB x MAXSTEPS_PER_SUBMIT >= MAXSTEPS in which
+# the value will be MAXSTEPS and no further restarts occur.
 MAXSTEPS_PER_SUBMIT=
 MAXSTEPS=
 
-## The value to the pluto -maxtime option, which is the walltime (sec)
-## at which PLUTO quits its integration loop (not available in the
-## original PLUTO release). Leave empty if this option is
-## not desired.
-MAXTIME=1.00h
+# The value to the pluto -maxtime option, which is the walltime (sec)
+# at which PLUTO quits its integration loop (not available in the
+# original PLUTO release). Leave empty if this option is
+# not desired.
+MAXTIME="2.00h"
 
-## The job number to start at. If START_NJOB > 1
-## then submission is considered a "manual restart"
-## and the script goes into the restart logic, and
-## starts pluto with -restart. Default is 1.
+# The job number to start at. If START_NJOB > 1
+# then submission is considered a "manual restart"
+# and the script goes into the restart logic, and
+# starts pluto with -restart. Default is 1.
 START_NJOB=1
 
-## File number to restart from. Leave empty if the
-## last file number is to be used. Specify the initial
-## restart number as %4d, e.g. 0023. Doesn't work with
-## filenumber 0000.
-## TODO: I think that was a bug in PLUTO. Re-investigate.
-
+# File number to restart from. Leave empty if the
+# last file number is to be used. Specify the initial
+# restart number as %4d, e.g. 0023. Doesn't work with
+# filenumber 0000.
+# TODO: I think that was a bug in PLUTO. Re-investigate.
 RESTART_FNUM=
 
-## Target job number. Script auto resubmits until
-## the job counter (NJOB) reaches this number.
-## Note, NJOBS is *not* necessarily the number of jobs
-## to be (re)submitted, but it is the number up to which
-## the job counter NJOB should go, starting at START_NJOB.
-## Therefore, we require NJOBS > START_NJOB.
+# Target job number. Script auto resubmits until
+# the job counter (NJOB) reaches this number.
+# Note, NJOBS is *not* necessarily the number of jobs
+# to be (re)submitted, but it is the number up to which
+# the job counter NJOB should go, starting at START_NJOB.
+# Therefore, we require NJOBS > START_NJOB.
 NJOBS=10
 
-## Maximum number of crashes allowed.
+# Maximum number of crashes allowed.
 NCRASHMAX=3
 
-## Working directory (where pluto executable is)
+# PLUTO ini file used
+inifile="pluto.ini"
+
+# Working directory (where pluto executable is)
 WDIR="."
 
-## Which mpirun to use. If left blank uses mpirun in path.
+# Load modules
+module load openmpi
+module load hdf5/1.10.5p
+
+# Which mpirun to use. If left blank uses mpirun in path.
 MPIRUN=
 #module load hpctoolkit
 #export HPCRUN_EVENT_LIST="WALLCLOCK@500"
 #MPIRUN="mpirun -np 128 hpcrun"
 
-## Grid mode: Chombo or empty for native PLUTO grid
+# Grid mode: Chombo or empty for native PLUTO grid
 GRID="native"
 
 
-##_________________________________________________
-## Settings that probably don't need changing
+#_________________________________________________
+# Settings that probably don't need changing
 
-## Some Chombo or native grid dependent settings.
-##
-##   Checkpointfile strings/patterns. Checkpoint files are
-## searched by $chksfx*$chkpfx. The pattern $chknumpat is
-## extracted from the file name to determine restart #.
-## Note that output in dbl format can be single or multiple files
-## Change the chkpfx accordingly: "data." for single file, "rho."
-## for multiple files.
-##
-##   goodmsg: Message in output file that confirms run ended fine
-## The first below is for native grid runs, the second for
-## Chombo runs. If no such check is desired, leave empty.
-##
-##   logfile: The log file to which output is written to
-##
+# Some Chombo or native grid dependent settings.
+#
+#   Checkpointfile strings/patterns. Checkpoint files are
+# searched by $chksfx*$chkpfx. The pattern $chknumpat is
+# extracted from the file name to determine restart #.
+# Note that output in dbl format can be single or multiple files
+# Change the chkpfx accordingly: "data." for single file, "rho."
+# for multiple files.
+#
+#   goodmsg: Message in output file that confirms run ended fine
+# The first below is for native grid runs, the second for
+# Chombo runs. If no such check is desired, leave empty.
+#
+#   logfile: The log file to which output is written to
+#
 if [[ "$GRID" == "native" ]]; then
   chkpfx="data."
   chksfx=".dbl"
@@ -115,61 +123,60 @@ else
 
 fi
 
-# PLUTO ini file used
-inifile="pluto.ini"
-
 # Checkpoint file numbering pattern
-chknumpat=[0-9]{4}
+chknumpat="[0-9]{4}"
 
 
-##_________________________________________________
-## Main bit
+#_________________________________________________
+# Main bit
 
-## Find log and output directories from ini file
+# First, change to working directory
+cd $WDIR || exit
+
+# Find log and output directories from ini file
 OUT_DIR=$(grep -h output_dir $inifile | awk '{print $2}')
 OUT_DIR=${OUT_DIR:-"."}
 LOG_DIR=$(grep -h log_dir $inifile | awk '{print $2}')
-LOG_DIR=${LOG_DIR:-$OUT_DIR}
 LOG_BAK_DIR=${LOG_DIR:-"log"}
+LOG_DIR=${LOG_DIR:-$OUT_DIR}
 
-
-## First, change to working directory
-cd $WDIR || exit
-
-## Default mpirun
+# Default mpirun
 MPIRUN=${MPIRUN:-"mpirun"}
 
-## START_NJOB=1 if START_NJOB is undefined because
-## it is the first submission
+# START_NJOB=1 if START_NJOB is undefined because
+# it is the first submission
 START_NJOB=${START_NJOB:-1}
 
-## NJOB=START_NJOB if NJOB is undefined because
-## it is the first submission or a manual restart.
+# NJOB=START_NJOB if NJOB is undefined because
+# it is the first submission or a manual restart.
 NJOB=${NJOB:-$START_NJOB}
 
-## NCRASH=0 if NCRASH is undefined because
-## it is the first submission or a manual restart.
+# NCRASH=0 if NCRASH is undefined because
+# it is the first submission or a manual restart.
 NCRASH=${NCRASH:-0}
 
-## Restart file number used from here on. On initial
-## submit or initial manual restart, it is always
-## not defined. Upon auto resubmit, it is an empty string
-## so the default value here does not take effect.
+# Restart file number used from here on. On initial
+# submit or initial manual restart, it is always
+# not defined. Upon auto resubmit, it is an empty string
+# so the default value here does not take effect.
 RESTARTNUM=${RESTARTNUM-$RESTART_FNUM}
 
-## If this is a restart
+# Add inifile to PLUTOARGS
+PLUTOARGS+=( -i $inifile )
+
+# If this is a restart
 if [[ ($NJOB -gt 1) && ($NJOB -le $NJOBS) ]]; then
 
   echo "Preparing restart for job $NJOB / $NJOBS"
 
 
-  ## If no initial restartnumber RESTARTNUM is given,
-  ## grab the number of the last checkpoint file by time
+  # If no initial restartnumber RESTARTNUM is given,
+  # grab the number of the last checkpoint file by time
   if [[ -z "$RESTARTNUM" ]]; then
 
-    last_chk_num=$(find $OUT_DIR -name "$chkpfx*$chksfx" | tail -1 | grep -oE "$chknumpat")
+    last_chk_num=$(find $OUT_DIR -name $chkpfx*$chksfx | sort | tail -1 | grep -oE $chknumpat | tail -1)
 
-    ## Some checks
+    # Some checks
     if [[ -z "$last_chk_num" ]]; then
       echo Unable to determine last checkpoint number. Exiting.
       exit 1
@@ -179,71 +186,71 @@ if [[ ($NJOB -gt 1) && ($NJOB -le $NJOBS) ]]; then
       exit 1
     fi
 
-    ## This will be the restart number
+    # This will be the restart number
     RESTARTNUM=$last_chk_num
 
   fi
 
-  ## Patch PLUTO arguments to allow restart.
+  # Patch PLUTO arguments to allow restart.
   echo "Check point file number: $RESTARTNUM"
-  PLUTOARGS=$PLUTOARGS" -restart "$RESTARTNUM
+  PLUTOARGS+=( -restart $RESTARTNUM )
 
 fi
 
-## Add maxsteps argument to pluto if MAXSTEPS_PER_SUBMIT or
-## MAXSTEPS was given above
+# Add maxsteps argument to pluto if MAXSTEPS_PER_SUBMIT or
+# MAXSTEPS was given above
 if [[  ( ( -n "$MAXSTEPS_PER_SUBMIT") && ( -n "$MAXSTEPS") ) &&
   ( $((NJOB*MAXSTEPS_PER_SUBMIT)) -ge $MAXSTEPS ) ]]; then
-  PLUTOARGS=$PLUTOARGS" -maxsteps "$MAXSTEPS
+  PLUTOARGS+=( -maxsteps $MAXSTEPS )
   LASTRUN=1
 elif [[ -n "$MAXSTEPS_PER_SUBMIT" ]]; then
-  PLUTOARGS=$PLUTOARGS" -maxsteps "$((NJOB*MAXSTEPS_PER_SUBMIT))
+  PLUTOARGS+=( -maxsteps $((NJOB*MAXSTEPS_PER_SUBMIT)) )
 elif [[ -n "$MAXSTEPS" ]]; then
-  PLUTOARGS=$PLUTOARGS" -maxsteps "$MAXSTEPS
+  PLUTOARGS+=( -maxsteps $MAXSTEPS )
 fi
 
-## Add maxtime argument to pluto if MAXTIME was given above
+# Add maxtime argument to pluto if MAXTIME was given above
 if [[ ( -n "$MAXTIME" ) ]]; then
-  PLUTOARGS=$PLUTOARGS" -maxtime "$MAXTIME
+  PLUTOARGS+=( -maxtime $MAXTIME )
 fi
 
 
-## Launch PLUTO
+# Launch PLUTO
 echo "Launching PLUTO for job $NJOB / $NJOBS"
-echo "$MPIRUN ./pluto $PLUTOARGS"
-$MPIRUN ./pluto "$PLUTOARGS"
+echo "$MPIRUN" ./pluto "${PLUTOARGS[@]}"
+$MPIRUN ./pluto "${PLUTOARGS[@]}"
 
 
-## Some housekeeping
-## Create a log dir for each submission and copy files into it
-poutdir=$LOG_BAK_DIR-$(seq -f %02g "$NJOB" "$NJOB")-$PBS_JOBID
-mkdir "$poutdir" && cp "$LOG_DIR/*log" "$poutdir/"
+# Some housekeeping
+# Create a log dir for each submission and copy files into it
+poutdir=$LOG_BAK_DIR-$(seq -f %02g $NJOB $NJOB)-$PBS_JOBID
+mkdir $poutdir && cp $LOG_DIR/*log $poutdir/
 
-## Increment crash counter if job didn't finish properly.
-if tail -3 $logfile | grep -q "$goodmsg"; then
+# Increment crash counter if job didn't finish properly.
+if tail -3 $LOG_DIR/$logfile | grep -q "$goodmsg"; then
   echo This run ended successfully.
 else
-    ((NCRASH++))
-    echo This run ended abnormally. Incrementing crash counter.
+  ((NCRASH++))
+  echo This run ended abnormally. Incrementing crash counter.
 fi
 echo "$NCRASH / $NCRASHMAX crashes have so far occurred."
 
-## Exit if LASTRUN variable was set somewhere
+# Exit if LASTRUN variable was set somewhere
 if [[ "$LASTRUN" ]]; then
   echo "That was the last run. Jobs completed: $NJOB / $NJOBS."
   exit 0
 
-## Exit if more than NCRASHMAX crashes occurred
+# Exit if more than NCRASHMAX crashes occurred
 elif [[ $NCRASH -ge $NCRASHMAX ]]; then
   echo "$NCRASH / $NCRASHMAX abnormal completions occurred. Further restarts cancelled."
   exit 0
 
-## If we've done all jobs
+# If we've done all jobs
 elif [[ $NJOB -ge $NJOBS ]]; then
   echo "Completed all $NJOB / $NJOBS jobs. No more restarts."
   exit 0
 
-## If we still have jobs to do, increment job counter, and resubmit.
+# If we still have jobs to do, increment job counter, and resubmit.
 else
   ((NJOB++))
   echo "Submitting job $PBS_JOBNAME: number $NJOB / $NJOBS"

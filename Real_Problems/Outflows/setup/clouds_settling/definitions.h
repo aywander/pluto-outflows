@@ -7,7 +7,7 @@
 #define  COOLING                 TABULATED
 #define  RECONSTRUCTION          PARABOLIC
 #define  TIME_STEPPING           RK3
-#define  DIMENSIONAL_SPLITTING   YES
+#define  DIMENSIONAL_SPLITTING   NO
 #define  NTRACER                 2
 #define  USER_DEF_PARAMETERS     41
 

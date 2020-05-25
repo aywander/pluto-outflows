@@ -256,12 +256,12 @@ double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, c
      * We interpolate between these. */
     wsmf = 0.1 + (exp(-1) - 0.1) * wrot;
 
-    /* The smoothing region */
-    double offset = sqrt(ellipse) - 1;
+    /* The smoothing region - smooth in logarithm of density ratio*/
+    double offset = sqrt(ellipse) - 1.;
     offset = MIN(offset, 0.5 * wsmf);
     offset = MAX(offset, -0.5 * wsmf);
     tanhfactor = tanh(tan(-CONST_PI * offset / wsmf));
-    fdratio = 0.5 * (fdratio + 1) + 0.5 * tanhfactor * (fdratio - 1.);
+    fdratio = pow(10, 0.5 * log10(fdratio) + 0.5 * tanhfactor * log10(fdratio));
 
     if (!once01){
       print("> Cloud extraction: CLOUD_EXTRACTION_ELLIPSOID.\n\n");
@@ -278,18 +278,23 @@ double CloudExtractCentralBuffer(double fdratio, const double x1, const double x
  *
 **************************************************************** */
 
+    double tanhfactor;
+
     /* Buffer factor around osph */
-    double incf = 2.0;
     double rad  = SPH1(x1, x2, x3);
+    double incf = 2.0;    // Radius of central buffer (in units of osph)
+    double wsmf = 1.0;    // Width of smoothing region
 
     /* Inner hemisphere to keep free */
     double osph = g_inputParam[PAR_OSPH] * ini_code[PAR_OSPH];
-    double inner_circ = rad / (incf * osph);
+    double circ = rad / (incf * osph);
 
-    /* Exclude zone outside ellipsoid */
-    if (inner_circ < 1.) fdratio = 1.;
-
-    // TODO add some smoothing.
+    /* The smoothing region - smooth in logarithm of density ratio*/
+    double offset = circ - 1.;
+    offset = MIN(offset, 0.5 * wsmf);
+    offset = MAX(offset, -0.5 * wsmf);
+    tanhfactor = tanh(tan(CONST_PI * offset / wsmf));
+    fdratio = pow(10, 0.5 * log10(fdratio) + 0.5 * tanhfactor * log10(fdratio));
 
     return fdratio;
 }
