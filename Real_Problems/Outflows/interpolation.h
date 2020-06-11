@@ -29,7 +29,13 @@ int locate(double *,double, int);
 
 double InterpolationWrapper(const double arg_arr[], const double val_arr[], const int narr, const double arg);
 
+double InterpolationWrapper2D(const double arg_i_arr[], const double arg_j_arr[], const double **val_arr,
+                              const int ni, const int nj, const double arg_i, const double arg_j);
+
 void InterpolateGrid(const Data *data, const Grid *grid, int *vars, double x1, double x2, double x3, double *v);
+
+double BilinearInterpolate(const double val1, const double val2_i, const double val2_j, const double val2_ij,
+                           const double frac_i, const double frac_j);
 
 int UniformSamplingSphericalSurface(const int npoints, const double radius, double *x1, double *x2, double *x3);
 

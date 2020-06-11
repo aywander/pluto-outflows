@@ -8,9 +8,14 @@
 void ReadGravTable();
 
 /* global variables*/
-//extern double *gr_rad, *gr_phi, *gr_vec, *gr_dphidr;
-extern double *gr_rad, *gr_phi, *gr_dphidr;
-extern int gr_ndata;
+extern double *gr_r, *gr_z;
+extern int gr_nr, gr_nz;
+
+#ifdef GRAV_2D_POTENTIAL
+extern double **gr_phi, **gr_acc_r, **gr_acc_z;;
+#else
+extern double *gr_phi, *gr_acc_r;
+#endif
 
 #endif
 #endif

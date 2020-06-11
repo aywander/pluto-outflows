@@ -194,7 +194,7 @@ int sgn(double val) {
 
 double InterpolationWrapper(const double arg_arr[], const double val_arr[], const int narr, const double arg) {
 
-/* Wrapper around hunter and CubicCatmullRomInterpolate */
+/* Wrapper around hunter and a 1D Interpolator */
 
     int il;
     double arg1, arg2, frac;
@@ -220,6 +220,34 @@ double InterpolationWrapper(const double arg_arr[], const double val_arr[], cons
 
 }
 
+
+double InterpolationWrapper2D(const double arg_i_arr[], const double arg_j_arr[], const double **val_arr,
+                              const int ni, const int nj, const double arg_i, const double arg_j) {
+
+/* Wrapper around hunter and a 2D Interpolator */
+
+    int il, jl;
+    double frac_i, frac_j;
+    double val1, val2_i, val2_j, val2_ij;
+
+    /* Find cell left index to interpolate at */
+    il = hunter(arg_i_arr, ni, arg_i);
+    jl = hunter(arg_j_arr, nj, arg_j);
+
+    /* Linear fractional location of arg in cell */
+    frac_i = (arg_i - arg_i_arr[il]) / (arg_i_arr[il + 1] - arg_i_arr[il]);
+    frac_j = (arg_j - arg_j_arr[jl]) / (arg_j_arr[jl + 1] - arg_j_arr[jl]);
+
+    /* Interpolation */
+    val1 = val_arr[il][jl];
+    val2_i = val_arr[il + 1][jl];
+    val2_j = val_arr[il][jl + 1];
+    val2_ij = val_arr[il + 1][jl + 1];
+
+    // TODO: (Possibly) add choice of interpolator in argument of function
+    return BilinearInterpolate(val1, val2_i, val2_j, val2_ij, frac_i, frac_j);
+
+}
 
 
 int locate(double *xx,double x, int N) {
@@ -317,6 +345,9 @@ void x2l_3d_extrapol (double ***a, int jb, int i, int j, int k, Grid *grid)
 
 void InterpolateGrid(const Data *data, const Grid *grid, int *vars, double x1, double x2, double x3, double *v){
 
+    // TODO: Use the InterpolationWrapper[1,2,3]D functions.
+
+    int il, jl, kl;
     /* Get domain data and range */
 
     D_EXPAND(int gr_nx1 = grid->np_tot[IDIR];,
@@ -327,13 +358,9 @@ void InterpolateGrid(const Data *data, const Grid *grid, int *vars, double x1, d
              double * gr_x3 = grid->x[KDIR];);
 
     /* Find left indices */
-    int il = grid->lbeg[IDIR];
-    int jl = grid->lbeg[JDIR];
-    int kl = grid->lbeg[KDIR];
     D_EXPAND(il = hunter2(gr_x1, gr_nx1, x1);,
              jl = hunter2(gr_x2, gr_nx2, x2);,
              kl = hunter2(gr_x3, gr_nx3, x3););
-
 
     /* Define normalized coordinates between [0,1]: */
 
@@ -352,17 +379,17 @@ void InterpolateGrid(const Data *data, const Grid *grid, int *vars, double x1, d
 
     while (vars[nv] != -1) {
 
-        int inv = vars[nv];
+        int iv = vars[nv];
         V = data->Vc[nv];
 
         D_EXPAND(
-        v[inv] = V[kl][jl][il] * (1.0 - xx) * (1.0 - yy) * (1.0 - zz)
-                  + V[kl][jl][il + 1] * xx * (1.0 - yy) * (1.0 - zz);,
+        v[iv] = V[kl][jl][il] * (1.0 - xx) * (1.0 - yy) * (1.0 - zz)
+                 + V[kl][jl][il + 1] * xx * (1.0 - yy) * (1.0 - zz);,
 
-        v[inv] += V[kl][jl + 1][il] * (1.0 - xx) * yy * (1.0 - zz)
+        v[iv] += V[kl][jl + 1][il] * (1.0 - xx) * yy * (1.0 - zz)
                   + V[kl][jl + 1][il + 1] * xx * yy * (1.0 - zz);,
 
-        v[inv] += V[kl + 1][jl][il] * (1.0 - xx) * (1.0 - yy) * zz
+        v[iv] += V[kl + 1][jl][il] * (1.0 - xx) * (1.0 - yy) * zz
                   + V[kl + 1][jl][il + 1] * xx * (1.0 - yy) * zz
                   + V[kl + 1][jl + 1][il] * (1.0 - xx) * yy * zz
                   + V[kl + 1][jl + 1][il + 1] * xx * yy * zz;
@@ -370,6 +397,21 @@ void InterpolateGrid(const Data *data, const Grid *grid, int *vars, double x1, d
 
         nv ++;
     }
+}
+
+
+/* ************************************************ */
+double BilinearInterpolate(const double val1, const double val2_i, const double val2_j, const double val2_ij,
+                           const double frac_i, const double frac_j) {
+/*!
+ * Perform bi-linear interpolation for a point, given four reference points and the fractional distances in each dimension.
+ *
+ ************************************************** */
+
+    return val1 * (1.0 - frac_i) * (1.0 - frac_j)
+           + val2_i * frac_i * (1.0 - frac_j)
+           + val2_j * (1.0 - frac_i) * frac_j
+           + val2_ij * frac_i * frac_j;
 }
 
 /* ************************************************ */

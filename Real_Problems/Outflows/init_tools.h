@@ -63,4 +63,10 @@ void PrintGridStruct(Grid *grid, int show_for_rank, int k, int j, int i);
 
 void PrintBaseNormalizations();
 
+void DxFromXArray(double *x, double *dx, int nx);
+
+void GradFromArray(double *v, double *x, double *grad, int nx);
+
+void TransposeArray(double** src, double** dst, int n, int m);
+
 #endif

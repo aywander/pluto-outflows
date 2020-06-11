@@ -6,7 +6,7 @@ project(PLUTO)
 # Set these
 
 set(PROBLEM                     Outflows)
-set(SETUP                       clouds_settling)
+set(SETUP                       mwagn)
 
 set(PROBLEM_TYPE                Real)
 

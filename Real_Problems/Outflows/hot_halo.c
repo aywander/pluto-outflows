@@ -47,9 +47,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
     /* Get velocity, density, and prs from data, just inside the domain. */
     switch(side) {
         case X1_BEG:
-            EXPAND(vx1 = d->Vc[VX1][k][j][IBEG];,
-                   vx2 = d->Vc[VX2][k][j][IBEG];,
-                   vx3 = d->Vc[VX3][k][j][IBEG];);
+        EXPAND(vx1 = d->Vc[VX1][k][j][IBEG];,
+               vx2 = d->Vc[VX2][k][j][IBEG];,
+               vx3 = d->Vc[VX3][k][j][IBEG];);
             rho = d->Vc[RHO][k][j][IBEG];
             prs = d->Vc[PRS][k][j][IBEG];
             x1_inside = grid->x[IDIR][IBEG];
@@ -57,9 +57,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
             x3_inside = grid->x[KDIR][k];
             break;
         case X1_END:
-            EXPAND(vx1 = d->Vc[VX1][k][j][IEND];,
-                   vx2 = d->Vc[VX2][k][j][IEND];,
-                   vx3 = d->Vc[VX3][k][j][IEND];);
+        EXPAND(vx1 = d->Vc[VX1][k][j][IEND];,
+               vx2 = d->Vc[VX2][k][j][IEND];,
+               vx3 = d->Vc[VX3][k][j][IEND];);
             rho = d->Vc[RHO][k][j][IEND];
             prs = d->Vc[PRS][k][j][IEND];
             x1_inside = grid->x[IDIR][IEND];
@@ -67,9 +67,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
             x3_inside = grid->x[KDIR][k];
             break;
         case X2_BEG:
-            EXPAND(vx1 = d->Vc[VX1][k][JBEG][i];,
-                   vx2 = d->Vc[VX2][k][JBEG][i];,
-                   vx3 = d->Vc[VX3][k][JBEG][i];);
+        EXPAND(vx1 = d->Vc[VX1][k][JBEG][i];,
+               vx2 = d->Vc[VX2][k][JBEG][i];,
+               vx3 = d->Vc[VX3][k][JBEG][i];);
             rho = d->Vc[RHO][k][JBEG][i];
             prs = d->Vc[PRS][k][JBEG][i];
             x1_inside = grid->x[IDIR][i];
@@ -77,9 +77,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
             x3_inside = grid->x[KDIR][k];
             break;
         case X2_END:
-            EXPAND(vx1 = d->Vc[VX1][k][JEND][i];,
-                   vx2 = d->Vc[VX2][k][JEND][i];,
-                   vx3 = d->Vc[VX3][k][JEND][i];);
+        EXPAND(vx1 = d->Vc[VX1][k][JEND][i];,
+               vx2 = d->Vc[VX2][k][JEND][i];,
+               vx3 = d->Vc[VX3][k][JEND][i];);
             rho = d->Vc[RHO][k][JEND][i];
             prs = d->Vc[PRS][k][JEND][i];
             x1_inside = grid->x[IDIR][i];
@@ -87,9 +87,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
             x3_inside = grid->x[KDIR][k];
             break;
         case X3_BEG:
-            EXPAND(vx1 = d->Vc[VX1][KBEG][j][i];,
-                   vx2 = d->Vc[VX2][KBEG][j][i];,
-                   vx3 = d->Vc[VX3][KBEG][j][i];);
+        EXPAND(vx1 = d->Vc[VX1][KBEG][j][i];,
+               vx2 = d->Vc[VX2][KBEG][j][i];,
+               vx3 = d->Vc[VX3][KBEG][j][i];);
             rho = d->Vc[RHO][KBEG][j][i];
             prs = d->Vc[PRS][KBEG][j][i];
             x1_inside = grid->x[IDIR][i];
@@ -97,9 +97,9 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
             x3_inside = grid->x[KDIR][KBEG];
             break;
         case X3_END:
-            EXPAND(vx1 = d->Vc[VX1][KEND][j][i];,
-                   vx2 = d->Vc[VX2][KEND][j][i];,
-                   vx3 = d->Vc[VX3][KEND][j][i];);
+        EXPAND(vx1 = d->Vc[VX1][KEND][j][i];,
+               vx2 = d->Vc[VX2][KEND][j][i];,
+               vx3 = d->Vc[VX3][KEND][j][i];);
             rho = d->Vc[RHO][KEND][j][i];
             prs = d->Vc[PRS][KEND][j][i];
             x1_inside = grid->x[IDIR][i];
@@ -162,7 +162,7 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
 
         /* Hot halo primitives, in the ghost zones. */
         HotHaloPrimitives(halo_primitives, x1, x2, x3);
-        VAR_LOOP(nv) d->Vc[nv][k][j][i] = halo_primitives[nv];
+    VAR_LOOP(nv) d->Vc[nv][k][j][i] = halo_primitives[nv];
 
 }
 
@@ -186,11 +186,8 @@ void HotHaloPrimitives(double *halo,
 
     /* Initialize gravity arrays - as good as any other place to do it */
 #ifdef GRAV_TABLE
-    if (gr_rad == NULL) {
+    if (gr_r == NULL) {
         ReadGravTable();
-    }
-    if (hot_rad == NULL) {
-        ReadHotTable();
     }
 #endif
 
@@ -229,18 +226,20 @@ void HotHaloPrimitives(double *halo,
 
 #elif defined(GRAV_TABLE)
 
-    /* The density from the table is in units of cm^-3
-     * The density can be scaled, by PAR_HRHO, but make sure PAR_HTMP
-     * is the same as that used to generate the hot halo profile. */
-    double r = SPH1(x1, x2, x3);
-    halo[RHO] = InterpolationWrapper(hot_rad, hot_rho, hot_ndata, r);
-    halo[RHO] *= g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
+    /* The density is always an exponential function
+     * for an isothermal distribution in hydrostatic equilibrium at
+     * temperature T = PAR_HTMP. The density is scaled by PAR_HRHO.
+     * In this mode, all halos are assumed to be isothermal. */
 
-    /* Currently, all gravity table profiles are assumed to be isothermal */
+#if defined(HOT_TABLE)
+    halo[PRS] = InterpolationWrapper(hot_rad, hot_prs, hot_ndata, r);
+    halo[PRS] = InterpolationWrapper(hot_rad, hot_rho hot_ndata, r);
+#else
+    double phi = BodyForcePotential(x1, x2, x3);
+    halo[RHO] = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO] *
+                exp(MU_NORM * phi / (g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP]));
     halo[PRS] = PresIdealEOS(halo[RHO], g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP], MU_NORM);
-
-    /* Else we need the following line, and g_inputParam[PAR_HRHO] needs to be 1. */
-//    halo[PRS] = InterpolationWrapper(hot_rad, hot_prs, hot_ndata, r);
+#endif
 
 #endif // GRAV_POTENTIAL types
 

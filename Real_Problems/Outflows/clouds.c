@@ -116,7 +116,7 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
 
     int il;
     double r1, r2, y0, y1, y2, y3, frac;
-    double r_sph, r_cyl, phi_rz, phi_r0, phi_00;
+    double r_sph, r_cyl, z_cyl, phi_rz, phi_r0, phi_00;
     double dens, sigma_g2, wrho, wrho_cgs, wrad_cgs, wtrb, ek2;
     double wtrb_cgs;
     static int once01 = 0;
@@ -138,13 +138,6 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
 
 
 #elif CLOUD_DENSITY == CD_KEPLERIAN
-
-    /* Must use gravitational potential */
-//#if BODY_FORCE != POTENTIAL
-//    fputs("Error: Must use BODY_FORCE = POTENTIAL\n", stderr);
-//    fputs("with CLOUD_DENSITY = CD_KEPLERIAN.\n", stderr);
-//    QUIT_PLUTO(1);
-//#endif
 
     /* The dense gas mean density input parameter (in code units)*/
     wrho = g_inputParam[PAR_WRHO] * ini_code[PAR_WRHO];
@@ -198,6 +191,19 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
     // TODO: Check if this still works if a BH potential is included.
     dens = wrho * exp((-phi_rz + phi_r0 * ek2 + phi_00 * (1. - ek2)) / sigma_g2);
 
+#elif CLOUD_DENSITY == CD_MILKY_WAY_PJM
+
+    /* Parameters of McMillan model for HI disc, without central hole */
+    double Rd = 7. * CONST_pc * 1.e3 / vn.l_norm;
+    double zd = 0.085 * CONST_pc * 1.e3 / vn.l_norm;
+    double Sigma0 = 53.1 * CONST_Msun / (CONST_pc * CONST_pc) / (vn.dens_norm * vn.l_norm);
+
+    r_cyl = fabs(CYL1(x1, x2, x3));
+    z_cyl = fabs(CYL2(x1, x2, x3));
+
+    /* It is assumed that cloud[RHO] = 1. for this setup. */
+    double sech = 1. / cosh(z_cyl / (2. * zd));
+    dens = Sigma0 / (4. * zd) * exp(-r_cyl / Rd) * sech * sech;
 
 #elif CLOUD_DENSITY == CD_HOMOGENEOUS
     /* Homogeneous halo density, but with gravity */
@@ -403,9 +409,8 @@ void CloudVelocity(double *cloud, double *halo,
          * At least for N-body initializations of thick discs in non-axissymetric potentials,
          * this gives a better results, according to Miki et al 2017, MAGI paper. */
         r_cyl = CYL1(x1, x2, x3);
-        BodyForceVector(cloud, gvec, x1, x2, x3);
+        BodyForceVector(cloud, gvec, x1, x2, x3);  // Acceleration vector (pointing inward)
         dphidr = -VPOL1(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
-//        dphidr = InterpolationWrapper(gr_rad, gr_dphidr, gr_ndata, r_cyl);
 
         /* The angular (linear) velocity */
         vpol2 += ek * sqrt(r_cyl * dphidr);
@@ -704,7 +709,7 @@ void WarmOutflowRates(Data *d, Grid *grid) {
         /* Zero cumulative quantities */
         edot_a = pdot_a = mdot_a = vrho_a = wgt_a = 0;
 
-        /* Calculate accretion rate at every point, if it is in the local domain */
+        /* Calculate outflow rate at every point, if it is in the local domain */
         for (int ipoint = 0; ipoint < npoints; ipoint++) {
 
             if (PointInDomain(grid, x1[ipoint], x2[ipoint], x3[ipoint])) {

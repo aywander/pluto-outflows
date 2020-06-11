@@ -1,0 +1,20 @@
+# Milky way problem setup
+
+## Using the McMillan potential
+
+With best fit parameters, but Rm = 0 for HI, i.e. the central hole in HI filled.
+
+# Thermodynamic parameters.
+The hot phase temperature and density determine the porosity.
+
+
+# Fractal cubes
+kmin =  20
+nx = 512
+ny = 512
+nz = 512
+sigma = 10
+
+
+# Masses.
+Using this setup gives a total gas mass ~ ....

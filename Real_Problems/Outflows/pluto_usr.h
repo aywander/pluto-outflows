@@ -75,6 +75,7 @@
 #define CD_HOMOGENEOUS          0
 #define CD_KEPLERIAN            1
 #define CD_HERNQUIST            2
+#define CD_MILKY_WAY_PJM        3
 
 /* CLOUD_VELOCITY values.
  * Cloud velocity distribution.
@@ -102,6 +103,8 @@
 #define GRAV_HERNQUIST_NFW        3
 #define GRAV_SINGLE_ISOTHERMAL    4
 #define GRAV_DOUBLE_ISOTHERMAL    5
+#define GRAV_MILKY_WAY_PJM        6
+#define GRAV_MILKY_WAY_BAR        7
 
 
 /* JD_MODE values.
@@ -324,21 +327,57 @@
 /* Whether the gravity potential requires table */
 #if (GRAV_POTENTIAL == GRAV_HERNQUIST_NFW) || \
     (GRAV_POTENTIAL == GRAV_SINGLE_ISOTHERMAL) || \
-    (GRAV_POTENTIAL == GRAV_DOUBLE_ISOTHERMAL)
+    (GRAV_POTENTIAL == GRAV_DOUBLE_ISOTHERMAL) || \
+    (GRAV_POTENTIAL == GRAV_MILKY_WAY_PJM)
 
 #define GRAV_TABLE
 
-/* Default gravity and hot halo filename */
-#ifndef GRAV_FNAME
-#define GRAV_FNAME            "gravtable.dat"
+/* 2-D potentials */
+#if GRAV_POTENTIAL == GRAV_MILKY_WAY_PJM
+#define GRAV_2D_POTENTIAL
 #endif
+
+/* Default gravity and gravity domain filenames */
+#ifndef GRAV_PHI_FNAME
+#define GRAV_PHI_FNAME         "grav_phi_table.dat"
+#endif
+
+/* Domain table */
+#ifndef GRAV_R_FNAME
+#define GRAV_R_FNAME        "grav_r_table.dat"
+#endif
+
+#ifdef GRAV_2D_POTENTIAL
+#ifndef GRAV_Z_FNAME
+#define GRAV_Z_FNAME        "grav_z_table.dat"
+#endif
+#endif
+
+/* Gravitational field table */
+#if BODY_FORCE == VECTOR
+#ifndef GRAV_ACCR_FNAME
+#define GRAV_ACCR_FNAME        "grav_accr_table.dat"
+#endif
+
+#ifdef GRAV_2D_POTENTIAL
+#ifndef GRAV_ACCZ_FNAME
+#define GRAV_ACCZ_FNAME        "grav_accz_table.dat"
+#endif
+#endif
+
+#endif    // if BODYFORCE == VECTOR
+
+#endif    // if potential requires GRAVTABLE
+
+/* Not tested or used anywhere yet.
+ * The idea is to keep this in case we need to initialize the hot phase independently */
+#if defined(HOT_TABLE)
 
 #ifndef HOT_FNAME
 #define HOT_FNAME             "hottable.dat"
 #endif
 
 #endif
-
 
 #ifndef JD_MODE
 #define JD_MODE JD_GRAD

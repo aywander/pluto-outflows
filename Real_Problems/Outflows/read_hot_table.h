@@ -1,7 +1,9 @@
 #ifndef read_hot_table_h
 #define read_hot_table_h
-#ifdef GRAV_TABLE
-/* Make sure if included elsewhere it is 
+
+// NOTE: Not tested or used anywhere yet
+#ifdef HOT_TABLE
+/* Make sure if included elsewhere it is
  * preceded by #include pluto.h */
 
 /* functions */

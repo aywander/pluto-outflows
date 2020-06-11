@@ -32,9 +32,9 @@ void PrintInitData01(const double *out_primitives,
  **************************************************************** */
 
 
-    float rho_a, prs_a, a_a;
-    float rho_w, prs_w, a_w, vel_w, power_w, mdot_w;
-    float mach_i, mach_e, fkin;
+    double rho_a, prs_a, a_a;
+    double rho_w, prs_w, a_w, vel_w, power_w, mdot_w;
+    double mach_i, mach_e, fkin;
 
     rho_w = out_primitives[RHO];
     prs_w = out_primitives[PRS];
@@ -104,7 +104,6 @@ void SetBaseNormalization() {
 
     print("> Base normalization initialized.\n\n");
 
-    return;
 }
 
 
@@ -314,8 +313,6 @@ void PrintGridStruct(Grid *grid, int show_for_rank, int k, int j, int i) {
 /* ************************************************ */
 void PrintBaseNormalizations() {
     /*!
-     * grid     array of grid structures
-     *
      * The function prints out grid structure members and
      * is useful for parallel debugging.
      *
@@ -342,3 +339,59 @@ void PrintBaseNormalizations() {
     print("\n");
 
 }
+
+
+/* ************************************************ */
+void DxFromXArray(double *x, double *dx, int nx) {
+/*!
+ * x     input: array of positions
+ * dx    output: array of cell widths
+ * nx    number of elements in x
+ *
+ * This function returns an array of cell widths from
+ * an array of monotonically increasing 1-D positions.
+ * The values of dx at 0 and nx - 1 are properly treated.
+ *
+ ************************************************** */
+    int i;
+    for (i = 0; i < nx; i++) {
+        double xl = i == 0 ? x[0] : x[i - 1];
+        double xr = i == nx - 1 ? x[nx - 1] : x[i + 1];
+        dx[i] = (i == 0 || i == nx - 1) ? xr - xl : 0.5 * (xr - xl);
+    }
+}
+
+
+/* ************************************************ */
+void GradFromArray(double *v, double *x, double *grad, int nx) {
+/*!
+ * v     input: array of values
+ * x     input: array of coordinates where values v exist
+ * grad  output: array of cell widths
+ * nx    number of elements in v
+ *
+ * This function returns an array of gradients that are the
+ * average of a left and right gradient with weight going to
+ * *smaller* gradients. From a function AYW learnt from
+ * Sam A. E. G. Falle.
+ *
+ *     grad = (r r l + r l l) / (r * r + l * l);
+ *
+ * where l and r are the left and right gradients
+ *
+ ************************************************** */
+    int i;
+    for (i = 0; i < nx; i++) {
+        double gl = i == 0 ? 0. : (v[i] - v[i - 1]) / (x[i] - x[i - 1]);
+        double gr = i == nx - 1 ? 0. : (v[i + 1] - v[i]) / (x[i + 1] - x[i]);
+        grad[i] = (gr * gr * gl + gr * gl * gl) / (gr * gr + gl * gl);
+    }
+}
+
+void TransposeArray(double** src, double** dst, int n, int m) {
+    int i, j;
+    for(i = 0; i < n; ++i)
+        for(j = 0; j < m; ++j)
+            dst[j][i] = src[i][j];
+}
+

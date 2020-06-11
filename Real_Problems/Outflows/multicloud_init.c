@@ -264,37 +264,37 @@ void readgridfile (struct InGrid *Gin)
 /*
   #if CLOUD_DENSITY == CD_TURB_ISOTH_HYDROSTATIC
 
-  if (gr_ndata <=0) {print("Something wrong in gen_cldlist. gr_ndata=%d \n"); QUIT_PLUTO(1);}
+  if (gr_nr <=0) {print("Something wrong in gen_cldlist. gr_nr=%d \n"); QUIT_PLUTO(1);}
 
   double sigma2, hx, norm, uran;
   double rad, phi, theta, cphi, ctheta;
   int ii_rad, ii_norm, i, flip;
   double *cumul, *integrand;
 
-  cumul=ARRAY_1D(gr_ndata,double);
-  integrand=ARRAY_1D(gr_ndata,double);
+  cumul=ARRAY_1D(gr_nr,double);
+  integrand=ARRAY_1D(gr_nr,double);
 
   sigma2=g_inputParam[PAR_WTRB]*1.e5/UNIT_VELOCITY;
   sigma2*=sigma2;
 
 
-  for (i=0;i<gr_ndata;i++){
+  for (i=0;i<gr_nr;i++){
     integrand[i]=exp(-1.0*gr_phi[i]/sigma2);
   }
 
   //---Define uniform interval. Any difference would do. Choose any cell besides the first two
   //---as the first row is manually entered from the python output---
-  hx=gr_rad[10]-gr_rad[9];
+  hx=gr_r[10]-gr_r[9];
 
 
-  for (i=1;i<gr_ndata;i++){
+  for (i=1;i<gr_nr;i++){
     cumul[i]=Simpson_ext(hx,integrand,i+1);
   }
 
   //---Locate end point of distribution of clouds. Normalise integrand---//
-  ii_norm=locate(gr_rad,g_inputParam[PAR_WRAD],gr_ndata);
+  ii_norm=locate(gr_r,g_inputParam[PAR_WRAD],gr_nr);
   norm=cumul[ii_norm];
-  for (i=1;i<gr_ndata;i++){
+  for (i=1;i<gr_nr;i++){
   cumul[i]=cumul[i]/norm;
   }
   cumul[0]=0.0;
@@ -310,9 +310,9 @@ void readgridfile (struct InGrid *Gin)
   #if CLOUD_DENSITY == CD_TURB_ISOTH_HYDROSTATIC
 
   uran=ran1(&seed1);
-  ii_rad=locate(cumul,uran,gr_ndata);
+  ii_rad=locate(cumul,uran,gr_nr);
   if (ii_rad > ii_norm) ii_rad=ii_norm;
-  rad=gr_rad[ii_rad];
+  rad=gr_r[ii_rad];
   #endif
 
    #if CLOUD_DENSITY == CD_HOMOGENEOUS

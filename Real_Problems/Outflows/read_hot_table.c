@@ -3,7 +3,8 @@
 #include "read_hot_table.h"
 #include "init_tools.h"
 
-#ifdef GRAV_TABLE
+// NOTE: Not tested or used anywhere yet
+#ifdef HOT_TABLE
 
 double *hot_rad, *hot_rho, *hot_prs;
 int hot_ndata;

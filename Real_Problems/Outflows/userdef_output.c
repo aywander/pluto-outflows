@@ -228,7 +228,7 @@ void ChangeOutputVar ()
     image->slice_plane = X13_PLANE;
     image->slice_coord = 0.0;
 #endif
-    image->max = 1.e3; image->min = 1.e-2;
+    image->max = 1.e3; image->min = 1.e-4;
     image->logscale = 1;
 
     /* pressure slice */
