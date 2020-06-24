@@ -22,8 +22,8 @@
 #define CLOUD_DENSITY                     CD_MILKY_WAY_PJM
 #define CLOUD_VELOCITY                    CV_KEPLERIAN
 #define CLOUD_SCALE                       CS_VELOCITY_DISPERSION
-#define CLOUD_EXTRACT_ELLIPSOID           NO
-#define CLOUD_EXTRACT_CENTRAL_BUFFER      NO
+#define CLOUD_EXTRACT_ELLIPSOID           YES
+#define CLOUD_EXTRACT_CENTRAL_BUFFER      YES
 
 #define ACCRETION_OUTPUT                  NO
 #define ACCRETION_OUTPUT_RATE             1.0
@@ -33,8 +33,6 @@
 #define OUTFLOW_OUTPUT_RATE               1.0
 #define CLOUD_OUTPUT                      NO
 #define CLOUD_OUTPUT_RATE                 1.0
-
-#define COORDINATE_SYSTEM_DEBUG           FALSE
 
 
 /* --- Not usually changed ---- */

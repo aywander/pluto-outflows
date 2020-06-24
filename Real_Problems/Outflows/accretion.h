@@ -36,7 +36,7 @@ int InSinkRegion(const double x1, const double x2, const double x3);
 void SphericalFreeflow(double *prims, double ****VC, const double *x1, const double *x2, const double *x3,
                        const int k, const int j, const int i);
 
-void SphericalFreeflowInternalBoundary(const double ****Vc, int i, int j, int k, const double *x1, const double *x2,
+void SphericalFreeflowInternalBoundary(double ****Vc, int i, int j, int k, const double *x1, const double *x2,
                                        const double *x3, double *result);
 
 

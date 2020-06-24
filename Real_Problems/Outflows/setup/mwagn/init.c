@@ -55,101 +55,6 @@ void Init (double *v, double x1, double x2, double x3)
  *********************************************************************** */
 {
 
-    int nv;
-    double halo_primitives[NVAR], out_primitives[NVAR];
-    static int once01 = 0;
-
-
-    /* Some things that only need to be done once */
-    if (!once01) {
-
-        /* Initialize base normalization struct */
-        SetBaseNormalization();
-        PrintBaseNormalizations();
-
-        /* Set normalization factors for input parameters */
-        SetIniNormalization();
-
-#if ACCRETION == YES
-        /* Set outflow geometry struct with parameters of cone */
-        SetAccretionPhysics();
-#endif
-
-
-#if NOZZLE != NONE
-        /* Set outflow geometry struct with parameters of cone */
-        SetNozzleGeometry(&nz);
-
-        /* Set struct of outflow parameters and state variables */
-        SetOutflowState(&os);
-
-
-        double dx;
-        dx = FLOWAXIS((g_domEnd[IDIR] - g_domBeg[IDIR]) / NX1;,
-                      (g_domEnd[JDIR] - g_domBeg[JDIR]) / NX2;,
-                      (g_domEnd[KDIR] - g_domBeg[KDIR]) / NX3;);
-
-        /* Print some data */
-        OutflowPrimitives(out_primitives, ARG_FLOWAXIS(dx, 0));
-        HotHaloPrimitives(halo_primitives, ARG_FLOWAXIS(dx, 0));
-        PrintInitData01(out_primitives, halo_primitives);
-
-#endif
-
-#if SUPERNOVAE == YES
-
-        /* Set Supernova physics */
-        SetSupernovaePhysics();
-
-#endif
-
-        /* Done once now */
-        once01 = 1;
-    }
-
-
-#if (NOZZLE != NONE) && (NOZZLE_FILL == NF_PRIMITIVE)
-
-    /* Initialize nozzle if we're in hemisphere around
-     * nozzle inlet region, otherwise halo */
-
-     if (InNozzleRegion(x1, x2, x3) || InNozzleCap(x1, x2, x3)) {
-
-         OutflowPrimitives(out_primitives, x1, x2, x3);
-         HotHaloPrimitives(halo_primitives, x1, x2, x3);
-
-         NVAR_LOOP(nv) {
-             v[nv] = halo_primitives[nv] +
-                     (out_primitives[nv] - halo_primitives[nv]) * Profile(x1, x2, x3);
-         }
-     }
-
-#else
-    if (0) { }
-#endif
-
-#if INTERNAL_BOUNDARY == YES
-    else if (InFlankRegion(x1, x2, x3)) {
-
-        HotHaloPrimitives(halo_primitives, x1, x2, x3);
-
-        NVAR_LOOP(nv) v[nv] = halo_primitives[nv];
-    }
-#endif
-
-        /* Initialize halo */
-    else {
-
-        HotHaloPrimitives(halo_primitives, x1, x2, x3);
-        NVAR_LOOP(nv) v[nv] = halo_primitives[nv];
-
-    }
-
-#if COOLING
-    g_minCoolingTemp = 3.e2;
-    g_maxCoolingRate = 0.4;
-#endif
-
 #if PHYSICS == MHD || PHYSICS == RMHD
 
     v[BX1] = 0.0;
@@ -177,20 +82,74 @@ void InitDomain(Data *d, Grid *grid)
  *********************************************************************** */
 {
 
+    /* Initialize base normalization struct */
+    SetBaseNormalization();
+    PrintBaseNormalizations();
 
-    int i, j, k, nv, id, vol;
-    double *x1, *x2, *x3;
+    /* Set normalization factors for input parameters */
+    SetIniNormalization();
 
-    /* Measure Nozzle volume by counting cells. This is the volume into which
-     * mass, momentum, energy are dumped. We therefore use DOM_LOOP */
-#if NOZZLE
-    NozzleVolume(d, grid);
+    /* All about the accretion - this, i think, must be done first.
+     * Set outflow geometry struct with parameters of cone */
+#if ACCRETION == YES
+        SetAccretionPhysics();
+#endif
+
+    /* All about the nozzle */
+#if NOZZLE != NONE
+
+    /* Set outflow geometry struct with parameters of cone */
+    SetNozzleGeometry(&nz);
+
+    /* Set struct of outflow parameters and state variables */
+    SetOutflowState(&os);
+
+    double dx;
+    dx = FLOWAXIS((g_domEnd[IDIR] - g_domBeg[IDIR]) / NX1;,
+                  (g_domEnd[JDIR] - g_domBeg[JDIR]) / NX2;,
+                  (g_domEnd[KDIR] - g_domBeg[KDIR]) / NX3;);
+
+    /* Print some data */
+    double halo_primitives[NVAR], out_primitives[NVAR];
+    OutflowPrimitives(out_primitives, ARG_FLOWAXIS(dx, 0));
+    HotHaloPrimitives(halo_primitives, ARG_FLOWAXIS(dx, 0));
+    PrintInitData01(out_primitives, halo_primitives);
 
 #endif
+
+#if SUPERNOVAE == YES
+
+    /* Set Supernova physics */
+        SetSupernovaePhysics();
+
+#endif
+
+
+#if COOLING
+    g_minCoolingTemp = 3.e2;
+    g_maxCoolingRate = 0.4;
+#endif
+
+
+
+    /* Initialize a hot phase ambient medium by default
+     * - this is the bare minimum of a simulation, so it is performed first. */
+    InitDomainHotHalo(d, grid);
 
     /* Input data for clouds initialization */
 #if CLOUDS
     InputDataClouds(d, grid);
+
+#endif
+
+    /* Initialize nozzle. */
+#if (NOZZLE != NONE) && (NOZZLE_FILL == NF_PRIMITIVE)
+    InitDomainNozzle(d, grid);
+
+    /* Measure Nozzle volume by counting cells. This is the volume into which
+     * mass, momentum, energy are dumped. We therefore use DOM_LOOP */
+#elif NOZZLE && (NOZZLE_FILL == NF_CONSERVATIVE)
+    NozzleVolume(d, grid);
 
 #endif
 
@@ -656,7 +615,7 @@ void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
     /* Common variables */
     double r, fr, gr;
 #ifdef GRAV_2D_POTENTIAL
-    double z, fz, sz, p, gz;
+    double fz, sz, gz;
 #endif
 
     /* Hernquist potential */

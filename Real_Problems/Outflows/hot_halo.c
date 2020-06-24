@@ -193,7 +193,7 @@ void HotHaloPrimitives(double *halo,
 
     /* Consider different distributions */
 
-#if (GRAV_POTENTIAL == NONE) || (GRAV_POTENTIAL == GRAV_HOMOGENEOUS)
+#if (GRAV_POTENTIAL == NO) || (GRAV_POTENTIAL == GRAV_HOMOGENEOUS)
 
     halo[RHO] = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
     halo[PRS] = PresIdealEOS(halo[RHO], g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP], MU_NORM);
@@ -233,11 +233,11 @@ void HotHaloPrimitives(double *halo,
 
 #if defined(HOT_TABLE)
     halo[PRS] = InterpolationWrapper(hot_rad, hot_prs, hot_ndata, r);
-    halo[PRS] = InterpolationWrapper(hot_rad, hot_rho hot_ndata, r);
+    halo[RHO] = InterpolationWrapper(hot_rad, hot_rho hot_ndata, r);
 #else
     double phi = BodyForcePotential(x1, x2, x3);
-    halo[RHO] = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO] *
-                exp(MU_NORM * phi / (g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP]));
+    double phi_scale_cgs = CONST_kB * g_inputParam[PAR_HTMP] * ini_cgs[PAR_HTMP] / (CONST_amu * MU_NORM);
+    halo[RHO] = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO] * exp(-phi / phi_scale_cgs * vn.pot_norm);
     halo[PRS] = PresIdealEOS(halo[RHO], g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP], MU_NORM);
 #endif
 
@@ -291,12 +291,6 @@ void HotHaloPrimitives(double *halo,
     }
 
     EXPAND(halo[VX1] = vx1;, halo[VX2] = vx2;, halo[VX3] = vx3;);
-
-#if RECONSTRUCT_4VEL == YES
-    vel = VMAG(x1, x2, x3, halo[VX1], halo[VX2], halo[VX3]);
-    scrh = Speed2Lorentz(vel);
-    EXPAND(halo[VX1] *= scrh;, halo[VX2] *= scrh;, halo[VX3] *= scrh;);
-#endif
 
 
     /* Tracers */
@@ -371,4 +365,32 @@ int InFlankRegion(const double x1, const double x2, const double x3) {
 
     }
 
+}
+
+
+/*********************************************************************** */
+void InitDomainHotHalo(Data *d, Grid *grid){
+/*!
+ * Initialize the hot halo everywhere. This is always done first in any setup.
+ * (There is always a hot phase).
+ *
+ *********************************************************************** */
+
+
+    double *x1 = grid->x[IDIR];
+    double *x2 = grid->x[JDIR];
+    double *x3 = grid->x[KDIR];
+
+    double halo_primitives[NVAR];
+
+    int i, j, k, iv;
+
+    TOT_LOOP(k, j, i) {
+
+                /* Initialize halo */
+
+                HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
+                NVAR_LOOP(iv) d->Vc[iv][k][j][i] = halo_primitives[iv];
+
+            }
 }

@@ -1,8 +1,6 @@
 #include "pluto.h"
 /* AYW -- 2013-01-08 23:05 JST */
 #include "pluto_usr.h"
-#include "read_mu_table.h"
-#include "interpolation.h"
 #include "init_tools.h"
 /* -- AYW */
 
@@ -17,9 +15,9 @@ void Radiat (double *v, double *rhs)
  * 
  ******************************************************************* */
 {
-    int klo, khi, kmid;
+    int klo, khi;
     static int ntab;
-    double mu, T, Tmid, scrh, dT, prs;
+    double mu, T, scrh, prs;
     static double *L_tab, *T_tab, E_cost;
     static double por_min, L_tmin;
     double Te;

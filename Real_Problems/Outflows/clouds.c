@@ -20,6 +20,7 @@
 /* Global struct for cloud analytics */
 CloudAnalytics ca;
 
+#if CLOUDS == YES
 
 /* ************************************************************** */
 int CloudCubePixel(int *el, const double x1,
@@ -237,25 +238,15 @@ double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, c
     r_cyl = CYL1(x1, x2, x3);
     rz    = CYL2(x1, x2, x3);
 
-    /* The ellipse equation */
+    /* The rotational parameter */
     wrot = g_inputParam[PAR_WROT] * ini_code[PAR_WROT];
 
-    /* Always just use WRAD paramter here so that we can control the apodization
-     * and ellipsoid extraction separately */
-//#if CLOUD_SCALE == CS_SCALE_HEIGHT
+    /* Always just use WRAD paramter here rather than velocity dispersion,
+     * so that we can control the apodization and ellipsoid extraction separately. */
     wrad = g_inputParam[PAR_WRAD] * ini_code[PAR_WRAD];
 
-//#elif CLOUD_SCALE == CS_VELOCITY_DISPERSION
-//    double wtrb_cgs = g_inputParam[PAR_WTRB] * ini_cgs[PAR_WTRB];
-//    double wrho_cgs = g_inputParam[PAR_WRHO] * ini_cgs[PAR_WRHO];
-//    double wrad_cgs = 3. * wtrb_cgs / (2. * sqrt(CONST_PI * CONST_G * wrho_cgs));
-//    wrad = wrad_cgs / vn.l_norm;
-//
-//#endif
-
-
+    /* ellipse = 1 is the region beyond which the extraction (with smoothing) should take place */
     ellipse = (r_cyl * r_cyl * (1 - wrot * wrot) + rz * rz) / (wrad * wrad);
-
 
     /* Smoothing region scale, hardcoded here. */
     /* For discs a factor 1/e was good, for spherical distributions, 0.1.
@@ -268,6 +259,22 @@ double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, c
     offset = MAX(offset, -0.5 * wsmf);
     tanhfactor = tanh(tan(-CONST_PI * offset / wsmf));
     fdratio = pow(10, 0.5 * log10(fdratio) + 0.5 * tanhfactor * log10(fdratio));
+
+
+    /* Add additional cylindrical extraction, if disc radial scale > half domain extent */
+    if (wrad * wrad / (1 - wrot * wrot) > g_domEnd[IDIR] * g_domEnd[IDIR]) {
+
+        wrad = g_domEnd[IDIR];
+        double cylinder = r_cyl / wrad;
+
+        double offset = cylinder - 1.;
+        offset = MIN(offset, 0.5 * wsmf);
+        offset = MAX(offset, -0.5 * wsmf);
+        tanhfactor = tanh(tan(-CONST_PI * offset / wsmf));
+        fdratio = pow(10, 0.5 * log10(fdratio) + 0.5 * tanhfactor * log10(fdratio));
+
+    }
+
 
     if (!once01){
       print("> Cloud extraction: CLOUD_EXTRACTION_ELLIPSOID.\n\n");
@@ -404,16 +411,32 @@ void CloudVelocity(double *cloud, double *halo,
         vpol2 = VPOL2(x1, x2, x3, v1, v2, v3);
         vpol3 = VPOL3(x1, x2, x3, v1, v2, v3);
 
-
         /* Use local gradient, rather than mid plane potential.
-         * At least for N-body initializations of thick discs in non-axissymetric potentials,
+         * At least for N-body initializations of thick discs in axisymmetric potentials,
          * this gives a better results, according to Miki et al 2017, MAGI paper. */
         r_cyl = CYL1(x1, x2, x3);
         BodyForceVector(cloud, gvec, x1, x2, x3);  // Acceleration vector (pointing inward)
         dphidr = -VPOL1(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
 
         /* The angular (linear) velocity */
+        // TODO: Rather than use ek, deduct turbulent and thermal support from Keplerian velocity.
+        //       Turbulent support  = sigma_g * r / rd where rd is the disc radial scale.
+        //       This should also be possible for isothermal turbulent discs, i.e.,
+        //       one doesn't need to specify WROT (discuss this with Geoff).
+        //       But what is the scale length of an isothermal disc, then?
+        //       Maybe just  zd / (1. - ek), where zd is the scale height of the disc.
+        //       There are also some typos in Geoff's derivation for the MW_PJM case,
+        //       for which the assumption that T is constant is also not correct.
+
+//#if CLOUD_DENSITY == CD_MILKY_WAY_PJM
+//        double wtrb = g_inputParam[PAR_WTRB] * ini_code[PAR_WTRB];
+//        double wth2 = halo[PRS] / halo[RHO];
+//
+//        vpol2 += sqrt(r_cyl * dphidr - wtrb * wtrb - wth2);
+//#else
         vpol2 += ek * sqrt(r_cyl * dphidr);
+//#endif
+
 
         /* Convert velocity vectors back to the current coordinate system */
         EXPAND(v1 = VPOL_1(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3);,
@@ -533,12 +556,6 @@ void CloudVelocity(double *cloud, double *halo,
     /* Put back in to cloud array */
     EXPAND(cloud[VX1] = v1;, cloud[VX2] = v2;, cloud[VX3] = v3;);
 
-
-#if RECONSTRUCT_4VEL == YES
-    double vel = VMAG(x1, x2, x3, cloud[VX1], cloud[VX2], cloud[VX3]);
-    double scrh = Speed2Lorentz(vel);
-    EXPAND(cloud[VX1] *= scrh;, cloud[VX2] *= scrh;, cloud[VX3] *= scrh;);
-#endif
 }
 
 /* ************************************************************** */
@@ -638,6 +655,11 @@ int WarmTcrit(double *const warm)
 
 }
 
+
+#endif
+
+
+// TODO: Remove the tracer dependence in some of the below
 
 /* ********************************************************************* */
 void CloudAnalysis(Data *d, Grid *grid) {
@@ -974,7 +996,12 @@ void WarmPhaseStarFormationRate(Data *d, Grid *grid) {
 }
 
 
+/*********************************************************************** */
 void WarmPhasePorosity(Data *d, Grid *grid) {
+/*!
+ * Calculate the porosity globally!
+ *
+ *********************************************************************** */
 
     /* Region in phase to consider as warm */
     double rho_c, te_c, tr2_c;
@@ -988,7 +1015,12 @@ void WarmPhasePorosity(Data *d, Grid *grid) {
 
 
 
+/*********************************************************************** */
 void WarmPhaseConditions(double *rho_c, double *te_c, double *tr2_c) {
+/*!
+ * The critical values for clouds and SFR... not really thought through yet
+ *
+ *********************************************************************** */
 
     *rho_c = 1.e1;
     *te_c = CLOUD_TCRIT;
@@ -1064,6 +1096,9 @@ void InputDataClouds(const Data *d, const Grid *grid) {
  * Routine that puts clouds into grid using PLUTO's input data mechanism.
  *
  *********************************************************************** */
+
+// TODO: Hot phase has been initialized already everywhere. Check whether some of the
+//       replacement routines are necessary in setting up the clouds.
 
     int i, j, k, nv, id, vol;
     double *x1, *x2, *x3;

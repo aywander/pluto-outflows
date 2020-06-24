@@ -66,8 +66,11 @@ int PressureFix(Map_param *par)
   #if EOS == IDEAL
   par->sigma_c = par->prs*par->lor/pow(rho,g_gamma-1);
   #elif EOS == TAUB
-  th = par->prs/rho;  
-  par->sigma_c = par->prs*par->lor/pow(rho,2.0/3.0)*(1.5*th + sqrt(2.25*th*th + 1.0);
+  th = par->prs/rho;
+  /* AYW -- A bug */
+  par->sigma_c = par->prs*par->lor/pow(rho,2.0/3.0)*(1.5*th + sqrt(2.25*th*th + 1.0));
+//  par->sigma_c = par->prs*par->lor/pow(rho,2.0/3.0)*(1.5*th + sqrt(2.25*th*th + 1.0);
+  /* -- AYW */
   #endif
 }
 #endif

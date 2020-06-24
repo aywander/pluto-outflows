@@ -13,4 +13,6 @@ void HotHaloPrimitives(double *halo, const double x1, const double x2, const dou
 
 int InFlankRegion(const double x1, const double x2, const double x3);
 
+void InitDomainHotHalo(Data *d, Grid *grid);
+
 #endif //PLUTO_HOT_HALO_H

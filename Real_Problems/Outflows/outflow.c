@@ -538,15 +538,6 @@ void OutflowVelocity(double *out_primitives, double speed,
            out_primitives[VX2] = vx2;,
            out_primitives[VX3] = vx3;);
 
-#if RECONSTRUCT_4VEL == YES
-    /* This is the same for all geometries */
-    double lorentz;
-    lorentz = Speed2Lorentz(speed);
-    EXPAND(out_primitives[VX1] *= lorentz;,
-           out_primitives[VX2] *= lorentz;,
-           out_primitives[VX3] *= lorentz;);
-#endif
-
     return;
 }
 

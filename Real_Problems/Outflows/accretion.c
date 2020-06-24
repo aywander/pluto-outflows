@@ -613,7 +613,7 @@ void BondiFlowInternalBoundary(const double x1, const double x2, const double x3
 
 
 /* ************************************************ */
-void SphericalFreeflowInternalBoundary(const double ****Vc, int i, int j, int k, const double *x1, const double *x2,
+void SphericalFreeflowInternalBoundary(double ****Vc, int i, int j, int k, const double *x1, const double *x2,
                                        const double *x3, double *result) {
 /*!
  * Apply Spherical inward freeflow internal boundary to cells around cell i, j, k.

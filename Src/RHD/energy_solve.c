@@ -104,8 +104,13 @@ int EnergySolve (Map_param *par)
   #if EOS == IDEAL
   par->sigma_c = p*lor/pow(par->rho,g_gamma-1);
   #elif EOS == TAUB
-  theta = p/rho;  
-  par->sigma_c = p*lor/pow(par->rho,2.0/3.0)*(1.5*theta + sqrt(2.25*theta*theta + 1.0);
+  /* AYW -- Bugs */
+//  theta = p/rho;
+    double rho = par->rho;
+    double th  = par->prs/rho;
+//    par->sigma_c = p*lor/pow(par->rho,2.0/3.0)*(1.5*theta + sqrt(2.25*theta*theta + 1.0);
+    par->sigma_c = p*lor/pow(par->rho,2.0/3.0)*(1.5*th + sqrt(2.25*th*th + 1.0));
+    /* -- AYW */
   #endif
 #endif
 

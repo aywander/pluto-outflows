@@ -34,8 +34,6 @@
 #define CLOUD_OUTPUT                      NO
 #define CLOUD_OUTPUT_RATE                 1.0
 
-#define COORDINATE_SYSTEM_DEBUG           FALSE
-
 
 /* --- Not usually changed ---- */
 #define MU_CALC                           MU_ANALYTIC

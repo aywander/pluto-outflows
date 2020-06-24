@@ -25,7 +25,7 @@ void ReadGravTable() {
  *
  * NOTE:
  *   - GRAV_2D_POTENTIAL, just like GRAV_TABLE, is set automatically with the choice of GRAV_POTENTIAL
- *   - In 2D arrays, the indices are r, and z (i.e. z changing fastest).
+ *   - In 2D arrays, the indices are z and r (i.e. r changing fastest).
  *   - If BODY_FORCE & VECTOR, then the gravitational acceleration must be provided as a table.
  *     The gravitational potential, however, must always be provided in tabular form.
  *     This may change in the future.
@@ -72,9 +72,9 @@ void ReadGravTable() {
 
     /* Read z-coordinates */
     fseek(fg, 0, SEEK_SET);
-    for (i = 0; i < gr_nz; ++i) {
-        fscanf(fg, "%le ", &gr_z[i]);
-        gr_z[i] /= vn.l_norm;
+    for (j = 0; j < gr_nz; ++j) {
+        fscanf(fg, "%le ", &gr_z[j]);
+        gr_z[j] /= vn.l_norm;
     }
     fclose(fg);
 
@@ -86,13 +86,13 @@ void ReadGravTable() {
         exit(1);
     }
 
-    /* The data is stored so that z changes fastest (second index) */
+    /* The data is stored so that r changes fastest (second index) */
 #ifdef GRAV_2D_POTENTIAL
-    gr_phi = ARRAY_2D(gr_nr, gr_nz, double);
-    for (i = 0; i < gr_nr; ++i) {
-      for (j = 0; j < gr_nz; ++j) {
-        fscanf(fg, "%le ", &gr_phi[i][j]);
-        gr_phi[i][j] /= vn.pot_norm;
+    gr_phi = ARRAY_2D(gr_nz, gr_nr, double);
+    for (j = 0; j < gr_nz; ++j) {
+       for (i = 0; i < gr_nr; ++i) {
+        fscanf(fg, "%le ", &gr_phi[j][i]);
+        gr_phi[j][i] /= vn.pot_norm;
       }
     }
 #else
@@ -106,8 +106,8 @@ void ReadGravTable() {
 
     /* If using acceleration vector, also read acceleration files */
 
-    gr_acc_r = ARRAY_2D(gr_nr, gr_nz, double);
-    gr_acc_z = ARRAY_2D(gr_nr, gr_nz, double);
+    gr_acc_r = ARRAY_2D(gr_nz, gr_nr, double);
+    gr_acc_z = ARRAY_2D(gr_nz, gr_nr, double);
 #if BODY_FORCE & VECTOR
     if ((fgr = fopen(GRAV_ACCR_FNAME, "r")) == NULL) {
         print("Error: ReadGravData: Unable to open r-acceleration data file");
@@ -142,23 +142,23 @@ void ReadGravTable() {
 #ifdef GRAV_2D_POTENTIAL
 
     /* For transposing arrays */
-    double **gr_acc_r_T, **gr_phi_T;
-    gr_acc_r_T = ARRAY_2D(gr_nz, gr_nr, double);
-    gr_phi_T = ARRAY_2D(gr_nz, gr_nr, double);
-    TransposeArray(gr_phi, gr_phi_T, gr_nr, gr_nz);
+    double **gr_acc_z_T, **gr_phi_T;
+    gr_acc_z_T = ARRAY_2D(gr_nr, gr_nz, double);
+    gr_phi_T = ARRAY_2D(gr_nr, gr_nz, double);
+    TransposeArray(gr_phi, gr_phi_T, gr_nz, gr_nr);
 
     /* Calculate gradients row-wise */
-    for (i = 0; i < gr_nr; ++i) GradFromArray(gr_phi[i], gr_z, gr_acc_z[i], gr_nz);
-    for (j = 0; j < gr_nz; ++j) GradFromArray(gr_phi_T[j], gr_r, gr_acc_r_T[j], gr_nr);
+    for (j = 0; j < gr_nz; ++j) GradFromArray(gr_phi[j], gr_r, gr_acc_r[j], gr_nr);
+    for (i = 0; i < gr_nr; ++i) GradFromArray(gr_phi_T[i], gr_z, gr_acc_z_T[i], gr_nz);
 
     /* Transpose r array back again */
-    TransposeArray(gr_acc_r_T, gr_acc_r, gr_nz, gr_nr);
+    TransposeArray(gr_acc_z_T, gr_acc_z, gr_nr, gr_nz);
 
     /* Make acceleration vector point inward (dphi / dr = -g) */
-    for (i = 0; i < gr_nr; ++i) {
-        for (j = 0; j < gr_nz; ++j) {
-            gr_acc_r[i][j] = -gr_acc_r[i][j];
-            gr_acc_z[i][j] = -gr_acc_z[i][j];
+    for (j = 0; j < gr_nz; ++j) {
+        for (i = 0; i < gr_nr; ++i) {
+            gr_acc_r[j][i] = -gr_acc_r[j][i];
+            gr_acc_z[j][i] = -gr_acc_z[j][i];
         }
     }
 
@@ -168,7 +168,7 @@ void ReadGravTable() {
     GradFromArray(gr_phi, gr_r, gr_acc_r, gr_nr);
 
     /* Make acceleration vector point inward (dphi / dr = -g) */
-    for (i = 0; i < gr_nr; ++i) gr_acc_r[i][j] = -gr_acc_r[i][j];
+    for (i = 0; i < gr_nr; ++i) gr_acc_r[i] = -gr_acc_r[i];
 
 #endif
 

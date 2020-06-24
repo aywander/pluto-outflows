@@ -5,6 +5,7 @@
 #include <pluto.h>
 #include "nozzle.h"
 #include "outflow.h"
+#include "hot_halo.h"
 #include "grid_geometry.h"
 #include "pluto_usr.h"
 #include "init_tools.h"
@@ -21,6 +22,7 @@ int InNozzleCap(const double x1, const double x2, const double x3) {
  *
  ************************************************** */
 
+// TODO: Debug this... doesn't seem to work anymore
 #if NOZZLE_CAP == YES
 
     /* Nozzle is be deactivated if ORAD is zero */
@@ -50,7 +52,7 @@ int InNozzleCap(const double x1, const double x2, const double x3) {
     st = CART2SPH2(cx1p, cx2p, cx3p);
 
     if (sr < nz.rad){
-       int a = 1;
+        int a = 1;
     }
     /* Do radius and angle check */
     return (sr < nz.rad) && (st < CONST_PI / 2.);
@@ -149,6 +151,7 @@ void SetNozzleGeometry(Nozzle * noz) {
  *
  *
  ************************************************** */
+
 
     double ang, rad, sph, dir, dbh, omg, phi;
     double cbh, orig, area, vol, cone_height, cone_apex;
@@ -335,7 +338,7 @@ void SetNozzleGeometry(Nozzle * noz) {
 
 #else // INTERNAL_BOUNDARY
 
-#if NOZZLE_FILL == NF_CONSERVATIVE
+    #if NOZZLE_FILL == NF_CONSERVATIVE
 
     print("Error: INTERNAL_BOUNDARY must be TRUE if NOZZLE_FILL == NF_CONSERVATIVE.");
     QUIT_PLUTO(1);
@@ -499,11 +502,49 @@ void NozzleVolume(Data *d, Grid *grid) {
             }
 
 #ifdef PARALLEL
-        MPI_Allreduce(&vol_a, &vol, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&vol_a, &vol, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
 #else
-        vol = vol_a;
+    vol = vol_a;
 
 #endif
     nz.vol_counted = vol;
+}
+
+
+
+/*********************************************************************** */
+void InitDomainNozzle(Data *d, Grid *grid){
+/*!
+ * Initilize the nozzle in the domain with primitive variables.
+ * This is done, after initializing clouds and the hot phase.
+ *
+ *
+ * Initialize nozzle if we're in nozzle inlet region, otherwise halo
+ *
+ *********************************************************************** */
+
+    double *x1 = grid->x[IDIR];
+    double *x2 = grid->x[JDIR];
+    double *x3 = grid->x[KDIR];
+
+    double out_primitives[NVAR];
+    double halo_primitives[NVAR];
+
+    int i, j, k, iv;
+
+    TOT_LOOP(k, j, i) {
+        
+                if (InNozzleRegion(x1[i], x2[j], x3[k]) || InNozzleCap(x1[i], x2[j], x3[k])) {
+
+                    OutflowPrimitives(out_primitives, x1[i], x2[j], x3[k]);
+                    HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
+
+                    NVAR_LOOP(iv) {
+                        d->Vc[iv][k][j][i] = halo_primitives[iv] +
+                                             (out_primitives[iv] - halo_primitives[iv]) * Profile(x1[i], x2[j], x3[k]);
+                    }
+                }
+            }
+
 }

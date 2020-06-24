@@ -20,9 +20,12 @@ set(HDF5_PATH_SER Lib/hdf5-1.10.4-serial)
 
 # -- Compilers --
 
-set(WITH_C_COMPILER /usr/bin/gcc)
-set(WITH_MPI_COMPILER /usr/local/bin/mpicc)
-set(WITH_MPIXX_COMPILER /usr/local/bin/mpicxx)
+# Only if C compiler is not found
+#set(WITH_C_COMPILER /usr/bin/gcc)
+
+# Only if not using find_package(MPI REQUIRED)
+#set(WITH_MPI_COMPILER /usr/local/bin/mpicc)
+#set(WITH_MPIXX_COMPILER /usr/local/bin/mpicxx)
 
 # -- For Chombo --
 
@@ -39,18 +42,18 @@ set(CHOMBO_CONFIG 3d.Darwin.64.g++.gfortran.OPT)
 # Directoiries
 
 set(PROBLEM_DIR  ${PROBLEM_TYPE}_Problems/${PROBLEM})
-set(SOURCE_DIR   Src)
+set(SRC_DIR      Src)
 
 
 # Included in all cases
 
 set(INCLUDE_DIRECTORIES
         ${PROBLEM_DIR}
-        ${SOURCE_DIR}
-        ${SOURCE_DIR}/States
-        ${SOURCE_DIR}/Math_Tools
-        ${SOURCE_DIR}/Templates
-        ${SOURCE_DIR}/Time_Stepping
+        ${SRC_DIR}
+        ${SRC_DIR}/States
+        ${SRC_DIR}/Math_Tools
+        ${SRC_DIR}/Templates
+        ${SRC_DIR}/Time_Stepping
         )
 
 set(LINK_DIRECTORIES)
@@ -162,19 +165,6 @@ set(SRC_FILES ${SRC_FILES}
         write_vtk_proc.c
         )
 
-foreach(FILE ${SRC_FILES})
-
-    if(FILE IN_LIST OVERRIDE_FILES)
-
-        set(SOURCE_FILES  ${SOURCE_FILES}  ${PROBLEM_DIR}/${FILE})
-
-    else()
-
-        set(SOURCE_FILES  ${SOURCE_FILES}  ${SOURCE_DIR}/${FILE})
-
-    endif()
-
-endforeach()
 
 
 # Module/Physics dependent part
@@ -186,46 +176,46 @@ if (WITH_PARALLEL)
 
     # ----
 
-    set(CMAKE_C_COMPILER ${WITH_MPI_COMPILER})
-    set(CMAKE_CXX_COMPILER ${WITH_MPIXX_COMPILER})
+#    set(CMAKE_C_COMPILER ${WITH_MPI_COMPILER})
+#    set(CMAKE_CXX_COMPILER ${WITH_MPIXX_COMPILER})
 
     # OR (https://cmake.org/pipermail/cmake/2015-April/060252.html)
 
-    #find_package(MPI REQUIRED)
-    #set(CMAKE_C_COMPILE_FLAGS ${CMAKE_C_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
-    #set(CMAKE_C_LINK_FLAGS ${CMAKE_C_LINK_FLAGS} ${MPI_LINK_FLAGS})
-    #set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
-    #set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
-    #set(LINK_LIBRARIES ${LINK_LIBRARIES} ${MPI_LIBRARIES})
+    find_package(MPI REQUIRED)
+    set(CMAKE_C_COMPILE_FLAGS ${CMAKE_C_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
+    set(CMAKE_C_LINK_FLAGS ${CMAKE_C_LINK_FLAGS} ${MPI_LINK_FLAGS})
+    set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
+    set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
+    set(LINK_LIBRARIES ${LINK_LIBRARIES} ${MPI_LIBRARIES})
 
     # ----
 
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Parallel)
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/Parallel)
 
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Parallel/al.h
-            ${SOURCE_DIR}/Parallel/al_alloc.c
-            ${SOURCE_DIR}/Parallel/al_boundary.c
-            ${SOURCE_DIR}/Parallel/al_codes.h
-            ${SOURCE_DIR}/Parallel/al_decomp_.c
-            ${SOURCE_DIR}/Parallel/al_decompose.c
-            ${SOURCE_DIR}/Parallel/al_defs.h
-            ${SOURCE_DIR}/Parallel/al_exchange.c
-            ${SOURCE_DIR}/Parallel/al_exchange_dim.c
-            ${SOURCE_DIR}/Parallel/al_finalize.c
-            ${SOURCE_DIR}/Parallel/al_hidden.h
-            ${SOURCE_DIR}/Parallel/al_init.c
-            ${SOURCE_DIR}/Parallel/al_io.c
-            ${SOURCE_DIR}/Parallel/al_proto.h
-            ${SOURCE_DIR}/Parallel/al_sort_.c
-            ${SOURCE_DIR}/Parallel/al_subarray_.c
-            ${SOURCE_DIR}/Parallel/al_sz_free.c
-            ${SOURCE_DIR}/Parallel/al_sz_get.c
-            ${SOURCE_DIR}/Parallel/al_sz_init.c
-            ${SOURCE_DIR}/Parallel/al_sz_set.c
-            ${SOURCE_DIR}/Parallel/al_szptr_.c
-            ${SOURCE_DIR}/Parallel/al_write_array_async.c
-#            ${SOURCE_DIR}/mpi_sub_decomp.c     # Probably shouldn't be there
+    set(SRC_FILES  ${SRC_FILES}
+            Parallel/al.h
+            Parallel/al_alloc.c
+            Parallel/al_boundary.c
+            Parallel/al_codes.h
+            Parallel/al_decomp_.c
+            Parallel/al_decompose.c
+            Parallel/al_defs.h
+            Parallel/al_exchange.c
+            Parallel/al_exchange_dim.c
+            Parallel/al_finalize.c
+            Parallel/al_hidden.h
+            Parallel/al_init.c
+            Parallel/al_io.c
+            Parallel/al_proto.h
+            Parallel/al_sort_.c
+            Parallel/al_subarray_.c
+            Parallel/al_sz_free.c
+            Parallel/al_sz_get.c
+            Parallel/al_sz_init.c
+            Parallel/al_sz_set.c
+            Parallel/al_szptr_.c
+            Parallel/al_write_array_async.c
+#            mpi_sub_decomp.c     # Probably shouldn't be there
             )
 else()
 
@@ -267,8 +257,8 @@ if (WITH_HDF5)
     #message(STATUS "HDF_LIBRARIES = ${HDF5_LIBRARIES}")
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DUSE_HDF5")
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/hdf5_io.c
+    set(SRC_FILES  ${SRC_FILES}
+            hdf5_io.c
             )
 endif ()
 
@@ -312,7 +302,7 @@ if (WITH_CHOMBO)
 
     # Libraries include
 
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Chombo)
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/Chombo)
     set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} Lib/Chombo-3.2/lib/include)
 
     # The following is in Makefile.chombo, but not needed. Just keeping for reference.
@@ -339,21 +329,21 @@ if (WITH_CHOMBO)
 
     # PLUTO CHOMBO source files
 
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Chombo/AMRLevelPluto.cpp
-            ${SOURCE_DIR}/Chombo/AMRLevelPluto.H
-            ${SOURCE_DIR}/Chombo/AMRLevelPlutoFactory.cpp
-            ${SOURCE_DIR}/Chombo/AMRLevelPlutoFactory.H
-            ${SOURCE_DIR}/Chombo/LevelPluto.cpp
-            ${SOURCE_DIR}/Chombo/LevelPluto.H
-#            ${SOURCE_DIR}/Chombo/PatchCTU.cpp   # Not used
-            ${SOURCE_DIR}/Chombo/PatchEuler.cpp
-            ${SOURCE_DIR}/Chombo/PatchGrid.H
-            ${SOURCE_DIR}/Chombo/PatchPluto.cpp
-            ${SOURCE_DIR}/Chombo/PatchPluto.H
-            ${SOURCE_DIR}/Chombo/PatchStartup.cpp
-            ${SOURCE_DIR}/Chombo/PatchTools.cpp
-            ${SOURCE_DIR}/Chombo/TagCells.cpp
+    set(SRC_FILES  ${SRC_FILES}
+            Chombo/AMRLevelPluto.cpp
+            Chombo/AMRLevelPluto.H
+            Chombo/AMRLevelPlutoFactory.cpp
+            Chombo/AMRLevelPlutoFactory.H
+            Chombo/LevelPluto.cpp
+            Chombo/LevelPluto.H
+#            Chombo/PatchCTU.cpp   # Not used
+            Chombo/PatchEuler.cpp
+            Chombo/PatchGrid.H
+            Chombo/PatchPluto.cpp
+            Chombo/PatchPluto.H
+            Chombo/PatchStartup.cpp
+            Chombo/PatchTools.cpp
+            Chombo/TagCells.cpp
             )
 
 endif ()
@@ -362,185 +352,185 @@ endif ()
 # Physics
 
 if (WITH_PHYSICS STREQUAL HD)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/HD ${SOURCE_DIR}/MHD)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/HD/ausm.c
-            #${SOURCE_DIR}/HD/ausm_up.c           # Buggy (don't need)
-            ${SOURCE_DIR}/HD/eigenv.c
-            ${SOURCE_DIR}/HD/fluxes.c
-#            ${SOURCE_DIR}/MHD/get_current.c      # Don't need?
-            ${SOURCE_DIR}/HD/hll.c
-            ${SOURCE_DIR}/HD/hll_speed.c
-            ${SOURCE_DIR}/HD/hllc.c
-            ${SOURCE_DIR}/HD/mappers.c
-            ${SOURCE_DIR}/HD/mod_defs.h
-            ${SOURCE_DIR}/HD/prim_eqn.c            # Only used for ChTr / Hancock (?)
-            ${SOURCE_DIR}/MHD/rhs.c
-            ${SOURCE_DIR}/MHD/rhs_source.c
-            #${SOURCE_DIR}/HD/riemann_full.c       # Buggy (not used?)
-            ${SOURCE_DIR}/HD/roe.c
-            #${SOURCE_DIR}/HD/rusanov-dw.c         # Don't need
-            ${SOURCE_DIR}/HD/set_solver.c
-            ${SOURCE_DIR}/HD/tvdlf.c
-            ${SOURCE_DIR}/HD/two_shock.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/HD ${SRC_DIR}/MHD)
+    set(SRC_FILES  ${SRC_FILES}
+            HD/ausm.c
+#            HD/ausm_up.c           # Buggy (don't need)
+            HD/eigenv.c
+            HD/fluxes.c
+#            MHD/get_current.c      # Don't need?
+            HD/hll.c
+            HD/hll_speed.c
+            HD/hllc.c
+            HD/mappers.c
+            HD/mod_defs.h
+            HD/prim_eqn.c            # Only used for ChTr / Hancock (?)
+            MHD/rhs.c
+            MHD/rhs_source.c
+#            HD/riemann_full.c       # Buggy (not used?)
+            HD/roe.c
+#            HD/rusanov-dw.c         # Don't need
+            HD/set_solver.c
+            HD/tvdlf.c
+            HD/two_shock.c
             )
 
 
 elseif (WITH_PHYSICS STREQUAL RHD)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/RHD ${SOURCE_DIR}/RMHD)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/RHD/eigenv.c
-            ${SOURCE_DIR}/RHD/energy_solve.c
-            ${SOURCE_DIR}/RHD/entropy_solve.c
-            ${SOURCE_DIR}/RHD/fluxes.c
-            ${SOURCE_DIR}/RMHD/four_vel.c
-            ${SOURCE_DIR}/RHD/hll.c
-            ${SOURCE_DIR}/RHD/hll_speed.c
-            ${SOURCE_DIR}/RHD/hllc.c
-            ${SOURCE_DIR}/RHD/mappers.c
-            ${SOURCE_DIR}/RHD/mod_defs.h
-            ${SOURCE_DIR}/RHD/pressure_fix.c
-            ${SOURCE_DIR}/RHD/prim_eqn.c
-            ${SOURCE_DIR}/RMHD/rhs.c
-            ${SOURCE_DIR}/RHD/set_solver.c
-            ${SOURCE_DIR}/RHD/tvdlf.c
-            ${SOURCE_DIR}/RHD/two_shock.c
-            ${SOURCE_DIR}/RMHD/vel_limiter.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/RHD ${SRC_DIR}/RMHD)
+    set(SRC_FILES  ${SRC_FILES}
+            RHD/eigenv.c
+            RHD/energy_solve.c
+            RHD/entropy_solve.c
+            RHD/fluxes.c
+            RMHD/four_vel.c
+            RHD/hll.c
+            RHD/hll_speed.c
+            RHD/hllc.c
+            RHD/mappers.c
+            RHD/mod_defs.h
+            RHD/pressure_fix.c
+            RHD/prim_eqn.c
+            RMHD/rhs.c
+            RHD/set_solver.c
+            RHD/tvdlf.c
+            RHD/two_shock.c
+            RMHD/vel_limiter.c
             )
 
 
 elseif (WITH_PHYSICS STREQUAL MHD)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/MHD)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/MHD/bckgrnd_field.c
-            ${SOURCE_DIR}/MHD/eigenv.c
-            ${SOURCE_DIR}/MHD/fluxes.c
-            ${SOURCE_DIR}/MHD/get_current.c
-            ${SOURCE_DIR}/MHD/hll.c
-            ${SOURCE_DIR}/MHD/hll_speed.c
-            ${SOURCE_DIR}/MHD/hllc.c
-            ${SOURCE_DIR}/MHD/hlld.c
-            ${SOURCE_DIR}/MHD/mappers.c
-            ${SOURCE_DIR}/MHD/mod_defs.h
-            ${SOURCE_DIR}/MHD/prim_eqn.c
-            ${SOURCE_DIR}/MHD/rhs.c
-            ${SOURCE_DIR}/MHD/rhs_source.c
-            #${SOURCE_DIR}/MHD/roe.bckfld.c          # Don't need
-            ${SOURCE_DIR}/MHD/roe.c
-            ${SOURCE_DIR}/MHD/set_solver.c
-            ${SOURCE_DIR}/MHD/source.c
-            ${SOURCE_DIR}/MHD/tvdlf.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/MHD)
+    set(SRC_FILES  ${SRC_FILES}
+            MHD/bckgrnd_field.c
+            MHD/eigenv.c
+            MHD/fluxes.c
+            MHD/get_current.c
+            MHD/hll.c
+            MHD/hll_speed.c
+            MHD/hllc.c
+            MHD/hlld.c
+            MHD/mappers.c
+            MHD/mod_defs.h
+            MHD/prim_eqn.c
+            MHD/rhs.c
+            MHD/rhs_source.c
+#            MHD/roe.bckfld.c          # Don't need
+            MHD/roe.c
+            MHD/set_solver.c
+            MHD/source.c
+            MHD/tvdlf.c
             )
 
 elseif (WITH_PHYSICS STREQUAL RMHD)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/RMHD)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/RMHD/eigenv.c
-            ${SOURCE_DIR}/RMHD/energy_solve.c
-            ${SOURCE_DIR}/RMHD/entropy_solve.c
-            ${SOURCE_DIR}/RMHD/fluxes.c
-            ${SOURCE_DIR}/RMHD/gmusta1.c
-            ${SOURCE_DIR}/RMHD/four_vel.c
-            ${SOURCE_DIR}/RMHD/hll.c
-            ${SOURCE_DIR}/RMHD/hll_speed.c
-            ${SOURCE_DIR}/RMHD/hllc.c
-            ${SOURCE_DIR}/RMHD/hlld.c
-            ${SOURCE_DIR}/RMHD/mappers.c
-            ${SOURCE_DIR}/RMHD/mod_defs.h
-            ${SOURCE_DIR}/RMHD/pressure_fix.c
-            ${SOURCE_DIR}/RMHD/prim_eqn.c
-            ${SOURCE_DIR}/RMHD/quartic.c
-            ${SOURCE_DIR}/RMHD/rhs.c
-            #${SOURCE_DIR}/RMHD/rusanov-dw.c           # Not used
-            ${SOURCE_DIR}/RMHD/set_solver.c
-            ${SOURCE_DIR}/RMHD/source.c
-            ${SOURCE_DIR}/RMHD/tvdlf.c
-            ${SOURCE_DIR}/RMHD/vel_limiter.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/RMHD)
+    set(SRC_FILES  ${SRC_FILES}
+            RMHD/eigenv.c
+            RMHD/energy_solve.c        # Modified: some bugs for TAUB
+            RMHD/entropy_solve.c
+            RMHD/fluxes.c
+            RMHD/gmusta1.c
+            RMHD/four_vel.c
+            RMHD/hll.c
+            RMHD/hll_speed.c
+            RMHD/hllc.c
+            RMHD/hlld.c
+            RMHD/mappers.c
+            RMHD/mod_defs.h
+            RMHD/pressure_fix.c         # Modified: some bugs for TAUB
+            RMHD/prim_eqn.c
+            RMHD/quartic.c
+            RMHD/rhs.c
+#            RMHD/rusanov-dw.c           # Not used
+            RMHD/set_solver.c
+            RMHD/source.c
+            RMHD/tvdlf.c
+            RMHD/vel_limiter.c
             )
 
 endif ()
 
 
 if (WITH_THERMAL_CONDUTION)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Thermal_Conduction)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/sts.c
-            ${SOURCE_DIR}/rkl.c
-            ${SOURCE_DIR}/Thermal_Conduction/tc.h
-            ${SOURCE_DIR}/Thermal_Conduction/tc_flux.c
-            ${SOURCE_DIR}/Thermal_Conduction/tc_functions.c
-            ${SOURCE_DIR}/Thermal_Conduction/tc_kappa.c
-            ${SOURCE_DIR}/Thermal_Conduction/tc_rhs.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/Thermal_Conduction)
+    set(SRC_FILES  ${SRC_FILES}
+            sts.c
+            rkl.c
+            Thermal_Conduction/tc.h
+            Thermal_Conduction/tc_flux.c
+            Thermal_Conduction/tc_functions.c
+            Thermal_Conduction/tc_kappa.c
+            Thermal_Conduction/tc_rhs.c
             )
 endif ()
 
 if (WITH_VISCOSITY)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Viscosity)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/sts.c
-            ${SOURCE_DIR}/rkl.c
-            ${SOURCE_DIR}/Viscosity/visc_nu.c
-            ${SOURCE_DIR}/Viscosity/viscosity.h
-            ${SOURCE_DIR}/Viscosity/viscous_flux.c
-            ${SOURCE_DIR}/Viscosity/viscous_rhs.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/Viscosity)
+    set(SRC_FILES  ${SRC_FILES}
+            sts.c
+            rkl.c
+            Viscosity/visc_nu.c
+            Viscosity/viscosity.h
+            Viscosity/viscous_flux.c
+            Viscosity/viscous_rhs.c
             )
 endif ()
 
 if (WITH_SHEARING_BOX)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/MHD/ShearingBox)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/MHD/ShearingBox/sb_boundary.c
-            ${SOURCE_DIR}/MHD/ShearingBox/sb_flux.c
-            ${SOURCE_DIR}/MHD/ShearingBox/sb_tools.c
-            ${SOURCE_DIR}/MHD/ShearingBox/shearingbox.h
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/MHD/ShearingBox)
+    set(SRC_FILES  ${SRC_FILES}
+            MHD/ShearingBox/sb_boundary.c
+            MHD/ShearingBox/sb_flux.c
+            MHD/ShearingBox/sb_tools.c
+            MHD/ShearingBox/shearingbox.h
             )
 endif ()
 
 if (WITH_RESISTIVITY)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/MHD/Resistive)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/sts.c
-            ${SOURCE_DIR}/rkl.c
-            ${SOURCE_DIR}/MHD/Resistive/res.h
-            ${SOURCE_DIR}/MHD/Resistive/res_eta.c
-            ${SOURCE_DIR}/MHD/Resistive/res_flux.c
-            ${SOURCE_DIR}/MHD/Resistive/res_functions.c
-            ${SOURCE_DIR}/MHD/Resistive/res_rhs.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/MHD/Resistive)
+    set(SRC_FILES  ${SRC_FILES}
+            sts.c
+            rkl.c
+            MHD/Resistive/res.h
+            MHD/Resistive/res_eta.c
+            MHD/Resistive/res_flux.c
+            MHD/Resistive/res_functions.c
+            MHD/Resistive/res_rhs.c
             )
 endif ()
 
 if (WITH_CT)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/MHD/CT)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/MHD/CT/ct.h
-            ${SOURCE_DIR}/MHD/CT/ct_emf.c
-            ${SOURCE_DIR}/MHD/CT/ct_emf_average.c
-            ${SOURCE_DIR}/MHD/CT/ct_field_average.c
-            ${SOURCE_DIR}/MHD/CT/ct_fill_mag_field.c
-            ${SOURCE_DIR}/MHD/CT/ct_stag_slopes.c
-            ${SOURCE_DIR}/MHD/CT/ct_update.c
-            ${SOURCE_DIR}/MHD/CT/emf_boundary.c
-            ${SOURCE_DIR}/MHD/CT/emf_userdef.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/MHD/CT)
+    set(SRC_FILES  ${SRC_FILES}
+            MHD/CT/ct.h
+            MHD/CT/ct_emf.c
+            MHD/CT/ct_emf_average.c
+            MHD/CT/ct_field_average.c
+            MHD/CT/ct_fill_mag_field.c
+            MHD/CT/ct_stag_slopes.c
+            MHD/CT/ct_update.c
+            MHD/CT/emf_boundary.c
+            MHD/CT/emf_userdef.c
             )
 endif ()
 
 if (WITH_GLM)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/MHD/GLM)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/MHD/GLM/analysis.c
-            ${SOURCE_DIR}/MHD/GLM/glm.c
-            ${SOURCE_DIR}/MHD/GLM/glm.h
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/MHD/GLM)
+    set(SRC_FILES  ${SRC_FILES}
+            MHD/GLM/analysis.c
+            MHD/GLM/glm.c
+            MHD/GLM/glm.h
             )
 endif ()
 
 if (WITH_HALL_MHD)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/MHD/Hall_MHD)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/MHD/Hall_MHD/hall_flux.c
-            ${SOURCE_DIR}/MHD/Hall_MHD/hall_mhd.h
-            ${SOURCE_DIR}/MHD/Hall_MHD/hall_ne.c
-            ${SOURCE_DIR}/MHD/Hall_MHD/hall_whistler_speed.c
-            ${SOURCE_DIR}/MHD/Hall_MHD/hall_whistler_speed.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/MHD/Hall_MHD)
+    set(SRC_FILES  ${SRC_FILES}
+            MHD/Hall_MHD/hall_flux.c
+            MHD/Hall_MHD/hall_mhd.h
+            MHD/Hall_MHD/hall_ne.c
+            MHD/Hall_MHD/hall_whistler_speed.c
+            MHD/Hall_MHD/hall_whistler_speed.c
             )
 endif ()
 
@@ -548,58 +538,57 @@ endif ()
 # Cooling options
 
 if (WITH_COOLING STREQUAL H2_COOL)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Cooling/H2_COOL)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Cooling/H2_COOL/comp_equil.c
-            ${SOURCE_DIR}/Cooling/H2_COOL/cooling.h
-            ${SOURCE_DIR}/Cooling/H2_COOL/jacobian.c
-            ${SOURCE_DIR}/Cooling/H2_COOL/maxrate.c
-            ${SOURCE_DIR}/Cooling/H2_COOL/radiat.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/Cooling/H2_COOL)
+    set(SRC_FILES  ${SRC_FILES}
+            Cooling/H2_COOL/comp_equil.c
+            Cooling/H2_COOL/cooling.h
+            Cooling/H2_COOL/jacobian.c
+            Cooling/H2_COOL/maxrate.c
+            Cooling/H2_COOL/radiat.c
             )
 
 elseif (WITH_COOLING STREQUAL TABULATED)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Cooling/TABULATED)
-    set(SOURCE_FILES ${SOURCE_FILES}
-            ${PROBLEM_DIR}/cooling_source.c
-            ${PROBLEM_DIR}/radiat.c
-            ${SOURCE_DIR}/cooling_ode_solver.c
-            ${SOURCE_DIR}/Cooling/TABULATED/cooling.h
-            #${SOURCE_DIR}/Cooling/TABULATED/extract.c
-            ${SOURCE_DIR}/Cooling/TABULATED/jacobian.c
-            ${SOURCE_DIR}/Cooling/TABULATED/maxrate.c
-            #${SOURCE_DIR}/Cooling/TABULATED/radiat.c           # Override
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/Cooling/TABULATED)
+    set(SRC_FILES ${SRC_FILES}
+            cooling_ode_solver.c
+            cooling_source.c
+            Cooling/TABULATED/cooling.h
+#            Cooling/TABULATED/extract.c ???
+            Cooling/TABULATED/jacobian.c
+            Cooling/TABULATED/maxrate.c
+            Cooling/TABULATED/radiat.c
             )
 
 elseif (WITH_COOLING STREQUAL MINEQ)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Cooling/MINEq)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Cooling/MINEq/comp_equil.c
-            ${SOURCE_DIR}/Cooling/MINEq/cooling.h
-            ${SOURCE_DIR}/Cooling/MINEq/cooling_defs.h
-            ${SOURCE_DIR}/Cooling/MINEq/ion_init.c
-            ${SOURCE_DIR}/Cooling/MINEq/jacobian.c
-            ${SOURCE_DIR}/Cooling/MINEq/make_tables.c
-            ${SOURCE_DIR}/Cooling/MINEq/maxrate.c
-            ${SOURCE_DIR}/Cooling/MINEq/radiat.c
-            ${SOURCE_DIR}/Cooling/MINEq/test.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/Cooling/MINEq)
+    set(SRC_FILES  ${SRC_FILES}
+            Cooling/MINEq/comp_equil.c
+            Cooling/MINEq/cooling.h
+            Cooling/MINEq/cooling_defs.h
+            Cooling/MINEq/ion_init.c
+            Cooling/MINEq/jacobian.c
+            Cooling/MINEq/make_tables.c
+            Cooling/MINEq/maxrate.c
+            Cooling/MINEq/radiat.c
+            Cooling/MINEq/test.c
             )
 
 
 elseif (WITH_COOLING STREQUAL POWERLAW)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Cooling/Power_Law)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Cooling/Power_Law/cooling.c
-            ${SOURCE_DIR}/Cooling/Power_Law/cooling.h
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/Cooling/Power_Law)
+    set(SRC_FILES  ${SRC_FILES}
+            Cooling/Power_Law/cooling.c
+            Cooling/Power_Law/cooling.h
             )
 
 elseif (WITH_COOLING STREQUAL SNEQ)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Cooling/SNEq)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Cooling/SNEq/cooling.h
-            ${SOURCE_DIR}/Cooling/SNEq/jacobian.c
-            ${SOURCE_DIR}/Cooling/SNEq/maxrate.c
-            ${SOURCE_DIR}/Cooling/SNEq/radiat.c
-            ${SOURCE_DIR}/Cooling/SNEq/radiat.modified_by_Bhargav.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/Cooling/SNEq)
+    set(SRC_FILES  ${SRC_FILES}
+            Cooling/SNEq/cooling.h
+            Cooling/SNEq/jacobian.c
+            Cooling/SNEq/maxrate.c
+            Cooling/SNEq/radiat.c
+            Cooling/SNEq/radiat.modified_by_Bhargav.c
             )
 
 endif ()
@@ -609,45 +598,45 @@ endif ()
 
 if (WITH_PARTICLES)
 
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Particles)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Particles/particles.h
-            ${SOURCE_DIR}/Particles/particles_boundary.c
-            ${SOURCE_DIR}/Particles/particles_deposit.c
-            ${SOURCE_DIR}/Particles/particles_distrib_regular.c
-            ${SOURCE_DIR}/Particles/particles_init.c
-            ${SOURCE_DIR}/Particles/particles_load.c
-            ${SOURCE_DIR}/Particles/particles_mpi_datatype.c
-            ${SOURCE_DIR}/Particles/particles_restart.c
-            ${SOURCE_DIR}/Particles/particles_set.c
-            ${SOURCE_DIR}/Particles/particles_set_output.c
-            ${SOURCE_DIR}/Particles/particles_tools.c
-            ${SOURCE_DIR}/Particles/particles_write_bin.c
-            ${SOURCE_DIR}/Particles/particles_write_data.c
-            ${SOURCE_DIR}/Particles/particles_write_trajectory.c
-            ${SOURCE_DIR}/Particles/particles_write_vtk.c
-            ${SOURCE_DIR}/Particles/plist_tools.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/Particles)
+    set(SRC_FILES  ${SRC_FILES}
+            Particles/particles.h
+            Particles/particles_boundary.c
+            Particles/particles_deposit.c
+            Particles/particles_distrib_regular.c
+            Particles/particles_init.c
+            Particles/particles_load.c
+            Particles/particles_mpi_datatype.c
+            Particles/particles_restart.c
+            Particles/particles_set.c
+            Particles/particles_set_output.c
+            Particles/particles_tools.c
+            Particles/particles_write_bin.c
+            Particles/particles_write_data.c
+            Particles/particles_write_trajectory.c
+            Particles/particles_write_vtk.c
+            Particles/plist_tools.c
             )
 
 if (WITH_PARTICLES STREQUAL LAGRANGIAN)
 
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Particles/particles_lp_tools.c
-            ${SOURCE_DIR}/Particles/particles_lp_update.c
+    set(SRC_FILES  ${SRC_FILES}
+            Particles/particles_lp_tools.c
+            Particles/particles_lp_update.c
             )
 
 elseif (WITH_PARTICLES STREQUAL COSMIC_RAYS)
 
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Particles/particles_cr_feedback.c
-            ${SOURCE_DIR}/Particles/particles_cr_force.c
-            ${SOURCE_DIR}/Particles/particles_cr_update.c
-            ${SOURCE_DIR}/Particles/particles_cr_update_test.c
+    set(SRC_FILES  ${SRC_FILES}
+            Particles/particles_cr_feedback.c
+            Particles/particles_cr_force.c
+            Particles/particles_cr_update.c
+            Particles/particles_cr_update_test.c
             )
 
 elseif (WITH_PARTICLES STREQUAL DUST)
 
-    set(SOURCE_FILES  ${SOURCE_FILES}
+    set(SRC_FILES  ${SRC_FILES}
             )
 
 endif ()
@@ -659,10 +648,10 @@ endif ()
 
 if (WITH_DUST_FLUID)
 
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Dust)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Dust/dust.h
-            ${SOURCE_DIR}/Dust/dust.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/Dust)
+    set(SRC_FILES  ${SRC_FILES}
+            Dust/dust.h
+            Dust/dust.c
             )
 endif ()
 
@@ -671,10 +660,10 @@ endif ()
 
 if (WITH_FORCED_TURB)
 
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Forced_Turb)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Forced_Turb/forced_turb.h
-            ${SOURCE_DIR}/Forced_Turb/forced_turb.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/Forced_Turb)
+    set(SRC_FILES  ${SRC_FILES}
+            Forced_Turb/forced_turb.h
+            Forced_Turb/forced_turb.c
             )
 
 endif ()
@@ -683,41 +672,41 @@ endif ()
 # EOS
 
 if (WITH_EOS STREQUAL IDEAL)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/EOS/Ideal)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/EOS/Ideal/eos.c
-            ${SOURCE_DIR}/EOS/Ideal/eos.h
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/EOS/Ideal)
+    set(SRC_FILES  ${SRC_FILES}
+            EOS/Ideal/eos.c
+            EOS/Ideal/eos.h
             )
 
 
 elseif (WITH_EOS STREQUAL ISOTHERMAL)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/EOS/Isothermal)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/EOS/Isothermal/eos.c
-            ${SOURCE_DIR}/EOS/Isothermal/eos.h
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/EOS/Isothermal)
+    set(SRC_FILES  ${SRC_FILES}
+            EOS/Isothermal/eos.c
+            EOS/Isothermal/eos.h
             )
 
 
 elseif (WITH_EOS STREQUAL PVTE)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/EOS/PVTE)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/EOS/PVTE/eos.h
-            ${SOURCE_DIR}/EOS/PVTE/fundamental_derivative.c
-            ${SOURCE_DIR}/EOS/PVTE/internal_energy.c
-            ${SOURCE_DIR}/EOS/PVTE/pvte_law.c
-            ${SOURCE_DIR}/EOS/PVTE/pvte_law_dAngelo.c
-            ${SOURCE_DIR}/EOS/PVTE/pvte_law_H+.c
-            ${SOURCE_DIR}/EOS/PVTE/pvte_law_template.c
-            ${SOURCE_DIR}/EOS/PVTE/scvh.c
-            ${SOURCE_DIR}/EOS/PVTE/thermal_eos.c
-            ${SOURCE_DIR}/EOS/PVTE/zeta_tables.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/EOS/PVTE)
+    set(SRC_FILES  ${SRC_FILES}
+            EOS/PVTE/eos.h
+            EOS/PVTE/fundamental_derivative.c
+            EOS/PVTE/internal_energy.c
+            EOS/PVTE/pvte_law.c
+            EOS/PVTE/pvte_law_dAngelo.c
+            EOS/PVTE/pvte_law_H+.c
+            EOS/PVTE/pvte_law_template.c
+            EOS/PVTE/scvh.c
+            EOS/PVTE/thermal_eos.c
+            EOS/PVTE/zeta_tables.c
             )
 
 elseif (WITH_EOS STREQUAL TAUB)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/EOS/Taub)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/EOS/Taub/eos.c
-            ${SOURCE_DIR}/EOS/Taub/eos.h
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/EOS/Taub)
+    set(SRC_FILES  ${SRC_FILES}
+            EOS/Taub/eos.c
+            EOS/Taub/eos.h
             )
 
 endif ()
@@ -725,64 +714,64 @@ endif ()
 
 # Time stepping
 
-set(SOURCE_FILES  ${SOURCE_FILES}
-        ${SOURCE_DIR}/Time_Stepping/update_stage.c
+set(SRC_FILES  ${SRC_FILES}
+        Time_Stepping/update_stage.c
         )
 
 if ((WITH_TIME_STEPPING STREQUAL RK2) OR (WITH_TIME_STEPPING STREQUAL RK3))
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Time_Stepping/rk_step.c
+    set(SRC_FILES  ${SRC_FILES}
+            Time_Stepping/rk_step.c
             )
 
 elseif (WITH_TIME_STEPPING STREQUAL CHARACTERISTIC_TRACING)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/States/char_tracing.c
-            ${SOURCE_DIR}/Time_Stepping/ctu_step.c
+    set(SRC_FILES  ${SRC_FILES}
+            States/char_tracing.c
+            Time_Stepping/ctu_step.c
             )
 
 elseif (WITH_TIME_STEPPING STREQUAL HANCOCK)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/States/hancock.c
-            ${SOURCE_DIR}/Time_Stepping/ctu_step.c
+    set(SRC_FILES  ${SRC_FILES}
+            States/hancock.c
+            Time_Stepping/ctu_step.c
             )
 endif()
 
 
 # Interpolation
 
-set(SOURCE_FILES  ${SOURCE_FILES}
-        ${SOURCE_DIR}/States/flatten.c
+set(SRC_FILES  ${SRC_FILES}
+        States/flatten.c
         )
 
 if (WITH_INTERPOLATION STREQUAL FLAT)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/States/flat_states.c
+    set(SRC_FILES  ${SRC_FILES}
+            States/flat_states.c
             )
 
 elseif (WITH_INTERPOLATION STREQUAL LINEAR)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/States/plm_coeffs.c
-            ${SOURCE_DIR}/States/plm_coeffs.h
-            ${SOURCE_DIR}/States/plm_states.c
+    set(SRC_FILES  ${SRC_FILES}
+            States/plm_coeffs.c
+            States/plm_coeffs.h
+            States/plm_states.c
             )
 
 elseif (WITH_INTERPOLATION STREQUAL PARABOLIC)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/States/plm_coeffs.c
-            ${SOURCE_DIR}/States/plm_coeffs.h
-            ${SOURCE_DIR}/States/ppm_coeffs.c
-            ${SOURCE_DIR}/States/ppm_coeffs.h
-            ${SOURCE_DIR}/States/ppm_states.c
+    set(SRC_FILES  ${SRC_FILES}
+            States/plm_coeffs.c
+            States/plm_coeffs.h
+            States/ppm_coeffs.c
+            States/ppm_coeffs.h
+            States/ppm_states.c
             )
 
 elseif (WITH_INTERPOLATION STREQUAL WENO3)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/States/weno3_states.c
+    set(SRC_FILES  ${SRC_FILES}
+            States/weno3_states.c
             )
 
 elseif (WITH_INTERPOLATION STREQUAL LIMO3)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/States/limo3_states.c
+    set(SRC_FILES  ${SRC_FILES}
+            States/limo3_states.c
             )
 
 endif ()
@@ -791,45 +780,63 @@ endif ()
 # Other modules
 
 if (WITH_FARGO)
-    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SOURCE_DIR}/Fargo)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/Fargo/fargo.c
-            ${SOURCE_DIR}/Fargo/fargo.h
-            ${SOURCE_DIR}/Fargo/fargo_source.c
-            ${SOURCE_DIR}/Fargo/fargo_velocity.c
+    set(INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES} ${SRC_DIR}/Fargo)
+    set(SRC_FILES  ${SRC_FILES}
+            Fargo/fargo.c
+            Fargo/fargo.h
+            Fargo/fargo_source.c
+            Fargo/fargo_velocity.c
             )
 endif ()
 
 if (WITH_FD)
-    set(SOURCE_FILES  ${SOURCE_FILES}
-            ${SOURCE_DIR}/fd_flux.c
-            ${SOURCE_DIR}/fd_reconstruct.c
-            ${SOURCE_DIR}/States/fd_states.c
+    set(SRC_FILES  ${SRC_FILES}
+            fd_flux.c
+            fd_reconstruct.c
+            States/fd_states.c
             )
 endif ()
 
 
 # Math tools
 
-set(SOURCE_FILES  ${SOURCE_FILES}
-        ${SOURCE_DIR}/Math_Tools/math_interp.c
-        ${SOURCE_DIR}/Math_Tools/math_lu_decomp.c
-        ${SOURCE_DIR}/Math_Tools/math_misc.c
-        ${SOURCE_DIR}/Math_Tools/math_ode.c
-        ${SOURCE_DIR}/Math_Tools/math_qr_decomp.c
-        ${SOURCE_DIR}/Math_Tools/math_quadrature.c
-        ${SOURCE_DIR}/Math_Tools/math_rand_mt19937-64.c
-        ${SOURCE_DIR}/Math_Tools/math_random.c
-        ${SOURCE_DIR}/Math_Tools/math_root_finders.c
-        ${SOURCE_DIR}/Math_Tools/math_table2D.c
-        ${SOURCE_DIR}/Math_Tools/math_tools.h
+set(SRC_FILES  ${SRC_FILES}
+        Math_Tools/math_interp.c
+        Math_Tools/math_lu_decomp.c
+        Math_Tools/math_misc.c
+        Math_Tools/math_ode.c
+        Math_Tools/math_qr_decomp.c
+        Math_Tools/math_quadrature.c
+        Math_Tools/math_rand_mt19937-64.c
+        Math_Tools/math_random.c
+        Math_Tools/math_root_finders.c
+        Math_Tools/math_table2D.c
+        Math_Tools/math_tools.h
         )
 
 
+# Override SRC files with files in problem directory
+
+foreach (FILE ${SRC_FILES})
+
+    if (${FILE} IN_LIST OVERRIDE_FILES)
+
+        set(SOURCE_FILES  ${SOURCE_FILES}  ${PROBLEM_DIR}/${FILE})
+
+    elseif (setup/${SETUP}/${FILE} IN_LIST OVERRIDE_FILES)
+
+        set(SOURCE_FILES  ${SOURCE_FILES}  ${PROBLEM_DIR}/setup/${SETUP}/${FILE})
+
+    else()
+
+        set(SOURCE_FILES  ${SOURCE_FILES}  ${SRC_DIR}/${FILE})
+
+    endif()
+
+endforeach()
+
 
 # Other flags
-
-
 
 
 # Include, link, and executable

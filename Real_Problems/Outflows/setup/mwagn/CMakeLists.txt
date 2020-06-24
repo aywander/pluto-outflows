@@ -6,7 +6,7 @@ set(WITH_PARALLEL               ON)
 set(WITH_ASYNC_IO               OFF)
 set(WITH_CHOMBO                 OFF)
 
-set(WITH_PHYSICS                HD)
+set(WITH_PHYSICS                RHD)
 set(WITH_COOLING                TABULATED)
 set(WITH_INTERPOLATION          PARABOLIC)
 set(WITH_TIME_STEPPING          RK3)
@@ -77,12 +77,15 @@ set(NEW_FILES
 
 # Overridden files
 set(OVERRIDE_FILES
+        Cooling/TABULATED/radiat.c
         cmd_line_opt.c
+        colortable.c
+        cooling_source.c
         input_data.c
         main.c
         mappers3D.c       # Not confident about the modifications inside
         mean_mol_weight.c
         runtime_setup.c
-        userdef_output.c
+        setup/${SETUP}/userdef_output.c
         )
 

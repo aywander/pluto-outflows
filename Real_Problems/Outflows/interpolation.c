@@ -221,7 +221,7 @@ double InterpolationWrapper(const double arg_arr[], const double val_arr[], cons
 }
 
 
-double InterpolationWrapper2D(const double arg_i_arr[], const double arg_j_arr[], const double **val_arr,
+double InterpolationWrapper2D(const double *arg_i_arr, const double *arg_j_arr, double **val_arr,
                               const int ni, const int nj, const double arg_i, const double arg_j) {
 
 /* Wrapper around hunter and a 2D Interpolator */
@@ -239,10 +239,10 @@ double InterpolationWrapper2D(const double arg_i_arr[], const double arg_j_arr[]
     frac_j = (arg_j - arg_j_arr[jl]) / (arg_j_arr[jl + 1] - arg_j_arr[jl]);
 
     /* Interpolation */
-    val1 = val_arr[il][jl];
-    val2_i = val_arr[il + 1][jl];
-    val2_j = val_arr[il][jl + 1];
-    val2_ij = val_arr[il + 1][jl + 1];
+    val1 = val_arr[jl][il];
+    val2_i = val_arr[jl][il + 1];
+    val2_j = val_arr[jl + 1][il];
+    val2_ij = val_arr[jl + 1][il + 1];
 
     // TODO: (Possibly) add choice of interpolator in argument of function
     return BilinearInterpolate(val1, val2_i, val2_j, val2_ij, frac_i, frac_j);

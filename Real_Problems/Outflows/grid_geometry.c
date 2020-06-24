@@ -657,7 +657,7 @@ double ElevateCellVolume(Grid *grid, int i, int j, int k){
 /* ****************************************************** */
 double ElevateVolume(double vol){
 /*!
- *   Elevate volume to 3D. For sherical coordinates, e.g.,
+ *   Elevate volume to 3D. For spherical coordinates, e.g.,
  *   calculate revolved cell volume. Mostly used for
  *   axis-symmetric situations in spherical coordinates.
  *   For spherical geometry, perform...

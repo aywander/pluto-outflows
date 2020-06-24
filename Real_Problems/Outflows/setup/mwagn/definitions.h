@@ -1,4 +1,4 @@
-#define  PHYSICS                 HD
+#define  PHYSICS                 RHD
 #define  DIMENSIONS              3
 #define  COMPONENTS              3
 #define  GEOMETRY                CARTESIAN
@@ -75,7 +75,7 @@
 #define  INITIAL_SMOOTHING       NO
 #define  INTERNAL_BOUNDARY       YES
 #define  LIMITER                 MC_LIM
-#define  RECONSTRUCT_4VEL        NO
+#define  RECONSTRUCT_4VEL        YES
 #define  SHOCK_FLATTENING        MULTID
 #define  PPM_ORDER               4
 //#define  UPDATE_VECTOR_POTENTIAL YES
