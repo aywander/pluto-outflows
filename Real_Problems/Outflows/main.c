@@ -145,14 +145,21 @@ int main (int argc, char *argv[])
     if ((g_time + g_dt) >= ini.tstop*(1.0 - 1.e-8)) {
       g_dt      = (ini.tstop - g_time);
       last_step = 1;
+      /* AYW (2020/07/12) -- Output useful for parsing by e.g. PBS scripts */
+      print ("> Last time step - tstop reached\n\n");
+      /* -- AYW */
     }
     if (g_stepNumber == cmd_line.maxsteps && cmd_line.maxsteps >= 0) {
       last_step = 1;
+      /* AYW (2020/07/12) -- Output useful for parsing by e.g. PBS scripts */
+      print ("> Last time step - maxsteps reached\n\n");
+      /* -- AYW */
     }
     /* AYW (2020/03/21) - Add condition for maxtime */
     time(&tend);
     if (difftime(tend, tbeg) >= cmd_line.maxtime && cmd_line.maxtime >= 0) {
       last_step = 1;
+      print ("> Last time step - maxtime reached\n\n");
     }
     /* -- AYW */
 
@@ -590,6 +597,9 @@ void CheckForOutput (Data *d, Runtime *ini, time_t t0, Grid *grid)
   static int first_call = 1;
   int    n, check_dt, check_dn, check_dclock;
   int    first_step     = (g_stepNumber == 0 ? 1:0);
+    /* AYW --
+     * TODO: Modify the below to always dump restart file at last iteration
+     * -- AYW */
   int    last_step      = (fabs(g_time-ini->tstop) < 1.e-12 ? 1:0);
   int    restart_update = 0;
   double dtime[MAX_OUTPUT_TYPES];
@@ -649,6 +659,7 @@ void CheckForOutput (Data *d, Runtime *ini, time_t t0, Grid *grid)
       }
       check_dclock = check_dclock || first_step || last_step;
     }
+
 
   /* -- if any of the previous is true dump data to disk -- */
 
