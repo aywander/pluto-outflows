@@ -167,12 +167,22 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
         once01 = 1;
     }
 
-#endif
+#endif /* Scale height method */
+
+    /* TODO: Currently rotation only here - consider whether we include it elsewhere as well */
+    /* Grid point in cartesian coordinates */
+    double cx1, cx2, cx3;
+    cx1 = CART1(x1, x2, x3);
+    cx2 = CART2(x1, x2, x3);
+    cx3 = CART3(x1, x2, x3);
+
+    double cx1p, cx2p, cx3p;
+    RotateGrid2Disc(cx1, cx2, cx3, &cx1p, &cx2p, &cx3p);
+
 
     /* Gravitational potential */
-    phi_rz = BodyForcePotential(x1, x2, x3);
-//    phi_00 = BodyForcePotential(0, 0, 0); // Cannot interpolate this point, if central BH is present.
-    phi_00 = 0.;
+    phi_rz = BodyForcePotential(cx1p, cx2p, cx3p);
+    phi_00 = BodyForcePotential(0, 0, 0);
 
     /* Is the potential non-spherical? */
     ek2 = g_inputParam[PAR_WROT] * g_inputParam[PAR_WROT];
@@ -180,7 +190,7 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
     if (ek2 > 0) {
 
         /* Now, the same for the cylindrical radius (in cgs) */
-        r_cyl = fabs(CYL1(x1, x2, x3));
+        r_cyl = fabs(CYL1(cx1p, cx2p, cx3p));
         phi_r0 = BodyForcePotential(r_cyl, 0, 0);
     }
     else {
@@ -189,7 +199,6 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
     }
 
     /* The profile */
-    // TODO: Check if this still works if a BH potential is included.
     dens = wrho * exp((-phi_rz + phi_r0 * ek2 + phi_00 * (1. - ek2)) / sigma_g2);
 
 #elif CLOUD_DENSITY == CD_MILKY_WAY_PJM
@@ -207,7 +216,7 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
     dens = Sigma0 / (4. * zd) * exp(-r_cyl / Rd) * sech * sech;
 
 #elif CLOUD_DENSITY == CD_HOMOGENEOUS
-    /* Homogeneous halo density, but with gravity */
+    /* Homogeneous halo density */
     dens = g_inputParam[PAR_WRHO] * ini_code[PAR_WRHO];
 
 #else

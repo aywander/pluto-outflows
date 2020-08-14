@@ -664,13 +664,18 @@ void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
     mbh = g_inputParam[PAR_AMBH] * ini_code[PAR_AMBH];
 #endif
 
+    /* Softening length */
+    double soft;
+    soft = MAX(g_inputParam[PAR_ASNK] * ini_code[PAR_ASNK], g_inputParam[PAR_OSPH] * ini_code[PAR_OSPH]);
+
     r = SPH1(x1, x2, x3);
-    gr += CONST_G * mbh / (vn.newton_norm * r * r);
+    gr -= CONST_G * mbh * r / (vn.newton_norm * pow(r * r + soft * soft, 1.5));
 
 #endif
 
 
 /* Cylindrical potential, if 2D */
+/* TODO: Change to #if GRAV_2D_POTENTIAL == TRUE to accommodate 2D analytic potentials */
 #if GRAV_POTENTIAL == GRAV_2D_TABLE
 
     double px1, px2, px3;
@@ -760,8 +765,12 @@ double BodyForcePotential(double x1, double x2, double x3)
     mbh = g_inputParam[PAR_AMBH] * ini_code[PAR_AMBH];
 #endif
 
+    /* Softening length */
+    double soft;
+    soft = MAX(g_inputParam[PAR_ASNK] * ini_code[PAR_ASNK], g_inputParam[PAR_OSPH] * ini_code[PAR_OSPH]);
+
     r = SPH1(x1, x2, x3);
-    pot -= CONST_G * mbh / (vn.newton_norm * r);
+    pot -= CONST_G * mbh / (vn.newton_norm * sqrt(r * r + soft * soft));
 
 #endif
 

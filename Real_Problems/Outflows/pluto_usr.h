@@ -200,11 +200,6 @@
 #define SID_METHOD SID_REGIONS
 #endif
 
-/* Smoothing parameter of BH potential
- * Eqn (18), Ruffert (1994) */
-#ifndef BH_POT_SMOOTH
-#define BH_POT_SMOOTH 4.0
-#endif
 
 /* Sink */
 #ifndef SINK_METHOD

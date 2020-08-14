@@ -21,7 +21,7 @@
 #define CLOUD_REPEAT	                  NO
 #define CLOUDS_MULTI   	                  NO
 
-#define CLOUD_DENSITY                     CD_HOMOGENEOUS
+#define CLOUD_DENSITY                     CD_KEPLERIAN
 #define CLOUD_VELOCITY                    CV_KEPLERIAN
 #define CLOUD_SCALE                       CS_VELOCITY_DISPERSION
 #define CLOUD_EXTRACT_ELLIPSOID           YES
@@ -42,5 +42,4 @@
 #define CLOUD_TCRIT                       3.0e4
 #define CLOUD_MUCRIT                      0.6212407755077543
 #define JD_MODE                           JD_GRAD
-#define BH_POT_SMOOTH                     4.0    // Not used yet
 
