@@ -89,6 +89,11 @@ void InitDomain(Data *d, Grid *grid)
     /* Set normalization factors for input parameters */
     SetIniNormalization();
 
+    /* Get static gravity table if necessary */
+#if GRAV_POTENTIAL == GRAV_TABLE || GRAV_POTENTIAL == GRAV_2D_TABLE
+    ReadGravTable();
+#endif
+
     /* All about the accretion - this, i think, must be done first.
      * Set outflow geometry struct with parameters of cone */
 #if ACCRETION == YES
@@ -613,13 +618,15 @@ void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
 {
 
     /* Common variables */
-    double r, fr, gr;
-#ifdef GRAV_2D_POTENTIAL
+    double r, gr;
+    gr = 0;
+#if GRAV_POTENTIAL == GRAV_2D_TABLE
     double fz, sz, gz;
 #endif
 
-    /* Hernquist potential */
+    /* Types of galactic gravitational potential */
 #if GRAV_POTENTIAL == GRAV_HERNQUIST
+    /* Hernquist potential */
 
     double a, rho0;
     r = SPH1(x1, x2, x3);
@@ -630,45 +637,41 @@ void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
 
 
     /* Gravity Table */
-#elif defined(GRAV_TABLE)
+#elif GRAV_POTENTIAL == GRAV_TABLE || GRAV_POTENTIAL == GRAV_2D_TABLE
 
-
-#ifdef GRAV_2D_POTENTIAL
+#if GRAV_POTENTIAL == GRAV_2D_TABLE
+    double fr;
     fr = MIN(MAX(gr_r[0], fabs(POL1(x1, x2, x3))), gr_r[gr_nr-1]);
     fz = MIN(MAX(gr_z[0], fabs(POL3(x1, x2, x3))), gr_z[gr_nz-1]);
-    sz = SGN(MIN(MAX(gr_z[0], POL3(x1, x2, x3)), gr_z[gr_nz-1]));
+    sz = SGN(POL3(x1, x2, x3))
 
     gr = InterpolationWrapper2D(gr_r, gr_z, gr_acc_r, gr_nr, gr_nz, fr, fz);
     gz = sz * InterpolationWrapper2D(gr_r, gr_z, gr_acc_z, gr_nr, gr_nz, fr, fz);
 #else
     r = MIN(MAX(gr_r[0], SPH1(x1, x2, x3)), gr_r[gr_nr-1]);
-    gr = -InterpolationWrapper(gr_r, gr_acc_r, gr_nr, r);
+    gr = InterpolationWrapper(gr_r, gr_acc_r, gr_nr, r);
 #endif
 
-    /* Flat thermodynamic profile but gravity is on.
-     * The potential, thus, is a parabola */
-#elif GRAV_POTENTIAL == GRAV_HOMOGENEOUS
-
-    r = SPH1(x1, x2, x3);
-
-    gr = -4 * CONST_PI * CONST_G / vn.newton_norm * g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO] * r;
-
-    /* No gravity */
-
-#endif
+#endif /* Types of galactic gravitational potential */
 
     /* Add potential of point mass at center */
+#if CENTRAL_BH == YES
+
+    double mbh;
 #if ACCRETION == YES
+    mbh = ac.mbh;
+#else
+    mbh = g_inputParam[PAR_AMBH] * ini_code[PAR_AMBH];
+#endif
 
     r = SPH1(x1, x2, x3);
-    double mbh_ini = g_inputParam[PAR_AMBH] * ini_code[PAR_AMBH];
-    gr += CONST_G * (ac.mbh - mbh_ini) / (vn.newton_norm * r * r);
+    gr += CONST_G * mbh / (vn.newton_norm * r * r);
 
 #endif
 
 
 /* Cylindrical potential, if 2D */
-#ifdef GRAV_2D_POTENTIAL
+#if GRAV_POTENTIAL == GRAV_2D_TABLE
 
     double px1, px2, px3;
     px1 = POL1(x1, x2, x3);
@@ -711,14 +714,19 @@ double BodyForcePotential(double x1, double x2, double x3)
 
     /* Common variables */
     double r, pot;
-#ifdef GRAV_2D_POTENTIAL
+
+    /* Initialize */
+    pot = 0;
+
+#if GRAV_POTENTIAL == GRAV_2D_TABLE
     double z;
 #endif
 
 
-    /* Hernquist potential, given a "galaxy" mass. */
+    /* Types of galactic gravitational potentials */
 #if GRAV_POTENTIAL == GRAV_HERNQUIST
 
+    /* Hernquist potential, given a "galaxy" mass. */
     double a, mg;
 
     r = SPH1(x1, x2, x3);
@@ -727,12 +735,11 @@ double BodyForcePotential(double x1, double x2, double x3)
 
     pot = - mg * CONST_G / vn.newton_norm / (r + a);
 
-
     /* Gravity table */
-#elif defined(GRAV_TABLE)
+#elif GRAV_POTENTIAL == GRAV_TABLE || GRAV_POTENTIAL == GRAV_2D_TABLE
 
     r = MIN(MAX(gr_r[0], SPH1(x1, x2, x3)), gr_r[gr_nr-1]);
-#ifdef GRAV_2D_POTENTIAL
+#if GRAV_POTENTIAL == GRAV_2D_TABLE
     r = MIN(MAX(gr_r[0], fabs(POL1(x1, x2, x3))), gr_r[gr_nr-1]);
     z = MIN(MAX(gr_z[0], fabs(POL3(x1, x2, x3))), gr_z[gr_nz-1]);
     pot = InterpolationWrapper2D(gr_r, gr_z, gr_phi, gr_nr, gr_nz, r, z);
@@ -740,23 +747,21 @@ double BodyForcePotential(double x1, double x2, double x3)
     pot = InterpolationWrapper(gr_r, gr_phi, gr_nr, r);
 #endif
 
-
-    /* Flat thermodynamic profile but gravity is on.
-     * The potential, thus, is a parabola */
-#elif GRAV_POTENTIAL == GRAV_HOMOGENEOUS
-
-    r = SPH1(x1, x2, x3);
-    pot = 2 * CONST_PI * CONST_G / vn.newton_norm * g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO] * r * r;
-
-#endif
+#endif /* Types of galactic gravitational potentials */
 
 
     /* Add potential of point mass at center */
+#if CENTRAL_BH == YES
+
+    double mbh;
 #if ACCRETION == YES
+    mbh = ac.mbh;
+#else
+    mbh = g_inputParam[PAR_AMBH] * ini_code[PAR_AMBH];
+#endif
 
     r = SPH1(x1, x2, x3);
-    double mbh_ini = g_inputParam[PAR_AMBH] * ini_code[PAR_AMBH];
-    pot -= CONST_G * (ac.mbh - mbh_ini) / (vn.newton_norm * r);
+    pot -= CONST_G * mbh / (vn.newton_norm * r);
 
 #endif
 

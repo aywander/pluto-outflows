@@ -148,6 +148,8 @@ void SetIniNormalization() {
     ini_cgs[PAR_WTRB] = 1.e5;
     ini_cgs[PAR_WRAD] = vn.l_norm;
     ini_cgs[PAR_WROT] = 1.;
+    ini_cgs[PAR_WDIR] = degrad;
+    ini_cgs[PAR_WPHI] = degrad;
     ini_cgs[PAR_WX1L] = vn.l_norm;
     ini_cgs[PAR_WX1H] = vn.l_norm;
     ini_cgs[PAR_WX2L] = vn.l_norm;
@@ -195,6 +197,8 @@ void SetIniNormalization() {
     ini_code[PAR_WTRB] = ini_cgs[PAR_WTRB] / vn.v_norm;
     ini_code[PAR_WRAD] = ini_cgs[PAR_WRAD] / vn.l_norm;
     ini_code[PAR_WROT] = ini_cgs[PAR_WROT];
+    ini_code[PAR_WDIR] = ini_cgs[PAR_WDIR];
+    ini_code[PAR_WPHI] = ini_cgs[PAR_WPHI];
     ini_code[PAR_WX1L] = ini_cgs[PAR_WX1L] / vn.l_norm;
     ini_code[PAR_WX1H] = ini_cgs[PAR_WX1H] / vn.l_norm;
     ini_code[PAR_WX2L] = ini_cgs[PAR_WX2L] / vn.l_norm;

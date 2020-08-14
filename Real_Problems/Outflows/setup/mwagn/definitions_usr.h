@@ -7,19 +7,21 @@
 
 #define ACCRETION                         NO
 #define SINK_METHOD                       SINK_FREEFLOW
+#define CENTRAL_BH                        YES
 
 #define FEEDBACK_CYCLE                    NO
 #define FBC_DEBOOST                       NO
 #define FBC_DEBOOST_MODE                  FBC_DEBOOST_MODE_3
 #define FBC_NOZZLE_DT                     1.e-5
 
-#define GRAV_POTENTIAL                    GRAV_MILKY_WAY_PJM
+#define GRAV_POTENTIAL                    GRAV_NONE
+#define HOT_HALO_PROFILE                  HH_HYDROSTATIC
 
 #define CLOUDS                            YES
 #define CLOUD_REPEAT	                  NO
 #define CLOUDS_MULTI   	                  NO
 
-#define CLOUD_DENSITY                     CD_MILKY_WAY_PJM
+#define CLOUD_DENSITY                     CD_HOMOGENEOUS
 #define CLOUD_VELOCITY                    CV_KEPLERIAN
 #define CLOUD_SCALE                       CS_VELOCITY_DISPERSION
 #define CLOUD_EXTRACT_ELLIPSOID           YES
@@ -40,5 +42,5 @@
 #define CLOUD_TCRIT                       3.0e4
 #define CLOUD_MUCRIT                      0.6212407755077543
 #define JD_MODE                           JD_GRAD
-#define BH_POT_SMOOTH                     4.0
+#define BH_POT_SMOOTH                     4.0    // Not used yet
 

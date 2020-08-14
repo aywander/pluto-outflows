@@ -9,7 +9,7 @@
 #define  TIME_STEPPING           RK3
 #define  DIMENSIONAL_SPLITTING   NO
 #define  NTRACER                 2
-#define  USER_DEF_PARAMETERS     41
+#define  USER_DEF_PARAMETERS     43
 
 /* -- physics dependent declarations -- */
 
@@ -45,26 +45,28 @@
 #define  PAR_WTRB                24
 #define  PAR_WRAD                25
 #define  PAR_WROT                26
-#define  PAR_WX1L                27
-#define  PAR_WX1H                28
-#define  PAR_WX2L                29
-#define  PAR_WX2H                30
-#define  PAR_WX3L                31
-#define  PAR_WX3H                32
-#define  PAR_WVRD                33
-#define  PAR_WVPL                34
-#define  PAR_WVPP                35
-#define  PAR_WVAN                36
-#define  PAR_SGAV                37
-#define  PAR_NCLD                38
-#define  PAR_LOMX                39
-#define  PAR_LCMX                40
+#define  PAR_WDIR                27
+#define  PAR_WPHI                28
+#define  PAR_WX1L                29
+#define  PAR_WX1H                30
+#define  PAR_WX2L                31
+#define  PAR_WX2H                32
+#define  PAR_WX3L                33
+#define  PAR_WX3H                34
+#define  PAR_WVRD                35
+#define  PAR_WVPL                36
+#define  PAR_WVPP                37
+#define  PAR_WVAN                38
+#define  PAR_SGAV                39
+#define  PAR_NCLD                40
+#define  PAR_LOMX                41
+#define  PAR_LCMX                42
 
 /* [Beg] user-defined constants (do not change this line) */
 
 #define  MU_NORM                 0.60364
-#define  UNIT_DENSITY            ((CONST_amu) * (MU_NORM))
-#define  UNIT_LENGTH             ((CONST_pc) * 1.e3)
+#define  UNIT_DENSITY            (CONST_amu * MU_NORM)
+#define  UNIT_LENGTH             CONST_pc
 #define  UNIT_VELOCITY           CONST_c
 
 #define  ARTIFICIAL_VISC         NO

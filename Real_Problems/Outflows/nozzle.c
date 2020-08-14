@@ -357,7 +357,7 @@ void SetNozzleGeometry(Nozzle * noz) {
     noz->cbh = cbh;
     noz->orig = orig;
     noz->area = area;
-    // TODO: Do we even need vol? If not, we don't need to calculat ite
+    // TODO: Do we even need vol? If not, we don't need to calculate it
     noz->vol = vol;
     noz->cone_height = cone_height;
     noz->cone_apex = cone_apex;

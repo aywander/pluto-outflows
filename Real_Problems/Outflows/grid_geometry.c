@@ -6,8 +6,99 @@
 #include "pluto.h"
 #include "pluto_usr.h"
 #include "grid_geometry.h"
+#include "init_tools.h"
 #include "outflow.h"
 #include "nozzle.h"
+
+
+/* ************************************************ */
+int RotateGrid2Disc(
+        const double cx1, const double cx2, const double cx3,
+        double *cx1p, double *cx2p, double *cx3p) {
+/*
+ * This is for creating inclined discs.
+ *
+ * This function assumes 3D (cartesian) coor-dinates.
+ * First rotates by phi around z-axis.
+ * Then rotates grid around y-axis by angle dir so that
+ * it is parallel to cylindrical symmetry axis
+ *
+ * Thus, the transformation matrix is defined as
+ *
+ *  / cx1p  \        / cx1  \
+ * |  cx2p  | = R P |  cx2  |
+ * \  cx3p /        \  cx3 /
+ *
+ *  where
+ *
+ *  Inverse rotation about Z axis
+ *
+ *       / cos(phi)   sin(phi)  0  \
+ *  P = |  -sin(phi)  cos(phi)  0  |
+ *      \   0            0      1 /
+ *
+ *
+ *  Inverse rotation about Y axis
+ *
+ *       /  cos(dir)   0  -sin(dir)  \
+ *  R = |      0       1      0      |
+ *      \   sin(dir)   0   cos(dir) /
+ *
+ ************************************************** */
+
+    /* Precession angle */
+    double phi, dir;
+    phi = g_inputParam[PAR_WPHI] * ini_code[PAR_WPHI];
+    dir = g_inputParam[PAR_WDIR] * ini_code[PAR_WDIR];
+
+    /* The transformations */
+
+    SELECT(*cx1p = cx1;,
+           *cx1p = cx1 * cos(dir) - sin(dir) * cx2;,
+           *cx1p = (cx1 * cos(phi) - cx2 * sin(phi)) * cos(dir) - sin(dir) * cx3;);
+
+    SELECT(*cx2p = cx2;,
+           *cx2p = cx1 * sin(dir) + cos(dir) * cx2;,
+           *cx2p = cx2 * cos(phi) + cx1 * sin(phi););
+
+    SELECT(*cx3p = cx3;,
+           *cx3p = cx3;,
+           *cx3p = (cx1 * cos(phi) - cx2 * sin(phi)) * sin(dir) + cos(dir) * cx3;);
+
+    return 0;
+}
+
+/* ************************************************ */
+int RotateDisc2Grid(
+        const double cx1, const double cx2, const double cx3,
+        double *cx1p, double *cx2p, double *cx3p) {
+/*
+ * This Function does the inverse transformation of
+ * RotateGrid2Disc
+ *
+ ************************************************** */
+
+    /* Precession angle */
+    double phi, dir;
+
+    phi = g_inputParam[PAR_WPHI] * ini_code[PAR_WPHI];
+    dir = g_inputParam[PAR_WDIR] * ini_code[PAR_WDIR];
+
+    SELECT(*cx1p = cx1;,
+           *cx1p = cx1 * cos(dir) + sin(dir) * cx2;,
+           *cx1p = cx2 * sin(phi) + cos(phi) * (cx1 * cos(dir) + sin(dir) * cx3););
+
+    SELECT(*cx2p = cx2;,
+           *cx2p = -(cx1 * sin(dir)) + cos(dir) * cx2;,
+           *cx2p = cx2 * cos(phi) - sin(phi) * (cx1 * cos(dir) + sin(dir) * cx3););
+
+    SELECT(*cx3p = cx3;,
+           *cx3p = cx3;,
+           *cx3p = -(cx1 * sin(dir)) + cos(dir) * cx3;);
+
+    return 0;
+}
+
 
 
 /* ************************************************ */
@@ -15,6 +106,8 @@ int RotateGrid2Nozzle(
         const double cx1, const double cx2, const double cx3,
         double *cx1p, double *cx2p, double *cx3p) {
 /*
+ * This is for rotating the nozzle, including for precession.
+ *
  * This function assumes 3D (cartesian) coor-
  * dinates. First rotates according to any precession
  * through phi + omg*t. Then translates a point by dbh.
