@@ -295,13 +295,16 @@ void SetImageAttr(Image *image, char *var, double min, double max, int log, char
  *************************************************************** */
 {
 
-    /* Automatically choose which slice to take, depending on dimensions of run */
-    double width_ratio = (g_domEnd[KDIR] - g_domBeg[KDIR]) / (g_domEnd[JDIR] - g_domBeg[JDIR]);
-
     image = GetImage(var);
 #if COMPONENTS > 2
-    if (width_ratio > 0.99) image->slice_plane = X13_PLANE;
-    else                    image->slice_plane = X12_PLANE;
+    /* Automatically choose which slice to take in 3D
+       Default is X13_PLANE, unless it is very thin */
+    double width_z = g_domEnd[KDIR] - g_domBeg[KDIR];
+    double width_y = g_domEnd[JDIR] - g_domBeg[JDIR];
+    double width_x = g_domEnd[IDIR] - g_domBeg[IDIR];
+    if      (MIN(width_z / width_x, width_x / width_z) > 0.95) image->slice_plane = X13_PLANE;
+    else if (MIN(width_y / width_x, width_x / width_y) > 0.95) image->slice_plane = X12_PLANE;
+    else if (MIN(width_z / width_y, width_y / width_z) > 0.95) image->slice_plane = X23_PLANE;
     image->slice_coord = 0.0;
 #endif
     image->min = min;

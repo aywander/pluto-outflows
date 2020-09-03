@@ -207,8 +207,9 @@ void HotHaloPrimitives(double *halo,
 
 #elif HOT_HALO_PROFILE == HH_HYDROSTATIC
     double phi = BodyForcePotential(x1, x2, x3);
+    double phi_0 = BodyForcePotential(0, 0, 0);
     double phi_scale_cgs = CONST_kB * g_inputParam[PAR_HTMP] * ini_cgs[PAR_HTMP] / (CONST_amu * MU_NORM);
-    halo[RHO] = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO] * exp(-phi / phi_scale_cgs * vn.pot_norm);
+    halo[RHO] = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO] * exp(-(phi - phi_0)/ phi_scale_cgs * vn.pot_norm);
     halo[PRS] = PresIdealEOS(halo[RHO], g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP], MU_NORM);
 
 #else

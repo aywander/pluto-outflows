@@ -162,7 +162,7 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
         wtrb_cgs = g_inputParam[PAR_WTRB] * ini_cgs[PAR_WTRB];
         wrho_cgs = g_inputParam[PAR_WRHO] * ini_cgs[PAR_WRHO];
         wrad_cgs = 1.5 * wtrb_cgs / sqrt(CONST_PI * CONST_G * wrho_cgs);
-        print("  Cloud scale height is %12.6f pc.\n\n", wrad_cgs / (1000. * CONST_pc));
+        print("  Cloud scale height is %12.6f kpc.\n\n", wrad_cgs / (1000. * CONST_pc));
 
         once01 = 1;
     }
@@ -282,14 +282,14 @@ double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, c
     /* Take into account tilt of disc in extraction */
     double dir = g_inputParam[PAR_WDIR] * ini_code[PAR_WDIR];
 
+    // TODO: consider more logic for the choice of [IJK]DIR in g_domEnd
     /* Add additional cylindrical extraction, if disc radial scale > half domain extent */
-    if (wrad * wrad / (1 - wrot * wrot) / cos(dir) > g_domEnd[IDIR] * g_domEnd[IDIR]) {
+    if (wrad * wrad / (1 - wrot * wrot) / fabs(cos(dir)) > g_domEnd[IDIR] * g_domEnd[IDIR]) {
 
-        /* Change meaning of wrad to mean half domain extent here.
-         * But take into account rotation too - the disc height will go out of the grid, otherwise */
-        double cylinder = r_cyl / (g_domEnd[IDIR] * cos(dir));
+        /* Take into account rotation too - the disc height will go out of the grid, otherwise */
+        double cylinder = r_cyl / fabs(g_domEnd[IDIR] * cos(dir));
 
-        double offset = cylinder - 1.;
+        offset = cylinder - 1.;
         offset = MIN(offset, 0.5 * wsmf);
         offset = MAX(offset, -0.5 * wsmf);
         tanhfactor = tanh(tan(-CONST_PI * offset / wsmf));
@@ -467,7 +467,9 @@ void CloudVelocity(double *cloud, double *halo,
 //
 //        vpol2 += sqrt(r_cyl * dphidr - wtrb * wtrb - wth2);
 //#else
-        vpol2 += ek * sqrt(r_cyl * dphidr);
+// TODO: Find a more user-friendly way to change sign. Maybe allow ek to be negative,
+//       but then need to add fabs everywhere.
+        vpol2 += -ek * sqrt(r_cyl * dphidr);
 //#endif
 
         /* Get vector in cartesian coordinates */
