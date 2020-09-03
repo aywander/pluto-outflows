@@ -162,17 +162,27 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
         wtrb_cgs = g_inputParam[PAR_WTRB] * ini_cgs[PAR_WTRB];
         wrho_cgs = g_inputParam[PAR_WRHO] * ini_cgs[PAR_WRHO];
         wrad_cgs = 1.5 * wtrb_cgs / sqrt(CONST_PI * CONST_G * wrho_cgs);
-        print("  Cloud scale height is %12.6f pc.\n\n", wrad_cgs / (1000. * CONST_pc));
+        print("  Cloud scale height is %12.6f kpc.\n\n", wrad_cgs / (1000. * CONST_pc));
 
         once01 = 1;
     }
 
-#endif
+#endif /* Scale height method */
+
+    /* TODO: Currently rotation only here - consider whether we include it elsewhere as well */
+    /* Grid point in cartesian coordinates */
+    double cx1, cx2, cx3;
+    cx1 = CART1(x1, x2, x3);
+    cx2 = CART2(x1, x2, x3);
+    cx3 = CART3(x1, x2, x3);
+
+    double cx1p, cx2p, cx3p;
+    RotateGrid2Disc(cx1, cx2, cx3, &cx1p, &cx2p, &cx3p);
+
 
     /* Gravitational potential */
-    phi_rz = BodyForcePotential(x1, x2, x3);
-//    phi_00 = BodyForcePotential(0, 0, 0); // Cannot interpolate this point, if central BH is present.
-    phi_00 = 0.;
+    phi_rz = BodyForcePotential(cx1p, cx2p, cx3p);
+    phi_00 = BodyForcePotential(0, 0, 0);
 
     /* Is the potential non-spherical? */
     ek2 = g_inputParam[PAR_WROT] * g_inputParam[PAR_WROT];
@@ -180,7 +190,7 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
     if (ek2 > 0) {
 
         /* Now, the same for the cylindrical radius (in cgs) */
-        r_cyl = fabs(CYL1(x1, x2, x3));
+        r_cyl = fabs(CYL1(cx1p, cx2p, cx3p));
         phi_r0 = BodyForcePotential(r_cyl, 0, 0);
     }
     else {
@@ -189,7 +199,6 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
     }
 
     /* The profile */
-    // TODO: Check if this still works if a BH potential is included.
     dens = wrho * exp((-phi_rz + phi_r0 * ek2 + phi_00 * (1. - ek2)) / sigma_g2);
 
 #elif CLOUD_DENSITY == CD_MILKY_WAY_PJM
@@ -207,7 +216,7 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
     dens = Sigma0 / (4. * zd) * exp(-r_cyl / Rd) * sech * sech;
 
 #elif CLOUD_DENSITY == CD_HOMOGENEOUS
-    /* Homogeneous halo density, but with gravity */
+    /* Homogeneous halo density */
     dens = g_inputParam[PAR_WRHO] * ini_code[PAR_WRHO];
 
 #else
@@ -234,14 +243,23 @@ double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, c
     double wrot, wrad, wsmf;
 
 
+    /* Grid point in cartesian coordinates */
+    double cx1, cx2, cx3;
+    cx1 = CART1(x1, x2, x3);
+    cx2 = CART2(x1, x2, x3);
+    cx3 = CART3(x1, x2, x3);
+
+    double cx1p, cx2p, cx3p;
+    RotateGrid2Disc(cx1, cx2, cx3, &cx1p, &cx2p, &cx3p);
+
     /* The distances in physical space */
-    r_cyl = CYL1(x1, x2, x3);
-    rz    = CYL2(x1, x2, x3);
+    r_cyl = CYL1(cx1p, cx2p, cx3p);
+    rz    = CYL2(cx1p, cx2p, cx3p);
 
     /* The rotational parameter */
     wrot = g_inputParam[PAR_WROT] * ini_code[PAR_WROT];
 
-    /* Always just use WRAD paramter here rather than velocity dispersion,
+    /* Always just use WRAD parameter here rather than velocity dispersion,
      * so that we can control the apodization and ellipsoid extraction separately. */
     wrad = g_inputParam[PAR_WRAD] * ini_code[PAR_WRAD];
 
@@ -261,13 +279,17 @@ double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, c
     fdratio = pow(10, 0.5 * log10(fdratio) + 0.5 * tanhfactor * log10(fdratio));
 
 
+    /* Take into account tilt of disc in extraction */
+    double dir = g_inputParam[PAR_WDIR] * ini_code[PAR_WDIR];
+
+    // TODO: consider more logic for the choice of [IJK]DIR in g_domEnd
     /* Add additional cylindrical extraction, if disc radial scale > half domain extent */
-    if (wrad * wrad / (1 - wrot * wrot) > g_domEnd[IDIR] * g_domEnd[IDIR]) {
+    if (wrad * wrad / (1 - wrot * wrot) / fabs(cos(dir)) > g_domEnd[IDIR] * g_domEnd[IDIR]) {
 
-        wrad = g_domEnd[IDIR];
-        double cylinder = r_cyl / wrad;
+        /* Take into account rotation too - the disc height will go out of the grid, otherwise */
+        double cylinder = r_cyl / fabs(g_domEnd[IDIR] * cos(dir));
 
-        double offset = cylinder - 1.;
+        offset = cylinder - 1.;
         offset = MIN(offset, 0.5 * wsmf);
         offset = MAX(offset, -0.5 * wsmf);
         tanhfactor = tanh(tan(-CONST_PI * offset / wsmf));
@@ -391,6 +413,7 @@ void CloudVelocity(double *cloud, double *halo,
     double vpol1, vpol2, vpol3;
     double xpol1, xpol2, xpol3;
 
+
     /* The rotational parameter */
     ek = g_inputParam[PAR_WROT] * ini_code[PAR_WROT];
 
@@ -402,21 +425,31 @@ void CloudVelocity(double *cloud, double *halo,
      * If ek > 0., there is a Keplerian component that needs to be added. */
     if (ek > 0.) {
 
+        /* Grid point in cartesian coordinates */
+        double cx1, cx2, cx3;
+        cx1 = CART1(x1, x2, x3);
+        cx2 = CART2(x1, x2, x3);
+        cx3 = CART3(x1, x2, x3);
+
+        double cx1p, cx2p, cx3p;
+        RotateGrid2Disc(cx1, cx2, cx3, &cx1p, &cx2p, &cx3p);
+
         /* Convert coordinates and velocity vectors to cylindrical polars */
-        xpol1 = POL1(x1, x2, x3);
-        xpol2 = POL2(x1, x2, x3);
-        xpol3 = POL3(x1, x2, x3);
+        xpol1 = POL1(cx1p, cx2p, cx3p);
+        xpol2 = POL2(cx1p, cx2p, cx3p);
+        xpol3 = POL3(cx1p, cx2p, cx3p);
 
-        vpol1 = VPOL1(x1, x2, x3, v1, v2, v3);
-        vpol2 = VPOL2(x1, x2, x3, v1, v2, v3);
-        vpol3 = VPOL3(x1, x2, x3, v1, v2, v3);
+        vpol1 = VPOL1(cx1p, cx2p, cx3p, v1, v2, v3);
+        vpol2 = VPOL2(cx1p, cx2p, cx3p, v1, v2, v3);
+        vpol3 = VPOL3(cx1p, cx2p, cx3p, v1, v2, v3);
 
+        /* TODO: (NOTE) it is not guaranteed that the potential is also rotated */
         /* Use local gradient, rather than mid plane potential.
          * At least for N-body initializations of thick discs in axisymmetric potentials,
          * this gives a better results, according to Miki et al 2017, MAGI paper. */
-        r_cyl = CYL1(x1, x2, x3);
-        BodyForceVector(cloud, gvec, x1, x2, x3);  // Acceleration vector (pointing inward)
-        dphidr = -VPOL1(x1, x2, x3, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
+        r_cyl = CYL1(cx1p, cx2p, cx3p);
+        BodyForceVector(cloud, gvec, cx1p, cx2p, cx3p);  // Acceleration vector (pointing inward)
+        dphidr = -VPOL1(cx1p, cx2p, cx3p, gvec[IDIR], gvec[JDIR], gvec[KDIR]);
 
         /* The angular (linear) velocity */
         // TODO: Rather than use ek, deduct turbulent and thermal support from Keplerian velocity.
@@ -434,17 +467,28 @@ void CloudVelocity(double *cloud, double *halo,
 //
 //        vpol2 += sqrt(r_cyl * dphidr - wtrb * wtrb - wth2);
 //#else
-        vpol2 += ek * sqrt(r_cyl * dphidr);
+// TODO: Find a more user-friendly way to change sign. Maybe allow ek to be negative,
+//       but then need to add fabs everywhere.
+        vpol2 += -ek * sqrt(r_cyl * dphidr);
 //#endif
 
+        /* Get vector in cartesian coordinates */
+        double vcx1p, vcx2p, vcx3p;
+        EXPAND(vcx1p = VPOL2CART1(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3);,
+               vcx2p = VPOL2CART2(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3);,
+               vcx3p = VPOL2CART3(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3););
+
+        /* Rotate vector back */
+        double cv1, cv2, cv3;
+        RotateDisc2Grid(vcx1p, vcx2p, vcx3p, &cv1, &cv2, &cv3);
 
         /* Convert velocity vectors back to the current coordinate system */
-        EXPAND(v1 = VPOL_1(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3);,
-               v2 = VPOL_2(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3);,
-               v3 = VPOL_3(xpol1, xpol2, xpol3, vpol1, vpol2, vpol3););
-
+        EXPAND(v1 = VCART_1(cx1, cx2, cx3, cv1, cv2, cv3);,
+               v2 = VCART_2(cx1, cx2, cx3, cv1, cv2, cv3);,
+               v3 = VCART_3(cx1, cx2, cx3, cv1, cv2, cv3););
 
     }
+
 
 #elif (CLOUD_VELOCITY == CV_ZERO) || (CLOUD_VELOCITY == NONE)
     EXPAND(v1 = 0;,

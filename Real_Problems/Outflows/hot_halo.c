@@ -184,64 +184,40 @@ void HotHaloPrimitives(double *halo,
     int iv, il, ic;
     static int once01 = 0;
 
-    /* Initialize gravity arrays - as good as any other place to do it */
-#ifdef GRAV_TABLE
-    if (gr_r == NULL) {
-        ReadGravTable();
-    }
-#endif
+
 
     /* Consider different distributions */
 
-#if (GRAV_POTENTIAL == NO) || (GRAV_POTENTIAL == GRAV_HOMOGENEOUS)
+#if HOT_HALO_PROFILE == HH_HOMOGENEOUS
 
     halo[RHO] = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
     halo[PRS] = PresIdealEOS(halo[RHO], g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP], MU_NORM);
 
 
-    /* Hernquist potential (isothermal hydrostatic)*/
-#elif GRAV_POTENTIAL == GRAV_HERNQUIST
-
-    double r, a, rs, rho0, phi, phi0, te, c2;
-
-    /* Thermodynamic parameters */
-    rho0 = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO];
-    te = g_inputParam[PAR_HTMP] * ini_cgs[PAR_HTMP];
-    c2 = g_gamma * CONST_kB * te  / (MU_CONST * CONST_amu) / vn.pot_norm;
-
-    /* Distribution scale */
-    a = g_inputParam[PAR_HRAD] * ini_code[PAR_HRAD];
-    r = SPH1(x1, x2, x3);
-    rs = r / a;
-
-    /* Values for the potential */
-    phi = BodyForcePotential(x1, x2, x3);
-    phi0 = BodyForcePotential(0, 0, 0);
-
-    halo[RHO] = rho0 * exp((phi - phi0) / c2);
-    halo[PRS] = halo[RHO] * c2;
-
-
-    /* This is also the default */
-
-#elif defined(GRAV_TABLE)
+#elif HOT_HALO_PROFILE == HH_TABLE
 
     /* The density is always an exponential function
      * for an isothermal distribution in hydrostatic equilibrium at
      * temperature T = PAR_HTMP. The density is scaled by PAR_HRHO.
      * In this mode, all halos are assumed to be isothermal. */
 
-#if defined(HOT_TABLE)
     halo[PRS] = InterpolationWrapper(hot_rad, hot_prs, hot_ndata, r);
     halo[RHO] = InterpolationWrapper(hot_rad, hot_rho hot_ndata, r);
-#else
-    double phi = BodyForcePotential(x1, x2, x3);
-    double phi_scale_cgs = CONST_kB * g_inputParam[PAR_HTMP] * ini_cgs[PAR_HTMP] / (CONST_amu * MU_NORM);
-    halo[RHO] = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO] * exp(-phi / phi_scale_cgs * vn.pot_norm);
-    halo[PRS] = PresIdealEOS(halo[RHO], g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP], MU_NORM);
-#endif
 
-#endif // GRAV_POTENTIAL types
+
+#elif HOT_HALO_PROFILE == HH_HYDROSTATIC
+    double phi = BodyForcePotential(x1, x2, x3);
+    double phi_0 = BodyForcePotential(0, 0, 0);
+    double phi_scale_cgs = CONST_kB * g_inputParam[PAR_HTMP] * ini_cgs[PAR_HTMP] / (CONST_amu * MU_NORM);
+    halo[RHO] = g_inputParam[PAR_HRHO] * ini_code[PAR_HRHO] * exp(-(phi - phi_0)/ phi_scale_cgs * vn.pot_norm);
+    halo[PRS] = PresIdealEOS(halo[RHO], g_inputParam[PAR_HTMP] * ini_code[PAR_HTMP], MU_NORM);
+
+#else
+
+   printf ("\nHotHaloPrimitives(): Unknown HOT_HALO_PROFILE\n");
+   QUIT_PLUTO(1);
+
+#endif // HOT_HALO_PROFILE types
 
 
     /* Velocities. */

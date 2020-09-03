@@ -3,10 +3,10 @@
 #include "read_grav_table.h"
 #include "init_tools.h"
 
-#ifdef GRAV_TABLE
+#if GRAV_POTENTIAL == GRAV_TABLE || GRAV_POTENTIAL == GRAV_2D_TABLE
 
 double *gr_r, *gr_z;
-#ifdef GRAV_2D_POTENTIAL
+#if GRAV_POTENTIAL == GRAV_2D_TABLE
 double **gr_phi, **gr_acc_r, **gr_acc_z;
 #else
 double *gr_phi, *gr_acc_r;
@@ -20,11 +20,10 @@ void ReadGravTable() {
  * This routine reads the data from a gravity file.
  *
  * The values of these are filled into the global arrays gr_r, gr_phi, and gr_acc_r, which
- * are used throughout the code. If GRAV_2D_POTENTIAL is true, then furthermore, the arrays
+ * are used throughout the code. If GRAV_POTENTIAL == GRAV_2D_TABLE, then furthermore, the arrays
  * gr_z, gr_acc_z get filled.
  *
  * NOTE:
- *   - GRAV_2D_POTENTIAL, just like GRAV_TABLE, is set automatically with the choice of GRAV_POTENTIAL
  *   - In 2D arrays, the indices are z and r (i.e. r changing fastest).
  *   - If BODY_FORCE & VECTOR, then the gravitational acceleration must be provided as a table.
  *     The gravitational potential, however, must always be provided in tabular form.
@@ -45,8 +44,7 @@ void ReadGravTable() {
 
     /* Scan file first to get number of r coordinates */
     gr_nr = 0;
-    while (fscanf(fg, "%le", &buf) != EOF)
-        gr_nr++;
+    while (fscanf(fg, "%le", &buf) != EOF) gr_nr++;
     gr_r = ARRAY_1D(gr_nr, double);
 
     /* Read r-coordinates */
@@ -58,7 +56,7 @@ void ReadGravTable() {
     fclose(fg);
 
     /* If we're using a 2D potential do the same for the z-coordinate */
-#ifdef GRAV_2D_POTENTIAL
+#if GRAV_POTENTIAL == GRAV_2D_TABLE
 
     /* Open z-coordinates file */
     if ((fg = fopen(GRAV_Z_FNAME, "r")) == NULL) {
@@ -87,7 +85,7 @@ void ReadGravTable() {
     }
 
     /* The data is stored so that r changes fastest (second index) */
-#ifdef GRAV_2D_POTENTIAL
+#if GRAV_POTENTIAL == GRAV_2D_TABLE
     gr_phi = ARRAY_2D(gr_nz, gr_nr, double);
     for (j = 0; j < gr_nz; ++j) {
        for (i = 0; i < gr_nr; ++i) {
@@ -117,7 +115,7 @@ void ReadGravTable() {
         print("Error: ReadGravData: Unable to open z-acceleration data file");
         exit(1);
     }
-#ifdef GRAV_2D_POTENTIAL
+#if GRAV_POTENTIAL == GRAV_2D_TABLE
     for (i = 0; i < gr_nr; ++i) {
         for (j = 0; j < gr_nz; ++j) {
             fscanf(fgr, "%le ", &gr_acc_r[i][j]);
@@ -133,13 +131,13 @@ void ReadGravTable() {
         fscanf(fgr, "%le ", &gr_acc_r[i]);
         gr_acc_r[i] /= vn.acc_norm;
     }
-#endif // ifdef GRAV_2D_POTENTIAL
+#endif // if GRAV_POTENTIAL == GRAV_2D_TABLE
     fclose(fgr);
 
     /* If we're not using acceleration vector, calculate derivatives from potential here */
 #else
 
-#ifdef GRAV_2D_POTENTIAL
+#if GRAV_POTENTIAL == GRAV_2D_TABLE
 
     /* For transposing arrays */
     double **gr_acc_z_T, **gr_phi_T;
@@ -176,4 +174,4 @@ void ReadGravTable() {
 
 }
 
-#endif // ifdef GRAV_TABLE
+#endif // if GRAV_POTENTIAL == GRAV_TABLE || GRAV_POTENTIAL == GRAV_2D_TABLE

@@ -92,19 +92,24 @@
 #define CS_VELOCITY_DISPERSION   1
 
 
+/* HOT_HALO_PROFILE values
+ * Different ways to set the hot halo profile.
+ * Note, the hydrostatic means that the hot halo is isothermal. */
+#define HH_HOMOGENEOUS           0
+#define HH_HYDROSTATIC           1
+#define HH_TABLE                 2
+
 /* Static Gravity */
 
 /* GRAV_POTENTIAL values. 
  * Gravitational Potential shape 
  * NONE for no potential.
  * */
-#define GRAV_HOMOGENEOUS          1
-#define GRAV_HERNQUIST            2
-#define GRAV_HERNQUIST_NFW        3
-#define GRAV_SINGLE_ISOTHERMAL    4
-#define GRAV_DOUBLE_ISOTHERMAL    5
-#define GRAV_MILKY_WAY_PJM        6
-#define GRAV_MILKY_WAY_BAR        7
+#define GRAV_NONE                 0
+#define GRAV_TABLE                1
+#define GRAV_2D_TABLE             2
+#define GRAV_HERNQUIST            3
+#define GRAV_MILKY_WAY_BARROS     4
 
 
 /* JD_MODE values.
@@ -177,6 +182,11 @@
 #endif
 
 
+/* Add a central black hole to the overal potential or static gravitational field */
+#ifndef CENTRAL_BH
+#define CENTRAL_BH NO
+#endif
+
 /* Accretion */
 #ifndef ACCRETION
 #define ACCRETION NO
@@ -190,11 +200,6 @@
 #define SID_METHOD SID_REGIONS
 #endif
 
-/* Smoothing parameter of BH potential
- * Eqn (18), Ruffert (1994) */
-#ifndef BH_POT_SMOOTH
-#define BH_POT_SMOOTH 4.0
-#endif
 
 /* Sink */
 #ifndef SINK_METHOD
@@ -317,6 +322,10 @@
 #endif
 
 
+/* Hot halo profile default */
+#ifndef HOT_HALO_PROFILE
+#define HOT_HALO_PROFILE HH_HOMOGENEOUS
+#endif
 
 /* Parameters that accompany a particular potential */
 #ifndef GRAV_POTENTIAL
@@ -325,17 +334,7 @@
 
 
 /* Whether the gravity potential requires table */
-#if (GRAV_POTENTIAL == GRAV_HERNQUIST_NFW) || \
-    (GRAV_POTENTIAL == GRAV_SINGLE_ISOTHERMAL) || \
-    (GRAV_POTENTIAL == GRAV_DOUBLE_ISOTHERMAL) || \
-    (GRAV_POTENTIAL == GRAV_MILKY_WAY_PJM)
-
-#define GRAV_TABLE
-
-/* 2-D potentials */
-#if GRAV_POTENTIAL == GRAV_MILKY_WAY_PJM
-#define GRAV_2D_POTENTIAL
-#endif
+#if GRAV_POTENTIAL == GRAV_TABLE || GRAV_POTENTIAL == GRAV_2D_TABLE
 
 /* Default gravity and gravity domain filenames */
 #ifndef GRAV_PHI_FNAME
@@ -347,7 +346,7 @@
 #define GRAV_R_FNAME        "grav_r_table.dat"
 #endif
 
-#ifdef GRAV_2D_POTENTIAL
+#if GRAV_POTENTIAL == GRAV_2D_TABLE
 #ifndef GRAV_Z_FNAME
 #define GRAV_Z_FNAME        "grav_z_table.dat"
 #endif
@@ -359,7 +358,7 @@
 #define GRAV_ACCR_FNAME        "grav_accr_table.dat"
 #endif
 
-#ifdef GRAV_2D_POTENTIAL
+#if GRAV_POTENTIAL == GRAV_2D_TABLE
 #ifndef GRAV_ACCZ_FNAME
 #define GRAV_ACCZ_FNAME        "grav_accz_table.dat"
 #endif

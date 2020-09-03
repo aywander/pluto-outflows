@@ -11,6 +11,13 @@ int RotateGrid2Nozzle(const double cx1, const double cx2, const double cx3,
 int RotateNozzle2Grid(const double cx1, const double cx2, const double cx3,
                       double *cx1p, double *cx2p, double *cx3p);
 
+int RotateGrid2Disc(const double cx1, const double cx2, const double cx3,
+                    double *cx1p, double *cx2p, double *cx3p);
+
+int RotateDisc2Grid(const double cx1, const double cx2, const double cx3,
+                    double *cx1p, double *cx2p, double *cx3p);
+
+
 int SphereSurfaceIntersectsNCells(const double dx1, const double dx2, const double dx3, const double r);
 
 int SphereSurfaceIntersectsCellByRadius(const double x1, const double x2, const double x3, const double vol,
