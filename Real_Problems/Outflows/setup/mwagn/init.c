@@ -770,7 +770,7 @@ double BodyForcePotential(double x1, double x2, double x3)
     soft = MAX(g_inputParam[PAR_ASNK] * ini_code[PAR_ASNK], g_inputParam[PAR_OSPH] * ini_code[PAR_OSPH]);
 
     r = SPH1(x1, x2, x3);
-    pot -= CONST_G * mbh / (vn.newton_norm * sqrt(r * r + soft * soft));
+    pot += -CONST_G * mbh / (vn.newton_norm * sqrt(r * r + soft * soft));
 
 #endif
 

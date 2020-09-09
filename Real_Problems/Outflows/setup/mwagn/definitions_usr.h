@@ -5,7 +5,7 @@
 #define NOZZLE_FILL                       NF_PRIMITIVE
 #define NOZZLE_CAP                        YES
 
-#define ACCRETION                         NO
+#define ACCRETION                         YES
 #define SINK_METHOD                       SINK_FREEFLOW
 #define CENTRAL_BH                        YES
 
