@@ -700,8 +700,6 @@ int WarmTcrit(double *const warm)
 }
 
 
-#endif
-
 
 // TODO: Remove the tracer dependence in some of the below
 
@@ -1198,3 +1196,5 @@ void InputDataClouds(const Data *d, const Grid *grid) {
                 }
             }
 }
+
+#endif

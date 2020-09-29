@@ -271,7 +271,7 @@ void HotHaloPrimitives(double *halo,
 
     /* Tracers */
     halo[TRC] = 0.0;
-#if CLOUDS
+#if CLOUDS == YES
     halo[TRC + 1] = 0.0;
 #endif
 

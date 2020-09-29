@@ -45,11 +45,8 @@ MAXTIME="1.55h"
 START_NJOB=1
 
 # File number to restart from. Leave empty if the
-# last file number is to be used. Specify the initial
-# restart number as %4d, e.g. 0023. Doesn't work with
-# filenumber 0000.
-# TODO: I think that was a bug in PLUTO. Re-investigate.
-# But anyway, there is rarely a reason to restart with 0000.
+# last file number is to be used.
+# Specify the initial as %4d, e.g. 0023, or just 23.
 RESTART_FNUM=
 
 # Target job number. Script auto resubmits until
@@ -191,8 +188,8 @@ if [[ ($NJOB -gt 1) && ($NJOB -le $NJOBS) ]]; then
       exit 1
     fi
 
-    # This will be the restart number
-    RESTARTNUM=$last_chk_num
+    # This will be the restart number, with leading 0s removed
+    RESTARTNUM=$((10#$last_chk_num))
 
   fi
 

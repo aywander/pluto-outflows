@@ -189,7 +189,7 @@ void InitDomain(Data *d, Grid *grid)
 #endif
 
     /* Input data for clouds initialization */
-#if CLOUDS
+#if CLOUDS == YES
     InputDataClouds(d, grid);
 
 #endif

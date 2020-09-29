@@ -142,7 +142,10 @@ void InitDomain(Data *d, Grid *grid)
     InitDomainHotHalo(d, grid);
 
     /* Input data for clouds initialization */
-#if CLOUDS
+#if CLOUDS == YES
+
+    /* TODO: Cloud initialization should not take place if this is a restart! */
+    /* TODO: Differentiate between cloud initialization and all other things, e.g. cloud analysis, sfr, etc */
     InputDataClouds(d, grid);
 
 #endif
@@ -292,6 +295,9 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 #if ACCRETION == YES
     double ****Vc_new;
 #endif
+#if CLOUD_EXTRACT_CENTRAL_BUFFER == YES
+    static int once_clear_nozzle_surrounding = 0;
+#endif
 
     /* These are the geometrical central points */
     x1 = grid->x[IDIR];
@@ -362,6 +368,26 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 #endif  // ACCRETION
 
             TOT_LOOP(k, j, i) {
+
+
+#if CLOUD_EXTRACT_CENTRAL_BUFFER == YES
+                /* Do this before anything else on the nozzle - this clears the surrounding
+                 * and is useful when switching on the jet midway through a simulation after a restart.
+                 * This bit will also occur before the first time step of a fresh simulation, but
+                 * the effect is equivalent to CloudExtractCentralBuffer, so it has no effect in that case.
+                 * (We don't have information here whether this is a restart or not.)
+                 */
+                if (!once_clear_nozzle_surrounding) {
+
+                    HotHaloPrimitives(halo_primitives, x1[i], x2[j], x3[k]);
+                    VAR_LOOP(nv) result[nv] = d->Vc[nv][k][j][i];
+
+                    ClearNozzleSurrounding(result, halo_primitives, x1[i], x2[i], x3[i]);
+                    VAR_LOOP(nv) d->Vc[nv][k][j][i] = result[nv];
+
+                    once_clear_nozzle_surrounding = 1;
+                }
+#endif
 
 
 #if (NOZZLE == NONE) || (NOZZLE_FILL == NF_CONSERVATIVE)

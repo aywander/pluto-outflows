@@ -68,13 +68,11 @@ void Radiat (double *v, double *rhs)
         v[RHOE] = prs / (g_gamma - 1.0);
     }
 
-    double prims[NVAR] = {v[RHO], ARG_EXPAND(0, 0, 0), prs, 0, TRC};
-#if CLOUDS
-    prims[TRC + 1] = v[TRC + 1] / v[RHO];
-#endif
+    double prims[NVAR];
+    int nv;
+    VAR_LOOP(nv) prims[nv] = v[nv];
+    NTRACER_LOOP(nv) prims[nv] /= v[RHO];
     mu = MeanMolecularWeight(prims);
-
-
 
     /* DM 11 Jul 2015: Now T corresponds to P / rho and not temperature in Kelvin */
     // T   = prs / v[RHO] * KELVIN * mu;
