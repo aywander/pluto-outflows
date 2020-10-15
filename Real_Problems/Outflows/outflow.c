@@ -426,7 +426,7 @@ void OutflowPrimitives(double *out_primitives, const double x1, const double x2,
     out_primitives[RHO] = os.rho;
     out_primitives[PRS] = os.prs;
     out_primitives[TRC] = 1.0;
-#if CLOUDS == YES
+#if CLOUDS != NO
     out_primitives[TRC + 1] = 0.0;
 #endif
     OutflowVelocity(out_primitives, os.spd, x1, x2, x3);

@@ -142,7 +142,7 @@ void InitDomain(Data *d, Grid *grid)
     InitDomainHotHalo(d, grid);
 
     /* Input data for clouds initialization */
-#if CLOUDS == YES
+#if CLOUDS != NO
 
     /* TODO: Cloud initialization should not take place if this is a restart! */
     /* TODO: Differentiate between cloud initialization and all other things, e.g. cloud analysis, sfr, etc */
