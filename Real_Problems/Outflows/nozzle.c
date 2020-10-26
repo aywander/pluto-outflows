@@ -565,7 +565,7 @@ void ClearNozzleSurrounding(double *cell, const double *halo, const double x1, c
 
     /* Buffer factor around osph */
     double rad  = SPH1(x1, x2, x3);
-    double incf = 2.0;    // Radius of central buffer (in units of osph)
+    double incf = 5.0;    // Radius of central buffer (in units of osph)
     double wsmf = 1.0;    // Width of smoothing region
 
     /* Inner hemisphere to keep free */
@@ -581,8 +581,14 @@ void ClearNozzleSurrounding(double *cell, const double *halo, const double x1, c
     double ratio;
     int iv;
     VAR_LOOP(iv) {
-        ratio = cell[iv] / halo[iv];
-        cell[iv] = halo[iv] * pow(10, 0.5 * log10(ratio) + 0.5 * tanhfactor * log10(ratio));
+        /* Use logarithmic smoothing if possible, else linear smoothing */
+        if (cell[iv] * halo[iv] > 0) {
+            ratio = cell[iv] / halo[iv];
+            cell[iv] = halo[iv] * pow(10, 0.5 * log10(ratio) + 0.5 * tanhfactor * log10(ratio));
+        }
+        else {
+            cell[iv] = 0.5 * (cell[iv] + halo[iv]) + 0.5 * tanhfactor * (cell[iv] - halo[iv]);
+        }
     }
 
 }

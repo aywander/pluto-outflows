@@ -400,7 +400,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
             TOT_LOOP(k, j, i) {
 
 
-#if (NOZZLE == NONE) || (NOZZLE_FILL == NF_CONSERVATIVE)
+#if (NOZZLE == NO) || (NOZZLE_FILL == NF_CONSERVATIVE)
                         if (0) {}
 #else
                         if (InNozzleRegion(x1[i], x2[j], x3[k])) {
@@ -583,7 +583,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
                             mirror[FLOWAXIS(VX1, VX2, VX3)] *= -1.0;
 
-#if (NOZZLE == NONE) || (NOZZLE_FILL == NF_CONSERVATIVE)
+#if (NOZZLE == NO) || (NOZZLE_FILL == NF_CONSERVATIVE)
                             NVAR_LOOP(nv) d->Vc[nv][k][j][i] = mirror[nv];
 #else
 
