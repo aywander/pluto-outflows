@@ -297,14 +297,29 @@ void SetImageAttr(Image *image, char *var, double min, double max, int log, char
 
     image = GetImage(var);
 #if COMPONENTS > 2
-    /* Automatically choose which slice to take in 3D
-       Default is X13_PLANE, unless it is very thin */
+
+    /* Automatically choose which slice to take in 3D */
     double width_z = g_domEnd[KDIR] - g_domBeg[KDIR];
     double width_y = g_domEnd[JDIR] - g_domBeg[JDIR];
     double width_x = g_domEnd[IDIR] - g_domBeg[IDIR];
-    if      (MIN(width_z / width_x, width_x / width_z) > 0.95) image->slice_plane = X13_PLANE;
-    else if (MIN(width_y / width_x, width_x / width_y) > 0.95) image->slice_plane = X12_PLANE;
-    else if (MIN(width_z / width_y, width_y / width_z) > 0.95) image->slice_plane = X23_PLANE;
+    double area[3] = {width_z * width_y, width_y * width_x, width_z * width_x};
+    int slice_i[3] = {X23_PLANE, X12_PLANE, X13_PLANE};
+
+    /* Find dimension with largest perpendicular box area.
+     * Since boxes are often square in at least one dimension, use a small tolerance factor.
+     * This establishes a priority hierarchy in the order of slice_i. */
+    double max_area = area[0];
+    int max_i = 0;
+    for (int i = 1; i < 3; i++) {
+        if (area[i] > 1.05 * max_area) {
+            max_area = area[i];
+            max_i = i;
+        }
+    }
+
+    /* Set image slice to that giving largest area. */
+    image->slice_plane = slice_i[max_i];
+
     image->slice_coord = 0.0;
 #endif
     image->min = min;

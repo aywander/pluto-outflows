@@ -548,3 +548,47 @@ void InitDomainNozzle(Data *d, Grid *grid){
             }
 
 }
+
+
+/* ************************************************************** */
+void ClearNozzleSurrounding(double *cell, const double *halo, const double x1, const double x2, const double x3) {
+/*!
+ *  This routine sets the value of the region around the center to hot-halo values,
+ *  with a smooth transition. This is useful when switching on the jet midway through
+ *  a simulation in cases where the accretion is very high.
+ *
+ *  Note that CLOUD_EXTRACT_CENTRAL_BUFFER must be YES for this routine to be called.
+ *
+**************************************************************** */
+
+    double tanhfactor;
+
+    /* Buffer factor around osph */
+    double rad  = SPH1(x1, x2, x3);
+    double incf = 5.0;    // Radius of central buffer (in units of osph)
+    double wsmf = 1.0;    // Width of smoothing region
+
+    /* Inner hemisphere to keep free */
+    double osph = g_inputParam[PAR_OSPH] * ini_code[PAR_OSPH];
+    double circ = rad / (incf * osph);
+
+    /* The smoothing region - smooth in logarithm of density ratio*/
+    double offset = circ - 1.;
+    offset = MIN(offset, 0.5 * wsmf);
+    offset = MAX(offset, -0.5 * wsmf);
+    tanhfactor = tanh(tan(CONST_PI * offset / wsmf));
+
+    double ratio;
+    int iv;
+    VAR_LOOP(iv) {
+        /* Use logarithmic smoothing if possible, else linear smoothing */
+        if (cell[iv] * halo[iv] > 0) {
+            ratio = cell[iv] / halo[iv];
+            cell[iv] = halo[iv] * pow(10, 0.5 * log10(ratio) + 0.5 * tanhfactor * log10(ratio));
+        }
+        else {
+            cell[iv] = 0.5 * (cell[iv] + halo[iv]) + 0.5 * tanhfactor * (cell[iv] - halo[iv]);
+        }
+    }
+
+}

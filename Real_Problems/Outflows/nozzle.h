@@ -49,4 +49,6 @@ void NozzleVolume(Data *d, Grid *grid);
 
 void InitDomainNozzle(Data *d, Grid *grid);
 
+void ClearNozzleSurrounding(double *cell, const double *halo, double x1, double x2, double x3);
+
 #endif //PLUTO_NOZZLE_H

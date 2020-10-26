@@ -5,7 +5,7 @@
 #define NOZZLE_FILL                       NF_PRIMITIVE
 #define NOZZLE_CAP                        YES
 
-#define ACCRETION                         NO
+#define ACCRETION                         YES
 #define SINK_METHOD                       SINK_FREEFLOW
 #define CENTRAL_BH                        YES
 
@@ -17,7 +17,7 @@
 #define GRAV_POTENTIAL                    GRAV_NONE
 #define HOT_HALO_PROFILE                  HH_HYDROSTATIC
 
-#define CLOUDS                            YES
+#define CLOUDS                            CLOUDS_SMOOTH
 #define CLOUD_REPEAT	                  NO
 #define CLOUDS_MULTI   	                  NO
 

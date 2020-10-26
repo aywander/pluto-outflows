@@ -69,6 +69,12 @@
 /* Use a grid_in.out file to specify dimensions of cube 
  * Input files are rho.dbl, vx1.dbl, vx2.dbl, vx3.dbl, etc*/
 
+/* CLOUDS values */
+/* This can be NO, smooth, or fractal. */
+#define CLOUDS_SMOOTH          1
+#define CLOUDS_FRACTAL         2
+
+
 /* CLOUD_DENSITY values.
  * Cloud distribution 
  * The density profile for the warm phase */
@@ -280,7 +286,7 @@
 #endif
 
 #ifndef CLOUD_VELOCITY
-#define CLOUD_VELOCITY NONE
+#define CLOUD_VELOCITY CV_ZERO
 #endif
 
 #ifndef CUBE_ENDIANNESS

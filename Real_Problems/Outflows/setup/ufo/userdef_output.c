@@ -161,7 +161,7 @@ void ChangeOutputVar ()
            SetOutputVar("vx3", VTK_OUTPUT, NO););
     SetOutputVar("prs", VTK_OUTPUT, YES);
     SetOutputVar("tr1", VTK_OUTPUT, YES);
-#if CLOUDS == YES
+#if CLOUDS != NO
     SetOutputVar("tr2", VTK_OUTPUT, YES);
 #endif
     SetOutputVar("te", VTK_OUTPUT, YES);
@@ -178,7 +178,7 @@ void ChangeOutputVar ()
            SetOutputVar("vx3", FLT_OUTPUT, NO););
     SetOutputVar("prs", FLT_OUTPUT, YES);
     SetOutputVar("tr1", FLT_OUTPUT, YES);
-#if CLOUDS == YES
+#if CLOUDS != NO
     SetOutputVar("tr2", FLT_OUTPUT, YES);
 #endif
     SetOutputVar("te", FLT_OUTPUT, YES);
@@ -195,7 +195,7 @@ void ChangeOutputVar ()
            SetOutputVar("vx3", FLT_H5_OUTPUT, NO););
     SetOutputVar("prs", FLT_H5_OUTPUT, YES);
     SetOutputVar("tr1", FLT_H5_OUTPUT, YES);
-#if CLOUDS == YES
+#if CLOUDS != NO
     SetOutputVar("tr2", FLT_H5_OUTPUT, YES);
 #endif
     SetOutputVar("te", FLT_H5_OUTPUT, YES);
@@ -212,7 +212,7 @@ void ChangeOutputVar ()
            SetOutputVar("vx3", PNG_OUTPUT, NO););
     SetOutputVar("prs", PNG_OUTPUT, NO);
     SetOutputVar("tr1", PNG_OUTPUT, NO);
-#if CLOUDS == YES
+#if CLOUDS != NO
     SetOutputVar("tr2", PNG_OUTPUT, NO);
 #endif
     SetOutputVar("te", PNG_OUTPUT, YES);

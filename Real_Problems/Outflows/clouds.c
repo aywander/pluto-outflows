@@ -20,7 +20,7 @@
 /* Global struct for cloud analytics */
 CloudAnalytics ca;
 
-#if CLOUDS == YES
+#if CLOUDS != NO
 
 /* ************************************************************** */
 int CloudCubePixel(int *el, const double x1,
@@ -634,7 +634,7 @@ int CloudPrimitives(double *cloud,
     int is_cloud = 0;
 
     /* Get cloud pixel coordinates */
-    if (CloudCubePixel(cube_pixel, x1, x2, x3)) {
+//    if (CloudCubePixel(cube_pixel, x1, x2, x3)) {
 
         /* Get the fractal factor for this cell */
         NormalizeFractalData(cloud, x1, x2, x3);
@@ -663,7 +663,7 @@ int CloudPrimitives(double *cloud,
             is_cloud = WarmTcrit(cloud);
 
         }
-    }
+//    }
 
     /* Fill cloud array with halo primitves if not a cloud cell. This is not
      * strictly necessary, since it is done outside CloudPrimitives, but we
@@ -699,8 +699,6 @@ int WarmTcrit(double *const warm)
 
 }
 
-
-#endif
 
 
 // TODO: Remove the tracer dependence in some of the below
@@ -1152,11 +1150,12 @@ void InputDataClouds(const Data *d, const Grid *grid) {
     x2 = grid->x[JDIR];
     x3 = grid->x[KDIR];
 
+#if CLOUDS == CLOUDS_FRACTAL
     id = InputDataOpen("./input-rho.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
     TOT_LOOP(k,j,i) d->Vc[RHO][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
     InputDataClose(id);
 
-#if CLOUD_VELOCITY
+#if CLOUD_VELOCITY != CV_ZERO
 
     id = InputDataOpen("./input-vx1.flt", "./grid_in.out", CUBE_ENDIANNESS, 0);
     TOT_LOOP(k,j,i) d->Vc[VX1][k][j][i] = InputDataInterpolate(id, x1[i], x2[j], x3[k]);
@@ -1175,7 +1174,19 @@ void InputDataClouds(const Data *d, const Grid *grid) {
     double ***v3 = d->Vc[VX3];
     InputDataCoordTransformVector(id, x1, x2, x3, v1, v2, v3);
 
-#endif
+#else
+    TOT_LOOP(k,j,i) d->Vc[VX1][k][j][i] = d->Vc[VX2][k][j][i] = d->Vc[VX3][k][j][i] = 0;
+
+#endif /* CLOUD_VELOCITY */
+
+#elif CLOUDS == CLOUDS_SMOOTH
+
+    TOT_LOOP(k,j,i) {
+                d->Vc[RHO][k][j][i] = 1.;
+                d->Vc[VX1][k][j][i] = d->Vc[VX2][k][j][i] = d->Vc[VX3][k][j][i] = 0;
+            }
+
+#endif /* if CLOUDS == CLOUDS_FRACTAL */
 
     /* Do Clouds apodization */
     TOT_LOOP(k, j, i) {
@@ -1192,9 +1203,11 @@ void InputDataClouds(const Data *d, const Grid *grid) {
                 if (CloudPrimitives(cloud_primitives, x1[i], x2[j], x3[k])){
                     NVAR_LOOP(nv) d->Vc[nv][k][j][i] = cloud_primitives[nv];
                 }
-                    /* If not a cloud pixel then use hot halo primitives*/
+                /* If not a cloud pixel then use hot halo primitives*/
                 else{
                     NVAR_LOOP(nv) d->Vc[nv][k][j][i] = halo_primitives[nv];
                 }
             }
 }
+
+#endif
