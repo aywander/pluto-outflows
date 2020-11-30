@@ -565,7 +565,7 @@ void ClearNozzleSurrounding(double *cell, const double *halo, const double x1, c
 
     /* Buffer factor around osph */
     double rad  = SPH1(x1, x2, x3);
-    double incf = 5.0;    // Radius of central buffer (in units of osph)
+    double incf = 2.0;    // Radius of central buffer (in units of osph)
     double wsmf = 1.0;    // Width of smoothing region
 
     /* Inner hemisphere to keep free */
