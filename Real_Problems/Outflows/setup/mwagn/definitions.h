@@ -66,7 +66,7 @@
 
 #define  MU_NORM                 0.60364
 #define  UNIT_DENSITY            (CONST_amu * MU_NORM)
-#define  UNIT_LENGTH             CONST_pc
+#define  UNIT_LENGTH             (1000 * CONST_pc)
 #define  UNIT_VELOCITY           CONST_c
 
 #define  ARTIFICIAL_VISC         NO

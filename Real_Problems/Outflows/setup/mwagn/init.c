@@ -673,7 +673,7 @@ void BodyForceVector(double *v, double *g, double x1, double x2, double x3)
     double fr;
     fr = MIN(MAX(gr_r[0], fabs(POL1(x1, x2, x3))), gr_r[gr_nr-1]);
     fz = MIN(MAX(gr_z[0], fabs(POL3(x1, x2, x3))), gr_z[gr_nz-1]);
-    sz = SGN(POL3(x1, x2, x3))
+    sz = SGN(POL3(x1, x2, x3));
 
     gr = InterpolationWrapper2D(gr_r, gr_z, gr_acc_r, gr_nr, gr_nz, fr, fz);
     gz = sz * InterpolationWrapper2D(gr_r, gr_z, gr_acc_z, gr_nr, gr_nz, fr, fz);
