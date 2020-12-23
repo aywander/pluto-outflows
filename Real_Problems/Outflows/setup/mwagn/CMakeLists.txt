@@ -2,7 +2,7 @@
 
 set(WITH_HDF5                   OFF)
 set(WITH_PNG                    ON)
-set(WITH_PARALLEL               ON)
+set(WITH_PARALLEL               OFF)
 set(WITH_ASYNC_IO               OFF)
 set(WITH_CHOMBO                 OFF)
 
@@ -32,7 +32,7 @@ set(WITH_HALL_MHD               OFF)
 set(WITH_DUST_FLUID             OFF)
 
 # Executable output location
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /home/ayw/lab/AGN_Feedback/milky_way_agn)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /home/ayw/lab/AGN_Feedback/milky_way_agn)
 
 # New files
 set(NEW_FILES
