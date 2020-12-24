@@ -150,6 +150,12 @@ double g_inputParam[USER_DEF_PARAMETERS]; /**< Array containing the user-defined
 int g_lastStep;
 /* -- AYW */
 
+/* AYW -- global variable that tells us whether this is a restart sim. This is useful in Init.c to differentiate
+ * between restarts and first runs, as many things will likely not need to be run there. All grid data is overwritten
+ * by the restart routines, which are called after the Init routines. 1 is yes, 0 is no. */
+int g_restart;
+/* -- AYW */
+
 #ifdef CH_SPACEDIM
  double glm_ch_max, glm_ch_max_loc, g_coeff_dl_min; 
         /**< Variables used by Chombo to compute glm_ch. They must be 
