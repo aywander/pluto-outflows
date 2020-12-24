@@ -799,6 +799,10 @@ extern double g_inputParam[USER_DEF_PARAMETERS];
 extern int g_lastStep;
 /* -- AYW */
 
+/* AYW -- add restart as global variable. 1 is yes, 0 is no. */
+extern int g_restart;
+/* -- AYW */
+
 #ifdef CHOMBO
  extern double glm_ch_max, glm_ch_max_loc, g_coeff_dl_min;
  extern double g_level_dx;

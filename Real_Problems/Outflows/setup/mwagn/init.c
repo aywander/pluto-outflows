@@ -147,7 +147,7 @@ void InitDomain(Data *d, Grid *grid)
     /* TODO: Differentiate between cloud initialization and all other things, e.g. cloud analysis, sfr, etc */
 
     /* Cloud initialization should not take place if this is a restart */
-    if (g_stepNumber == 0) InputDataClouds(d, grid);
+    if (g_restart == NO) InputDataClouds(d, grid);
 
 #endif
 
