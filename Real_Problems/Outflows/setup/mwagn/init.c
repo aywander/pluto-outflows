@@ -144,9 +144,10 @@ void InitDomain(Data *d, Grid *grid)
     /* Input data for clouds initialization */
 #if CLOUDS != NO
 
-    /* TODO: Cloud initialization should not take place if this is a restart! */
     /* TODO: Differentiate between cloud initialization and all other things, e.g. cloud analysis, sfr, etc */
-    InputDataClouds(d, grid);
+
+    /* Cloud initialization should not take place if this is a restart */
+    if (g_restart == NO) InputDataClouds(d, grid);
 
 #endif
 
@@ -565,7 +566,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
                         } // full galaxy
 
-                        else { // half galaxy
+                        else { // half galaxy // TODO: Get rid of half-galaxy cases
 
                             /* Reflective boundary */
                             NVAR_LOOP(nv) {

@@ -58,6 +58,7 @@ void ParseCmdLineArgs (int argc, char *argv[], char *ini_file,
    cmd->parallel_dim[KDIR] = YES;
   #endif
 
+
 /* --------------------------------------------------------------------
              Parse Command Line Options.
 
@@ -213,7 +214,13 @@ void ParseCmdLineArgs (int argc, char *argv[], char *ini_file,
       else                              cmd->h5restart = YES;
       cmd->nrestart = -1;   /* the file number to restart from */
 
-      if ((++i) < argc){
+     /* AYW -- 2020-12
+      * Save restart as a global variable - useful in Init.c */
+      g_restart = YES;
+     /* -- AYW */
+
+
+        if ((++i) < argc){
         char *endptr;
 /*         cmd->restart = atoi(argv[i]); */
         cmd->nrestart = (int)strtol(argv[i], &endptr, 10);
