@@ -566,7 +566,7 @@ void UserDefBoundary (const Data *d, RBox *box, int side, Grid *grid)
 
                         } // full galaxy
 
-                        else { // half galaxy
+                        else { // half galaxy // TODO: Get rid of half-galaxy cases
 
                             /* Reflective boundary */
                             NVAR_LOOP(nv) {

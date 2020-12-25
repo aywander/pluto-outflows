@@ -25,8 +25,6 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
  *
  ************************************************** */
 
-    // TODO: Also have a density and pressure condition for initiating touch.
-
     double halo_primitives[NVAR];
     double rho, prs, vx1, vx2, vx3, vmag;
     double rho_ini, prs_ini, vx1_ini, vx2_ini, vx3_ini, vmag_ini;
@@ -128,28 +126,35 @@ void HaloOuterBoundary(const int side, const Data *d, int i, int j, int k, Grid 
     prs_cond = (prs - prs_ini) / prs_ini;
 
     /* Set outflow (zero grad) if cell outside boundary has some velocity,
-     * else set to Hot halo. */
+     * else set to Hot halo.
+     *   Also force outflow in order to reduce boundary-induced turbulence in the box. */
 
     if ( ( (vel_cond > fvel_small) && (rho_cond > frho_small) && (prs_cond > fprs_small) ) || *touch == 1 ) {
 
         switch(side) {
             case X1_BEG:
                 VAR_LOOP(nv) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][IBEG];
+                d->Vc[VX1][k][j][i] = MIN(d->Vc[VX1][k][j][i], 0);
                 break;
             case X1_END:
                 VAR_LOOP(nv) d->Vc[nv][k][j][i] = d->Vc[nv][k][j][IEND];
+                d->Vc[VX1][k][j][i] = MAX(d->Vc[VX1][k][j][i], 0);
                 break;
             case X2_BEG:
                 VAR_LOOP(nv) d->Vc[nv][k][j][i] = d->Vc[nv][k][JBEG][i];
+                d->Vc[VX2][k][j][i] = MIN(d->Vc[VX2][k][j][i], 0);
                 break;
             case X2_END:
                 VAR_LOOP(nv) d->Vc[nv][k][j][i] = d->Vc[nv][k][JEND][i];
+                d->Vc[VX2][k][j][i] = MAX(d->Vc[VX2][k][j][i], 0);
                 break;
             case X3_BEG:
                 VAR_LOOP(nv) d->Vc[nv][k][j][i] = d->Vc[nv][KBEG][j][i];
+                d->Vc[VX3][k][j][i] = MIN(d->Vc[VX3][k][j][i], 0);
                 break;
             case X3_END:
                 VAR_LOOP(nv) d->Vc[nv][k][j][i] = d->Vc[nv][KEND][j][i];
+                d->Vc[VX3][k][j][i] = MAX(d->Vc[VX3][k][j][i], 0);
                 break;
             default:
                 QUIT_PLUTO(1);
