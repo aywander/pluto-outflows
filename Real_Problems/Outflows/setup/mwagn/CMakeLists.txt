@@ -32,7 +32,7 @@ set(WITH_HALL_MHD               OFF)
 set(WITH_DUST_FLUID             OFF)
 
 # Executable output location
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /scratch/n72/ayw100/milky_way_agn/inner/)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /scratch/n72/ayw100/milky_way_agn/gc/)
 
 # New files
 set(NEW_FILES

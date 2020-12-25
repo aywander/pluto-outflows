@@ -241,7 +241,8 @@ void RestartGet (Runtime *ini, int nrestart, int out_type,
 #endif
 
   g_time       = restart.t;
-  g_dt         = restart.dt;
+  // g_dt         = restart.dt;
+  g_dt         = (restart.dt > ini->first_dt * 1.e-9) ? restart.dt : ini->first_dt;
   g_stepNumber = restart.nstep;
 
   for (n = 0; n < MAX_OUTPUT_TYPES; n++){
@@ -273,7 +274,8 @@ void RestartDump (Runtime *ini)
    -------------------------------------------------- */
 
   restart.t  = g_time;
-  restart.dt = g_dt;
+  // restart.dt = g_dt;
+  restart.dt = (g_dt > ini->first_dt * 1.e-9) ? g_dt : ini->first_dt;
   restart.nstep = g_stepNumber;
   for (n = 0; n < MAX_OUTPUT_TYPES; n++){
     restart.nfile[n] = ini->output[n].nfile;
