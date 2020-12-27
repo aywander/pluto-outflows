@@ -211,9 +211,11 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
     r_cyl = fabs(CYL1(x1, x2, x3));
     z_cyl = fabs(CYL2(x1, x2, x3));
 
-    /* It is assumed that cloud[RHO] = 1. for this setup. */
+    /* In principle, it is assumed that cloud[RHO] = 1. for this setup.
+     * But we can scale the density by wrho .*/
+    wrho = g_inputParam[PAR_WRHO] * ini_code[PAR_WRHO];
     double sech = 1. / cosh(z_cyl / (2. * zd));
-    dens = Sigma0 / (4. * zd) * exp(-r_cyl / Rd) * sech * sech;
+    dens = wrho * Sigma0 / (4. * zd) * exp(-r_cyl / Rd) * sech * sech;
 
 #elif CLOUD_DENSITY == CD_HOMOGENEOUS
     /* Homogeneous halo density */
@@ -282,7 +284,7 @@ double CloudExtractEllipsoid(double fdratio, const double x1, const double x2, c
     /* Take into account tilt of disc in extraction */
     double dir = g_inputParam[PAR_WDIR] * ini_code[PAR_WDIR];
 
-    // TODO: consider more logic for the choice of [IJK]DIR in g_domEnd
+    // TODO: consider more logic for the choice of [IJK]DIR in g_domEnd. Maybe see userdef_output for hints.
     /* Add additional cylindrical extraction, if disc radial scale > half domain extent */
     if (wrad * wrad / (1 - wrot * wrot) / fabs(cos(dir)) > g_domEnd[IDIR] * g_domEnd[IDIR]) {
 
