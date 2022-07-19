@@ -17,7 +17,7 @@
 #define GRAV_POTENTIAL                    GRAV_NONE
 #define HOT_HALO_PROFILE                  HH_HYDROSTATIC
 
-#define CLOUDS                            CLOUDS_SMOOTH
+#define CLOUDS                            CLOUDS_FRACTAL
 #define CLOUD_REPEAT	                  NO
 #define CLOUDS_MULTI   	                  NO
 
@@ -25,7 +25,7 @@
 #define CLOUD_VELOCITY                    CV_KEPLERIAN
 #define CLOUD_SCALE                       CS_VELOCITY_DISPERSION
 #define CLOUD_EXTRACT_ELLIPSOID           YES
-#define CLOUD_EXTRACT_CENTRAL_BUFFER      YES
+#define CLOUD_EXTRACT_CENTRAL_BUFFER      NO
 
 #define ACCRETION_OUTPUT                  NO
 #define ACCRETION_OUTPUT_RATE             1.0
