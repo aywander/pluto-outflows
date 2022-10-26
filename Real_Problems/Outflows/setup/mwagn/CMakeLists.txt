@@ -2,6 +2,7 @@
 
 set(WITH_HDF5                   OFF)
 set(WITH_PNG                    OFF)
+set(WITH_PNG                    ON)
 set(WITH_PARALLEL               ON)
 set(WITH_ASYNC_IO               OFF)
 set(WITH_CHOMBO                 OFF)
