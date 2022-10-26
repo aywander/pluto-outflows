@@ -565,8 +565,8 @@ void ClearNozzleSurrounding(double *cell, const double *halo, const double x1, c
 
     /* Buffer factor around osph */
     double rad  = SPH1(x1, x2, x3);
-    double incf = 2.0;    // Radius of central buffer (in units of osph)
-    double wsmf = 1.0;    // Width of smoothing region
+    double incf = 1.3;    // Radius of central buffer (in units of osph)
+    double wsmf = 0.3;    // Width of smoothing region (in units of osph)
 
     /* Inner hemisphere to keep free */
     double osph = g_inputParam[PAR_OSPH] * ini_code[PAR_OSPH];
@@ -574,9 +574,9 @@ void ClearNozzleSurrounding(double *cell, const double *halo, const double x1, c
 
     /* The smoothing region - smooth in logarithm of density ratio*/
     double offset = circ - 1.;
-    offset = MIN(offset, 0.5 * wsmf);
-    offset = MAX(offset, -0.5 * wsmf);
-    tanhfactor = tanh(tan(CONST_PI * offset / wsmf));
+    offset = MIN(offset, 0.5 * wsmf * osph);
+    offset = MAX(offset, -0.5 * wsmf * osph);
+    tanhfactor = tanh(tan(CONST_PI * offset / (wsmf * osph)));
 
     double ratio;
     int iv;

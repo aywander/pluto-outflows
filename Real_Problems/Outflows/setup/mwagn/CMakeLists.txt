@@ -2,11 +2,11 @@
 
 set(WITH_HDF5                   OFF)
 set(WITH_PNG                    OFF)
-set(WITH_PARALLEL               OFF)
+set(WITH_PARALLEL               ON)
 set(WITH_ASYNC_IO               OFF)
 set(WITH_CHOMBO                 OFF)
 
-set(WITH_PHYSICS                RHD)
+set(WITH_PHYSICS                HD)
 set(WITH_COOLING                TABULATED)
 set(WITH_INTERPOLATION          PARABOLIC)
 set(WITH_TIME_STEPPING          RK3)
@@ -32,7 +32,7 @@ set(WITH_HALL_MHD               OFF)
 set(WITH_DUST_FLUID             OFF)
 
 # Executable output location
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /home/ayw/lab/AGN_Feedback/milky_way_agn)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY /scratch/n72/ayw100/milky_way_agn/jet-torus-mhd)
 
 # New files
 set(NEW_FILES

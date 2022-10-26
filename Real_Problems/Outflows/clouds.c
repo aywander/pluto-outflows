@@ -203,8 +203,11 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
 
 #elif CLOUD_DENSITY == CD_MILKY_WAY_PJM
 
-    /* Parameters of McMillan model for HI disc, without central hole */
+    /* Parameters of McMillan model for HI disc, with modifiable central hole. */
+    /* Rm = 0 : no hole, Rm = 4 the best PJM model,
+     * Rm = 0.1 ... 0.3 produce slightly excavated central regions */
     double Rd = 7. * CONST_pc * 1.e3 / vn.l_norm;
+    double Rm = 0.0;
     double zd = 0.085 * CONST_pc * 1.e3 / vn.l_norm;
     double Sigma0 = 53.1 * CONST_Msun / (CONST_pc * CONST_pc) / (vn.dens_norm * vn.l_norm);
 
@@ -213,7 +216,7 @@ void CloudDensity(double *cloud, const double x1, const double x2, const double 
 
     /* It is assumed that cloud[RHO] = 1. for this setup. */
     double sech = 1. / cosh(z_cyl / (2. * zd));
-    dens = Sigma0 / (4. * zd) * exp(-r_cyl / Rd) * sech * sech;
+    dens = wrho * Sigma0 / (4. * zd) * exp(-Rm / r_cyl - r_cyl / Rd) * sech * sech;
 
 #elif CLOUD_DENSITY == CD_HOMOGENEOUS
     /* Homogeneous halo density */

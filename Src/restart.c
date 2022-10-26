@@ -245,7 +245,9 @@ void RestartGet (Runtime *ini, int nrestart, int out_type,
    * This is not the best place to do this, though. The fix should be in
    * NextTimestep, or wherever the reason lies why the timestep is 0 during the last step. */
 //    g_dt         = restart.dt;
-  g_dt         = (restart.dt > ini->first_dt * 1.e-9) ? restart.dt : ini->first_dt;
+//    This could take on too big values.
+  restart.dt = restart.dt < 1.e-16 ?  ini->first_dt : restart.dt;
+  g_dt         = MIN(restart.dt, ini->first_dt);
     /*  -- AYW */
   g_stepNumber = restart.nstep;
 
